@@ -1,0 +1,48 @@
+#!/bin/bash
+
+partial_dir="$(dirname "$0")/bootstrap"
+source "$partial_dir/util.sh"
+
+if [ $# -lt 1 ]; then
+  printUsage
+fi
+
+subroutines=()
+
+case $1 in
+  'ubuntu' | 'wsl')
+    source "$partial_dir/ubuntu.sh"
+
+    if [[ $1 == 'wsl' || $2 != 'gui' ]]; then
+      subroutines+=('prepareUbuntuEnvCLI')
+    fi
+
+    if [[ $1 != 'wsl' && ($2 == 'all' || $2 == 'gui') ]]; then
+      subroutines+=('prepareUbuntuEnvGUI')
+    fi
+    ;;
+
+  'arch' | 'alwsl')
+    source "$partial_dir/arch.sh"
+
+    if [[ $1 == 'alwsl' || $2 != 'gui' ]]; then
+      subroutines+=('prepareArchEnvCLI')
+    fi
+
+    if [[ $1 != 'alwsl' && ($2 == 'all' || $2 == 'gui') ]]; then
+      subroutines+=('prepareArchEnvGUI')
+    fi
+    ;;
+
+  *)
+    printUsage
+    ;;
+esac
+
+# Run the pushed subroutines one by one
+for i in "${subroutines[@]}"; do
+  eval "$i"
+done
+
+echo 'All jobs done. Have a nice day...'
+exit 0
