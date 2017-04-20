@@ -1,0 +1,72 @@
+source ~/.zgen/zgen.zsh
+
+if ! zgen saved; then
+  echo 'Creating a zgen save'
+
+  zgen oh-my-zsh
+
+  zgen loadall <<EOPLUGINS
+    # plugins
+    robbyrussell/oh-my-zsh plugins/colored-man-pages
+    robbyrussell/oh-my-zsh plugins/command-not-found
+    robbyrussell/oh-my-zsh plugins/common-aliases
+    robbyrussell/oh-my-zsh plugins/copyfile
+    robbyrussell/oh-my-zsh plugins/copydir
+    robbyrussell/oh-my-zsh plugins/cp
+    robbyrussell/oh-my-zsh plugins/dircycle
+    robbyrussell/oh-my-zsh plugins/encode64
+    robbyrussell/oh-my-zsh plugins/extract
+    robbyrussell/oh-my-zsh plugins/fasd
+    robbyrussell/oh-my-zsh plugins/gitfast
+    robbyrussell/oh-my-zsh plugins/git-extras
+    robbyrussell/oh-my-zsh plugins/git-flow
+    robbyrussell/oh-my-zsh plugins/history
+    robbyrussell/oh-my-zsh plugins/per-directory-history
+    robbyrussell/oh-my-zsh plugins/sudo
+    robbyrussell/oh-my-zsh plugins/tmux
+    robbyrussell/oh-my-zsh plugins/tmuxinator
+    robbyrussell/oh-my-zsh plugins/urltools
+
+    zsh-users/zsh-history-substring-search
+
+    # completions
+    zsh-users/zsh-completions src
+
+    # theme
+    robbyrussell/oh-my-zsh themes/ys
+EOPLUGINS
+  # ^ can't indent this EOPLUGINS
+
+  # OS specific plugins
+
+  if [[ $OSTYPE == 'cygwin' ]]; then
+    zgen oh-my-zsh plugins/cygwin
+  else # *nix
+    zgen oh-my-zsh plugins/colorize
+    zgen oh-my-zsh plugins/nvm
+    zgen oh-my-zsh plugins/pyenv
+    zgen oh-my-zsh plugins/rbenv
+  fi
+
+  if [[ $OSTYPE == *'darwin'* ]]; then
+    zgen oh-my-zsh plugins/osx
+    zgen oh-my-zsh plugins/brew
+    zgen oh-my-zsh plugins/brew-cask
+  fi
+
+  if [[ $OSTYPE == 'linux-gnu' ]]; then
+    if [ -f /etc/arch-release ]; then
+      zgen oh-my-zsh plugins/archlinux
+    elif [ -f /etc/debian-version ]; then
+      zgen oh-my-zsh plugins/ubuntu
+    fi
+  fi
+
+  # This plugin needs to be the last one
+  zgen load zsh-users/zsh-syntax-highlighting
+
+  # Plugin customizations
+  ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+
+  zgen save
+fi

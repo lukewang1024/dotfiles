@@ -1,3 +1,6 @@
+source "$partial_dir/env.sh"
+source "$partial_dir/shell.sh"
+
 ubuntuAddPPAs()
 {
   for ppa in "${ppas[@]}"; do
@@ -79,6 +82,12 @@ prepareUbuntuEnvCLI()
     zsh
   )
   ubuntuInstallPkgs
+
+  zgenSetup
+
+  nvmSetup
+  rbenvSetup
+  pyenvSetup
 }
 
 prepareUbuntuEnvGUI()

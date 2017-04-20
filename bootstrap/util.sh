@@ -44,6 +44,13 @@ backupThenSymlink()
   symlink $1 $2
 }
 
+blankLines()
+{
+  echo
+  echo
+  echo
+}
+
 # Print the usage of the script and exit
 printUsage()
 {
