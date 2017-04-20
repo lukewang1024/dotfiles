@@ -1,0 +1,16 @@
+config/Rime/font/*.ttf filter=lfs diff=lfs merge=lfs -text
+config/Rime/*.gram filter=lfs diff=lfs merge=lfs -text
+config/Rime/easy_en.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/essay.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/jyutping.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/jyutping.phrase.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/liangfen.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.chengyusuyu.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.net.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.place.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.popular.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.sgmain.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.shopping.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/luna_pinyin.xiandaihanyu.dict.yaml filter=lfs diff=lfs merge=lfs -text
+config/Rime/zhwiki.dict.yaml filter=lfs diff=lfs merge=lfs -text
