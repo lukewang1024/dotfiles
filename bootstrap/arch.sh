@@ -1,3 +1,6 @@
+source "$partial_dir/env.sh"
+source "$partial_dir/shell.sh"
+
 pacmanInstallPkgs()
 {
   sudo pacman -Sy `join ' ' "${pkgs[@]}"` --needed
@@ -46,6 +49,12 @@ prepareArchEnvCLI()
     yarn
   )
   yaourtInstallPkgs
+
+  zgenSetup
+
+  nvmSetup
+  rbenvSetup
+  pyenvSetup
 }
 
 prepareArchEnvGUI()

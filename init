@@ -1,6 +1,9 @@
 #!/bin/bash
 
-partial_dir="$(dirname "$0")/bootstrap"
+repo_path="$(dirname "$0")"
+partial_dir="$repo_path/bootstrap"
+config_dir="$(pwd)/$repo_path/config"
+
 source "$partial_dir/util.sh"
 
 if [ $# -lt 1 ]; then
