@@ -1,0 +1,28 @@
+[advice]
+	pushNonFastForward = false
+	statusHints = false
+[branch]
+	autosetupmerge = true
+[color]
+	ui = auto
+[core]
+	excludesfile = ~/.dotfiles/dotfiles/tmpl/_gitignore
+	fscache = true
+	preloadindex = true
+	whitespace = trailing-space,space-before-tab
+	editor = nano
+	fileMode = true
+[diff]
+	renames = copies
+	mnemonicprefix = true
+[fetch]
+	prune = true
+[gc]
+	auto = 256
+[merge]
+	stat = true
+[push]
+	default = matching
+	followTags = true
+[rerere]
+	enabled = true

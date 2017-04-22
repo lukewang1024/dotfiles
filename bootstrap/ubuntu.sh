@@ -83,11 +83,11 @@ prepareUbuntuEnvCLI()
   )
   ubuntuInstallPkgs
 
-  zgenSetup
-
+  gitSetup
   nvmSetup
   rbenvSetup
   pyenvSetup
+  zgenSetup
 }
 
 prepareUbuntuEnvGUI()

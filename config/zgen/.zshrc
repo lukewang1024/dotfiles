@@ -33,7 +33,8 @@ if ! zgen saved; then
     zsh-users/zsh-completions src
 
     # theme
-    robbyrussell/oh-my-zsh themes/ys
+    mafredri/zsh-async
+    sindresorhus/pure
 EOPLUGINS
   # ^ can't indent this EOPLUGINS
 
