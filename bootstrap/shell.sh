@@ -5,12 +5,17 @@ zgenSetup()
   if [ ! -d ~/.zgen ]; then
     echo 'Installing zgen...'
     git clone https://github.com/tarjoilija/zgen.git ~/.zgen
-    echo 'Done.'
+  else
+    echo 'zgen already exists. Trying to update...'
+    cd ~/.zgen; git pull; cd - &> /dev/null
   fi
+  echo 'Done.'
 
   printf 'Symlinking .zshrc... '
   backupThenSymlink "$config_dir/zgen/.zshrc" ~/.zshrc
   echo 'Done.'
+
+  purePromptSetup
 }
 
 zplugSetup()
@@ -20,12 +25,28 @@ zplugSetup()
   if [ ! -d ~/.zplug ]; then
     echo 'Installing zplug...'
     curl -sL --proto-redir -all,https https://zplug.sh/installer | zsh
-    echo 'Done.'
   else
-    echo 'zplug already exists.'
+    echo 'zplug already exists. Trying to update...'
+    cd ~/.zplug; git pull; cd - &> /dev/null
   fi
+  echo 'Done.'
 
   printf 'Symlinking .zshrc... '
   backupThenSymlink "$config_dir/zplug/.zshrc" ~/.zshrc
+  echo 'Done.'
+
+  purePromptSetup
+}
+
+purePromptSetup()
+{
+  blankLines
+  echo 'Installing pure prompt...'
+  npm install -g pure-prompt
+  mkdir -p ~/bin
+  cd "$(dirname $(nvm which current))/../lib/node_modules/pure-prompt"
+  ln -sf ./pure.zsh ~/bin/prompt_pure_setup
+  ln -sf ./async.zsh ~/bin/async
+  cd - &> /dev/null
   echo 'Done.'
 }

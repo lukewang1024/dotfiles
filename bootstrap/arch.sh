@@ -50,11 +50,11 @@ prepareArchEnvCLI()
   )
   yaourtInstallPkgs
 
-  zgenSetup
-
+  gitSetup
   nvmSetup
   rbenvSetup
   pyenvSetup
+  zgenSetup
 }
 
 prepareArchEnvGUI()
