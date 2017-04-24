@@ -6,6 +6,8 @@ gitSetup()
   # Back up the current config file
   if [ -f ~/.gitconfig ]; then
     printf 'Backing up current .gitconfig... '
+    git_user_name=`git config --global user.name`
+    git_user_email=`git config --global user.email`
     mv ~/.gitconfig ~/.gitconfig~
     echo 'Done.'
   fi
@@ -27,8 +29,22 @@ gitSetup()
   fi
 
   # Git user
-  read -p "Name to use in Git? " git_user_name
-  read -p "Email to use in Git? " git_user_email
+  if [[ -n "$git_user_name" && -n "$git_user_email" ]]; then
+    echo "Global user was configured as $git_user_name ($git_user_email) previously."
+    read -p 'Press Y/y to configure it differently: ' -n 1 -r; echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo 'Configuring git user...'
+      read -p "username: " git_user_name
+      read -p "email: " git_user_email
+    else
+      echo "$git_user_name ($git_user_email) will be kept as the global user."
+    fi
+  else
+    echo 'Configuring git user...'
+    read -p "username: " git_user_name
+    read -p "email: " git_user_email
+  fi
+
   git config --global user.name "$git_user_name"
   git config --global user.email "$git_user_email"
   unset git_user_name
