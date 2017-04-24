@@ -31,7 +31,9 @@ prepareArchEnvCLI()
     openssh
     php
     python
+    python-pip
     python2
+    python2-pip
     readline
     ruby
     tmux
@@ -45,6 +47,7 @@ prepareArchEnvCLI()
   pacmanInstallPkgs
 
   pkgs=(
+    gitflow-avh
     translate-shell
     yarn
   )
