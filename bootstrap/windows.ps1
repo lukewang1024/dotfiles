@@ -31,6 +31,7 @@ function installChocolateyPackages
     'chocolatey',
     'chocolateygui',
     'chromium',
+    'clover',
     'docker',
     'doublecmd',
     'dropbox',

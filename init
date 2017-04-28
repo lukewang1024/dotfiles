@@ -37,6 +37,18 @@ case $1 in
     fi
     ;;
 
+  'macos' | 'osx')
+    source "$partial_dir/macos.sh"
+
+    if [[ $2 != 'gui' ]]; then
+      subroutines+=('prepareMacOSEnvCLI')
+    fi
+
+    if [[ $2 == 'all' || $2 == 'gui' ]]; then
+      subroutines+=('prepareMacOSEnvGUI')
+    fi
+    ;;
+
   *)
     printUsage
     ;;

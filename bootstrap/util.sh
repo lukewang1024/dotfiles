@@ -57,10 +57,11 @@ printUsage()
   echo './init [platform] [option]'
   echo
   echo 'List of platforms:'
-  echo '  wsl    - Default WSL with Ubuntu (CLI only)'
-  echo '  alwsl  - Custom WSL with Arch Linux (CLI only)'
-  echo '  ubuntu - Ubuntu'
-  echo '  arch   - Arch Linux'
+  echo '  macos | osx - MacOS'
+  echo '  wsl         - Default WSL with Ubuntu (CLI only)'
+  echo '  alwsl       - Custom WSL with Arch Linux (CLI only)'
+  echo '  ubuntu      - Ubuntu'
+  echo '  arch        - Arch Linux'
   echo
   echo 'List of options:'
   echo

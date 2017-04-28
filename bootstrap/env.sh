@@ -1,3 +1,5 @@
+source "$partial_dir/shell.sh"
+
 gitSetup()
 {
   blankLines
@@ -81,4 +83,13 @@ pyenvSetup()
   echo 'Installing pyenv...'
   curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
   echo 'Done.'
+}
+
+envSetup()
+{
+  gitSetup
+  nvmSetup
+  rbenvSetup
+  pyenvSetup
+  zgenSetup
 }

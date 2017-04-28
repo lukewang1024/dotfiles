@@ -1,3 +1,5 @@
+source ~/dotfiles/config/shared/rc.sh
+
 source ~/.zgen/zgen.zsh
 
 if ! zgen saved; then
@@ -26,6 +28,7 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/tmux
     robbyrussell/oh-my-zsh plugins/tmuxinator
     robbyrussell/oh-my-zsh plugins/urltools
+    robbyrussell/oh-my-zsh plugins/yarn
 
     zsh-users/zsh-history-substring-search
 

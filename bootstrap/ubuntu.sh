@@ -1,5 +1,4 @@
 source "$partial_dir/env.sh"
-source "$partial_dir/shell.sh"
 
 ubuntuAddPPAs()
 {
@@ -83,11 +82,7 @@ prepareUbuntuEnvCLI()
   )
   ubuntuInstallPkgs
 
-  gitSetup
-  nvmSetup
-  rbenvSetup
-  pyenvSetup
-  zgenSetup
+  envSetup
 }
 
 prepareUbuntuEnvGUI()
