@@ -1,5 +1,4 @@
 source "$partial_dir/env.sh"
-source "$partial_dir/shell.sh"
 
 pacmanInstallPkgs()
 {
@@ -20,6 +19,7 @@ prepareArchEnvCLI()
     cmatrix
     fish
     fortune-mod
+    fzf
     git
     go
     htop
@@ -53,11 +53,7 @@ prepareArchEnvCLI()
   )
   yaourtInstallPkgs
 
-  gitSetup
-  nvmSetup
-  rbenvSetup
-  pyenvSetup
-  zgenSetup
+  envSetup
 }
 
 prepareArchEnvGUI()
