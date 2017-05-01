@@ -55,6 +55,7 @@ prepareUbuntuEnvCLI()
     golang
     imagemagick
     irssi
+    jq
     mc
     mosh
     mutt

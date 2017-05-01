@@ -24,6 +24,8 @@ prepareArchEnvCLI()
     go
     htop
     irssi
+    jq
+    mc
     nghttp2
     nginx-mainline
     nodejs
@@ -48,6 +50,7 @@ prepareArchEnvCLI()
 
   pkgs=(
     gitflow-avh
+    jdk
     translate-shell
     yarn
   )
@@ -60,6 +63,7 @@ prepareArchEnvGUI()
 {
   pkgs=(
     screenfetch
+    thunderbird
   )
   pacmanInstallPkgs
 
