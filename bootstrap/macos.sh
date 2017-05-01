@@ -47,8 +47,10 @@ prepareMacOSEnvCLI()
     httpstat
     imagemagick
     irssi
+    jq
     less
     make
+    midnight-commander
     mobile-shell
     mutt
     nano
@@ -138,6 +140,7 @@ prepareMacOSEnvGUI()
     hyperswitch
     iina
     karabiner
+    licecap
     noizio
     pandoc
     shadowsocksx
@@ -160,6 +163,7 @@ prepareMacOSEnvGUI()
     imagealpha
     imageoptim
     iterm2
+    java
     mamp
     postman
     smaller
@@ -183,6 +187,7 @@ prepareMacOSEnvGUI()
     skype
     slack
     telegram
+    thunderbird
     wechat
     whatsapp
 
@@ -192,7 +197,7 @@ prepareMacOSEnvGUI()
     sopcast
   )
 
-  brew install `join ' ' "${pkgs[@]}"`
+  brew cask install `join ' ' "${pkgs[@]}"`
   unset pkgs
 
   brew cask cleanup; brew cleanup; brew prune
