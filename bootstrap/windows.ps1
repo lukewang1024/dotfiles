@@ -1,7 +1,15 @@
 #Requires -RunAsAdministrator
 
+param (
+  [switch]$onlyCLI = $false,
+  [switch]$update = $false
+)
+
 function installChocolatey
 {
+  blankLines
+  'Install Chocolatey...'
+
   if ((Get-Command "chocolatey" -ErrorAction SilentlyContinue) -eq $null)
   {
     Set-ExecutionPolicy AllSigned
@@ -14,71 +22,89 @@ function installChocolatey
   }
 }
 
-function installChocolateyPackages
+function installCLIPackages
 {
+  blankLines
+  'Install CLI packages using Chocolatey...'
+
+  $pkgs = @(
+    'ag',
+    'aria2',
+    'chocolatey',
+    'cloc',
+    'docker',
+    'far',
+    'fzf',
+    'git',
+    'golang',
+    'gow',
+    'jdk8',
+    'jq',
+    'mc',
+    'nmap',
+    'nodejs',
+    'nvm',
+    'phantomjs',
+    'python',
+    'python2',
+    'ruby',
+    'sbt',
+    'sourcecodepro',
+    'vagrant',
+    'yarn',
+    'you-get'
+  )
+  $ofs = ' '
+  cinst -y "$pkgs"
+}
+
+function installGUIPackages
+{
+  blankLines
+  'Install GUI packages using Chocolatey...'
+
   $pkgs = @(
     '7zip',
-    'ack',
     'aimp',
     'altdrag',
-    'aria2',
     'atom',
     'autohotkey',
     'caesium.install',
     'calibre',
     'ccleaner',
     'charles',
-    'chocolatey',
     'chocolateygui',
     'chromium',
     'clover',
-    'docker',
     'doublecmd',
     'dropbox',
     'everything',
-    'far',
     'fiddler4',
     'filezilla',
     'firefox',
     'foobar2000',
     'foxitreader',
-    'fzf',
-    'git',
-    'golang',
     'googlechrome',
     'googledrive',
-    'gow',
     'hexchat',
     'intellijidea-community',
     'irfanview',
     'irfanviewplugins',
-    'jdk8',
-    'jq',
     'licecap',
-    'mc',
     'meld',
     'miktex',
     'mobaxterm',
     'nimbletext',
-    'nmap',
-    'nodejs',
-    'nvm',
     'paint.net',
     'pandoc',
-    'phantomjs',
     'pngoptimizer',
     'postman',
     'potplayer',
     'putty',
-    'python',
-    'python2',
     'rescuetime',
-    'ruby',
     'rufus',
-    'sbt',
     'skype',
     'slack',
-    'sourcecodepro',
     'sourcetree',
     'spacesniffer',
     'spotify',
@@ -89,7 +115,6 @@ function installChocolateyPackages
     'sysinternals',
     'telegram',
     'thunderbird',
-    'vagrant',
     'vcxsrv',
     'virtualbox',
     'visualstudiocode',
@@ -98,12 +123,9 @@ function installChocolateyPackages
     'windirstat',
     'winscp',
     'wox',
-    'xnviewmp',
-    'yarn',
-    'you-get'
+    'xnviewmp'
   )
   $ofs = ' '
-  cup -y all
   cinst -y "$pkgs"
 }
 
@@ -133,4 +155,13 @@ function blankLines($num = 3, $char = '.')
 
 applyWindowsDefenderExclusions
 installChocolatey
-installChocolateyPackages
+installCLIPackages
+
+if (!$onlyCLI) {
+  installGUIPackages
+}
+
+if ($update) {
+  'Update all packages using Chocolatey...'
+  cup -y all
+}

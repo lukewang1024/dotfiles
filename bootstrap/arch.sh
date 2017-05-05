@@ -16,7 +16,9 @@ prepareArchEnvCLI()
 {
   pkgs=(
     apache
+    cloc
     cmatrix
+    figlet
     fish
     fortune-mod
     fzf
@@ -38,6 +40,7 @@ prepareArchEnvCLI()
     python2-pip
     readline
     ruby
+    the_silver_searcher
     tmux
     unzip
     vim
@@ -51,6 +54,7 @@ prepareArchEnvCLI()
   pkgs=(
     gitflow-avh
     jdk
+    tldr-git
     translate-shell
     yarn
   )

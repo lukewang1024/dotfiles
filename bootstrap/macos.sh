@@ -11,12 +11,12 @@ prepareMacOSEnvCLI()
   brew upgrade
 
   pkgs=(
-    ack
     ansifilter
     aria2
     bash
     bash-completion
     binutils
+    cloc
     cmake
     cmatrix
     cmus
@@ -27,6 +27,7 @@ prepareMacOSEnvCLI()
     diffutils
     ed
     fasd
+    figlet
     file-formula
     findutils
     fish
@@ -61,7 +62,9 @@ prepareMacOSEnvCLI()
     rsync
     screenfetch
     shellcheck
+    the_silver_searcher
     tig
+    tldr
     tmate
     tmux
     tpp
