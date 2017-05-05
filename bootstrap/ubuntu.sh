@@ -41,12 +41,13 @@ prepareUbuntuEnvCLI()
   echo 'deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse' | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
 
   pkgs=(
-    ack-grep
     apt-fast
     aria2
     build-essential
+    cloc
     cmatrix
     fasd
+    figlet
     fish
     fortune-mod
     git
@@ -70,6 +71,7 @@ prepareUbuntuEnvCLI()
     ranger
     rxvt-unicode-256color
     shellcheck
+    silversearcher-ag
     software-properties-common
     stb-tester
     tig
