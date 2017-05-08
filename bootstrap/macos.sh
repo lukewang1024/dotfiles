@@ -17,11 +17,13 @@ prepareMacOSEnvCLI()
     bash-completion
     binutils
     cloc
+    cheat
     cmake
     cmatrix
     cmus
     coreutils
     cpanminus
+    cpulimit
     csshx
     curl
     diffutils
@@ -69,6 +71,7 @@ prepareMacOSEnvCLI()
     tmux
     tpp
     translate-shell
+    tree
     unzip
     w3m
     watch

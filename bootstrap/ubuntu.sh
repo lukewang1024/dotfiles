@@ -46,6 +46,7 @@ prepareUbuntuEnvCLI()
     build-essential
     cloc
     cmatrix
+    cpulimit
     fasd
     figlet
     fish
@@ -78,6 +79,7 @@ prepareUbuntuEnvCLI()
     tmate
     tmux
     tpp
+    tree
     vim
     w3m
     yarn
