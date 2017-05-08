@@ -18,6 +18,7 @@ prepareArchEnvCLI()
     apache
     cloc
     cmatrix
+    cpulimit
     figlet
     fish
     fortune-mod
@@ -42,6 +43,7 @@ prepareArchEnvCLI()
     ruby
     the_silver_searcher
     tmux
+    tree
     unzip
     vim
     w3m
@@ -52,6 +54,7 @@ prepareArchEnvCLI()
   pacmanInstallPkgs
 
   pkgs=(
+    cheat-git
     gitflow-avh
     jdk
     tldr-git

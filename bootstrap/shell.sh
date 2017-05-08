@@ -7,7 +7,7 @@ zgenSetup()
     git clone https://github.com/tarjoilija/zgen.git ~/.zgen
   else
     echo 'zgen already exists. Trying to update...'
-    cd ~/.zgen; git pull; cd - &> /dev/null
+    ( cd ~/.zgen; git pull )
   fi
   echo 'Done.'
 
@@ -27,7 +27,7 @@ zplugSetup()
     curl -sL --proto-redir -all,https https://zplug.sh/installer | zsh
   else
     echo 'zplug already exists. Trying to update...'
-    cd ~/.zplug; git pull; cd - &> /dev/null
+    ( cd ~/.zplug; git pull )
   fi
   echo 'Done.'
 
@@ -44,9 +44,10 @@ purePromptSetup()
   echo 'Installing pure prompt...'
   npm install -g pure-prompt
   mkdir -p ~/bin
-  cd "$(dirname $(nvm which current))/../lib/node_modules/pure-prompt"
-  ln -sf ./pure.zsh ~/bin/prompt_pure_setup
-  ln -sf ./async.zsh ~/bin/async
-  cd - &> /dev/null
+  ( \
+    cd "$(dirname $(nvm which current))/../lib/node_modules/pure-prompt"; \
+    ln -sf ./pure.zsh ~/bin/prompt_pure_setup; \
+    ln -sf ./async.zsh ~/bin/async; \
+  )
   echo 'Done.'
 }

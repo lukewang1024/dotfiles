@@ -37,15 +37,12 @@ installSage()
   sageDir="$HOME/.sage"
   if [ -d $sageDir ]; then
     echo 'sage already installed, try upgrade...'
-    cd "$sageDir"
-    git pull
+    ( cd "$sageDir"; git pull )
   else
     echo 'Install sage...'
     git clone https://github.com/svnpenn/sage.git "$sageDir"
-    cd "$sageDir"
-    ./install.sh
+    ( cd "$sageDir"; ./install.sh )
   fi
-  cd - &> /dev/null
   unset sageDir
   echo 'Done.'
 }
@@ -82,6 +79,7 @@ installCygwinPackages()
     the_silver_searcher
     tig
     tmux
+    tree
     vim
     w3m
     zip
