@@ -18,6 +18,7 @@ prepareArchEnvCLI()
     apache
     cloc
     cmatrix
+    cowsay
     cpulimit
     figlet
     fish
@@ -26,8 +27,10 @@ prepareArchEnvCLI()
     git
     go
     htop
+    imagemagick
     irssi
     jq
+    lolcat
     mc
     nghttp2
     nginx-mainline
@@ -48,6 +51,7 @@ prepareArchEnvCLI()
     vim
     w3m
     wget
+    you-get
     zip
     zsh
   )
@@ -69,8 +73,11 @@ prepareArchEnvCLI()
 prepareArchEnvGUI()
 {
   pkgs=(
+    chromium
+    firefox
     screenfetch
     thunderbird
+    wkhtmltopdf
   )
   pacmanInstallPkgs
 
