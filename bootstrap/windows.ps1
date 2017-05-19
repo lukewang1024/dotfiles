@@ -33,6 +33,8 @@ function installCLIPackages
     'chocolatey',
     'cloc',
     'docker',
+    'docker-compose',
+    'docker-machine',
     'far',
     'fzf',
     'git',
@@ -123,7 +125,9 @@ function installGUIPackages
     'windirstat',
     'winscp',
     'wox',
+    'xming',
     'xnviewmp'
+    'you-get'
   )
   $ofs = ' '
   cinst -y "$pkgs"
