@@ -43,6 +43,7 @@ prepareUbuntuEnvCLI()
   pkgs=(
     apt-fast
     aria2
+    axel
     build-essential
     cloc
     cmatrix
@@ -55,12 +56,14 @@ prepareUbuntuEnvCLI()
     git-flow
     gnupg2
     golang
+    httpie
     imagemagick
     irssi
     jq
     mc
     mosh
     mutt
+    mycli
     nmap
     oracle-java8-installer
     oracle-java8-set-default

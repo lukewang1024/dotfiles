@@ -13,6 +13,7 @@ prepareMacOSEnvCLI()
   pkgs=(
     ansifilter
     aria2
+    axel
     bash
     bash-completion
     binutils
@@ -47,6 +48,7 @@ prepareMacOSEnvCLI()
     go
     grep
     gzip
+    httpie
     httpstat
     imagemagick
     irssi
@@ -56,6 +58,7 @@ prepareMacOSEnvCLI()
     midnight-commander
     mobile-shell
     mutt
+    mycli
     nano
     ncurses
     netcat
@@ -64,6 +67,7 @@ prepareMacOSEnvCLI()
     rsync
     screenfetch
     shellcheck
+    spark
     the_silver_searcher
     tig
     tldr
@@ -140,12 +144,13 @@ prepareMacOSEnvGUI()
     caffeine
     calibre
     cheatsheet
+    controlplane
     day-o
     duet
     flashlight
     hyperswitch
     iina
-    karabiner
+    karabiner-elements
     licecap
     noizio
     pandoc

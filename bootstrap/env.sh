@@ -1,4 +1,5 @@
 source "$partial_dir/shell.sh"
+source "$partial_dir/pkg.sh"
 
 gitSetup()
 {
@@ -92,4 +93,6 @@ envSetup()
   rbenvSetup
   pyenvSetup
   zgenSetup
+
+  installCommonPackages
 }

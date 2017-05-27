@@ -16,6 +16,7 @@ prepareArchEnvCLI()
 {
   pkgs=(
     apache
+    axel
     cloc
     cmatrix
     cowsay
@@ -27,6 +28,7 @@ prepareArchEnvCLI()
     git
     go
     htop
+    httpie
     imagemagick
     irssi
     jq
@@ -61,6 +63,8 @@ prepareArchEnvCLI()
     cheat-git
     gitflow-avh
     jdk
+    mycli
+    sparklines-git
     tldr-git
     translate-shell
     yarn
