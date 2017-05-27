@@ -127,7 +127,6 @@ function installGUIPackages
     'wox',
     'xming',
     'xnviewmp'
-    'you-get'
   )
   $ofs = ' '
   cinst -y "$pkgs"
