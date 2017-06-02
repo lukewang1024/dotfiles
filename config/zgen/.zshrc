@@ -1,4 +1,4 @@
-source ~/dotfiles/config/shared/rc.sh
+source ~/.dotfiles/config/shared/rc.sh
 
 source ~/.zgen/zgen.zsh
 
