@@ -55,6 +55,7 @@ prepareMacOSEnvCLI()
     jq
     less
     make
+    mas
     midnight-commander
     mobile-shell
     mutt
@@ -63,6 +64,7 @@ prepareMacOSEnvCLI()
     ncurses
     netcat
     nmap
+    pandoc
     reattach-to-user-namespace
     rsync
     screenfetch
@@ -103,6 +105,25 @@ prepareMacOSEnvCLI()
 
 prepareMacOSEnvGUI()
 {
+  # MAS apps
+
+  pkgs=(
+    406056744  # Evernote
+    451108668  # QQ
+    568494494  # Pocket
+    747648890  # Telegram
+    784801555  # OneNote
+    803453959  # Slack
+    836500024  # WeChat
+    1147396723 # WhatsApp
+  )
+
+  mas install `join ' ' "${pkgs[@]}"`
+  mas upgrade
+  unset pkgs
+
+  # Cask packages
+
   brew tap caskroom/fonts
   brew update
 
@@ -147,28 +168,24 @@ prepareMacOSEnvGUI()
     controlplane
     day-o
     duet
-    flashlight
     hyperswitch
     iina
     karabiner-elements
     licecap
-    noizio
-    pandoc
+    pdfexpert
     shadowsocksx
     skim
     spectacle
     squirrel
     the-unarchiver
-    things
     toau
     ubersicht
     vnc-viewer
-    xtrafinder
 
     # Dev tools
     charles
     dash
-    dockertoolbox
+    docker
     fiddler
     filezilla
     imagealpha
@@ -184,26 +201,19 @@ prepareMacOSEnvGUI()
     virtualbox
 
     # Internet
-    anatine
     caprine
     chromium
     dropbox
-    evernote
     firefox
     google-chrome
     google-drive
     google-hangouts
-    qq
     ramme
     skype
-    slack
-    telegram
     thunderbird
-    wechat
-    whatsapp
 
     # Entertainment
-    battle-net
+    spotify
     openemu
     sopcast
   )

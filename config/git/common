@@ -6,7 +6,6 @@
 [color]
 	ui = auto
 [core]
-	excludesfile = ~/.dotfiles/dotfiles/tmpl/_gitignore
 	fscache = true
 	preloadindex = true
 	whitespace = trailing-space,space-before-tab
