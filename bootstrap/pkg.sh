@@ -33,6 +33,7 @@ installNpmPackages()
 
   pkgs=(
     bower
+    clipboard-cli
     create-react-app
     create-react-native-app
     egghead-downloader
