@@ -1,3 +1,4 @@
+export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export EDITOR='vim'
 
@@ -13,6 +14,7 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   export MANPATH=$HOME/.linuxbrew/share/man:$MANPATH
   export INFOPATH=$HOME/.linuxbrew/share/info:$INFOPATH
 fi
-export PATH=$HOME/.local/bin:$PATH
+which python2 &> /dev/null && export PATH=$(python2 -m site --user-base)/bin:$PATH
+which python3 &> /dev/null && export PATH=$(python3 -m site --user-base)/bin:$PATH
 export PATH=$HOME/.yarn/bin:$PATH
 export PATH=$HOME/bin:$PATH

@@ -92,6 +92,7 @@ envSetup()
   nvmSetup
   rbenvSetup
   pyenvSetup
+  tmuxSetup
   zgenSetup
 
   installCommonPackages

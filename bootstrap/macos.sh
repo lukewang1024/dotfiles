@@ -5,8 +5,6 @@ prepareMacOSEnvCLI()
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   xcode-select --install
 
-  brew tap homebrew/dupes
-
   brew update
   brew upgrade
 

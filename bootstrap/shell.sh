@@ -1,3 +1,11 @@
+tmuxSetup()
+{
+  blankLines
+  print 'Symlinking tmux config files...'
+  backupThenSymlink "$config_dir/tmux/.tmux.conf" ~/.tmux.conf
+  echo 'Done.'
+}
+
 zgenSetup()
 {
   blankLines
