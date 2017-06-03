@@ -93,6 +93,7 @@ envSetup()
   rbenvSetup
   pyenvSetup
   tmuxSetup
+  tigSetup
   zgenSetup
 
   installCommonPackages

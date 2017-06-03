@@ -2,8 +2,10 @@ source "$partial_dir/env.sh"
 
 prepareMacOSEnvCLI()
 {
-  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-  xcode-select --install
+  which brew &> /dev/null || ( \
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+    xcode-select --install \
+  )
 
   brew update
   brew upgrade

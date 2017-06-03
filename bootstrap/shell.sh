@@ -1,8 +1,16 @@
 tmuxSetup()
 {
   blankLines
-  print 'Symlinking tmux config files...'
+  printf 'Symlinking tmux config files... '
   backupThenSymlink "$config_dir/tmux/.tmux.conf" ~/.tmux.conf
+  echo 'Done.'
+}
+
+tigSetup()
+{
+  blankLines
+  printf 'Symlinking .tigrc... '
+  backupThenSymlink "$config_dir/tig/.tigrc" ~/.tigrc
   echo 'Done.'
 }
 
