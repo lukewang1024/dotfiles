@@ -10,7 +10,7 @@ prepareMacOSEnvCLI()
   brew update
   brew upgrade
 
-  pkgs=(
+  local pkgs=(
     ansifilter
     aria2
     axel
@@ -89,7 +89,6 @@ prepareMacOSEnvCLI()
   )
 
   brew install `join ' ' "${pkgs[@]}"`
-  unset pkgs
 
   # Packages with arguments
   brew install openssh --with-brewed-openssl
@@ -107,7 +106,7 @@ prepareMacOSEnvGUI()
 {
   # MAS apps
 
-  pkgs=(
+  local masPkgs=(
     406056744  # Evernote
     451108668  # QQ
     568494494  # Pocket
@@ -118,16 +117,15 @@ prepareMacOSEnvGUI()
     1147396723 # WhatsApp
   )
 
-  mas install `join ' ' "${pkgs[@]}"`
+  mas install `join ' ' "${masPkgs[@]}"`
   mas upgrade
-  unset pkgs
 
   # Cask packages
 
   brew tap caskroom/fonts
   brew update
 
-  pkgs=(
+  local caskPkgs=(
     # Quick-look plugins
     betterzipql
     qlcolorcode
@@ -218,8 +216,6 @@ prepareMacOSEnvGUI()
     sopcast
   )
 
-  brew cask install `join ' ' "${pkgs[@]}"`
-  unset pkgs
-
+  brew cask install `join ' ' "${caskPkgs[@]}"`
   brew cask cleanup; brew cleanup; brew prune
 }

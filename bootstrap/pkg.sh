@@ -9,7 +9,7 @@ installGemPackages()
 {
   echo 'Installing gems...'
 
-  pkgs=(
+  local pkgs=(
     boom
     gas
     lolcat
@@ -22,7 +22,6 @@ installGemPackages()
   done
 
   gem update `join ' ' "${pkgs[@]}"`
-  unset pkgs
 
   echo 'Done.'
 }
@@ -31,18 +30,20 @@ installNpmPackages()
 {
   echo 'Installing global npm packages...'
 
-  pkgs=(
+  local pkgs=(
     bower
     clipboard-cli
     create-react-app
     create-react-native-app
     egghead-downloader
+    ember-cli
     english-dictionary-cli
     gulp-cli
     hexo-cli
     leetcode-cli
     localtunnel
     nativescript
+    node-inspector
     now
     ntl
     pm2
@@ -58,7 +59,6 @@ installNpmPackages()
   )
 
   npm install -g `join ' ' "${pkgs[@]}"`
-  unset pkgs
 
   echo 'Done.'
 }
@@ -67,7 +67,7 @@ installPipPackages()
 {
   echo 'Installing pip packages...'
 
-  pkgs=(
+  local pkgs=(
     httpstat
     ici
     powerline-status
@@ -80,6 +80,4 @@ installPipPackages()
   for pkg in "${pkgs[@]}"; do
     pip install --user "$pkg"
   done
-
-  unset pkgs
 }
