@@ -34,7 +34,7 @@ setupCygwinEnv()
 
 installSage()
 {
-  sageDir="$HOME/.sage"
+  local sageDir="$HOME/.sage"
   if [ -d $sageDir ]; then
     echo 'sage already installed, try upgrade...'
     ( cd "$sageDir"; git pull )
@@ -43,7 +43,6 @@ installSage()
     git clone https://github.com/svnpenn/sage.git "$sageDir"
     ( cd "$sageDir"; ./install.sh )
   fi
-  unset sageDir
   echo 'Done.'
 }
 

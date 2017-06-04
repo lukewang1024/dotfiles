@@ -69,5 +69,8 @@ printUsage()
   echo '  cli - Prepare CLI environment only (default)'
   echo '  gui - Prepare GUI environment only'
   echo '  all - Prepare both environments'
+  echo
+  echo 'Other tasks:'
+  echo '  npmg - Install global npm packages (in case of version switch in nvm)'
   exit 1
 }
