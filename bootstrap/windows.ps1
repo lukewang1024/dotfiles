@@ -38,6 +38,7 @@ function installCLIPackages
     'far',
     'fzf',
     'git',
+    'git-lfs',
     'golang',
     'gow',
     'jdk8',

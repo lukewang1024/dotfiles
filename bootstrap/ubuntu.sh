@@ -32,6 +32,9 @@ prepareUbuntuEnvCLI()
   )
   ubuntuAddPPAs
 
+  # For git-lfs
+  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+
   # For Yarn
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
@@ -54,6 +57,7 @@ prepareUbuntuEnvCLI()
     fortune-mod
     git
     git-flow
+    git-lfs
     gnupg2
     golang
     httpie
