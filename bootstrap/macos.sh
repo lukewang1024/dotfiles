@@ -40,6 +40,7 @@ prepareMacOSEnvCLI()
     git
     git-extras
     git-flow
+    git-lfs
     gnu-indent
     gnu-sed
     gnu-tar
@@ -54,6 +55,7 @@ prepareMacOSEnvCLI()
     irssi
     jq
     less
+    mackup
     make
     mas
     midnight-commander
@@ -108,6 +110,7 @@ prepareMacOSEnvGUI()
 
   local masPkgs=(
     406056744  # Evernote
+    441258766  # Magnet
     451108668  # QQ
     568494494  # Pocket
     747648890  # Telegram
@@ -123,6 +126,7 @@ prepareMacOSEnvGUI()
   # Cask packages
 
   brew tap caskroom/fonts
+  brew tap dteoh/sqa # Slow Quit Apps
   brew update
 
   local caskPkgs=(
@@ -166,19 +170,23 @@ prepareMacOSEnvGUI()
     controlplane
     day-o
     duet
+    hammerspoon
     hyperswitch
     iina
     karabiner-elements
     licecap
     pdfexpert
+    rescuetime
     shadowsocksx
     skim
+    slowquitapps
     spectacle
     squirrel
     the-unarchiver
     toau
     ubersicht
     vnc-viewer
+    whatpulse
 
     # Dev tools
     charles
@@ -197,6 +205,7 @@ prepareMacOSEnvGUI()
     vagrant
     vagrant-manager
     virtualbox
+    zeplin
 
     # Internet
     caprine

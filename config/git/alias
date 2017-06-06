@@ -1,98 +1,110 @@
 [alias]
-  st = status -sb
-  ci = commit -v
-  cp = cherry-pick
-  br = branch
-  co = checkout
-  mg = merge
-  rb = rebase
-  cl = clone
-  ft = fetch
-  df = diff --word-diff
-  dc = diff --cached
-  who = shortlog -s --
   aa = add -A
-  unstage = reset HEAD --
-  ca = commit -am
   amend = commit --amend
-  regret = reset --soft HEAD~1
-  untrack = rm --cache --
-  fa = fetch --all
-  fo = fetch origin
-  fu = fetch upstream
-  fb = fetch backup
-  new = !sh -c \"git log $1@{1}..$1@{0} \"$@\"\"
-  up = pull --rebase --autostash
-  ps = push --follow-tags
-  po = push origin --follow-tags
-  pu = push upstream --follow-tags
-  pb = push backup --follow-tags
-  dfname = diff --name-status -r
+  assume = update-index --assume-unchanged
+  assumeall = !git st -s | awk {print
+  assumed = !git ls-files -v | grep ^h | cut -c 3-
+  bcl = "!f() { git branch --merged ${1-master} | grep -vE \" ${1-master}$| master$| develop$\" | xargs -r git branch -d; }; f"
+  bclg = "!f() { git branch --merged ${1-master} | grep -vE \" ${1-master}$| master$| develop$\" | gxargs -r git branch -d; }; f"
+  br = branch
+  ca = commit -am
+  ci = commit -v
+  cl = clone
+  co = checkout
+  cp = cherry-pick
+  dc = diff --cached
   dcname = diff --cached --name-status -r
-  dfstat = diff --stat -r
   dcstat = diff --cached --stat -r
+  del = log --diff-filter=D --
+  df = diff --word-diff
   dfl = !sh -c \"git diff HEAD~$1 HEAD\" -
+  dfname = diff --name-status -r
+  dfstat = diff --stat -r
   dl = !git ll -1
   dlc = diff --cached HEAD^
-  lc = "!f() { git ll \"$1\"^..\"$1\"; }; f"
   dr = "!f() { git diff \"$1\"^..\"$1\"; }; f"
-  sortdiff = !sh -c \"git diff \"$@\" | grep \"^[+-]\" | sort --key=1.2 | uniq -u -s1\"
-  lg = log --date=local
-  le = log --oneline --decorate
-  fl = log -u
-  ls = log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate
-  ll = log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --numstat
-  lnc = log --pretty=format:\"%h\\\\ %s\\\\ [%cn]\"
-  lds = log --pretty=format:\"%C(yellow)%h\\\\ %ad%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --date=short
-  ld = log --pretty=format:\"%C(yellow)%h\\\\ %ad%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --date=relative
-  lff = log ORIG_HEAD.. --stat --no-merges
-  del = log --diff-filter=D --
-  last = !sh -c \"git log -${1:-1} HEAD\" -
-  sm = !sh -c \"git log --all --grep=$1\" -
-  tree = forest --pretty=format:\"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s\" --style=15 --reverse
-  lgt1 = log --graph --abbrev-commit --decorate --date=relative --format=format:\"%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)\" --all
-  lgt2 = log --graph --abbrev-commit --decorate --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n\"\"          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)\" --all
-  lgt = !git lgt1
   f = !git ls-files | grep -i
+  fa = fetch --all
+  fb = fetch backup
+  ff = flow feature
+  ffc = flow feature checkout
+  fff = flow feature finish
+  ffp = flow feature publish
+  ffs = flow feature start
+  fhf = flow hotfix finish
+  fhs = flow hotfix start
+  fl = log -u
+  fo = fetch origin
+  fr = flow release
+  frf = flow release finish
+  frp = flow release publish
+  frs = flow release start
+  ft = fetch
+  fu = fetch upstream
   gr = grep -Ii
   gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
-  assume = update-index --assume-unchanged
-  unassume = update-index --no-assume-unchanged
-  assumed = !git ls-files -v | grep ^h | cut -c 3-
-  unassumeall = !git assumed | xargs git update-index --no-assume-unchanged
-  assumeall = !git st -s | awk {print
+  la = !git config -l | grep alias | cut -c 7- | less
+  last = !sh -c \"git log -${1:-1} HEAD\" -
+  lc = "!f() { git ll \"$1\"^..\"$1\"; }; f"
   lcnt = !sh -c \"git ls-files | xargs wc -l\" -
+  ld = log --pretty=format:\"%C(yellow)%h\\\\ %ad%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --date=relative
+  lds = log --pretty=format:\"%C(yellow)%h\\\\ %ad%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --date=short
+  le = log --oneline --decorate
+  lff = log ORIG_HEAD.. --stat --no-merges
+  lg = log --date=local
+  lgt = !git lgt1
+  lgt1 = log --graph --abbrev-commit --decorate --date=relative --format=format:\"%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)\" --all
+  lgt2 = log --graph --abbrev-commit --decorate --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n\"\"          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)\" --all
+  ll = log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --numstat
+  lnc = log --pretty=format:\"%h\\\\ %s\\\\ [%cn]\"
+  ls = log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate
   lt = describe --tags --abbrev=0
+  mg = merge
+  new = !sh -c \"git log $1@{1}..$1@{0} \"$@\"\"
   ours = "!f() { git co --ours $@ && git add $@; }; f"
-  theirs = "!f() { git co --theirs $@ && git add $@; }; f"
-  sl = stash list
-  ss = stash save
-  sp = stash pop
-  sa = !sh -c \"git stash apply stash@{${1:-0}}\" -
-  sd = !sh -c \"git stash drop stash@{${1:-0}}\" -
-  sh = !sh -c \"git stash show -p stash@{${1:-0}}\" -
+  pb = push backup --follow-tags
+  po = push origin --follow-tags
+  ps = push --follow-tags
+  pu = push upstream --follow-tags
+  rabb = "!f() { git remote add $1 https://bitbucket.org/$2.git; }; f"
+  ragh = "!f() { git remote add $1 https://github.com/$2.git; }; f"
+  rb = rebase
+  regret = reset --soft HEAD~1
   rst = reset
   rst1 = reset HEAD^
   rst2 = reset HEAD^^
   rsth = reset --hard
   rsth1 = reset HEAD^ --hard
   rsth2 = reset HEAD^^ --hard
-  ff = flow feature
-  ffs = flow feature start
-  ffc = flow feature checkout
-  fff = flow feature finish
-  ffp = flow feature publish
-  fr = flow release
-  frs = flow release start
-  frf = flow release finish
-  frp = flow release publish
-  fhs = flow hotfix start
-  fhf = flow hotfix finish
-  svnr = svn rebase
+  sa = !sh -c \"git stash apply stash@{${1:-0}}\" -
+  sba = "!f() { git subtree add --prefix $2 $1 master --squash; }; f"
+  sd = !sh -c \"git stash drop stash@{${1:-0}}\" -
+  sh = !sh -c \"git stash show -p stash@{${1:-0}}\" -
+  sl = stash list
+  sm = !sh -c \"git log --all --grep=$1\" -
+  sortdiff = !sh -c \"git diff \"$@\" | grep \"^[+-]\" | sort --key=1.2 | uniq -u -s1\"
+  sp = stash pop
+  ss = stash save
+  st = status -sb
   svnd = svn dcommit
   svnl = svn log --oneline --show-commit
-  la = !git config -l | grep alias | cut -c 7- | less
-  bclean = "!f() { git branch --merged ${1-master} | grep -vE \" ${1-master}$| master$| develop$\" | xargs -r git branch -d; }; f"
-  ragh = "!f() { git remote add $1 https://github.com/$2.git; }; f"
-  rabb = "!f() { git remote add $1 https://bitbucket.org/$2.git; }; f"
-  sba = "!f() { git subtree add --prefix $2 $1 master --squash; }; f"
+  svnr = svn rebase
+  theirs = "!f() { git co --theirs $@ && git add $@; }; f"
+  tig-compare-commits = "!f() { \
+    echo Checking branch existence; \
+    if [[ $(git branch --list temp-compare-base) != \"\" ]]; then\
+      echo Branch exists, comparing with $1; \
+      git difftool -d temp-compare-base..$1; \
+      git branch --delete temp-compare-base; \
+    else \
+      echo Creating initial branch at $1; \
+      git branch temp-compare-base $1; \
+    fi;\
+  };"
+  tree = forest --pretty=format:\"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s\" --style=15 --reverse
+  unassume = update-index --no-assume-unchanged
+  unassumeall = !git assumed | xargs git update-index --no-assume-unchanged
+  unstage = reset HEAD --
+  untrack = rm --cache --
+  up = pull --rebase --autostash
+  who = shortlog -s --

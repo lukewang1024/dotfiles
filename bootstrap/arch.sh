@@ -62,6 +62,7 @@ prepareArchEnvCLI()
   pkgs=(
     cheat-git
     gitflow-avh
+    git-lfs
     jdk
     mycli
     sparklines-git

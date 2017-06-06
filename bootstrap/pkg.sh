@@ -46,6 +46,7 @@ installNpmPackages()
     node-inspector
     now
     ntl
+    opn-cli
     pm2
     react-native-cli
     semantic-release-cli
