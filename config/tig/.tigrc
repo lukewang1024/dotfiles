@@ -52,8 +52,8 @@ bind generic C !git commit -v
 bind generic + !git commit --amend
 
 # less-like page scrolling
-bind generic <Ctrl-f> scroll-page-down
-bind generic <Ctrl-b> scroll-page-up
+bind generic <Ctrl-F> scroll-page-down
+bind generic <Ctrl-B> scroll-page-up
 
 # Open the commit on Github
 bind generic B @sh -c "opn 'https://'$(git remote -v | grep -Eo 'github.com[:/][^.]+' | head -1 | tr : /)'/commit/%(commit)'"
@@ -80,7 +80,7 @@ bind main ! !git revert %(commit)
 bind main B !git rebase -i %(commit)
 
 # Tag the selected commit
-bind main T !@git tag %(prompt Tag name: ) %(commit)
+bind main T !@git tag %(prompt) %(commit)
 
 # Compare selected commit in log view (main view) with its parent
 bind main <F4> !git difftool -d %(commit)^!
@@ -169,9 +169,9 @@ bind status <F4> !sh -c "git difftool -y \"$(git rev-parse --show-toplevel)/%(fi
 bind status P !git add --patch %(file)
 
 # Add selected file to .gitignore and open vim for additional changes
-bind status <Ctrl-r> !sh -c "echo %(file) >> .gitignore && vi .gitignore"
+bind status <Ctrl-R> !sh -c "echo %(file) >> .gitignore && vi .gitignore"
 
-bind status <Ctrl-R> !@git reset HEAD %(file)
+bind status <Ctrl-D> !@git reset HEAD %(file)
 bind status A !@git commit --amend
 
 #########
