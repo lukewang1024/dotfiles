@@ -63,6 +63,12 @@ case $1 in
     subroutines+=('installNpmPackages')
     ;;
 
+  'test')
+    echo 'For development quick testing purpose.'
+    # source "$partial_dir/xxx.sh"
+    # subroutines+=('xxx')
+    ;;
+
   *)
     printUsage
     ;;

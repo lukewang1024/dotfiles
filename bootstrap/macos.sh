@@ -30,6 +30,7 @@ prepareMacOSEnvCLI()
     diffutils
     ed
     fasd
+    ffmpeg
     figlet
     file-formula
     findutils
@@ -67,12 +68,14 @@ prepareMacOSEnvCLI()
     netcat
     nmap
     pandoc
+    phantomjs
     reattach-to-user-namespace
     rsync
     screenfetch
     shellcheck
     spark
     the_silver_searcher
+    thefuck
     tig
     tldr
     tmate
@@ -117,6 +120,7 @@ prepareMacOSEnvGUI()
     784801555  # OneNote
     803453959  # Slack
     836500024  # WeChat
+    926036361  # LastPass
     1147396723 # WhatsApp
   )
 
@@ -149,7 +153,6 @@ prepareMacOSEnvGUI()
     # Editors
     atom
     macdown
-    mactex
     macvim
     meld
     sublime-text
@@ -157,17 +160,12 @@ prepareMacOSEnvGUI()
     visual-studio-code
 
     # Utilities
-    1password
     alfred
-    amethyst
     appcleaner
-    bartender
-    bettertouchtool
     bitbar
     caffeine
     calibre
-    cheatsheet
-    controlplane
+    clipy
     day-o
     duet
     hammerspoon
@@ -180,7 +178,6 @@ prepareMacOSEnvGUI()
     shadowsocksx
     skim
     slowquitapps
-    spectacle
     squirrel
     the-unarchiver
     toau
@@ -227,4 +224,12 @@ prepareMacOSEnvGUI()
 
   brew cask install `join ' ' "${caskPkgs[@]}"`
   brew cask cleanup; brew cleanup; brew prune
+
+  setMacOSConfigs
+}
+
+setMacOSConfigs()
+{
+  syncConfigRepo ~/.hammerspoon https://github.com/lukewang1024/awesome-hammerspoon.git
+  backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
 }

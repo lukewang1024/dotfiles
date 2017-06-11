@@ -44,6 +44,23 @@ backupThenSymlink()
   symlink $1 $2
 }
 
+syncConfigRepo()
+{
+  local configPath=$1
+  local repoUrl=$2
+
+  if [[ -d $configPath ]]; then
+    if [[ -d $configPath/.git ]]; then
+      (cd $configPath && git pull)
+      return
+    fi
+    
+    backup $configPath
+  fi
+
+  git clone --depth 1 $repoUrl $configPath
+}
+
 blankLines()
 {
   echo
