@@ -171,6 +171,9 @@ bind status P !git add --patch %(file)
 # Add selected file to .gitignore and open vim for additional changes
 bind status <Ctrl-R> !sh -c "echo %(file) >> .gitignore && vi .gitignore"
 
+# View the file under the cursor by less
+bind status L !less %(file)
+
 bind status <Ctrl-D> !@git reset HEAD %(file)
 bind status A !@git commit --amend
 
