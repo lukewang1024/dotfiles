@@ -3,6 +3,7 @@ installCommonPackages()
   installNpmPackages
   installGemPackages
   installPipPackages
+  installOtherPackages
 }
 
 installGemPackages()
@@ -50,6 +51,7 @@ installNpmPackages()
     pm2
     react-native-cli
     semantic-release-cli
+    serve
     tldr
     trash
     typescript
@@ -82,3 +84,11 @@ installPipPackages()
     pip install --user "$pkg"
   done
 }
+
+installOtherPackages()
+{
+  printf 'Installing md2resume... '
+  curl -s https://raw.githubusercontent.com/there4/markdown-resume/master/bin/md2resume > "$HOME/bin/md2resume"
+  echo 'Done.'
+}
+

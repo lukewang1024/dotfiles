@@ -56,6 +56,7 @@ prepareMacOSEnvCLI()
     irssi
     jq
     less
+    m-cli
     mackup
     make
     mas

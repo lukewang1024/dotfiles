@@ -4,12 +4,8 @@ module_list = {
   "modes/clipshow",
   "modes/hsearch",
   "modes/indicator",
-  "widgets/analogclock",
   "widgets/aria2",
-  "widgets/calendar",
-  "widgets/hcalendar",
   "widgets/netspeed",
-  "widgets/timelapsed",
   "misc/bingdaily"
 }
 
