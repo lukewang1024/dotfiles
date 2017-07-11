@@ -42,6 +42,7 @@ installNpmPackages()
     gulp-cli
     hexo-cli
     leetcode-cli
+    loopback-cli
     localtunnel
     nativescript
     node-inspector

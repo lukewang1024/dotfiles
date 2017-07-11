@@ -90,6 +90,7 @@ prepareMacOSEnvCLI()
     wget
     yarn
     you-get
+    youtube-dl
     zsh
     zsh-completions
   )
@@ -169,6 +170,7 @@ prepareMacOSEnvGUI()
     clipy
     day-o
     duet
+    go2shell
     hammerspoon
     hyperswitch
     iina
@@ -198,6 +200,7 @@ prepareMacOSEnvGUI()
     java
     mamp
     postman
+    sequel-pro
     smaller
     sourcetree
     vagrant
@@ -218,9 +221,10 @@ prepareMacOSEnvGUI()
     thunderbird
 
     # Entertainment
-    spotify
+    neteasemusic
     openemu
     sopcast
+    spotify
   )
 
   brew cask install `join ' ' "${caskPkgs[@]}"`
@@ -231,6 +235,6 @@ prepareMacOSEnvGUI()
 
 setMacOSConfigs()
 {
-  syncConfigRepo ~/.hammerspoon https://github.com/lukewang1024/awesome-hammerspoon.git
+  syncConfigRepo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon.git
   backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
 }

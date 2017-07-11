@@ -14,3 +14,5 @@ resizeextra_righthalf_keys = {{}, ""}
 resizeextra_fullscreen_keys = {{}, ""}
 resizeextra_fcenter_keys = {{}, ""}
 resizeextra_center_keys = {{}, ""}
+
+require("private/usb-keyboard")
