@@ -123,6 +123,7 @@ prepareMacOSEnvGUI()
     803453959  # Slack
     836500024  # WeChat
     926036361  # LastPass
+    1055511498 # Day One
     1147396723 # WhatsApp
   )
 
@@ -206,6 +207,7 @@ prepareMacOSEnvGUI()
     vagrant
     vagrant-manager
     virtualbox
+    wireshark
     zeplin
 
     # Internet

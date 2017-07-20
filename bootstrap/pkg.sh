@@ -34,8 +34,10 @@ installNpmPackages()
   local pkgs=(
     bower
     clipboard-cli
+    create-dmg
     create-react-app
     create-react-native-app
+    depcheck
     egghead-downloader
     ember-cli
     english-dictionary-cli
