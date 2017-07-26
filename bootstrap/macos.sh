@@ -123,8 +123,10 @@ prepareMacOSEnvGUI()
     803453959  # Slack
     836500024  # WeChat
     926036361  # LastPass
+    1012930195 # HandShaker
     1055511498 # Day One
     1147396723 # WhatsApp
+    1176895641 # Spark
   )
 
   mas install `join ' ' "${masPkgs[@]}"`
@@ -164,11 +166,14 @@ prepareMacOSEnvGUI()
 
     # Utilities
     alfred
+    android-file-transfer
     appcleaner
     bitbar
     caffeine
+    cakebrew
     calibre
     clipy
+    cyberduck
     day-o
     duet
     go2shell
@@ -176,6 +181,7 @@ prepareMacOSEnvGUI()
     hyperswitch
     iina
     karabiner-elements
+    keka
     licecap
     pdfexpert
     rescuetime
@@ -195,6 +201,7 @@ prepareMacOSEnvGUI()
     docker
     fiddler
     filezilla
+    horndis
     imagealpha
     imageoptim
     iterm2
@@ -215,12 +222,11 @@ prepareMacOSEnvGUI()
     chromium
     dropbox
     firefox
+    google-backup-and-sync
     google-chrome
-    google-drive
     google-hangouts
     ramme
     skype
-    thunderbird
 
     # Entertainment
     neteasemusic
@@ -239,4 +245,5 @@ setMacOSConfigs()
 {
   syncConfigRepo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon.git
   backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
+  backupThenSymlink "$config_dir/karabiner" ~/.config/karabiner
 }

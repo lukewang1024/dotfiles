@@ -32,6 +32,7 @@ installNpmPackages()
   echo 'Installing global npm packages...'
 
   local pkgs=(
+    @angular/cli
     bower
     clipboard-cli
     create-dmg
@@ -57,6 +58,7 @@ installNpmPackages()
     serve
     tldr
     trash
+    ts-node
     typescript
     updtr
     vue-cli

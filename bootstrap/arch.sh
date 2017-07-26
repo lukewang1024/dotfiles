@@ -21,6 +21,7 @@ prepareArchEnvCLI()
     cmatrix
     cowsay
     cpulimit
+    fasd
     figlet
     fish
     fortune-mod
