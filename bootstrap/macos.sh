@@ -124,7 +124,6 @@ prepareMacOSEnvGUI()
     836500024  # WeChat
     926036361  # LastPass
     1012930195 # HandShaker
-    1055511498 # Day One
     1147396723 # WhatsApp
     1176895641 # Spark
   )
@@ -229,6 +228,7 @@ prepareMacOSEnvGUI()
     skype
 
     # Entertainment
+    musixmatch
     neteasemusic
     openemu
     sopcast

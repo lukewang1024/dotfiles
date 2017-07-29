@@ -3,6 +3,7 @@ installCommonPackages()
   installNpmPackages
   installGemPackages
   installPipPackages
+  installCpanPackages
   installOtherPackages
 }
 
@@ -90,10 +91,28 @@ installPipPackages()
   done
 }
 
-installOtherPackages()
+installCpanPackages()
 {
-  printf 'Installing md2resume... '
-  curl -s https://raw.githubusercontent.com/there4/markdown-resume/master/bin/md2resume > "$HOME/bin/md2resume"
-  echo 'Done.'
+  echo 'Installing CPAN packages...'
+
+  local pkgs=(
+    Mozilla::CA
+    JSON
+  )
+
+  sudo cpanm install `join ' ' "${pkgs[@]}"`
 }
 
+installOtherPackages()
+{
+  installAnyScript md2resume https://raw.githubusercontent.com/there4/markdown-resume/master/bin/md2resume
+  installAnyScript hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
+}
+
+installAnyScript()
+{
+  printf "Installing $1 to $HOME/bin... "
+  curl -s "$2" > "$HOME/bin/$1"
+  chmod +x "$HOME/bin/$1"
+  echo 'Done.'
+}
