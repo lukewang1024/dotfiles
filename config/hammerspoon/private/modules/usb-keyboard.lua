@@ -1,6 +1,6 @@
 local KEYBOARD = {
-  "USB Keyboard",
-  "Mechanical Keyboard"
+  'USB Keyboard',
+  'Mechanical Keyboard'
 }
 
 function isExternalKeyboard(data)
@@ -29,16 +29,17 @@ end
 
 function usbDeviceCallback(data)
   if (isExternalKeyboard(data)) then
-    if (data.eventType == "added") then
-      hs.alert.show("External keyboard added")
+    if (data.eventType == 'added') then
+      hs.alert.show('External keyboard added')
       selectKarabinerProfile(1)
-    elseif (data.eventType == "removed") then
-      hs.alert.show("External keyboard removed")
+    elseif (data.eventType == 'removed') then
+      hs.alert.show('External keyboard removed')
       selectKarabinerProfile(0)
     end
   end
 end
 
+local hotkey = require 'hs.hotkey'
 local usbTable = hs.usb.attachedDevices()
 local hasExternal = false
 for i, usbDevice in pairs(usbTable) do
@@ -46,8 +47,10 @@ for i, usbDevice in pairs(usbTable) do
     hasExternal = true
   end
 end
-hs.alert.show("External keyboard "..(hasExternal and "connected" or "not exists"))
-selectKarabinerProfile(hasExternal and 1 or 0)
 
 local usbWatcher = hs.usb.watcher.new(usbDeviceCallback)
 usbWatcher:start()
+
+hotkey.bind(hyper, '-', function() selectKarabinerProfile(0) end)
+hotkey.bind(hyper, '=', function() selectKarabinerProfile(1) end)
+hotkey.bind(hyper, '0', function() selectKarabinerProfile(2) end)
