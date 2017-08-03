@@ -198,7 +198,6 @@ prepareMacOSEnvGUI()
     charles
     dash
     docker
-    fiddler
     filezilla
     horndis
     imagealpha
@@ -231,7 +230,6 @@ prepareMacOSEnvGUI()
     musixmatch
     neteasemusic
     openemu
-    sopcast
     spotify
   )
 
