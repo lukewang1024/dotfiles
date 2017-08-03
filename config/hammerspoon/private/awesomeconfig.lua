@@ -33,4 +33,4 @@ resizeextra_fcenter_keys = {{}, ''}
 resizeextra_center_keys = {{}, ''}
 
 require 'private/modules/launch'
-require 'private/modules/usb-keyboard'
+require 'private/modules/karabiner-profile-switcher'

@@ -49,6 +49,7 @@ setAppToggles(hyperCmd, {
   c = 'Calendar',
   e = 'Evernote',
   i = 'iTunes',
+  l = 'Musixmatch',
   m = 'Spotify',
   n = 'NeteaseMusic',
   o = 'Slack',
