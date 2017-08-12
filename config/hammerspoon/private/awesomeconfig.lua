@@ -5,7 +5,6 @@ module_list = {
   'modes/hsearch',
   'modes/indicator',
   'widgets/aria2',
-  'widgets/netspeed',
   'misc/bingdaily'
 }
 

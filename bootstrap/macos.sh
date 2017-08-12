@@ -68,6 +68,7 @@ prepareMacOSEnvCLI()
     ncurses
     netcat
     nmap
+    offline-imap
     pandoc
     phantomjs
     reattach-to-user-namespace
@@ -118,6 +119,7 @@ prepareMacOSEnvGUI()
     441258766  # Magnet
     451108668  # QQ
     568494494  # Pocket
+    585829637  # Todoist
     747648890  # Telegram
     784801555  # OneNote
     803453959  # Slack
@@ -179,11 +181,14 @@ prepareMacOSEnvGUI()
     hammerspoon
     hyperswitch
     iina
+    istat-menus
     karabiner-elements
     keka
     licecap
     pdfexpert
+    pdfsam-basic
     rescuetime
+    resilio-sync
     shadowsocksx
     skim
     slowquitapps
@@ -204,7 +209,6 @@ prepareMacOSEnvGUI()
     imageoptim
     iterm2
     java
-    mamp
     postman
     sequel-pro
     smaller
@@ -223,6 +227,7 @@ prepareMacOSEnvGUI()
     google-backup-and-sync
     google-chrome
     google-hangouts
+    onedrive
     ramme
     skype
 

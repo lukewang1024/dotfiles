@@ -47,15 +47,16 @@ EOPLUGINS
     zgen oh-my-zsh plugins/cygwin
   else # *nix
     zgen oh-my-zsh plugins/colorize
+    zgen oh-my-zsh plugins/docker
     zgen oh-my-zsh plugins/nvm
     zgen oh-my-zsh plugins/pyenv
     zgen oh-my-zsh plugins/rbenv
+    zgen oh-my-zsh plugins/vagrant
   fi
 
   if [[ $OSTYPE == *'darwin'* ]]; then
     zgen oh-my-zsh plugins/osx
     zgen oh-my-zsh plugins/brew
-    zgen oh-my-zsh plugins/brew-cask
   fi
 
   if [[ $OSTYPE == 'linux-gnu' ]]; then

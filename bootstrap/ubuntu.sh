@@ -69,6 +69,7 @@ prepareUbuntuEnvCLI()
     mutt
     mycli
     nmap
+    offlineimap
     oracle-java8-installer
     oracle-java8-set-default
     pandoc
