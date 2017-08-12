@@ -39,6 +39,7 @@ prepareArchEnvCLI()
     nginx-mainline
     nodejs
     npm
+    offlineimap
     openssh
     php
     python
