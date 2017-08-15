@@ -31,5 +31,9 @@ resizeextra_fullscreen_keys = {{}, ''}
 resizeextra_fcenter_keys = {{}, ''}
 resizeextra_center_keys = {{}, ''}
 
-require 'private/modules/launch'
+hyper = {'ctrl', 'alt', 'shift'}
+hyperCmd = {'ctrl', 'alt', 'cmd', 'shift'}
+
+require 'private/modules/app-launch-toggle'
 require 'private/modules/karabiner-profile-switcher'
+require 'private/modules/quick-screen-recording'

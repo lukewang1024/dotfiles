@@ -1,6 +1,3 @@
-hyper = {'ctrl', 'alt', 'shift'}
-hyperCmd = {'ctrl', 'alt', 'cmd', 'shift'}
-
 local hotkey = require 'hs.hotkey'
 local application = require 'hs.application'
 
@@ -26,9 +23,12 @@ setAppToggles(hyper, {
   d = 'Dictionary',
   e = 'PDF Expert',
   f = 'Firefox',
+  m = 'Medis',
   o = 'Microsoft OneNote',
   p = 'Pocket',
+  r = 'Reeder',
   s = 'Safari',
+  t = 'SourceTree',
   w = 'WeChat',
   [';'] = 'iTerm',
   [','] = 'System Preferences',
