@@ -124,6 +124,7 @@ prepareMacOSEnvGUI()
     784801555  # OneNote
     803453959  # Slack
     836500024  # WeChat
+    880001334  # Reeder 3
     926036361  # LastPass
     1012930195 # HandShaker
     1147396723 # WhatsApp
@@ -175,7 +176,6 @@ prepareMacOSEnvGUI()
     calibre
     clipy
     cyberduck
-    day-o
     duet
     go2shell
     hammerspoon
@@ -192,6 +192,7 @@ prepareMacOSEnvGUI()
     shadowsocksx
     skim
     slowquitapps
+    soundflower
     squirrel
     the-unarchiver
     toau

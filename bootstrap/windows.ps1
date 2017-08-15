@@ -75,6 +75,7 @@ function installGUIPackages
     'autohotkey',
     'caesium.install',
     'calibre',
+    'camstudio',
     'ccleaner',
     'charles',
     'chocolateygui',
