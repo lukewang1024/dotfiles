@@ -27,10 +27,22 @@ prepareUbuntuEnvCLI()
     ppa:jonathonf/vim         # latest vim
     ppa:pi-rho/dev            # latest tmux
     ppa:saiarcot895/myppa     # apt-fast
-    ppa:stb-tester/stb-tester # stb-tester
     ppa:webupd8team/java      # java
   )
   ubuntuAddPPAs
+
+  sudo apt install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+
+  # For Docker
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  sudo add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) \
+    stable"
 
   # For git-lfs
   curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
@@ -38,10 +50,6 @@ prepareUbuntuEnvCLI()
   # For Yarn
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-
-  # For MongoDB
-  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-  echo 'deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse' | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
 
   pkgs=(
     apt-fast
@@ -51,6 +59,7 @@ prepareUbuntuEnvCLI()
     cloc
     cmatrix
     cpulimit
+    docker-ce
     fasd
     figlet
     fish
@@ -68,6 +77,7 @@ prepareUbuntuEnvCLI()
     mosh
     mutt
     mycli
+    nano
     nmap
     offlineimap
     oracle-java8-installer
@@ -78,11 +88,10 @@ prepareUbuntuEnvCLI()
     python-software-properties
     python3-pip
     ranger
+    rsync
     rxvt-unicode-256color
     shellcheck
     silversearcher-ag
-    software-properties-common
-    stb-tester
     tig
     tmate
     tmux
@@ -90,10 +99,14 @@ prepareUbuntuEnvCLI()
     tree
     vim
     w3m
+    wget
     yarn
     zsh
   )
   ubuntuInstallPkgs
+
+  # Make sure default locale is available
+  sudo localedef -i en_US -f UTF-8 en_US.UTF-8
 
   envSetup
 }
@@ -106,12 +119,17 @@ prepareUbuntuEnvGUI()
   )
   ubuntuAddPPAs
 
+  # Sublime Text 3 (Stable)
+  wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
+  echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
+
   pkgs=(
     chromium-browser
     doublecmd-gtk
     meld
     oneko
     screenfetch
+    sublime-text
     zeal
   )
   ubuntuInstallPkgs
