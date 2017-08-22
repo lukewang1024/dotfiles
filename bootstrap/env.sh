@@ -60,7 +60,7 @@ nvmSetup()
 {
   blankLines
   echo 'Installing nvm...'
-  curl https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash
+  curl https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
   echo 'Done.'
 
   echo 'Installing latest LTS NodeJS...'

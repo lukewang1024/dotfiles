@@ -47,6 +47,7 @@ prepareArchEnvCLI()
     python2
     python2-pip
     readline
+    rsync
     ruby
     the_silver_searcher
     tmux

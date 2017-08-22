@@ -74,6 +74,7 @@ installCygwinPackages()
     python-setuptools
     python3
     python3-setuptools
+    rsync
     ruby
     the_silver_searcher
     tig
