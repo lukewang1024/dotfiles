@@ -92,9 +92,7 @@ prepareUbuntuEnvCLI()
     rxvt-unicode-256color
     shellcheck
     silversearcher-ag
-    tig
     tmate
-    tmux
     tpp
     tree
     vim
@@ -107,6 +105,16 @@ prepareUbuntuEnvCLI()
 
   # Make sure default locale is available
   sudo localedef -i en_US -f UTF-8 en_US.UTF-8
+
+  # Use LinuxBrew for latest version of tools
+  installLinuxBrew
+
+  local pkgs = (
+    gcc
+    tig
+    tmux
+  )
+  brew install `join ' ' "${pkgs[@]}"`
 
   envSetup
 }
