@@ -94,6 +94,7 @@ envSetup()
   pyenvSetup
   tmuxSetup
   tigSetup
+  sshSetup
   zgenSetup
 
   installCommonPackages

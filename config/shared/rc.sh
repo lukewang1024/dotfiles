@@ -10,9 +10,9 @@ export PATH=/usr/bin/core_perl:$PATH
 export PATH=/usr/local/bin:$PATH
 export MANPATH=/usr/local/man:$MANPATH
 if [[ $OSTYPE == 'linux-gnu' ]]; then
-  export PATH=$HOME/.linuxbrew/bin:$PATH
-  export MANPATH=$HOME/.linuxbrew/share/man:$MANPATH
-  export INFOPATH=$HOME/.linuxbrew/share/info:$INFOPATH
+  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+  export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"
+  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
 fi
 which python2 &> /dev/null && export PATH=$(python2 -m site --user-base)/bin:$PATH
 which python3 &> /dev/null && export PATH=$(python3 -m site --user-base)/bin:$PATH

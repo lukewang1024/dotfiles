@@ -14,6 +14,14 @@ tigSetup()
   echo 'Done.'
 }
 
+sshSetup()
+{
+  blankLines
+  printf 'Symlinking SSH config... '
+  backupThenSymlink "$config_dir/ssh/config" ~/.ssh/config
+  echo 'Done.'
+}
+
 zgenSetup()
 {
   blankLines

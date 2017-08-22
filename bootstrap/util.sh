@@ -68,6 +68,13 @@ blankLines()
   echo
 }
 
+installLinuxBrew()
+{
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
+  # Make sure brew can be found even with barebone PATH
+  PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+}
+
 # Print the usage of the script and exit
 printUsage()
 {
