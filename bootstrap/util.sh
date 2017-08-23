@@ -54,7 +54,7 @@ syncConfigRepo()
       (cd $configPath && git pull)
       return
     fi
-    
+
     backup $configPath
   fi
 
@@ -63,7 +63,6 @@ syncConfigRepo()
 
 blankLines()
 {
-  echo
   echo
   echo
 }
