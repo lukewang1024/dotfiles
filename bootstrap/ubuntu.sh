@@ -111,6 +111,8 @@ prepareUbuntuEnvCLI()
 
   local pkgs = (
     gcc
+    htop
+    openssh
     tig
     tmux
   )

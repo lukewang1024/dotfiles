@@ -19,6 +19,9 @@ sshSetup()
   blankLines
   printf 'Symlinking SSH config... '
   backupThenSymlink "$config_dir/ssh/config" ~/.ssh/config
+  local localConfig="$HOME/.ssh/config.local"
+  touch "$localConfig"
+  chmod 644 "$localConfig"
   echo 'Done.'
 }
 
