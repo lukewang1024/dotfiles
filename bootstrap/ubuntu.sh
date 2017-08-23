@@ -19,56 +19,80 @@ ubuntuInstallPkgs()
 
 prepareUbuntuEnvCLI()
 {
+  # Build tools
+  pkgs=(
+    apt-transport-https
+    build-essential
+    ca-certificates
+    curl
+    file
+    git
+    python-setuptools
+    ruby
+    software-properties-common
+  )
+  ubuntuInstallPkgs
+
   ppas=(
-    ppa:aacebedo/fasd         # fasd
-    ppa:aguignard/ppa         # latest tig
-    ppa:fish-shell/release-2  # fish shell
-    ppa:git-core/ppa          # latest git
-    ppa:jonathonf/vim         # latest vim
-    ppa:pi-rho/dev            # latest tmux
-    ppa:saiarcot895/myppa     # apt-fast
-    ppa:webupd8team/java      # java
+    ppa:aacebedo/fasd     # fasd
+    ppa:saiarcot895/myppa # apt-fast
+    ppa:webupd8team/java  # java
   )
   ubuntuAddPPAs
 
-  sudo apt install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    software-properties-common
-
-  # For Docker
+  # Docker
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   sudo add-apt-repository \
     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
     $(lsb_release -cs) \
     stable"
 
-  # For git-lfs
-  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-
-  # For Yarn
+  # Yarn
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 
   pkgs=(
     apt-fast
-    aria2
     axel
-    build-essential
     cloc
     cmatrix
     cpulimit
     docker-ce
     fasd
     figlet
-    fish
     fortune-mod
-    git
-    git-flow
-    git-lfs
     gnupg2
     golang
+    oracle-java8-installer
+    oracle-java8-set-default
+    python-dev
+    python-pip
+    python-software-properties
+    python3-pip
+    ranger
+    rxvt-unicode-256color
+    shellcheck
+    tmate
+    tpp
+    tree
+    w3m
+    wget
+    yarn
+    zsh
+  )
+  ubuntuInstallPkgs
+
+  # Use LinuxBrew for latest version of tools
+  installLinuxBrew
+
+  local pkgs = (
+    gcc
+    aria2
+    fish
+    git
+    git-flow-avh
+    git-lfs
+    htop
     httpie
     imagemagick
     irssi
@@ -80,43 +104,18 @@ prepareUbuntuEnvCLI()
     nano
     nmap
     offlineimap
-    oracle-java8-installer
-    oracle-java8-set-default
+    openssh
     pandoc
-    python-dev
-    python-pip
-    python-software-properties
-    python3-pip
-    ranger
     rsync
-    rxvt-unicode-256color
-    shellcheck
-    silversearcher-ag
-    tmate
-    tpp
-    tree
+    tig
+    the_silver_searcher
+    tmux
     vim
-    w3m
-    wget
-    yarn
-    zsh
   )
-  ubuntuInstallPkgs
+  brew install `join ' ' "${pkgs[@]}"`
 
   # Make sure default locale is available
   sudo localedef -i en_US -f UTF-8 en_US.UTF-8
-
-  # Use LinuxBrew for latest version of tools
-  installLinuxBrew
-
-  local pkgs = (
-    gcc
-    htop
-    openssh
-    tig
-    tmux
-  )
-  brew install `join ' ' "${pkgs[@]}"`
 
   envSetup
 }
