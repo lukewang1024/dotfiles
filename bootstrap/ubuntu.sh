@@ -1,4 +1,5 @@
 source "$partial_dir/env.sh"
+source "$partial_dir/linux.sh"
 
 ubuntuAddPPAs()
 {
@@ -54,7 +55,6 @@ prepareUbuntuEnvCLI()
   pkgs=(
     apt-fast
     axel
-    cloc
     cmatrix
     cpulimit
     docker-ce
@@ -62,16 +62,13 @@ prepareUbuntuEnvCLI()
     figlet
     fortune-mod
     gnupg2
-    golang
     oracle-java8-installer
     oracle-java8-set-default
     python-dev
     python-pip
     python-software-properties
     python3-pip
-    ranger
     rxvt-unicode-256color
-    shellcheck
     tmate
     tpp
     tree
@@ -82,42 +79,12 @@ prepareUbuntuEnvCLI()
   )
   ubuntuInstallPkgs
 
-  # Use LinuxBrew for latest version of tools
   installLinuxBrew
-
-  local pkgs = (
-    gcc
-    aria2
-    fish
-    git
-    git-flow-avh
-    git-lfs
-    htop
-    httpie
-    imagemagick
-    irssi
-    jq
-    mc
-    mosh
-    mutt
-    mycli
-    nano
-    nmap
-    offlineimap
-    openssh
-    pandoc
-    rsync
-    tig
-    the_silver_searcher
-    tmux
-    vim
-  )
-  brew install `join ' ' "${pkgs[@]}"`
-
-  # Make sure default locale is available
-  sudo localedef -i en_US -f UTF-8 en_US.UTF-8
+  installLinuxBrewPackages
 
   envSetup
+  fixENOSPC
+  fixLocale
 }
 
 prepareUbuntuEnvGUI()
