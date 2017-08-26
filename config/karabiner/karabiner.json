@@ -177,30 +177,6 @@
                         ]
                     },
                     {
-                        "description": "Change shift + delete to forward delete",
-                        "manipulators": [
-                            {
-                                "from": {
-                                    "key_code": "delete_or_backspace",
-                                    "modifiers": {
-                                        "mandatory": [
-                                            "shift"
-                                        ],
-                                        "optional": [
-                                            "caps_lock"
-                                        ]
-                                    }
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "delete_forward"
-                                    }
-                                ],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "Change fn + I/J/K/L to Arrow Keys",
                         "manipulators": [
                             {
@@ -285,7 +261,7 @@
             },
             "devices": [
                 {
-                    "disable_built_in_keyboard_if_exists": false,
+                    "disable_built_in_keyboard_if_exists": true,
                     "fn_function_keys": {},
                     "identifiers": {
                         "is_keyboard": true,

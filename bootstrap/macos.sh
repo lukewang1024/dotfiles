@@ -66,6 +66,7 @@ prepareMacOSEnvCLI()
     mycli
     nano
     ncurses
+    neovim
     netcat
     nmap
     offline-imap
