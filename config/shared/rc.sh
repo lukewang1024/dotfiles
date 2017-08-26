@@ -7,6 +7,7 @@ export EDITOR='vim'
 
 # PATH
 export PATH=/usr/bin/core_perl:$PATH
+export PATH=/usr/local/sbin:$PATH
 export PATH=/usr/local/bin:$PATH
 export MANPATH=/usr/local/man:$MANPATH
 if [[ $OSTYPE == 'linux-gnu' ]]; then

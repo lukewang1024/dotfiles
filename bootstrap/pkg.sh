@@ -34,6 +34,7 @@ installNpmPackages()
 
   local pkgs=(
     @angular/cli
+    @storybook/cli
     bower
     clipboard-cli
     create-dmg
@@ -45,6 +46,7 @@ installNpmPackages()
     english-dictionary-cli
     gulp-cli
     hexo-cli
+    http-server
     leetcode-cli
     loopback-cli
     localtunnel
@@ -55,6 +57,7 @@ installNpmPackages()
     opn-cli
     pm2
     react-native-cli
+    react-vr-cli
     semantic-release-cli
     serve
     tldr
