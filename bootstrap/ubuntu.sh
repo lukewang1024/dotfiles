@@ -48,6 +48,10 @@ prepareUbuntuEnvCLI()
     $(lsb_release -cs) \
     stable"
 
+  # Google Cloud SDK
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+
   # Yarn
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
@@ -62,6 +66,7 @@ prepareUbuntuEnvCLI()
     figlet
     fortune-mod
     gnupg2
+    google-cloud-sdk
     oracle-java8-installer
     oracle-java8-set-default
     python-dev

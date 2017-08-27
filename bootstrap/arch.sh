@@ -16,6 +16,7 @@ prepareArchEnvCLI()
 {
   pkgs=(
     apache
+    aws-cli
     axel
     cloc
     cmatrix
@@ -64,8 +65,9 @@ prepareArchEnvCLI()
 
   pkgs=(
     cheat-git
-    gitflow-avh
     git-lfs
+    gitflow-avh
+    google-cloud-sdk
     jdk
     mycli
     sparklines-git

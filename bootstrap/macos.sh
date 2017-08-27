@@ -1,5 +1,17 @@
 source "$partial_dir/env.sh"
 
+brewInstallPkgs()
+{
+  brew install `join ' ' "${pkgs[@]}"`
+  unset pkgs
+}
+
+caskInstallPkgs()
+{
+  brew cask install `join ' ' "${pkgs[@]}"`
+  unset pkgs
+}
+
 prepareMacOSEnvCLI()
 {
   which brew &> /dev/null || ( \
@@ -7,12 +19,12 @@ prepareMacOSEnvCLI()
     xcode-select --install \
   )
 
-  brew update
-  brew upgrade
+  brew update; brew upgrade
 
-  local pkgs=(
+  pkgs=(
     ansifilter
     aria2
+    awscli
     axel
     bash
     bash-completion
@@ -55,6 +67,7 @@ prepareMacOSEnvCLI()
     imagemagick
     irssi
     jq
+    kubectl
     less
     m-cli
     mackup
@@ -96,8 +109,7 @@ prepareMacOSEnvCLI()
     zsh
     zsh-completions
   )
-
-  brew install `join ' ' "${pkgs[@]}"`
+  brewInstallPkgs
 
   # Packages with arguments
   brew install openssh --with-brewed-openssl
@@ -106,7 +118,21 @@ prepareMacOSEnvCLI()
   brew install vim --with-lua
   brew install wdiff --with-gettext
 
-  brew cleanup; brew prune
+  brew tap caskroom/fonts && brew update
+
+  pkgs=(
+    # Fonts
+    font-source-code-pro
+    font-source-code-pro-for-powerline
+
+    # CLI tools
+    docker
+    google-cloud-sdk
+    vagrant
+  )
+  caskInstallPkgs
+
+  brew cask cleanup; brew cleanup; brew prune
 
   envSetup
 }
@@ -115,7 +141,7 @@ prepareMacOSEnvGUI()
 {
   # MAS apps
 
-  local masPkgs=(
+  local masApps=(
     406056744  # Evernote
     441258766  # Magnet
     451108668  # QQ
@@ -132,16 +158,15 @@ prepareMacOSEnvGUI()
     1176895641 # Spark
   )
 
-  mas install `join ' ' "${masPkgs[@]}"`
+  mas install `join ' ' "${masApps[@]}"`
   mas upgrade
 
   # Cask packages
 
-  brew tap caskroom/fonts
   brew tap dteoh/sqa # Slow Quit Apps
   brew update
 
-  local caskPkgs=(
+  local pkgs=(
     # Quick-look plugins
     betterzipql
     qlcolorcode
@@ -153,10 +178,6 @@ prepareMacOSEnvGUI()
     quicklook-json
     suspicious-package
     webpquicklook
-
-    # Fonts
-    font-source-code-pro
-    font-source-code-pro-for-powerline
 
     # Editors
     atom
@@ -204,7 +225,6 @@ prepareMacOSEnvGUI()
     # Dev tools
     charles
     dash
-    docker
     filezilla
     horndis
     imagealpha
@@ -215,7 +235,6 @@ prepareMacOSEnvGUI()
     sequel-pro
     smaller
     sourcetree
-    vagrant
     vagrant-manager
     virtualbox
     wireshark
@@ -239,8 +258,8 @@ prepareMacOSEnvGUI()
     openemu
     spotify
   )
+  caskInstallPkgs
 
-  brew cask install `join ' ' "${caskPkgs[@]}"`
   brew cask cleanup; brew cleanup; brew prune
 
   setMacOSConfigs

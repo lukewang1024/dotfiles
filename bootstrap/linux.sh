@@ -11,6 +11,7 @@ installLinuxBrewPackages()
   local pkgs = (
     gcc
     aria2
+    awscli
     cloc
     fish
     git
@@ -22,6 +23,7 @@ installLinuxBrewPackages()
     imagemagick
     irssi
     jq
+    kubectl
     mc
     mosh
     mutt
