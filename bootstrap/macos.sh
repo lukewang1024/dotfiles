@@ -232,6 +232,7 @@ prepareMacOSEnvGUI()
     iterm2
     java
     postman
+    robo-3t
     sequel-pro
     smaller
     sourcetree

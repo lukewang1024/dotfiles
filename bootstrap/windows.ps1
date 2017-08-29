@@ -111,6 +111,7 @@ function installGUIPackages
     'putty',
     'rescuetime',
     'resilio-sync-home',
+    'robo3t',
     'rufus',
     'skype',
     'slack',
