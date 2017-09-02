@@ -154,6 +154,7 @@ prepareMacOSEnvGUI()
     880001334  # Reeder 3
     926036361  # LastPass
     1012930195 # HandShaker
+    1059334054 # Jietu
     1147396723 # WhatsApp
     1176895641 # Spark
   )
@@ -193,7 +194,6 @@ prepareMacOSEnvGUI()
     android-file-transfer
     appcleaner
     bitbar
-    caffeine
     cakebrew
     calibre
     clipy
@@ -271,4 +271,14 @@ setMacOSConfigs()
   syncConfigRepo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon.git
   backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backupThenSymlink "$config_dir/karabiner" ~/.config/karabiner
+
+  installMacWeChatPlugin
+}
+
+installMacWeChatPlugin()
+{
+  echo 'Installing Mac WeChat plugin...'
+  git clone https://github.com/Sunnyyoung/WeChatTweak-macOS.git /tmp/WeChatTweak-macOS
+  (cd /tmp/WeChatTweak-macOS; sudo make install)
+  echo 'Done.'
 }

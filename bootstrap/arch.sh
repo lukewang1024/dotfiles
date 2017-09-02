@@ -86,7 +86,6 @@ prepareArchEnvGUI()
     chromium
     firefox
     screenfetch
-    thunderbird
     wkhtmltopdf
   )
   pacmanInstallPkgs
