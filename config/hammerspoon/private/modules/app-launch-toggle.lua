@@ -63,7 +63,6 @@ setAppToggles(hyperCmd, {
   ['\''] = 'MacVim',
   ['['] = 'Atom',
   [']'] = 'Visual Studio Code',
-  ['2'] = 'Thunderbird',
 })
 
 -- reload

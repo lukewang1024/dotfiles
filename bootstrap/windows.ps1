@@ -124,7 +124,6 @@ function installGUIPackages
     'switcheroo',
     'sysinternals',
     'telegram',
-    'thunderbird',
     'vcxsrv',
     'virtualbox',
     'visualstudiocode',
