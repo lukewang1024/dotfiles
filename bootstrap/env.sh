@@ -94,6 +94,7 @@ envSetup()
   pyenvSetup
   tmuxSetup
   tigSetup
+  vimSetup
   sshSetup
   zgenSetup
 
