@@ -14,6 +14,18 @@ tigSetup()
   echo 'Done.'
 }
 
+vimSetup()
+{
+  printf 'Symlinking .vimrc... '
+  backupThenSymlink "$config_dir/vim/.vimrc" ~/.vimrc
+  echo 'Done.'
+
+  echo 'Installing Vundle...'
+  syncConfigRepo ~/.vim/bundle/Vundle.vim https://github.com/gmarik/Vundle.vim
+  vim +PluginInstall +qall
+  echo 'Done.'
+}
+
 sshSetup()
 {
   blankLines
@@ -29,13 +41,7 @@ zgenSetup()
 {
   blankLines
   echo 'Setup zgen...'
-  if [ ! -d ~/.zgen ]; then
-    echo 'Installing zgen...'
-    git clone https://github.com/tarjoilija/zgen.git ~/.zgen
-  else
-    echo 'zgen already exists. Trying to update...'
-    ( cd ~/.zgen; git pull )
-  fi
+  syncConfigRepo ~/.zgen https://github.com/tarjoilija/zgen
   echo 'Done.'
 
   printf 'Symlinking .zshrc... '
@@ -49,13 +55,7 @@ zplugSetup()
 {
   blankLines
   echo 'Setup zplug...'
-  if [ ! -d ~/.zplug ]; then
-    echo 'Installing zplug...'
-    curl -sL --proto-redir -all,https https://zplug.sh/installer | zsh
-  else
-    echo 'zplug already exists. Trying to update...'
-    ( cd ~/.zplug; git pull )
-  fi
+  syncConfigRepo ~/.zplug https://github.com/zplug/zplug
   echo 'Done.'
 
   printf 'Symlinking .zshrc... '

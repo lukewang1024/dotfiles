@@ -268,7 +268,7 @@ prepareMacOSEnvGUI()
 
 setMacOSConfigs()
 {
-  syncConfigRepo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon.git
+  syncConfigRepo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
   backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backupThenSymlink "$config_dir/karabiner" ~/.config/karabiner
 

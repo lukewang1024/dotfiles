@@ -51,7 +51,7 @@ syncConfigRepo()
 
   if [[ -d $configPath ]]; then
     if [[ -d $configPath/.git ]]; then
-      (cd $configPath && git pull)
+      ( cd $configPath && git pull )
       return
     fi
 
