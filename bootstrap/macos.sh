@@ -122,8 +122,7 @@ prepareMacOSEnvCLI()
 
   pkgs=(
     # Fonts
-    font-source-code-pro
-    font-source-code-pro-for-powerline
+    font-sourcecodepro-nerd-font-mono
 
     # CLI tools
     docker
@@ -224,7 +223,6 @@ prepareMacOSEnvGUI()
 
     # Dev tools
     charles
-    dash
     filezilla
     horndis
     imagealpha
