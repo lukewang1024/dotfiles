@@ -17,3 +17,4 @@ local hotkey = require 'hs.hotkey'
 
 hotkey.bind(hyper, '-', function() selectKarabinerProfile(0) end)
 hotkey.bind(hyper, '=', function() selectKarabinerProfile(1) end)
+hotkey.bind(hyper, 'delete', function() selectKarabinerProfile(2) end)
