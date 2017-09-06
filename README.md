@@ -27,6 +27,8 @@ Other tasks:
   npmg - Install global npm packages (in case of version switch in nvm)
 ```
 
+Create a file in ~/.rc.custom for custom paths / aliases.
+
 ## What it does
 
 TBC

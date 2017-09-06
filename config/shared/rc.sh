@@ -22,3 +22,5 @@ export PATH=$HOME/bin:$PATH
 
 # Aliases
 alias cb=clipboard
+
+[ -f ~/.rc.custom ] && source ~/.rc.custom
