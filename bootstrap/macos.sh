@@ -126,6 +126,7 @@ prepareMacOSEnvCLI()
 
     # CLI tools
     docker
+    miniconda
     google-cloud-sdk
     vagrant
   )
