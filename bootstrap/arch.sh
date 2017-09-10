@@ -78,6 +78,7 @@ prepareArchEnvCLI()
   yaourtInstallPkgs
 
   envSetup
+  condaSetup
 }
 
 prepareArchEnvGUI()
