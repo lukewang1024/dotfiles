@@ -88,6 +88,7 @@ prepareUbuntuEnvCLI()
   installLinuxBrewPackages
 
   envSetup
+  condaSetup
   fixENOSPC
   fixLocale
 }

@@ -8,7 +8,7 @@ installLinuxBrew()
 
 installLinuxBrewPackages()
 {
-  local pkgs = (
+  local pkgs=(
     gcc
     aria2
     awscli
@@ -42,6 +42,12 @@ installLinuxBrewPackages()
     vim
   )
   brew install `join ' ' "${pkgs[@]}"`
+}
+
+condaSetup()
+{
+  curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh | bash
+  echo 'export PATH="$HOME/miniconda3/bin:$PATH"' >> ~/.rc.custom
 }
 
 fixENOSPC()
