@@ -48,6 +48,8 @@ condaSetup()
 {
   curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh | bash
   echo 'export PATH="$HOME/miniconda3/bin:$PATH"' >> ~/.rc.custom
+  # Use bash to avoid conda virtua-env resolve issue with my zsh config
+  echo 'set-option -g default-shell /bin/bash' >> ~/.tmux.conf.local
 }
 
 fixENOSPC()
