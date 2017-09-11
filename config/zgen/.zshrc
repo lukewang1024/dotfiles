@@ -32,6 +32,8 @@ if ! zgen saved; then
 
     zsh-users/zsh-history-substring-search
 
+    esc/conda-zsh-completion
+
     # completions
     zsh-users/zsh-completions src
 
@@ -75,3 +77,5 @@ EOPLUGINS
 
   zgen save
 fi
+
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
