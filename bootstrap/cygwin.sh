@@ -22,8 +22,7 @@ setupCygwinEnv()
   mkpasswd -c | sed -e 'sX/bashX/zshX' | tee -a /etc/passwd
 
   printf 'Create sudo wrapper for Cygwin... '
-  cp "$util_dir/cygwin/sudo" ~/bin/sudo
-  chmod +x ~/bin/sudo
+  backupThenSymlink "$util_dir/cygwin/sudo" ~/bin/sudo
   echo 'Done.'
 
   printf 'Making Cygwin ~ and Windows native USERPROFILE the same one... '

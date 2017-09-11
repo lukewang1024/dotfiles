@@ -86,6 +86,14 @@ pyenvSetup()
   echo 'Done.'
 }
 
+utilSetup()
+{
+  blankLines
+  printf 'Installing handy wrappers... '
+  backupThenSymlink "$util_dir/spark/pyspark-jupyter" ~/bin/pyspark-jupyter
+  echo 'Done.'
+}
+
 envSetup()
 {
   gitSetup
@@ -97,6 +105,7 @@ envSetup()
   vimSetup
   sshSetup
   zgenSetup
+  utilSetup
 
   installCommonPackages
 }
