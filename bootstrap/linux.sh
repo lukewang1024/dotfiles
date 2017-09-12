@@ -10,6 +10,7 @@ installLinuxBrewPackages()
 {
   local pkgs=(
     gcc
+    apache-spark
     aria2
     awscli
     cloc
@@ -42,17 +43,6 @@ installLinuxBrewPackages()
     vim
   )
   brew install `join ' ' "${pkgs[@]}"`
-}
-
-condaSetup()
-{
-  if [ $(uname -m) == x86_64 ]; then
-    curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh | bash
-  else
-    curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86.sh | bash
-  fi
-
-  echo 'export PATH="$HOME/miniconda3/bin:$PATH"' >> ~/.rc.custom
 }
 
 fixENOSPC()
