@@ -23,6 +23,7 @@ prepareMacOSEnvCLI()
 
   pkgs=(
     ansifilter
+    apache-spark
     aria2
     awscli
     axel
@@ -126,7 +127,6 @@ prepareMacOSEnvCLI()
 
     # CLI tools
     docker
-    miniconda
     google-cloud-sdk
     vagrant
   )

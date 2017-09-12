@@ -16,6 +16,7 @@ prepareArchEnvCLI()
 {
   pkgs=(
     apache
+    apache-spark
     aws-cli
     axel
     cloc
@@ -78,7 +79,6 @@ prepareArchEnvCLI()
   yaourtInstallPkgs
 
   envSetup
-  condaSetup
 }
 
 prepareArchEnvGUI()
