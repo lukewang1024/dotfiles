@@ -27,7 +27,8 @@ Other tasks:
   npmg - Install global npm packages (in case of version switch in nvm)
 ```
 
-Create a file in ~/.rc.custom for custom paths / aliases.
+- Create a file in `~/.rc.local` to override configs from `~/.dotfiles/config/shared/rc.sh`.
+- Create a file in `~/.zshrc.local` to override configs from `~/.zshrc`.
 
 ## What it does
 

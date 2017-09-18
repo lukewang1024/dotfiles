@@ -157,6 +157,7 @@ prepareMacOSEnvGUI()
     1059334054 # Jietu
     1147396723 # WhatsApp
     1176895641 # Spark
+    1278508951 # Trello
   )
 
   mas install `join ' ' "${masApps[@]}"`
@@ -199,6 +200,7 @@ prepareMacOSEnvGUI()
     clipy
     cyberduck
     duet
+    fantastical
     go2shell
     hammerspoon
     hyperswitch
@@ -212,6 +214,7 @@ prepareMacOSEnvGUI()
     rescuetime
     resilio-sync
     shadowsocksx
+    shifty
     skim
     slowquitapps
     soundflower

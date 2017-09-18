@@ -19,6 +19,7 @@ end
 
 setAppToggles(hyper, {
   a = 'Activity Monitor',
+  b = 'Sublime Text',
   c = 'Google Chrome',
   d = 'Dictionary',
   e = 'PDF Expert',
@@ -31,24 +32,26 @@ setAppToggles(hyper, {
   r = 'Reeder',
   s = 'Safari',
   t = 'Telegram',
+  v = 'Visual Studio Code',
   w = 'WeChat',
-  x = 'Finder',
   y = 'Skype',
+  z = 'Finder',
   [';'] = 'iTerm',
   [','] = 'System Preferences',
   ['/'] = 'Finder',
-  ['\''] = 'Sublime Text',
-  ['\\'] = 'Slack',
-  ['1'] = 'Todoist',
-  ['2'] = 'Spark',
-  ['3'] = 'Calendar',
+  ['`'] = 'iTerm',
+  ['1'] = 'Spark',
+  ['2'] = 'Todoist',
+  ['3'] = 'Fantastical',
   ['4'] = 'licecap',
 })
 
 -- hyperCmd application shortcuts
 setAppToggles(hyperCmd, {
+  a = 'Atom',
   b = 'Notes',
   e = 'Evernote',
+  g = 'SQLPro for Postgres',
   i = 'iTunes',
   l = 'Musixmatch',
   m = 'Medis',
@@ -57,14 +60,13 @@ setAppToggles(hyperCmd, {
   p = 'Postman',
   s = 'Spotify',
   t = 'SourceTree',
+  v = 'MacVim',
   w = 'WhatsApp',
-  y = 'Messages',
+  y = 'Slack',
   z = 'Zeplin',
   [';'] = 'Terminal',
   [','] = 'App Store',
-  ['\''] = 'MacVim',
-  ['['] = 'Atom',
-  [']'] = 'Visual Studio Code',
+  ['2'] = 'Trello',
 })
 
 -- reload
