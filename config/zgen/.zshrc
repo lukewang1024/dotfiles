@@ -1,5 +1,7 @@
 source ~/.dotfiles/config/shared/rc.sh
 
+export SHELL=zsh
+
 source ~/.zgen/zgen.zsh
 
 if ! zgen saved; then
