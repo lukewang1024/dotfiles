@@ -30,8 +30,8 @@ prepareMacOSEnvCLI()
     bash
     bash-completion
     binutils
-    cloc
     cheat
+    cloc
     cmake
     cmatrix
     cmus
@@ -75,7 +75,7 @@ prepareMacOSEnvCLI()
     make
     mas
     midnight-commander
-    mobile-shell
+    mosh
     mutt
     mycli
     nano
@@ -84,13 +84,18 @@ prepareMacOSEnvCLI()
     netcat
     nmap
     offline-imap
+    open-mpi
+    openssh
     pandoc
     phantomjs
+    python
+    python3
     reattach-to-user-namespace
     rsync
     screenfetch
     shellcheck
     spark
+    telnet
     the_silver_searcher
     thefuck
     tig
@@ -101,8 +106,10 @@ prepareMacOSEnvCLI()
     translate-shell
     tree
     unzip
+    vim
     w3m
     watch
+    wdiff
     wget
     yarn
     you-get
@@ -112,13 +119,6 @@ prepareMacOSEnvCLI()
   )
   brewInstallPkgs
 
-  # Packages with arguments
-  brew install openssh --with-brewed-openssl
-  brew install python --with-brewed-openssl
-  brew install python3 --with-brewed-openssl
-  brew install vim --with-lua
-  brew install wdiff --with-gettext
-
   brew tap caskroom/fonts && brew update
 
   pkgs=(
@@ -127,6 +127,8 @@ prepareMacOSEnvCLI()
 
     # CLI tools
     docker
+    dotnet
+    dotnet-sdk
     google-cloud-sdk
     vagrant
   )
@@ -211,7 +213,6 @@ prepareMacOSEnvGUI()
     licecap
     pdfexpert
     pdfsam-basic
-    rescuetime
     resilio-sync
     shadowsocksx
     shifty
@@ -223,7 +224,6 @@ prepareMacOSEnvGUI()
     toau
     ubersicht
     vnc-viewer
-    whatpulse
 
     # Dev tools
     charles

@@ -11,4 +11,6 @@ User git
 IdentityFile ~/.ssh/id_rsa
 
 Host *
+AddKeysToAgent yes
 UseRoaming no
+

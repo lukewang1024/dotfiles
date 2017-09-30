@@ -32,6 +32,7 @@ installLinuxBrewPackages()
     nano
     nmap
     offlineimap
+    open-mpi
     openssh
     pandoc
     ranger
