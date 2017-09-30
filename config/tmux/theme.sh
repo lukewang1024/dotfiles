@@ -39,3 +39,13 @@ else
   tmux set-window-option -g window-status-format ' #I #W ' # Default is '#I:#W#F'
   tmux set-window-option -g window-status-current-format ' #I #W ' # Default is '#I:#W#F'
 fi
+
+tmux set-option -g pane-active-border-style fg=colour166,bg=default   # 63
+tmux set-option -g pane-border-style fg=colour15,bg=default           # 235
+
+# Mode Info Colors - color of display shown on top-right in copy-mode, highlighting
+tmux set-window-option -g mode-style fg=black,bg=colour244
+
+# pane styles
+setw -g window-style 'bg=colour236' # bg color of inactive pane(s)
+setw -g window-active-style 'bg=colour234' # bg color of active pane

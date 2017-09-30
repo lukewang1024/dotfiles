@@ -15,7 +15,10 @@ installLinuxBrewPackages()
     awscli
     cloc
     fish
+    ghi
+    gist
     git
+    git-extras
     git-flow-avh
     git-lfs
     go

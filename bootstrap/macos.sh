@@ -51,9 +51,11 @@ prepareMacOSEnvCLI()
     fortune
     fzf
     gawk
+    ghi
+    gist
     git
     git-extras
-    git-flow
+    git-flow-avh
     git-lfs
     gnu-indent
     gnu-sed
