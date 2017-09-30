@@ -44,6 +44,7 @@ installNpmPackages()
     egghead-downloader
     ember-cli
     english-dictionary-cli
+    express-generator
     gulp-cli
     hexo-cli
     http-server
@@ -51,7 +52,6 @@ installNpmPackages()
     loopback-cli
     localtunnel
     nativescript
-    node-inspector
     now
     ntl
     opn-cli

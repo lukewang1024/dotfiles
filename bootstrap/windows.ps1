@@ -109,7 +109,6 @@ function installGUIPackages
     'postman',
     'potplayer',
     'putty',
-    'rescuetime',
     'resilio-sync-home',
     'robo3t',
     'rufus',
