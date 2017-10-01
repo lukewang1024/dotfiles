@@ -39,7 +39,7 @@ if ! zgen saved; then
     # completions
     zsh-users/zsh-completions src
 
-    # theme
+    # theme - pure
     mafredri/zsh-async
     sindresorhus/pure
 EOPLUGINS
@@ -76,6 +76,9 @@ EOPLUGINS
 
   # Plugin customizations
   ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+  PURE_PROMPT_SYMBOL=λ
+  PURE_GIT_DOWN_ARROW=▼
+  PURE_GIT_UP_ARROW=▲
 
   zgen save
 fi

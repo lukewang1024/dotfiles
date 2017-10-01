@@ -70,7 +70,7 @@ installNpmPackages()
     yo
   )
 
-  npm install -g `join ' ' "${pkgs[@]}"`
+  yarn global add `join ' ' "${pkgs[@]}"`
 
   echo 'Done.'
 }
