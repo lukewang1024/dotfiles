@@ -13,7 +13,7 @@ hspoon_list = {
   "KSheet",
   -- "SpeedMenu",
   -- "TimeFlow",
-  -- "UnsplashZ",
+  "UnsplashZ",
   "WinWin",
 }
 
@@ -42,7 +42,7 @@ hsupervisor_keys = {{"cmd", "shift", "ctrl"}, "Q"}
 hsreload_keys = {{"cmd", "shift", "ctrl"}, "R"}
 
 -- Toggle help panel of this configuration.
-hshelp_keys = {{"alt", "shift"}, "/"}
+hshelp_keys = {{"ctrl", "alt"}, "/"}
 
 -- aria2 RPC host address
 hsaria2_host = "http://localhost:6800/jsonrpc"
@@ -54,43 +54,43 @@ hsaria2_secret = "token"
 --------------------------------------------------------------------------------
 
 -- Window hints keybinding: Focuse to any window you want
-hswhints_keys = {"alt", "tab"}
+hswhints_keys = {{"ctrl", "alt"}, "J"}
 
 -- appM environment keybinding: Application Launcher
-hsappM_keys = {"alt", "A"}
+hsappM_keys = {{"ctrl", "alt"}, "A"}
 
 -- clipshowM environment keybinding: System clipboard reader
-hsclipsM_keys = {"alt", "C"}
+hsclipsM_keys = {{"ctrl", "alt"}, "C"}
 
 -- Toggle the display of aria2 frontend
-hsaria2_keys = {"alt", "D"}
+hsaria2_keys = {{"ctrl", "alt"}, "D"}
 
 -- Launch Hammerspoon Search
-hsearch_keys = {"alt", "G"}
+hsearch_keys = {{"ctrl", "alt"}, "G"}
 
 -- Read Hammerspoon and Spoons API manual in default browser
-hsman_keys = {"alt", "H"}
+hsman_keys = {{"ctrl", "alt"}, "H"}
 
 -- countdownM environment keybinding: Visual countdown
-hscountdM_keys = {"alt", "I"}
+hscountdM_keys = {{"ctrl", "alt"}, "I"}
 
 -- Lock computer's screen
-hslock_keys = {"alt", "L"}
+hslock_keys = {{"ctrl", "alt"}, "L"}
 
 -- resizeM environment keybinding: Windows manipulation
-hsresizeM_keys = {"alt", "R"}
+hsresizeM_keys = {{"ctrl", "alt"}, "R"}
 
 -- cheatsheetM environment keybinding: Cheatsheet copycat
-hscheats_keys = {"alt", "S"}
+hscheats_keys = {{"ctrl", "alt"}, "S"}
 
 -- Show digital clock above all windows
-hsaclock_keys = {"alt", "T"}
+hsaclock_keys = {{"ctrl", "alt"}, "T"}
 
 -- Type the URL and title of the frontmost web page open in Google Chrome or Safari.
-hstype_keys = {"alt", "V"}
+hstype_keys = {{"ctrl", "alt"}, "V"}
 
 -- Toggle Hammerspoon console
-hsconsole_keys = {"alt", "Z"}
+hsconsole_keys = {{"ctrl", "alt"}, "Z"}
 
 --------------------------
 --- Hyper key bindings ---

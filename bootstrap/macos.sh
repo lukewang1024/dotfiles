@@ -1,4 +1,5 @@
 source "$partial_dir/env.sh"
+source "$partial_dir/nix.sh"
 
 brewInstallPkgs()
 {
@@ -21,103 +22,60 @@ prepareMacOSEnvCLI()
 
   brew update; brew upgrade
 
+  installNixBrewPackages
+
   pkgs=(
     ansifilter
-    apache-spark
-    aria2
-    awscli
     axel
-    bash
-    bash-completion
     binutils
     cheat
-    cloc
     cmake
-    cmatrix
     cmus
     coreutils
     cpanminus
     cpulimit
     csshx
-    curl
     diffutils
     ed
-    fasd
     ffmpeg
     figlet
     file-formula
     findutils
-    fish
     fortune
-    fzf
     gawk
-    ghi
-    gist
-    git
-    git-extras
-    git-flow-avh
-    git-lfs
     gnu-indent
     gnu-sed
     gnu-tar
     gnu-which
     gnutls
-    go
     grep
     gzip
-    httpie
     httpstat
-    imagemagick
-    irssi
-    jq
-    kubectl
     less
     m-cli
     mackup
     make
     mas
-    midnight-commander
-    mosh
-    mutt
-    mycli
-    nano
     ncurses
     neovim
     netcat
     nmap
-    offline-imap
-    open-mpi
-    openssh
-    pandoc
     phantomjs
     python
     python3
     reattach-to-user-namespace
-    rsync
     screenfetch
-    shellcheck
     spark
     telnet
-    the_silver_searcher
     thefuck
-    tig
-    tldr
     tmate
-    tmux
     tpp
     translate-shell
     tree
     unzip
-    vim
     w3m
     watch
     wdiff
-    wget
-    yarn
-    you-get
-    youtube-dl
-    zsh
-    zsh-completions
   )
   brewInstallPkgs
 
@@ -222,6 +180,7 @@ prepareMacOSEnvGUI()
     slowquitapps
     soundflower
     squirrel
+    stretchly
     the-unarchiver
     toau
     ubersicht

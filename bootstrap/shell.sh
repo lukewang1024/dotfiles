@@ -69,7 +69,7 @@ purePromptSetup()
 {
   blankLines
   echo 'Installing pure prompt...'
-  npm install -g pure-prompt
+  yarn global add pure-prompt
   mkdir -p ~/bin
   ( \
     cd "$(dirname $(nvm which current))/../lib/node_modules/pure-prompt"; \
