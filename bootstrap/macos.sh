@@ -26,56 +26,42 @@ prepareMacOSEnvCLI()
 
   pkgs=(
     ansifilter
-    axel
-    binutils
-    cheat
-    cmake
+    apache-spark
+    cmatrix
     cmus
-    coreutils
     cpanminus
     cpulimit
     csshx
-    diffutils
-    ed
-    ffmpeg
+    extract_url
+    fasd
     figlet
-    file-formula
-    findutils
     fortune
+    fpp
     gawk
+    ghi
+    gist
     gnu-indent
     gnu-sed
     gnu-tar
     gnu-which
     gnutls
     grep
-    gzip
+    heroku
     httpstat
-    less
     m-cli
     mackup
-    make
     mas
-    ncurses
-    neovim
     netcat
-    nmap
-    phantomjs
-    python
-    python3
     reattach-to-user-namespace
     screenfetch
     spark
     telnet
-    thefuck
     tmate
     tpp
-    translate-shell
-    tree
-    unzip
-    w3m
-    watch
-    wdiff
+    urlview
+    yarn
+    zsh
+    zsh-completions
   )
   brewInstallPkgs
 
