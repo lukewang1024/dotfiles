@@ -10,10 +10,12 @@ installLinuxBrew()
 
 installLinuxBrewPackages()
 {
-  installNixBrewPackages
-
-  local pkgs=()
+  local pkgs=(
+    gcc
+  )
   brew install `join ' ' "${pkgs[@]}"`
+
+  installNixBrewPackages
 }
 
 fixENOSPC()

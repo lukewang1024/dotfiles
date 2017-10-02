@@ -1,58 +1,72 @@
 installNixBrewPackages()
 {
   local pkgs=(
-    gcc
-    apache-spark
     aria2
     awscli
+    axel
     bash
     bash-completion
+    binutils
+    cheat
     cloc
-    cmatrix
+    cmake
+    coreutils
     curl
-    extract_url
-    fasd
+    diffutils
+    ed
+    ffmpeg
+    file-formula
+    findutils
     fish
-    fpp
     fzf
-    ghi
-    gist
     git
     git-extras
     git-flow-avh
     git-lfs
     go
+    gzip
     htop
     httpie
     imagemagick
     irssi
     jq
-    kubectl
-    mc
+    kubernetes-cli
+    less
+    make
+    midnight-commander
     mosh
     mutt
     mycli
     nano
+    ncurses
+    neovim
     nmap
     offlineimap
     open-mpi
+    openshift-cli
     openssh
     pandoc
+    phantomjs
+    python
+    python3
     ranger
     rsync
     shellcheck
-    tig
     the_silver_searcher
+    thefuck
+    tig
     tldr
     tmux
-    urlview
+    translate-shell
+    tree
+    unzip
     vim
+    w3m
+    watch
+    wdiff
     wget
-    yarn
     you-get
     youtube-dl
-    zsh
-    zsh-completions
   )
   brew install `join ' ' "${pkgs[@]}"`
 }

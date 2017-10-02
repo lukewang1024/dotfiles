@@ -9,11 +9,9 @@ export EDITOR='vim'
 export PATH="/usr/bin/core_perl:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
-export MANPATH="/usr/local/man:$MANPATH"
 if [[ $OSTYPE == 'linux-gnu' ]]; then
+  export PATH="/home/linuxbrew/.linuxbrew/sbin:$PATH"
   export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-  export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"
-  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
 fi
 which python2 &> /dev/null && export PATH="$(python2 -m site --user-base)/bin:$PATH"
 which python3 &> /dev/null && export PATH="$(python3 -m site --user-base)/bin:$PATH"
@@ -24,4 +22,3 @@ export PATH="$HOME/bin:$PATH"
 alias cb=clipboard
 
 [ -f ~/.rc.local ] && source ~/.rc.local
-

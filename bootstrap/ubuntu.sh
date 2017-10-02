@@ -52,13 +52,15 @@ prepareUbuntuEnvCLI()
   curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
   echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 
+  # Heroku
+  wget -qO- https://cli-assets.heroku.com/install-ubuntu.sh | sh
+
   # Yarn
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 
   pkgs=(
     apt-fast
-    axel
     cmatrix
     cpulimit
     docker-ce
@@ -76,11 +78,7 @@ prepareUbuntuEnvCLI()
     rxvt-unicode-256color
     tmate
     tpp
-    tree
-    w3m
-    wget
     yarn
-    zsh
   )
   ubuntuInstallPkgs
 
