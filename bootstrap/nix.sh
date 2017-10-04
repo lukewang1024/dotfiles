@@ -25,7 +25,6 @@ installNixBrewPackages()
     git
     git-extras
     git-flow-avh
-    git-lfs
     go
     gzip
     htop

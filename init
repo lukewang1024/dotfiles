@@ -63,6 +63,16 @@ case $1 in
     subroutines+=('installNpmPackages')
     ;;
 
+  'zgen')
+    source "$partial_dir/shell.sh"
+    subroutines+=('zgenSetup')
+    ;;
+
+  'zplug')
+    source "$partial_dir/shell.sh"
+    subroutines+=('zplugSetup')
+    ;;
+
   'test')
     echo 'For development quick testing purpose.'
     # source "$partial_dir/xxx.sh"

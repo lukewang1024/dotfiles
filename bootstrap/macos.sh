@@ -44,6 +44,7 @@ prepareMacOSEnvCLI()
     gawk
     ghi
     gist
+    git-lfs
     gnu-indent
     gnu-sed
     gnu-tar
