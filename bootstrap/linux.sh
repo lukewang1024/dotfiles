@@ -10,8 +10,14 @@ installLinuxBrew()
 
 installLinuxBrewPackages()
 {
+  # Build tools
   local pkgs=(
+    bzip2
     gcc
+    openssl
+    readline
+    sqlite
+    xz
   )
   brew install `join ' ' "${pkgs[@]}"`
 

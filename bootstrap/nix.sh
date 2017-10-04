@@ -1,6 +1,7 @@
 installNixBrewPackages()
 {
   local pkgs=(
+    apache-spark
     aria2
     awscli
     axel
@@ -11,13 +12,15 @@ installNixBrewPackages()
     cloc
     cmake
     coreutils
-    curl
+    cpanminus
     diffutils
     ed
+    fasd
     ffmpeg
     file-formula
     findutils
     fish
+    fpp
     fzf
     git
     git-extras
@@ -67,6 +70,8 @@ installNixBrewPackages()
     wget
     you-get
     youtube-dl
+    zsh
+    zsh-completions
   )
   brew install `join ' ' "${pkgs[@]}"`
 }

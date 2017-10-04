@@ -50,6 +50,8 @@ setAppToggles(hyper, {
 setAppToggles(hyperCmd, {
   a = 'Atom',
   b = 'Notes',
+  c = 'Charles',
+  d = 'Kitematic (Beta)',
   e = 'Evernote',
   g = 'SQLPro for Postgres',
   i = 'iTunes',
