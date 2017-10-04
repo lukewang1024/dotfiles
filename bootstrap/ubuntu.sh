@@ -28,9 +28,20 @@ prepareUbuntuEnvCLI()
     curl
     file
     git
+    libbz2-dev
+    libncurses5-dev
+    libreadline-dev
+    libsqlite3-dev
+    libssl-dev
+    llvm
+    make
     python-setuptools
     ruby
     software-properties-common
+    tk-dev
+    wget
+    xz-utils
+    zlib1g-dev
   )
   ubuntuInstallPkgs
 

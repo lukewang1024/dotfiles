@@ -21,4 +21,16 @@ export PATH="$HOME/bin:$PATH"
 # Aliases
 alias cb=clipboard
 
+# Create per-user instance of ssh-agent
+ps -u $(whoami) | grep '[ ]ssh-agent' &> /dev/null
+if [ $? -ne 0 ]; then
+  eval $(ssh-agent)
+  ssh-add
+  echo "export SSH_AGENT_PID=$SSH_AGENT_PID" > ~/.agent-profile
+  echo "export SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> ~/.agent-profile
+else
+  source ~/.agent-profile
+fi
+trap 'ssh-agent -k; exit' 0
+
 [ -f ~/.rc.local ] && source ~/.rc.local

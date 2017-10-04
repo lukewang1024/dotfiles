@@ -22,21 +22,25 @@ prepareMacOSEnvCLI()
 
   brew update; brew upgrade
 
+  # Build tools
+  pkgs=(
+    openssl
+    readline
+    xz
+  )
+  brewInstallPkgs
+
   installNixBrewPackages
 
   pkgs=(
     ansifilter
-    apache-spark
     cmatrix
     cmus
-    cpanminus
     cpulimit
     csshx
     extract_url
-    fasd
     figlet
     fortune
-    fpp
     gawk
     ghi
     gist
@@ -60,8 +64,6 @@ prepareMacOSEnvCLI()
     tpp
     urlview
     yarn
-    zsh
-    zsh-completions
   )
   brewInstallPkgs
 
@@ -180,6 +182,7 @@ prepareMacOSEnvGUI()
     imageoptim
     iterm2
     java
+    kitematic
     postman
     robo-3t
     sequel-pro
