@@ -53,10 +53,12 @@ prepareMacOSEnvCLI()
     grep
     heroku
     httpstat
+    kubernetes-cli
     m-cli
     mackup
     mas
     netcat
+    phantomjs
     reattach-to-user-namespace
     screenfetch
     spark

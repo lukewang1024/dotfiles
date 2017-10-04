@@ -73,10 +73,11 @@ case $1 in
     subroutines+=('zplugSetup')
     ;;
 
-  'test')
-    echo 'For development quick testing purpose.'
-    # source "$partial_dir/xxx.sh"
-    # subroutines+=('xxx')
+  'run')
+    echo "Run '$3' in '$partial_dir/$2.sh'..."
+    echo
+    source "$partial_dir/$2.sh"
+    subroutines+=("$3")
     ;;
 
   *)
