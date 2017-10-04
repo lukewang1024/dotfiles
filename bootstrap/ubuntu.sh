@@ -90,6 +90,7 @@ prepareUbuntuEnvCLI()
     tmate
     tpp
     yarn
+    zsh
   )
   ubuntuInstallPkgs
 

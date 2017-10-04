@@ -55,7 +55,11 @@ zplugSetup()
 {
   blankLines
   echo 'Setup zplug...'
-  syncConfigRepo ~/.zplug https://github.com/zplug/zplug
+  if [ -d ~/.zplug ]; then
+    syncConfigRepo ~/.zplug https://github.com/zplug/zplug
+  else
+    curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
+  fi
   echo 'Done.'
 
   printf 'Symlinking .zshrc... '
@@ -70,11 +74,5 @@ purePromptSetup()
   blankLines
   echo 'Installing pure prompt...'
   yarn global add pure-prompt
-  mkdir -p ~/bin
-  ( \
-    cd "$(dirname $(nvm which current))/../lib/node_modules/pure-prompt"; \
-    ln -sf ./pure.zsh ~/bin/prompt_pure_setup; \
-    ln -sf ./async.zsh ~/bin/async; \
-  )
   echo 'Done.'
 }

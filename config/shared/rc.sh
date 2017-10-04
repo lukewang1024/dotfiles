@@ -20,6 +20,7 @@ export PATH="$HOME/bin:$PATH"
 
 # Aliases
 alias cb=clipboard
+alias sap='source ~/.agent-profile'
 
 # Create per-user instance of ssh-agent
 ps -u $(whoami) | grep '[ ]ssh-agent' &> /dev/null
