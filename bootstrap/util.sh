@@ -25,6 +25,9 @@ symlink()
     return
   fi
 
+  dir=$(dirname ${2:-.})
+  mkdir -p "$dir"
+
   if [[ -d $1 || "$OSTYPE" == 'darwin'* ]]; then
     args="-s"
   elif [[ "$OSTYPE" == 'linux-gnu' || "$OSTYPE" == 'cygwin' ]]; then
@@ -73,6 +76,7 @@ printUsage()
   echo './init [platform] [option]'
   echo
   echo 'List of platforms:'
+  echo
   echo '  macos | osx - MacOS'
   echo '  wsl         - Default WSL with Ubuntu (CLI only)'
   echo '  alwsl       - Custom WSL with Arch Linux (CLI only)'
@@ -87,6 +91,12 @@ printUsage()
   echo '  all - Prepare both environments'
   echo
   echo 'Other tasks:'
-  echo '  npmg - Install global npm packages (in case of version switch in nvm)'
+  echo
+  echo '  npmg  - Install global npm packages (in case of version switch in nvm)'
+  echo '  zgen  - Use zgen as preferred zsh plugin manager'
+  echo '  zplug - Use zplug as preferred zsh plugin manager'
+  echo '  run   - Run arbitrary function in any bootstrap scripts'
+  echo '    `./init run util printUsage` calls `printUsage` in `util.sh`'
+  echo
   exit 1
 }

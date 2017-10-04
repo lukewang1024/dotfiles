@@ -32,7 +32,6 @@ installNixBrewPackages()
     imagemagick
     irssi
     jq
-    kubernetes-cli
     less
     make
     midnight-commander
@@ -48,7 +47,6 @@ installNixBrewPackages()
     openshift-cli
     openssh
     pandoc
-    phantomjs
     python
     python3
     ranger
