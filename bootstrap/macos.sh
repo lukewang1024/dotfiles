@@ -1,15 +1,11 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/nix.sh"
 
-brewInstallPkgs()
-{
-  brew install `join ' ' "${pkgs[@]}"`
-  unset pkgs
-}
-
 caskInstallPkgs()
 {
-  brew cask install `join ' ' "${pkgs[@]}"`
+  for pkg in "${pkgs[@]}"; do
+    brew cask install "$pkg"
+  done
   unset pkgs
 }
 
