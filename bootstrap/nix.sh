@@ -1,6 +1,14 @@
+brewInstallPkgs()
+{
+  for pkg in "${pkgs[@]}"; do
+    brew install "$pkg"
+  done
+  unset pkgs
+}
+
 installNixBrewPackages()
 {
-  local pkgs=(
+  pkgs=(
     apache-spark
     aria2
     awscli
@@ -70,5 +78,5 @@ installNixBrewPackages()
     zsh
     zsh-completions
   )
-  brew install `join ' ' "${pkgs[@]}"`
+  brewInstallPkgs
 }

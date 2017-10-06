@@ -11,7 +11,7 @@ installLinuxBrew()
 installLinuxBrewPackages()
 {
   # Build tools
-  local pkgs=(
+  pkgs=(
     bzip2
     gcc
     openssl
@@ -19,7 +19,7 @@ installLinuxBrewPackages()
     sqlite
     xz
   )
-  brew install `join ' ' "${pkgs[@]}"`
+  brewInstallPkgs
 
   installNixBrewPackages
 }

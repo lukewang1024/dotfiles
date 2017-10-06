@@ -10,6 +10,7 @@ Plugin 'VundleVim/Vundle.vim'
 
 " Plugins
 Plugin 'scrooloose/nerdtree'
+Plugin 'wellle/targets.vim'
 Plugin 'Shougo/unite.vim'
 Plugin 'bling/vim-airline'
 Plugin 'terryma/vim-multiple-cursors'
@@ -25,3 +26,7 @@ call vundle#end()            " required
 filetype plugin indent on    " required
 
 " Put your non-Plugin stuff after this line
+set number         " show line numbers in vim
+set relativenumber " show relative line numbers
+set hlsearch       " highlight all matches
+
