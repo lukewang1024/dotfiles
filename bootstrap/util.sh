@@ -92,6 +92,7 @@ printUsage()
   echo
   echo 'Other tasks:'
   echo
+  echo '  basic - Only link rc files to $HOME'
   echo '  npmg  - Install global npm packages (in case of version switch in nvm)'
   echo '  zgen  - Use zgen as preferred zsh plugin manager'
   echo '  zplug - Use zplug as preferred zsh plugin manager'

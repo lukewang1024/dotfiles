@@ -110,3 +110,13 @@ envSetup()
 
   installCommonPackages
 }
+
+basicSetup()
+{
+  gitSetup
+  tmuxSetup
+  tigSetup
+  vimSetup
+  sshSetup
+  zgenSetup
+}

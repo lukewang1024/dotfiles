@@ -14,6 +14,11 @@ fi
 subroutines=()
 
 case $1 in
+  'basic')
+    source "$partial_dir/env.sh"
+    subroutines+=('basicSetup')
+    ;;
+
   'ubuntu' | 'wsl')
     source "$partial_dir/ubuntu.sh"
 

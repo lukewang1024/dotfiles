@@ -4,7 +4,6 @@ if ! zgen saved; then
   echo 'Creating a zgen save'
 
   source ~/.dotfiles/config/shared/rc.sh
-  export SHELL=zsh
 
   zgen oh-my-zsh
 
@@ -31,6 +30,7 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/urltools
     robbyrussell/oh-my-zsh plugins/yarn
 
+    supercrabtree/k
 
     # completions
     zsh-users/zsh-autosuggestions
@@ -71,16 +71,10 @@ EOPLUGINS
     fi
   fi
 
-  # These plugin needs to be loaded last and the order matters
+  # These plugin needs to be loaded last and THE ORDER MATTERS
   zgen load zsh-users/zsh-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
-
-  # Plugin customizations
-  ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-  ZSH_AUTOSUGGEST_USE_ASYNC=1
-  PURE_PROMPT_SYMBOL=λ
-  PURE_GIT_DOWN_ARROW=▼
-  PURE_GIT_UP_ARROW=▲
+  source ~/.dotfiles/config/shared/rc.zsh
 
   [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 

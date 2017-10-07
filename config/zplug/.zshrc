@@ -1,10 +1,8 @@
-source ~/.dotfiles/config/shared/rc.sh
-
-export SHELL=zsh
-
 source ~/.zplug/init.zsh
 
-# plugins
+source ~/.dotfiles/config/shared/rc.sh
+
+# oh-my-zsh plugins
 zplug 'robbyrussell/oh-my-zsh', use:"lib/*.zsh"
 zplug 'plugins/colored-man-pages', from:oh-my-zsh
 zplug 'plugins/command-not-found', from:oh-my-zsh
@@ -23,12 +21,11 @@ zplug 'plugins/history', from:oh-my-zsh
 zplug 'plugins/per-directory-history', from:oh-my-zsh
 zplug 'plugins/sudo', from:oh-my-zsh
 zplug 'plugins/tmux', from:oh-my-zsh
-zplug 'plugins/tmuxinator', from:oh-my-zsh
+zplug 'plugins/tmuxinator', from:oh-my-zsh, lazy:yes
 zplug 'plugins/urltools', from:oh-my-zsh
 zplug 'plugins/yarn', from:oh-my-zsh
 
-zplug 'zsh-users/zsh-history-substring-search', on:'zsh-users/zsh-syntax-highlighting'
-zplug 'zsh-users/zsh-syntax-highlighting', defer:2 # run after compinit
+zplug "supercrabtree/k"
 
 # completions
 zplug 'zsh-users/zsh-autosuggestions'
@@ -63,12 +60,9 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   zplug 'plugins/fedora', from:oh-my-zsh, if:'[ -f /etc/fedora-release ]'
 fi
 
-# Plugin customizations
-ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-ZSH_AUTOSUGGEST_USE_ASYNC=1
-PURE_PROMPT_SYMBOL=λ
-PURE_GIT_DOWN_ARROW=▼
-PURE_GIT_UP_ARROW=▲
+zplug 'zsh-users/zsh-syntax-highlighting', defer:2
+zplug 'zsh-users/zsh-history-substring-search', defer:3, \
+  hook-load:"source ~/.dotfiles/config/shared/rc.zsh"
 
 # Tip: Use `--verbose` upon `check` and `load` to debug issues
 if ! zplug check; then
