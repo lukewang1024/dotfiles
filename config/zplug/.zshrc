@@ -5,6 +5,7 @@ export SHELL=zsh
 source ~/.zplug/init.zsh
 
 # plugins
+zplug 'robbyrussell/oh-my-zsh', use:"lib/*.zsh"
 zplug 'plugins/colored-man-pages', from:oh-my-zsh
 zplug 'plugins/command-not-found', from:oh-my-zsh
 zplug 'plugins/common-aliases', from:oh-my-zsh
@@ -26,12 +27,13 @@ zplug 'plugins/tmuxinator', from:oh-my-zsh
 zplug 'plugins/urltools', from:oh-my-zsh
 zplug 'plugins/yarn', from:oh-my-zsh
 
-zplug 'zsh-users/zsh-history-substring-search'
+zplug 'zsh-users/zsh-history-substring-search', on:'zsh-users/zsh-syntax-highlighting'
 zplug 'zsh-users/zsh-syntax-highlighting', defer:2 # run after compinit
-zplug 'esc/conda-zsh-completion'
 
 # completions
+zplug 'zsh-users/zsh-autosuggestions'
 zplug 'zsh-users/zsh-completions'
+zplug 'esc/conda-zsh-completion'
 
 # theme - pure
 zplug 'mafredri/zsh-async'
@@ -56,15 +58,14 @@ if [[ $OSTYPE == *'darwin'* ]]; then
 fi
 
 if [[ $OSTYPE == 'linux-gnu' ]]; then
-  if [ -f /etc/arch-release ]; then
-    zplug 'plugins/archlinux', from:oh-my-zsh
-  elif [ -f /etc/debian-version ]; then
-    zplug 'plugins/ubuntu', from:oh-my-zsh
-  fi
+  zplug 'plugins/archlinux', from:oh-my-zsh, if:'[ -f /etc/arch-release ]'
+  zplug 'plugins/ubuntu', from:oh-my-zsh, if:'[ -f /etc/debian_version ]'
+  zplug 'plugins/fedora', from:oh-my-zsh, if:'[ -f /etc/fedora-release ]'
 fi
 
 # Plugin customizations
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+ZSH_AUTOSUGGEST_USE_ASYNC=1
 PURE_PROMPT_SYMBOL=λ
 PURE_GIT_DOWN_ARROW=▼
 PURE_GIT_UP_ARROW=▲
