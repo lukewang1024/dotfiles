@@ -40,6 +40,7 @@ setAppToggles(hyper, {
   [','] = 'System Preferences',
   ['/'] = 'Finder',
   ['`'] = 'iTerm',
+  ['['] = 'Caprine',
   ['1'] = 'Spark',
   ['2'] = 'Todoist',
   ['3'] = 'Fantastical',
@@ -53,6 +54,7 @@ setAppToggles(hyperCmd, {
   c = 'Charles',
   d = 'Kitematic (Beta)',
   e = 'Evernote',
+  f = 'Flume',
   g = 'SQLPro for Postgres',
   i = 'iTunes',
   l = 'Musixmatch',
@@ -68,7 +70,8 @@ setAppToggles(hyperCmd, {
   z = 'Zeplin',
   [';'] = 'Terminal',
   [','] = 'App Store',
-  ['2'] = 'Trello',
+  ['\\'] = '富途牛牛',
+  ['2'] = 'QuickTab for Trello',
 })
 
 -- reload

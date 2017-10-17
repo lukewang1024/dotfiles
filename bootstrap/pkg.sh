@@ -85,6 +85,7 @@ installPipPackages()
     powerline-status
     pygments
     rainbowstream
+    rdbtools
     rtv
     thefuck
   )

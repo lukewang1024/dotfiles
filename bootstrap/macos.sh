@@ -40,6 +40,7 @@ prepareMacOSEnvCLI()
     gawk
     ghi
     gist
+    git-appraise
     git-lfs
     gnu-indent
     gnu-sed
@@ -96,6 +97,7 @@ prepareMacOSEnvGUI()
     451108668  # QQ
     568494494  # Pocket
     585829637  # Todoist
+    664513913  # 富途牛牛
     747648890  # Telegram
     784801555  # OneNote
     803453959  # Slack
@@ -106,7 +108,8 @@ prepareMacOSEnvGUI()
     1059334054 # Jietu
     1147396723 # WhatsApp
     1176895641 # Spark
-    1278508951 # Trello
+    1231406087 # QuickTab for Trello
+    1254743014 # LyricsX
   )
 
   mas install `join ' ' "${masApps[@]}"`
@@ -127,8 +130,20 @@ prepareMacOSEnvGUI()
     qlstephen
     quicklook-csv
     quicklook-json
-    suspicious-package
-    webpquicklook
+
+    # OS enhancements
+    alfred
+    bartender
+    go2shell
+    hammerspoon
+    hyperswitch
+    iina
+    iterm2
+    karabiner-elements
+    keka
+    slowquitapps
+    soundflower
+    squirrel
 
     # Editors
     atom
@@ -140,34 +155,24 @@ prepareMacOSEnvGUI()
     visual-studio-code
 
     # Utilities
-    alfred
     android-file-transfer
     appcleaner
     bitbar
     cakebrew
     calibre
-    clipy
     cyberduck
     duet
     fantastical
-    go2shell
-    hammerspoon
-    hyperswitch
-    iina
     istat-menus
-    karabiner-elements
-    keka
+    keycastr
     licecap
     pdfexpert
     pdfsam-basic
-    resilio-sync
     shadowsocksx
     shifty
     skim
-    slowquitapps
-    soundflower
-    squirrel
     stretchly
+    suspicious-package
     the-unarchiver
     toau
     ubersicht
@@ -179,7 +184,6 @@ prepareMacOSEnvGUI()
     horndis
     imagealpha
     imageoptim
-    iterm2
     java
     kitematic
     postman
@@ -193,19 +197,26 @@ prepareMacOSEnvGUI()
     zeplin
 
     # Internet
-    caprine
     chromium
     dropbox
     firefox
     google-backup-and-sync
     google-chrome
-    google-hangouts
     onedrive
-    ramme
+    resilio-sync
+
+    # Social
+    caprine
+    flume
+    google-hangouts
     skype
+    tweeten
+
+    # Downloaders
+    aria2gui
+    folx
 
     # Entertainment
-    musixmatch
     neteasemusic
     openemu
     spotify
