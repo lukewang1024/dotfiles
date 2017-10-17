@@ -22,16 +22,7 @@ export PATH="$HOME/bin:$PATH"
 alias cb=clipboard
 alias sap='source ~/.agent-profile'
 
-# Create per-user instance of ssh-agent
-ps -u $(whoami) | grep '[ ]ssh-agent' &> /dev/null
-if [ $? -ne 0 ]; then
-  eval $(ssh-agent)
-  ssh-add
-  echo "export SSH_AGENT_PID=$SSH_AGENT_PID" > ~/.agent-profile
-  echo "export SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> ~/.agent-profile
-else
-  source ~/.agent-profile
-fi
-trap 'ssh-agent -k; exit' 0
+# Functions
+mann () { man $1 | less -p "^       $2 " } # Locate directly to a subsection in man page
 
 [ -f ~/.rc.local ] && source ~/.rc.local

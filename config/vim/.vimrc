@@ -9,12 +9,15 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 
 " Plugins
+Plugin 'editorconfig/editorconfig-vim'
 Plugin 'scrooloose/nerdtree'
 Plugin 'wellle/targets.vim'
 Plugin 'Shougo/unite.vim'
 Plugin 'bling/vim-airline'
+Plugin 'tpope/vim-fugitive'
 Plugin 'terryma/vim-multiple-cursors'
 Plugin 'tpope/vim-sensible'
+Plugin 'tpope/vim-surround'
 Plugin 'tmux-plugins/vim-tmux-focus-events'
 Plugin 'christoomey/vim-tmux-navigator'
 
@@ -30,3 +33,5 @@ set number         " show line numbers in vim
 set relativenumber " show relative line numbers
 set hlsearch       " highlight all matches
 
+" editorconfig
+let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
