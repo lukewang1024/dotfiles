@@ -58,6 +58,7 @@ installNixBrewPackages()
     python
     python3
     ranger
+    redis
     rsync
     shellcheck
     the_silver_searcher
