@@ -3,7 +3,7 @@ source ~/.zgen/zgen.zsh
 if ! zgen saved; then
   echo 'Creating a zgen save'
 
-  source ~/.dotfiles/config/shared/rc.sh
+  zgen load ~/.dotfiles/config/shared/rc.sh
 
   zgen oh-my-zsh
 
@@ -74,9 +74,10 @@ EOPLUGINS
   # These plugin needs to be loaded last and THE ORDER MATTERS
   zgen load zsh-users/zsh-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
-  source ~/.dotfiles/config/shared/rc.zsh
-
-  [ -f ~/.zshrc.local ] && source ~/.zshrc.local
+  zgen load ~/.dotfiles/config/shared/rc.zsh
+  [ -f ~/.zshrc.local ] && zgen load ~/.zshrc.local
 
   zgen save
 fi
+
+source ~/.dotfiles/util/shell/ssh-agent-connect

@@ -90,6 +90,7 @@ utilSetup()
 {
   blankLines
   printf 'Installing handy wrappers... '
+  backupThenSymlink "$util_dir/shell/ssh-agent-connect" ~/bin/ssh-agent-connect
   backupThenSymlink "$util_dir/spark/pyspark-jupyter" ~/bin/pyspark-jupyter
   backupThenSymlink "$util_dir/spark/pyspark-jupyter-public" ~/bin/pyspark-jupyter-public
   echo 'Done.'

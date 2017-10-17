@@ -71,3 +71,5 @@ fi
 zplug load
 
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
+
+source ~/.dotfiles/util/shell/ssh-agent-connect

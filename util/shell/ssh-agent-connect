@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Create per-user instance of ssh-agent
+ps -u $(whoami) | grep '[ ]ssh-agent' &> /dev/null
+if [ $? -ne 0 ]; then
+  eval $(ssh-agent)
+  ssh-add
+  echo "export SSH_AGENT_PID=$SSH_AGENT_PID" > ~/.agent-profile
+  echo "export SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> ~/.agent-profile
+
+  if [ "$ZSH_VERSION" ]; then
+    zshexit() { ssh-agent -k; exit }
+  else
+    trap 'ssh-agent -k; exit' EXIT
+  fi
+else
+  source ~/.agent-profile
+fi
