@@ -90,9 +90,7 @@ installPipPackages()
     thefuck
   )
 
-  for pkg in "${pkgs[@]}"; do
-    pip install --user "$pkg"
-  done
+  for pkg in "${pkgs[@]}"; do pip install -U "$pkg"; done
 }
 
 installCpanPackages()

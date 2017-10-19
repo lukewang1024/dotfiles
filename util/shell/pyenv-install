@@ -1,0 +1,11 @@
+#!/bin/bash
+
+which brew &> /dev/null && BREW_OPENSSL_PATH=$(brew --prefix openssl)
+
+if [[ $? == 0 ]]; then
+  CFLAGS="-I$BREW_OPENSSL_PATH/include" \
+  LDFLAGS="-L$BREW_OPENSSL_PATH/lib" \
+  pyenv install "$@"
+else
+  pyenv install "$@"
+fi
