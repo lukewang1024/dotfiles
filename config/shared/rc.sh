@@ -13,9 +13,6 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   export PATH="/home/linuxbrew/.linuxbrew/sbin:$PATH"
   export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 fi
-which python2 &> /dev/null && export PATH="$(python2 -m site --user-base)/bin:$PATH"
-which python3 &> /dev/null && export PATH="$(python3 -m site --user-base)/bin:$PATH"
-export PATH="$HOME/.yarn/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
 # Aliases
