@@ -55,6 +55,7 @@ installNixBrewPackages()
     openshift-cli
     openssh
     pandoc
+    proxychains-ng
     python
     python3
     ranger

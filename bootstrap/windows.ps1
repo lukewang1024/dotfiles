@@ -88,6 +88,7 @@ function installGUIPackages
     'doublecmd',
     'dropbox',
     'everything',
+    'f.lux',
     'fiddler4',
     'filezilla',
     'firefox',

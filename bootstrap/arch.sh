@@ -44,6 +44,7 @@ prepareArchEnvCLI()
     offlineimap
     openssh
     php
+    polipo
     python
     python-pip
     python2

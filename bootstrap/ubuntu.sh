@@ -82,6 +82,7 @@ prepareUbuntuEnvCLI()
     google-cloud-sdk
     oracle-java8-installer
     oracle-java8-set-default
+    polipo
     python-dev
     python-pip
     python-software-properties

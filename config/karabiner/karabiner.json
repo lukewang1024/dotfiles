@@ -414,7 +414,7 @@
                     }
                 }
             ],
-            "name": "CapsLock",
+            "name": "⇪",
             "selected": true,
             "simple_modifications": [
                 {
@@ -840,7 +840,7 @@
                     }
                 }
             ],
-            "name": "Control",
+            "name": "⌃",
             "selected": false,
             "simple_modifications": [
                 {
@@ -1000,7 +1000,7 @@
                     }
                 }
             ],
-            "name": "Off",
+            "name": "✘",
             "selected": false,
             "simple_modifications": [],
             "virtual_hid_keyboard": {

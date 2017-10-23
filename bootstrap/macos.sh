@@ -134,6 +134,7 @@ prepareMacOSEnvGUI()
     # OS enhancements
     alfred
     bartender
+    flux
     go2shell
     hammerspoon
     hyperswitch
@@ -149,6 +150,7 @@ prepareMacOSEnvGUI()
     atom
     macdown
     macvim
+    marp
     meld
     sublime-text
     typora
@@ -168,7 +170,7 @@ prepareMacOSEnvGUI()
     licecap
     pdfexpert
     pdfsam-basic
-    shadowsocksx
+    shadowsocksx-ng
     shifty
     skim
     stretchly
@@ -219,7 +221,9 @@ prepareMacOSEnvGUI()
     # Entertainment
     neteasemusic
     openemu
+    spotifree
     spotify
+    spotify-notifications
   )
   caskInstallPkgs
 
