@@ -18,6 +18,11 @@ export PATH="$HOME/bin:$PATH"
 # Aliases
 alias cb=clipboard
 alias sap='source ~/.agent-profile'
+alias hp='http_proxy=http://127.0.0.1:8123 https_proxy=http://127.0.0.1:8123'
+alias hpe='export http_proxy=http://127.0.0.1:8123 https_proxy=http://127.0.0.1:8123'
+alias hpd='unset http_proxy https_proxy'
+alias px='proxychains4 -f ~/.config/proxychains.conf'
+alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
 
 # Functions
 mann () { man $1 | less -p "^       $2 " } # Locate directly to a subsection in man page
