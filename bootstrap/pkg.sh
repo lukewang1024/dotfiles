@@ -45,6 +45,7 @@ installNpmPackages()
     ember-cli
     english-dictionary-cli
     express-generator
+    gatsby-cli
     gulp-cli
     hexo-cli
     http-server
