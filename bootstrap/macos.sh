@@ -117,6 +117,7 @@ prepareMacOSEnvGUI()
 
   # Cask packages
 
+  brew tap caskroom/versions # Java 8 etc.
   brew tap dteoh/sqa # Slow Quit Apps
   brew update
 
@@ -187,6 +188,7 @@ prepareMacOSEnvGUI()
     imagealpha
     imageoptim
     java
+    java8
     kitematic
     postman
     robo-3t

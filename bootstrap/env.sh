@@ -86,6 +86,14 @@ pyenvSetup()
   echo 'Done.'
 }
 
+jenvSetup()
+{
+  blankLines
+  echo 'Installing jenv...'
+  syncConfigRepo ~/.jenv https://github.com/gcuisinier/jenv
+  echo 'Done.'
+}
+
 utilSetup()
 {
   blankLines
@@ -104,6 +112,7 @@ envSetup()
   nvmSetup
   rbenvSetup
   pyenvSetup
+  jenvSetup
   tmuxSetup
   tigSetup
   vimSetup
