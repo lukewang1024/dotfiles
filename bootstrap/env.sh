@@ -56,20 +56,6 @@ gitSetup()
   echo 'Done.'
 }
 
-nvmSetup()
-{
-  blankLines
-  echo 'Installing nvm...'
-  curl https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
-  echo 'Done.'
-
-  echo 'Installing latest LTS NodeJS...'
-  export NVM_DIR="$HOME/.nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-  nvm install --lts
-  echo 'Done.'
-}
-
 rbenvSetup()
 {
   blankLines
@@ -83,6 +69,19 @@ pyenvSetup()
   blankLines
   echo 'Installing pyenv...'
   curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+  echo 'Done.'
+}
+
+nodenvSetup()
+{
+  blankLines
+  echo 'Installing nodenv...'
+  local NODENV_ROOT="$HOME/.nodenv"
+  local NODENV_PLUGINS="$NODENV_ROOT/plugins"
+  syncConfigRepo "$NODENV_ROOT" https://github.com/nodenv/nodenv
+  syncConfigRepo "$NODENV_PLUGINS/node-build" https://github.com/nodenv/node-build
+  syncConfigRepo "$NODENV_PLUGINS/nodenv-default-packages" https://github.com/nodenv/nodenv-default-packages
+  syncConfigRepo "$NODENV_PLUGINS/nodenv-update" https://github.com/nodenv/nodenv-update
   echo 'Done.'
 }
 
@@ -109,9 +108,9 @@ utilSetup()
 envSetup()
 {
   gitSetup
-  nvmSetup
   rbenvSetup
   pyenvSetup
+  nodenvSetup
   jenvSetup
   tmuxSetup
   tigSetup

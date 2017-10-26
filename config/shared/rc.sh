@@ -25,6 +25,6 @@ alias px='proxychains4 -f ~/.config/proxychains.conf'
 alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
 
 # Functions
-mann () { man $1 | less -p "^       $2 " } # Locate directly to a subsection in man page
+mann () { man $1 | less -p "^( |\t){0,8}$2 " } # Locate directly to a subsection in man page
 
 [ -f ~/.rc.local ] && source ~/.rc.local

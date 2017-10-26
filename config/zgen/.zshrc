@@ -50,10 +50,12 @@ EOPLUGINS
   else # *nix
     zgen oh-my-zsh plugins/colorize
     zgen oh-my-zsh plugins/docker
-    zgen oh-my-zsh plugins/nvm
-    zgen oh-my-zsh plugins/pyenv
-    zgen oh-my-zsh plugins/rbenv
     zgen oh-my-zsh plugins/vagrant
+
+    # env managers
+    zgen oh-my-zsh plugins/rbenv
+    zgen oh-my-zsh plugins/pyenv
+    zgen load jsahlen/nodenv.plugin.zsh
   fi
 
   if [[ $OSTYPE == *'darwin'* ]]; then
