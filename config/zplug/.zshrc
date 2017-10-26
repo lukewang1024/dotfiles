@@ -3,7 +3,7 @@ source ~/.zplug/init.zsh
 source ~/.dotfiles/config/shared/rc.sh
 
 # oh-my-zsh plugins
-zplug 'robbyrussell/oh-my-zsh', use:"lib/*.zsh"
+zplug 'robbyrussell/oh-my-zsh', use:'lib/*.zsh'
 zplug 'plugins/colored-man-pages', from:oh-my-zsh
 zplug 'plugins/command-not-found', from:oh-my-zsh
 zplug 'plugins/common-aliases', from:oh-my-zsh
@@ -25,7 +25,7 @@ zplug 'plugins/tmuxinator', from:oh-my-zsh, lazy:yes
 zplug 'plugins/urltools', from:oh-my-zsh
 zplug 'plugins/yarn', from:oh-my-zsh
 
-zplug "supercrabtree/k"
+zplug 'supercrabtree/k'
 
 # completions
 zplug 'zsh-users/zsh-autosuggestions'
@@ -43,10 +43,12 @@ if [[ $OSTYPE == 'cygwin' ]]; then
 else # *nix
   zplug 'plugins/colorize', from:oh-my-zsh
   zplug 'plugins/docker', from:oh-my-zsh
-  zplug 'plugins/nvm', from:oh-my-zsh
-  zplug 'plugins/pyenv', from:oh-my-zsh
-  zplug 'plugins/rbenv', from:oh-my-zsh
   zplug 'plugins/vagrant', from:oh-my-zsh
+
+  # env managers
+  zplug 'plugins/rbenv', from:oh-my-zsh
+  zplug 'plugins/pyenv', from:oh-my-zsh
+  zplug 'jsahlen/nodenv.plugin.zsh'
 fi
 
 if [[ $OSTYPE == *'darwin'* ]]; then
@@ -62,7 +64,7 @@ fi
 
 zplug 'zsh-users/zsh-syntax-highlighting', defer:2
 zplug 'zsh-users/zsh-history-substring-search', defer:3, \
-  hook-load:"source ~/.dotfiles/config/shared/rc.zsh"
+  hook-load:'source ~/.dotfiles/config/shared/rc.zsh'
 
 # Tip: Use `--verbose` upon `check` and `load` to debug issues
 if ! zplug check; then
