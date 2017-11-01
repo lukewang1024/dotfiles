@@ -100,12 +100,12 @@ prepareMacOSEnvGUI()
     664513913  # 富途牛牛
     747648890  # Telegram
     784801555  # OneNote
+    789066512  # Maipo for Weibo
     803453959  # Slack
     836500024  # WeChat
     880001334  # Reeder 3
     926036361  # LastPass
     1012930195 # HandShaker
-    1059334054 # Jietu
     1147396723 # WhatsApp
     1176895641 # Spark
     1231406087 # QuickTab for Trello
@@ -131,6 +131,11 @@ prepareMacOSEnvGUI()
     qlstephen
     quicklook-csv
     quicklook-json
+
+    # Screen savers
+    aerial
+    fliqlo
+    padbury-clock
 
     # OS enhancements
     alfred
@@ -183,7 +188,6 @@ prepareMacOSEnvGUI()
 
     # Dev tools
     charles
-    filezilla
     horndis
     imagealpha
     imageoptim
@@ -191,14 +195,18 @@ prepareMacOSEnvGUI()
     java8
     kitematic
     postman
-    robo-3t
-    sequel-pro
     smaller
     sourcetree
     vagrant-manager
     virtualbox
     wireshark
     zeplin
+
+    # Database
+    mongodb-compass
+    robo-3t
+    sequel-pro
+    sqlpro-for-postgres
 
     # Internet
     chromium
@@ -215,12 +223,14 @@ prepareMacOSEnvGUI()
     google-hangouts
     skype
     tweeten
+    wewechat
 
     # Downloaders
     aria2gui
     folx
 
     # Entertainment
+    bilibili
     neteasemusic
     openemu
     spotifree

@@ -81,6 +81,8 @@ nodenvSetup()
   syncConfigRepo "$NODENV_ROOT" https://github.com/nodenv/nodenv
   syncConfigRepo "$NODENV_PLUGINS/node-build" https://github.com/nodenv/node-build
   syncConfigRepo "$NODENV_PLUGINS/nodenv-default-packages" https://github.com/nodenv/nodenv-default-packages
+  syncConfigRepo "$NODENV_PLUGINS/nodenv-package-json-engine" https://github.com/nodenv/nodenv-package-json-engine
+  syncConfigRepo "$NODENV_PLUGINS/nodenv-package-rehash" https://github.com/nodenv/nodenv-package-rehash
   syncConfigRepo "$NODENV_PLUGINS/nodenv-update" https://github.com/nodenv/nodenv-update
   echo 'Done.'
 }

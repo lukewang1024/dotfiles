@@ -43,6 +43,7 @@ installNixBrewPackages()
     less
     make
     midnight-commander
+    mongodb
     mosh
     mutt
     mycli
