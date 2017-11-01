@@ -62,6 +62,7 @@ installNpmPackages()
     react-vr-cli
     semantic-release-cli
     serve
+    serverless
     tldr
     trash
     ts-node
