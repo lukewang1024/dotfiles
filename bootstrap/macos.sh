@@ -122,22 +122,29 @@ prepareMacOSEnvGUI()
   brew update
 
   local pkgs=(
-    # Quick-look plugins
+    # Quicklook plugin
     betterzipql
+    provisionql
     qlcolorcode
     qlimagesize
     qlmarkdown
     qlprettypatch
     qlstephen
+    qlvideo
     quicklook-csv
     quicklook-json
+    quicklook-pat
+    quicklookapk
+    quicklookase
+    suspicious-package
+    webpquicklook
 
-    # Screen savers
+    # Screen saver
     aerial
     fliqlo
     padbury-clock
 
-    # OS enhancements
+    # OS enhancement
     alfred
     bartender
     flux
@@ -148,11 +155,10 @@ prepareMacOSEnvGUI()
     iterm2
     karabiner-elements
     keka
-    slowquitapps
     soundflower
     squirrel
 
-    # Editors
+    # Editor
     atom
     macdown
     macvim
@@ -162,7 +168,7 @@ prepareMacOSEnvGUI()
     typora
     visual-studio-code
 
-    # Utilities
+    # Utility
     android-file-transfer
     appcleaner
     bitbar
@@ -186,8 +192,9 @@ prepareMacOSEnvGUI()
     ubersicht
     vnc-viewer
 
-    # Dev tools
+    # DevTool
     charles
+    fork
     horndis
     imagealpha
     imageoptim
@@ -202,18 +209,21 @@ prepareMacOSEnvGUI()
     wireshark
     zeplin
 
-    # Database
+    # Database GUI
     mongodb-compass
     robo-3t
     sequel-pro
     sqlpro-for-postgres
 
-    # Internet
+    # Browser
     chromium
-    dropbox
     firefox
-    google-backup-and-sync
+    firefoxdeveloperedition
     google-chrome
+
+    # Storage
+    dropbox
+    google-backup-and-sync
     onedrive
     resilio-sync
 
@@ -225,7 +235,7 @@ prepareMacOSEnvGUI()
     tweeten
     wewechat
 
-    # Downloaders
+    # Download
     aria2gui
     folx
 
