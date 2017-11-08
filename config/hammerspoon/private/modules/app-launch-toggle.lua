@@ -35,12 +35,14 @@ setAppToggles(hyper, {
   w = 'WeChat',
   y = 'Skype',
   z = 'Finder',
+  ['`'] = 'iTerm',
   [';'] = 'iTerm',
   ['\''] = 'Sublime Text',
   [','] = 'System Preferences',
+  ['.'] = 'SourceTree',
   ['/'] = 'Finder',
-  ['`'] = 'iTerm',
   ['['] = 'WhatsApp',
+  [']'] = 'Flume',
   ['\\'] = 'Maipo',
   ['1'] = 'Spark',
   ['2'] = 'Todoist',
@@ -48,33 +50,34 @@ setAppToggles(hyper, {
   ['4'] = 'licecap',
   ['5'] = 'SQLPro for Postgres',
   ['6'] = 'MongoDB Compass',
-  ['7'] = 'Medis'
+  ['7'] = 'Medis',
+  ['9'] = 'Postman',
+  ['0'] = 'Charles'
 })
 
 -- hyperCmd application shortcuts
 setAppToggles(hyperCmd, {
   a = 'Atom',
   b = 'Bilibili',
-  c = 'Charles',
+  c = 'Chromium',
   e = 'Evernote',
-  f = 'Flume',
+  f = 'FirefoxDeveloperEdition',
   i = 'IINA',
   k = 'Kitematic (Beta)',
   m = 'NeteaseMusic',
   n = 'Knotes',
-  p = 'Postman',
   s = 'Spotify',
-  t = 'SourceTree',
   v = 'MacVim',
   w = 'wewechat',
   y = 'Slack',
   z = 'Zeplin',
   [';'] = 'Terminal',
   ['['] = 'Caprine',
-  ['\\'] = '富途牛牛',
+  ['\\'] = 'FutuNiuniu',
   ['2'] = 'QuickTab for Trello',
   ['5'] = 'Sequel Pro',
-  ['6'] = 'Robo 3T'
+  ['6'] = 'Robo 3T',
+  ['0'] = 'WireShark'
 })
 
 -- reload
