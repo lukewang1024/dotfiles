@@ -37,6 +37,7 @@ installNpmPackages()
     @storybook/cli
     bower
     clipboard-cli
+    commitizen
     create-dmg
     create-react-app
     create-react-native-app
@@ -73,7 +74,9 @@ installNpmPackages()
     yo
   )
 
-  yarn global add `join ' ' "${pkgs[@]}"`
+  for pkg in "${pkgs[@]}"; do
+    npm install -g $pkg
+  done
 
   echo 'Done.'
 }

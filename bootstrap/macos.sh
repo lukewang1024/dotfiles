@@ -153,6 +153,7 @@ prepareMacOSEnvGUI()
     hyperswitch
     iina
     iterm2
+    jietu
     karabiner-elements
     keka
     soundflower
