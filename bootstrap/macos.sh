@@ -261,7 +261,45 @@ setMacOSConfigs()
   backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backupThenSymlink "$config_dir/karabiner" ~/.config/karabiner
 
+  betterMacOSDefaults
   installMacWeChatPlugin
+}
+
+betterMacOSDefaults()
+{
+    # Keyboard
+    defaults write -g ApplePressAndHoldEnabled -bool false
+    defaults write -g KeyRepeat -int 2         # minimum 1
+    defaults write -g InitialKeyRepeat -int 15 # minimum 10
+
+    # Animation
+    defaults write -g NSAutomaticWindowAnimationsEnabled -bool false
+    defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
+    defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
+    defaults write -g NSScrollAnimationEnabled -bool false
+    defaults write -g NSScrollViewRubberbanding -bool false
+    defaults write -g NSToolbarFullScreenAnimationDuration -float 0
+    defaults write -g NSWindowResizeTime -float 0.001
+    defaults write -g QLPanelAnimationDuration -float 0
+    defaults write com.apple.dock autohide-delay -float 0
+    defaults write com.apple.dock autohide-time-modifier -float 0
+    defaults write com.apple.dock expose-animation-duration -float 0
+    defaults write com.apple.dock launchanim -bool false
+    defaults write com.apple.dock springboard-hide-duration -float 0
+    defaults write com.apple.dock springboard-page-duration -float 0
+    defaults write com.apple.dock springboard-show-duration -float 0
+    defaults write com.apple.finder DisableAllAnimations -bool true
+    defaults write com.apple.Mail DisableReplyAnimations -bool true
+    defaults write com.apple.Mail DisableSendAnimations -bool true
+    defaults write com.apple.Safari WebKitInitialTimedLayoutDelay 0.25
+    defaults write com.apple.universalaccess reduceMotion -bool true
+
+    # Dock
+    defaults write com.apple.dock scroll-to-open -bool true
+    defaults write com.apple.dock springboard-columns -int 8
+    defaults write com.apple.dock springboard-rows -int 7
+    defaults write com.apple.dock ResetLaunchPad -bool true
+    killall Dock
 }
 
 installMacWeChatPlugin()
