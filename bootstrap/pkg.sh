@@ -35,6 +35,7 @@ installNpmPackages()
   local pkgs=(
     @angular/cli
     @storybook/cli
+    azure-functions-core-tools@core
     bower
     clipboard-cli
     commitizen

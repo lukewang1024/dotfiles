@@ -13,6 +13,7 @@ installNixBrewPackages()
     aria2
     awscli
     axel
+    azure-cli
     bash
     bash-completion
     binutils
