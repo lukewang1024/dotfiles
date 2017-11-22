@@ -1,27 +1,34 @@
 [advice]
-	pushNonFastForward = false
-	statusHints = false
+  pushNonFastForward = false
+  statusHints = false
 [branch]
-	autosetupmerge = true
+  autosetupmerge = true
 [color]
-	ui = auto
+  ui = auto
 [core]
-	fscache = true
-	preloadindex = true
-	whitespace = trailing-space,space-before-tab
-	editor = nano
-	fileMode = true
+  fscache = true
+  preloadindex = true
+  whitespace = trailing-space,space-before-tab
+  editor = nano
+  fileMode = true
 [diff]
-	renames = copies
-	mnemonicprefix = true
+  mnemonicprefix = true
+  renames = copies
+  tool = kdiff3
+[difftool]
+  prompt = false
 [fetch]
-	prune = true
+  prune = true
 [gc]
-	auto = 256
+  auto = 256
 [merge]
-	stat = true
+  conflictstyle = diff3
+  stat = true
+  tool = kdiff3
+[mergetool]
+  prompt = false
 [push]
-	default = simple
-	followTags = true
+  default = simple
+  followTags = true
 [rerere]
-	enabled = true
+  enabled = true

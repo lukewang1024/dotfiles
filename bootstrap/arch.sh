@@ -87,6 +87,7 @@ prepareArchEnvGUI()
   pkgs=(
     chromium
     firefox
+    kdiff3
     screenfetch
     wkhtmltopdf
   )
@@ -94,6 +95,7 @@ prepareArchEnvGUI()
 
   pkgs=(
     dropbox
+    firefox-developer
     google-chrome
     skypeforlinux-bin
     sublime-text-dev

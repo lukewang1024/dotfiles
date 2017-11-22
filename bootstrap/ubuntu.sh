@@ -118,7 +118,7 @@ prepareUbuntuEnvGUI()
   pkgs=(
     chromium-browser
     doublecmd-gtk
-    meld
+    kdiff3
     oneko
     screenfetch
     sublime-text

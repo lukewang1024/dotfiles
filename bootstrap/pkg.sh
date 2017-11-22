@@ -38,6 +38,7 @@ installNpmPackages()
     azure-functions-core-tools@core
     bower
     clipboard-cli
+    coinmon
     commitizen
     create-dmg
     create-react-app

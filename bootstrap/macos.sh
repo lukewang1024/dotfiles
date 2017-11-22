@@ -118,7 +118,7 @@ prepareMacOSEnvGUI()
   # Cask packages
 
   brew tap caskroom/versions # Java 8 etc.
-  brew tap dteoh/sqa # Slow Quit Apps
+  brew tap lukewang1024/legacy # Old goodies exempt from caskroom/versions
   brew update
 
   local pkgs=(
@@ -156,6 +156,7 @@ prepareMacOSEnvGUI()
     jietu
     karabiner-elements
     keka
+    mos
     soundflower
     squirrel
 
@@ -164,7 +165,6 @@ prepareMacOSEnvGUI()
     macdown
     macvim
     marp
-    meld
     sublime-text
     typora
     visual-studio-code
@@ -194,23 +194,28 @@ prepareMacOSEnvGUI()
     vnc-viewer
 
     # DevTool
-    charles
-    fork
-    horndis
     imagealpha
     imageoptim
     java
     java8
     kitematic
-    postman
-    smaller
-    sourcetree
     vagrant-manager
     virtualbox
-    wireshark
     zeplin
 
-    # Database GUI
+    # Network diagnostic tools
+    charles
+    horndis
+    postman
+    wireshark
+
+    # VCS tools
+    fork
+    kdiff3
+    rowanj-gitx
+    sourcetree
+
+    # DB tools
     mongodb-compass
     robo-3t
     sequel-pro
@@ -232,7 +237,7 @@ prepareMacOSEnvGUI()
     caprine
     flume
     google-hangouts
-    skype
+    skype7
     tweeten
     wewechat
 
