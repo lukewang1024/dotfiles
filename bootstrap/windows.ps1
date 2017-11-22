@@ -45,6 +45,7 @@ function installCLIPackages
     'gow',
     'jdk8',
     'jq',
+    'kdiff3',
     'kubernetes-cli',
     'mc',
     'nmap',
