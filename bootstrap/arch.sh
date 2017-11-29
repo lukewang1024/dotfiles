@@ -95,6 +95,7 @@ prepareArchEnvGUI()
 
   pkgs=(
     dropbox
+    electronic-wechat
     firefox-developer
     google-chrome
     skypeforlinux-bin

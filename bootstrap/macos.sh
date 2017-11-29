@@ -105,11 +105,13 @@ prepareMacOSEnvGUI()
     836500024  # WeChat
     880001334  # Reeder 3
     926036361  # LastPass
+    998804308  # Blinks
     1012930195 # HandShaker
     1147396723 # WhatsApp
     1176895641 # Spark
     1231406087 # QuickTab for Trello
     1254743014 # LyricsX
+    1295203466 # Microsoft Remote Desktop
   )
 
   mas install `join ' ' "${masApps[@]}"`
@@ -117,8 +119,7 @@ prepareMacOSEnvGUI()
 
   # Cask packages
 
-  brew tap caskroom/versions # Java 8 etc.
-  brew tap lukewang1024/legacy # Old goodies exempt from caskroom/versions
+  brew tap caskroom/versions # Java 8, Skype 7.x etc.
   brew update
 
   local pkgs=(
@@ -246,9 +247,12 @@ prepareMacOSEnvGUI()
     folx
 
     # Entertainment
+    battle-net
     bilibili
+    gog-downloader
     neteasemusic
-    openemu
+    openemu-experimental
+    origin
     spotifree
     spotify
     spotify-notifications
@@ -272,39 +276,39 @@ setMacOSConfigs()
 
 betterMacOSDefaults()
 {
-    # Keyboard
-    defaults write -g ApplePressAndHoldEnabled -bool false
-    defaults write -g KeyRepeat -int 2         # minimum 1
-    defaults write -g InitialKeyRepeat -int 15 # minimum 10
+  # Keyboard
+  defaults write -g ApplePressAndHoldEnabled -bool false
+  defaults write -g KeyRepeat -int 2         # minimum 1
+  defaults write -g InitialKeyRepeat -int 15 # minimum 10
 
-    # Animation
-    defaults write -g NSAutomaticWindowAnimationsEnabled -bool false
-    defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
-    defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
-    defaults write -g NSScrollAnimationEnabled -bool false
-    defaults write -g NSScrollViewRubberbanding -bool false
-    defaults write -g NSToolbarFullScreenAnimationDuration -float 0
-    defaults write -g NSWindowResizeTime -float 0.001
-    defaults write -g QLPanelAnimationDuration -float 0
-    defaults write com.apple.dock autohide-delay -float 0
-    defaults write com.apple.dock autohide-time-modifier -float 0
-    defaults write com.apple.dock expose-animation-duration -float 0
-    defaults write com.apple.dock launchanim -bool false
-    defaults write com.apple.dock springboard-hide-duration -float 0
-    defaults write com.apple.dock springboard-page-duration -float 0
-    defaults write com.apple.dock springboard-show-duration -float 0
-    defaults write com.apple.finder DisableAllAnimations -bool true
-    defaults write com.apple.Mail DisableReplyAnimations -bool true
-    defaults write com.apple.Mail DisableSendAnimations -bool true
-    defaults write com.apple.Safari WebKitInitialTimedLayoutDelay 0.25
-    defaults write com.apple.universalaccess reduceMotion -bool true
+  # Animation
+  defaults write -g NSAutomaticWindowAnimationsEnabled -bool false
+  defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
+  defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
+  defaults write -g NSScrollAnimationEnabled -bool false
+  defaults write -g NSScrollViewRubberbanding -bool false
+  defaults write -g NSToolbarFullScreenAnimationDuration -float 0
+  defaults write -g NSWindowResizeTime -float 0.001
+  defaults write -g QLPanelAnimationDuration -float 0
+  defaults write com.apple.dock autohide-delay -float 0
+  defaults write com.apple.dock autohide-time-modifier -float 0
+  defaults write com.apple.dock expose-animation-duration -float 0
+  defaults write com.apple.dock launchanim -bool false
+  defaults write com.apple.dock springboard-hide-duration -float 0
+  defaults write com.apple.dock springboard-page-duration -float 0
+  defaults write com.apple.dock springboard-show-duration -float 0
+  defaults write com.apple.finder DisableAllAnimations -bool true
+  defaults write com.apple.Mail DisableReplyAnimations -bool true
+  defaults write com.apple.Mail DisableSendAnimations -bool true
+  defaults write com.apple.Safari WebKitInitialTimedLayoutDelay 0.25
+  defaults write com.apple.universalaccess reduceMotion -bool true
 
-    # Dock
-    defaults write com.apple.dock scroll-to-open -bool true
-    defaults write com.apple.dock springboard-columns -int 8
-    defaults write com.apple.dock springboard-rows -int 7
-    defaults write com.apple.dock ResetLaunchPad -bool true
-    killall Dock
+  # Dock
+  defaults write com.apple.dock scroll-to-open -bool true
+  defaults write com.apple.dock springboard-columns -int 8
+  defaults write com.apple.dock springboard-rows -int 7
+  defaults write com.apple.dock ResetLaunchPad -bool true
+  killall Dock
 }
 
 installMacWeChatPlugin()
