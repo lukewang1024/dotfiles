@@ -88,6 +88,7 @@ prepareArchEnvGUI()
     chromium
     firefox
     kdiff3
+    keepass
     screenfetch
     wkhtmltopdf
   )
@@ -98,6 +99,15 @@ prepareArchEnvGUI()
     electronic-wechat
     firefox-developer
     google-chrome
+    keepass-plugin-dbbackup
+    keepass-plugin-favicon
+    keepass-plugin-haveibeenpwned
+    keepass-plugin-http
+    keepass-plugin-keeotp
+    keepass-plugin-qualitycolumn
+    keepass-plugin-quickunlock
+    keepass-plugin-rpc
+    keepass-plugin-traytotp
     skypeforlinux-bin
     sublime-text-dev
     visual-studio-code
