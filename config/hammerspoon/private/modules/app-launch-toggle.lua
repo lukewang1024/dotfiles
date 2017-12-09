@@ -66,6 +66,7 @@ setAppToggles(hyperCmd, {
   k = 'Kitematic (Beta)',
   m = 'NeteaseMusic',
   n = 'Knotes',
+  p = 'MacPass',
   s = 'Spotify',
   v = 'MacVim',
   w = 'wewechat',

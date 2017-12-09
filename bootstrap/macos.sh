@@ -157,6 +157,7 @@ prepareMacOSEnvGUI()
     jietu
     karabiner-elements
     keka
+    macpass
     mos
     soundflower
     squirrel

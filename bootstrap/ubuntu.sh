@@ -106,8 +106,9 @@ prepareUbuntuEnvCLI()
 prepareUbuntuEnvGUI()
 {
   ppas=(
+    ppa:jtaylor/keepass     # KeyPass2
     ppa:djcj/screenfetch    # screenfetch
-    ppa:zeal-developers/ppa # zeal
+    ppa:zeal-developers/ppa # Zeal
   )
   ubuntuAddPPAs
 
@@ -119,6 +120,7 @@ prepareUbuntuEnvGUI()
     chromium-browser
     doublecmd-gtk
     kdiff3
+    keepass2
     oneko
     screenfetch
     sublime-text
