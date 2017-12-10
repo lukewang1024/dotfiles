@@ -67,11 +67,9 @@ prepareMacOSEnvCLI()
   )
   brewInstallPkgs
 
-  brew tap caskroom/fonts && brew update
-
   pkgs=(
     # Fonts
-    font-sourcecodepro-nerd-font-mono
+    caskroom/fonts/font-sourcecodepro-nerd-font-mono
 
     # CLI tools
     docker
@@ -95,6 +93,7 @@ prepareMacOSEnvGUI()
     406056744  # Evernote
     441258766  # Magnet
     451108668  # QQ
+    539883307  # LINE
     568494494  # Pocket
     585829637  # Todoist
     664513913  # 富途牛牛
@@ -119,7 +118,6 @@ prepareMacOSEnvGUI()
 
   # Cask packages
 
-  brew tap caskroom/versions # Java 8, Skype 7.x etc.
   brew update
 
   local pkgs=(
@@ -154,11 +152,11 @@ prepareMacOSEnvGUI()
     hyperswitch
     iina
     iterm2
-    jietu
     karabiner-elements
     keka
     macpass
     mos
+    snipaste
     soundflower
     squirrel
 
@@ -173,6 +171,7 @@ prepareMacOSEnvGUI()
 
     # Utility
     android-file-transfer
+    android-platform-tools
     appcleaner
     bitbar
     cakebrew
@@ -185,6 +184,7 @@ prepareMacOSEnvGUI()
     licecap
     pdfexpert
     pdfsam-basic
+    proxifier
     shadowsocksx-ng
     shifty
     skim
@@ -196,10 +196,10 @@ prepareMacOSEnvGUI()
     vnc-viewer
 
     # DevTool
+    caskroom/versions/java8
     imagealpha
     imageoptim
     java
-    java8
     kitematic
     vagrant-manager
     virtualbox
@@ -224,9 +224,9 @@ prepareMacOSEnvGUI()
     sqlpro-for-postgres
 
     # Browser
+    caskroom/versions/firefoxdeveloperedition
     chromium
     firefox
-    firefoxdeveloperedition
     google-chrome
 
     # Storage
@@ -237,9 +237,9 @@ prepareMacOSEnvGUI()
 
     # Social
     caprine
+    caskroom/versions/skype7
     flume
     google-hangouts
-    skype7
     tweeten
     wewechat
 
@@ -250,9 +250,9 @@ prepareMacOSEnvGUI()
     # Entertainment
     battle-net
     bilibili
+    caskroom/versions/openemu-experimental
     gog-downloader
     neteasemusic
-    openemu-experimental
     origin
     spotifree
     spotify
