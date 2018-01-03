@@ -36,8 +36,8 @@ installNixBrewPackages()
     git-flow-avh
     go
     gzip
-    htop
     httpie
+    icdiff
     imagemagick
     irssi
     jq
@@ -46,9 +46,11 @@ installNixBrewPackages()
     midnight-commander
     mongodb
     mosh
+    multitail
     mutt
     mycli
     nano
+    ncdu
     ncurses
     neovim
     nmap
@@ -77,6 +79,7 @@ installNixBrewPackages()
     watch
     wdiff
     wget
+    wtf
     you-get
     youtube-dl
     zsh

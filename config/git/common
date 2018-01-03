@@ -21,6 +21,8 @@
   prune = true
 [gc]
   auto = 256
+[icdiff]
+  options = --highlight --line-numbers
 [merge]
   conflictstyle = diff3
   stat = true

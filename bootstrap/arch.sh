@@ -15,14 +15,13 @@ yaourtInstallPkgs()
 prepareArchEnvCLI()
 {
   pkgs=(
-    apache
-    apache-spark
     aws-cli
     axel
     cloc
     cmatrix
     cowsay
     cpulimit
+    dstat
     fasd
     figlet
     fish
@@ -30,15 +29,14 @@ prepareArchEnvCLI()
     fzf
     git
     go
-    htop
     httpie
     imagemagick
     irssi
     jq
     lolcat
     mc
+    multitail
     nghttp2
-    nginx-mainline
     nodejs
     npm
     offlineimap
@@ -59,6 +57,7 @@ prepareArchEnvCLI()
     vim
     w3m
     wget
+    wtf
     you-get
     zip
     zsh
@@ -66,10 +65,13 @@ prepareArchEnvCLI()
   pacmanInstallPkgs
 
   pkgs=(
+    apache-spark
     cheat-git
     git-lfs
     gitflow-avh
     google-cloud-sdk
+    heroku-cli
+    icdiff
     jdk
     mycli
     sparklines-git
