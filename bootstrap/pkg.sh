@@ -88,6 +88,8 @@ installPipPackages()
   echo 'Installing pip packages...'
 
   local pkgs=(
+    cppman
+    glances
     httpstat
     ici
     powerline-status

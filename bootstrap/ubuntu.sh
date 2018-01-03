@@ -26,6 +26,7 @@ prepareUbuntuEnvCLI()
     build-essential
     ca-certificates
     curl
+    dstat
     file
     git
     libbz2-dev
