@@ -69,6 +69,20 @@ zplugSetup()
   purePromptSetup
 }
 
+bashItSetup()
+{
+  blankLines
+  echo 'Setup bash-it...'
+  syncConfigRepo ~/.bash_it https://github.com/Bash-it/bash-it
+  ~/.bash_it/install.sh --no-modify-config
+  echo 'Done.'
+
+  printf 'Symlinking .bash_profile and .bashrc... '
+  backupThenSymlink "$config_dir/bash_it/.bash_profile" ~/.bash_profile
+  backupThenSymlink "$config_dir/bash_it/.bashrc" ~/.bashrc
+  echo 'Done.'
+}
+
 purePromptSetup()
 {
   blankLines
