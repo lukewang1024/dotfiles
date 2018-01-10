@@ -239,9 +239,7 @@ prepareMacOSEnvGUI()
     caprine
     caskroom/versions/skype7
     flume
-    google-hangouts
     tweeten
-    wewechat
 
     # Download
     aria2gui

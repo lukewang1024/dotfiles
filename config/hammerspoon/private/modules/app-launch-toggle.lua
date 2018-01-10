@@ -41,9 +41,9 @@ setAppToggles(hyper, {
   [','] = 'System Preferences',
   ['.'] = 'SourceTree',
   ['/'] = 'Finder',
-  ['['] = 'WhatsApp',
-  [']'] = 'Flume',
-  ['\\'] = 'Maipo',
+  ['['] = 'Caprine',
+  [']'] = 'LINE',
+  ['\\'] = 'MacPass',
   ['1'] = 'Spark',
   ['2'] = 'Todoist',
   ['3'] = 'Fantastical',
@@ -51,7 +51,7 @@ setAppToggles(hyper, {
   ['5'] = 'SQLPro for Postgres',
   ['6'] = 'MongoDB Compass',
   ['7'] = 'Medis',
-  ['9'] = 'Postman',
+  ['9'] = 'Proxifier',
   ['0'] = 'Charles'
 })
 
@@ -66,20 +66,21 @@ setAppToggles(hyperCmd, {
   k = 'Kitematic (Beta)',
   m = 'NeteaseMusic',
   n = 'Knotes',
-  p = 'MacPass',
+  p = 'Postman',
   s = 'Spotify',
   v = 'MacVim',
-  w = 'wewechat',
+  w = 'WhatsApp',
   y = 'Slack',
   z = 'Zeplin',
   ['`'] = 'FutuNiuniu',
   [';'] = 'Terminal',
-  ['['] = 'LINE',
-  [']'] = 'Caprine',
-  ['\\'] = 'Tweeten',
+  ['['] = 'Flume',
+  [']'] = 'Tweeten',
+  ['\\'] = 'Maipo',
   ['2'] = 'QuickTab for Trello',
   ['5'] = 'Sequel Pro',
   ['6'] = 'Robo 3T',
+  ['9'] = 'ShadowsocksX-NG',
   ['0'] = 'WireShark'
 })
 

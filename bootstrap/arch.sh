@@ -29,6 +29,7 @@ prepareArchEnvCLI()
     fzf
     git
     go
+    haproxy
     httpie
     imagemagick
     irssi
@@ -50,6 +51,7 @@ prepareArchEnvCLI()
     readline
     rsync
     ruby
+    shadowsocks-libev
     the_silver_searcher
     tmux
     tree
@@ -92,6 +94,7 @@ prepareArchEnvGUI()
     kdiff3
     keepass
     screenfetch
+    shadowsocks-qt5
     wkhtmltopdf
   )
   pacmanInstallPkgs
