@@ -36,6 +36,7 @@ installNixBrewPackages()
     git-flow-avh
     go
     gzip
+    haproxy
     httpie
     icdiff
     imagemagick
@@ -65,6 +66,7 @@ installNixBrewPackages()
     ranger
     redis
     rsync
+    shadowsocks-libev
     shellcheck
     the_silver_searcher
     thefuck

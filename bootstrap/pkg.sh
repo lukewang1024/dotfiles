@@ -57,6 +57,7 @@ installNpmPackages()
     loopback-cli
     localtunnel
     nativescript
+    nls
     now
     ntl
     opn-cli
