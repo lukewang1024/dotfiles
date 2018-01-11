@@ -103,7 +103,6 @@ prepareMacOSEnvGUI()
     803453959  # Slack
     836500024  # WeChat
     880001334  # Reeder 3
-    926036361  # LastPass
     998804308  # Blinks
     1012930195 # HandShaker
     1147396723 # WhatsApp
@@ -190,6 +189,7 @@ prepareMacOSEnvGUI()
     skim
     stretchly
     suspicious-package
+    teambition
     the-unarchiver
     toau
     ubersicht
@@ -212,7 +212,6 @@ prepareMacOSEnvGUI()
     wireshark
 
     # VCS tools
-    fork
     kdiff3
     rowanj-gitx
     sourcetree

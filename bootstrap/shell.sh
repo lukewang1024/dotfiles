@@ -81,6 +81,13 @@ bashItSetup()
   backupThenSymlink "$config_dir/bash_it/.bash_profile" ~/.bash_profile
   backupThenSymlink "$config_dir/bash_it/.bashrc" ~/.bashrc
   echo 'Done.'
+
+  # Enable common plugins
+  bash -i -c ' \
+    bash-it enable alias      ag general git tmux; \
+    bash-it enable plugin     alias-completion base extract fasd git jenv less-pretty-cat pyenv rbenv tmux; \
+    bash-it enable completion bash-it brew conda git git_flow_avh npm ssh system tmux; \
+    exit'
 }
 
 purePromptSetup()

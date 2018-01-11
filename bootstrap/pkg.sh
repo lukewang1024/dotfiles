@@ -54,14 +54,15 @@ installNpmPackages()
     hexo-cli
     http-server
     leetcode-cli
-    loopback-cli
     localtunnel
+    loopback-cli
     nativescript
     nls
     now
     ntl
     opn-cli
     pm2
+    react-devtools
     react-native-cli
     react-vr-cli
     semantic-release-cli
