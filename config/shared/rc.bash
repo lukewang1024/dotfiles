@@ -1,4 +1,3 @@
 export SHELL=bash
 
-alias rb='source ~/.bashrc'
-
+alias rrc='source ~/.bashrc'

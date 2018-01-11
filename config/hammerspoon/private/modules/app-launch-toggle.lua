@@ -78,6 +78,7 @@ setAppToggles(hyperCmd, {
   [']'] = 'Tweeten',
   ['\\'] = 'Maipo',
   ['2'] = 'QuickTab for Trello',
+  ['3'] = 'Teambition',
   ['5'] = 'Sequel Pro',
   ['6'] = 'Robo 3T',
   ['9'] = 'ShadowsocksX-NG',
