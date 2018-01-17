@@ -269,6 +269,7 @@ setMacOSConfigs()
   backupThenSymlink "$config_dir/karabiner" ~/.config/karabiner
 
   betterMacOSDefaults
+  brewMultiUserPermission
   installMacWeChatPlugin
 }
 
@@ -307,6 +308,11 @@ betterMacOSDefaults()
   defaults write com.apple.dock springboard-rows -int 7
   defaults write com.apple.dock ResetLaunchPad -bool true
   killall Dock
+}
+
+brewMultiUserPermission()
+{
+  sudo chmod -R g+w /usr/local/*
 }
 
 installMacWeChatPlugin()
