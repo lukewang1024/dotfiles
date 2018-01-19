@@ -31,6 +31,7 @@ installNixBrewPackages()
     fish
     fpp
     fzf
+    gifsicle
     git
     git-extras
     git-flow-avh
