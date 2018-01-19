@@ -93,6 +93,7 @@ prepareMacOSEnvGUI()
     406056744  # Evernote
     441258766  # Magnet
     451108668  # QQ
+    497799835  # Xcode
     539883307  # LINE
     568494494  # Pocket
     585829637  # Todoist
@@ -171,6 +172,9 @@ prepareMacOSEnvGUI()
     # Utility
     android-file-transfer
     android-platform-tools
+    android-sdk
+    android-studio
+    androidtool
     appcleaner
     bitbar
     cakebrew

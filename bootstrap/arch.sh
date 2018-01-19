@@ -27,6 +27,7 @@ prepareArchEnvCLI()
     fish
     fortune-mod
     fzf
+    gifsicle
     git
     go
     haproxy
