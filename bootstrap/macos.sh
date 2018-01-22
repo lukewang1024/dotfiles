@@ -146,6 +146,7 @@ prepareMacOSEnvGUI()
     # OS enhancement
     alfred
     bartender
+    commander-one
     flux
     go2shell
     hammerspoon
@@ -274,6 +275,7 @@ setMacOSConfigs()
 
   betterMacOSDefaults
   brewMultiUserPermission
+  fixBatteryDrainOverSleep
   installMacWeChatPlugin
 }
 
@@ -317,6 +319,11 @@ betterMacOSDefaults()
 brewMultiUserPermission()
 {
   sudo chmod -R g+w /usr/local/*
+}
+
+fixBatteryDrainOverSleep()
+{
+  sudo pmset -b tcpkeepalive 0
 }
 
 installMacWeChatPlugin()
