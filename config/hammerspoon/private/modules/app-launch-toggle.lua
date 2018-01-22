@@ -28,6 +28,7 @@ setAppToggles(hyper, {
   m = 'MWeb',
   o = 'Microsoft OneNote',
   p = 'Pocket',
+  q = 'Commander One',
   r = 'Reeder',
   s = 'Safari',
   t = 'Telegram',
