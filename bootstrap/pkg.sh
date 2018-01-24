@@ -44,9 +44,9 @@ installNpmPackages()
     create-react-app
     create-react-native-app
     depcheck
-    egghead-downloader
     ember-cli
     english-dictionary-cli
+    exp
     express-generator
     flow-typed
     gatsby-cli

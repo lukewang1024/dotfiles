@@ -62,7 +62,6 @@ installCygwinPackages()
     openssh
     openssl
     perl
-    php
     python
     python-setuptools
     python3
