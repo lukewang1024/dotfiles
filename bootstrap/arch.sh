@@ -43,7 +43,7 @@ prepareArchEnvCLI()
     npm
     offlineimap
     openssh
-    php
+    p7zip
     polipo
     python
     python-pip

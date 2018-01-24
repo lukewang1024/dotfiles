@@ -60,6 +60,7 @@ installNixBrewPackages()
     open-mpi
     openshift-cli
     openssh
+    p7zip
     pandoc
     proxychains-ng
     python
