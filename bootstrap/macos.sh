@@ -104,6 +104,7 @@ prepareMacOSEnvGUI()
     803453959  # Slack
     836500024  # WeChat
     880001334  # Reeder 3
+    937984704  # Amphetamine
     998804308  # Blinks
     1012930195 # HandShaker
     1147396723 # WhatsApp
@@ -186,6 +187,7 @@ prepareMacOSEnvGUI()
     istat-menus
     keycastr
     licecap
+    onyx
     pdfexpert
     pdfsam-basic
     proxifier
@@ -283,8 +285,8 @@ betterMacOSDefaults()
 {
   # Keyboard
   defaults write -g ApplePressAndHoldEnabled -bool false
-  defaults write -g KeyRepeat -int 2         # minimum 1
   defaults write -g InitialKeyRepeat -int 15 # minimum 10
+  defaults write -g KeyRepeat -int 2         # minimum 1
 
   # Animation
   defaults write -g NSAutomaticWindowAnimationsEnabled -bool false
@@ -299,6 +301,7 @@ betterMacOSDefaults()
   defaults write com.apple.dock autohide-time-modifier -float 0
   defaults write com.apple.dock expose-animation-duration -float 0
   defaults write com.apple.dock launchanim -bool false
+  defaults write com.apple.dock mineffect scale # genie, scale & suck (hidden effect)
   defaults write com.apple.dock springboard-hide-duration -float 0
   defaults write com.apple.dock springboard-page-duration -float 0
   defaults write com.apple.dock springboard-show-duration -float 0
@@ -309,10 +312,16 @@ betterMacOSDefaults()
   defaults write com.apple.universalaccess reduceMotion -bool true
 
   # Dock
+  defaults write com.apple.dock mouse-over-hilite-stack -bool true
+  defaults write com.apple.dock ResetLaunchPad -bool true
   defaults write com.apple.dock scroll-to-open -bool true
+  defaults write com.apple.dock showhidden -bool true
   defaults write com.apple.dock springboard-columns -int 8
   defaults write com.apple.dock springboard-rows -int 7
-  defaults write com.apple.dock ResetLaunchPad -bool true
+
+  # Safari
+  defaults write com.apple.Safari IncludeInternalDebugMenu 1
+
   killall Dock
 }
 
@@ -332,4 +341,10 @@ installMacWeChatPlugin()
   git clone https://github.com/Sunnyyoung/WeChatTweak-macOS.git /tmp/WeChatTweak-macOS
   (cd /tmp/WeChatTweak-macOS; sudo make install)
   echo 'Done.'
+}
+
+backupAutomatorStuff()
+{
+  rsync -au ~/Library/Services/ ~/Dropbox/Sync/Automator/Services --progress
+  rsync -au ~/Applications/Automator/ ~/Dropbox/Sync/Automator/Applications --progress
 }

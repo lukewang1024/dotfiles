@@ -97,7 +97,9 @@ printUsage()
   echo '  zgen  - Use zgen as preferred zsh plugin manager'
   echo '  zplug - Use zplug as preferred zsh plugin manager'
   echo '  run   - Run arbitrary function in any bootstrap scripts'
-  echo '    `./init run util printUsage` calls `printUsage` in `util.sh`'
+  echo '    `./init run [module] [task]`, below are tasks available:'
+  echo '    `macos backupAutomatorStuff`: Backup Automator stuff to Dropbox'
+  echo '    `macos installMacWeChatPlugin`: Tweak WeChat to save login session'
   echo
   exit 1
 }
