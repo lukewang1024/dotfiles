@@ -35,7 +35,7 @@ setAppToggles(hyper, {
   v = 'Visual Studio Code',
   w = 'WeChat',
   y = 'Skype',
-  z = 'Finder',
+  z = 'ForkLift',
   ['`'] = 'iTerm',
   [';'] = 'iTerm',
   ['\''] = 'Sublime Text',
