@@ -149,6 +149,7 @@ prepareMacOSEnvGUI()
     bartender
     commander-one
     flux
+    forklift
     go2shell
     hammerspoon
     hyperswitch
@@ -181,7 +182,6 @@ prepareMacOSEnvGUI()
     bitbar
     cakebrew
     calibre
-    cyberduck
     duet
     fantastical
     istat-menus
@@ -197,7 +197,6 @@ prepareMacOSEnvGUI()
     stretchly
     suspicious-package
     teambition
-    the-unarchiver
     toau
     ubersicht
     vnc-viewer
@@ -321,6 +320,9 @@ betterMacOSDefaults()
 
   # Safari
   defaults write com.apple.Safari IncludeInternalDebugMenu 1
+
+  # Forklift
+  defaults write -g NSFileViewer -string com.binarynights.ForkLift-3
 
   killall Dock
 }
