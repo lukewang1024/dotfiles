@@ -185,8 +185,8 @@ prepareMacOSEnvGUI()
     duet
     fantastical
     istat-menus
+    kap
     keycastr
-    licecap
     onyx
     pdfexpert
     pdfsam-basic
@@ -340,8 +340,9 @@ fixBatteryDrainOverSleep()
 installMacWeChatPlugin()
 {
   echo 'Installing Mac WeChat plugin...'
-  git clone https://github.com/Sunnyyoung/WeChatTweak-macOS.git /tmp/WeChatTweak-macOS
-  (cd /tmp/WeChatTweak-macOS; sudo make install)
+  local localPath=/tmp/WeChatPlugin-MacOS
+  syncConfigRepo $localPath https://github.com/TKkk-iOSer/WeChatPlugin-MacOS
+  `$localPath/Other/Install.sh`
   echo 'Done.'
 }
 

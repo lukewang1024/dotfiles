@@ -94,6 +94,7 @@ installPipPackages()
     glances
     httpstat
     ici
+    myqr
     powerline-status
     pygments
     rainbowstream
