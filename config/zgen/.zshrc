@@ -12,17 +12,18 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/colored-man-pages
     robbyrussell/oh-my-zsh plugins/command-not-found
     robbyrussell/oh-my-zsh plugins/common-aliases
-    robbyrussell/oh-my-zsh plugins/copyfile
     robbyrussell/oh-my-zsh plugins/copydir
+    robbyrussell/oh-my-zsh plugins/copyfile
     robbyrussell/oh-my-zsh plugins/cp
     robbyrussell/oh-my-zsh plugins/dircycle
     robbyrussell/oh-my-zsh plugins/encode64
     robbyrussell/oh-my-zsh plugins/extract
     robbyrussell/oh-my-zsh plugins/fasd
-    robbyrussell/oh-my-zsh plugins/gitfast
     robbyrussell/oh-my-zsh plugins/git-extras
     robbyrussell/oh-my-zsh plugins/git-flow
+    robbyrussell/oh-my-zsh plugins/gitfast
     robbyrussell/oh-my-zsh plugins/history
+    robbyrussell/oh-my-zsh plugins/npm
     robbyrussell/oh-my-zsh plugins/per-directory-history
     robbyrussell/oh-my-zsh plugins/sudo
     robbyrussell/oh-my-zsh plugins/tmux

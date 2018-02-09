@@ -18,6 +18,7 @@ zplug 'plugins/git-extras', from:oh-my-zsh
 zplug 'plugins/git-flow', from:oh-my-zsh
 zplug 'plugins/gitfast', from:oh-my-zsh
 zplug 'plugins/history', from:oh-my-zsh
+zplug 'plugins/npm', from:oh-my-zsh
 zplug 'plugins/per-directory-history', from:oh-my-zsh
 zplug 'plugins/sudo', from:oh-my-zsh
 zplug 'plugins/tmux', from:oh-my-zsh
