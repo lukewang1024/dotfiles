@@ -94,6 +94,6 @@ purePromptSetup()
 {
   blankLines
   echo 'Installing pure prompt...'
-  yarn global add pure-prompt
+  npm install -g pure-prompt
   echo 'Done.'
 }
