@@ -112,6 +112,7 @@ prepareMacOSEnvGUI()
     1231406087 # QuickTab for Trello
     1254743014 # LyricsX
     1295203466 # Microsoft Remote Desktop
+    1314842898 # miniQpicview (Kantu)
   )
 
   mas install `join ' ' "${masApps[@]}"`
