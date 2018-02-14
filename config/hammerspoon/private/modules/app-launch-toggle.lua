@@ -75,6 +75,7 @@ setAppToggles(hyperCmd, {
   z = 'Zeplin',
   ['`'] = 'FutuNiuniu',
   [';'] = 'Terminal',
+  ['\''] = 'VNC Viewer',
   ['['] = 'Flume',
   [']'] = 'Tweeten',
   ['\\'] = 'Maipo',

@@ -23,6 +23,8 @@ alias hpe='export http_proxy=localhost:8123 https_proxy=localhost:8123'
 alias hpd='unset http_proxy https_proxy'
 alias px='proxychains4 -f ~/.config/proxychains.conf'
 alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
+alias sshp='ssh -o PasswordAuthentication=yes'
+alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 
 # Functions
 
