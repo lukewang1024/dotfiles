@@ -26,6 +26,7 @@ setAppToggles(hyper, {
   f = 'Firefox',
   i = 'iTunes',
   m = 'MWeb',
+  n = 'nvALT',
   o = 'Microsoft OneNote',
   p = 'Pocket',
   q = 'Commander One',

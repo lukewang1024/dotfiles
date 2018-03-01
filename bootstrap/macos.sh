@@ -30,6 +30,7 @@ prepareMacOSEnvCLI()
 
   pkgs=(
     ansifilter
+    brightness
     cmatrix
     cmus
     cpulimit
@@ -169,6 +170,7 @@ prepareMacOSEnvGUI()
     macdown
     macvim
     marp
+    nvalt
     sublime-text
     typora
     visual-studio-code
@@ -197,6 +199,7 @@ prepareMacOSEnvGUI()
     skim
     stretchly
     suspicious-package
+    switchhosts
     teambition
     toau
     ubersicht

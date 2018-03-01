@@ -25,6 +25,7 @@ alias px='proxychains4 -f ~/.config/proxychains.conf'
 alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
 alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
+alias gitc='git --no-pager'
 
 # Functions
 

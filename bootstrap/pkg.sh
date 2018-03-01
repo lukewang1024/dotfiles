@@ -37,6 +37,7 @@ installNpmPackages()
     @storybook/cli
     azure-functions-core-tools@core
     bower
+    brightness-cli
     clipboard-cli
     coinmon
     commitizen
@@ -56,6 +57,7 @@ installNpmPackages()
     leetcode-cli
     localtunnel
     loopback-cli
+    nativefier
     nativescript
     nls
     now
