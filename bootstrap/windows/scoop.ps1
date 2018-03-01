@@ -44,8 +44,8 @@ function installScoopPackages
     foxit-reader `
     fzf `
     git `
-    git-lfs `
     gcloud `
+    git-lfs `
     gow `
     hain `
     heidisql `
@@ -79,8 +79,10 @@ function installScoopPackages
     runat `
     say `
     sbt `
+    shadowsocks `
     shasum `
     slack `
+    snipaste `
     sourcetree `
     sublime-text `
     sudo `

@@ -23,6 +23,7 @@ function installChocoPackages
   'Install packages using Chocolatey...'
 
   cinst -y `
+    7zip.install `
     altdrag `
     awscli `
     caesium.install `
@@ -39,6 +40,7 @@ function installChocoPackages
     googlechrome `
     googledrive `
     intellijidea-community `
+    path-copy-copy `
     pdfsam `
     pngoptimizer `
     potplayer `
