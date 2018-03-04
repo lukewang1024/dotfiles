@@ -170,12 +170,15 @@ prepareMacOSEnvGUI()
     macdown
     macvim
     marp
+    mweb
     nvalt
     sublime-text
     typora
     visual-studio-code
+    yu-writer
 
     # Utility
+    airdroid
     android-file-transfer
     android-platform-tools
     android-sdk
