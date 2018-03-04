@@ -49,6 +49,7 @@ installNpmPackages()
     english-dictionary-cli
     exp
     express-generator
+    flow-bin
     flow-typed
     gatsby-cli
     gulp-cli

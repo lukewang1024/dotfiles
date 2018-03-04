@@ -33,7 +33,7 @@ setAppToggles(hyper, {
   r = 'Reeder',
   s = 'Safari',
   t = 'Telegram',
-  v = 'Visual Studio Code',
+  v = 'Code',
   w = 'WeChat',
   y = 'Skype',
   z = 'ForkLift',
