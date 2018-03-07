@@ -36,6 +36,7 @@ function installScoopPackages
     concfg `
     conemu `
     doublecmd `
+    ditto `
     everything `
     far `
     filezilla `
@@ -56,6 +57,7 @@ function installScoopPackages
     jq `
     kdiff3 `
     keepass `
+    kitematic `
     kubectl `
     licecap `
     ln `
@@ -79,6 +81,7 @@ function installScoopPackages
     runat `
     say `
     sbt `
+    screentogif `
     shadowsocks `
     shasum `
     slack `
@@ -100,8 +103,10 @@ function installScoopPackages
     winscp `
     wireshark `
     wox `
+    wsltty `
     xming `
     yarn `
+    zeal `
 
   # Make git work with openssh
   [environment]::setenvironmentvariable('GIT_SSH', (resolve-path (scoop which ssh)), 'USER')
