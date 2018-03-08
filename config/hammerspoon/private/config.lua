@@ -95,8 +95,8 @@ hsconsole_keys = {{"ctrl", "alt"}, "Z"}
 --------------------------
 --- Hyper key bindings ---
 --------------------------
-hyper = {'ctrl', 'alt', 'shift'}
-hyperCmd = {'ctrl', 'alt', 'cmd', 'shift'}
+hyper = {'ctrl', 'alt', 'cmd'}
+hyperAlt = {'ctrl', 'alt', 'cmd', 'shift'}
 
 require 'private/modules/app-launch-toggle'
 require 'private/modules/karabiner-profile-switcher'

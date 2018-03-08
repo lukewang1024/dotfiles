@@ -17,4 +17,4 @@ end
 
 local hotkey = require 'hs.hotkey'
 
-hotkey.bind(hyperCmd, '4', function() startScreenRecording() end)
+hotkey.bind(hyperAlt, '4', function() startScreenRecording() end)
