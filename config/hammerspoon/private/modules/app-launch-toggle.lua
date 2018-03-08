@@ -29,12 +29,13 @@ setAppToggles(hyper, {
   n = 'nvALT',
   o = 'Microsoft OneNote',
   p = 'Pocket',
-  q = 'Commander One',
+  q = 'Zeplin',
   r = 'Reeder',
   s = 'Safari',
   t = 'Telegram',
   v = 'Code',
   w = 'WeChat',
+  x = 'Spark',
   y = 'Skype',
   z = 'ForkLift',
   ['`'] = 'iTerm',
@@ -46,9 +47,8 @@ setAppToggles(hyper, {
   ['['] = 'Caprine',
   [']'] = 'LINE',
   ['\\'] = 'MacPass',
-  ['1'] = 'Spark',
-  ['2'] = 'Todoist',
-  ['3'] = 'Fantastical',
+  ['1'] = 'Fantastical',
+  ['2'] = 'QuickTab for Trello',
   ['4'] = 'licecap',
   ['5'] = 'SQLPro for Postgres',
   ['6'] = 'MongoDB Compass',
@@ -57,8 +57,8 @@ setAppToggles(hyper, {
   ['0'] = 'Charles'
 })
 
--- hyperCmd application shortcuts
-setAppToggles(hyperCmd, {
+-- hyperAlt application shortcuts
+setAppToggles(hyperAlt, {
   a = 'Atom',
   b = 'Bilibili',
   c = 'Chromium',
@@ -72,16 +72,16 @@ setAppToggles(hyperCmd, {
   s = 'Spotify',
   v = 'MacVim',
   w = 'WhatsApp',
+  x = 'Todoist',
   y = 'Slack',
-  z = 'Zeplin',
+  z = 'Commander One',
   ['`'] = 'FutuNiuniu',
   [';'] = 'Terminal',
   ['\''] = 'VNC Viewer',
   ['['] = 'Flume',
   [']'] = 'Tweeten',
   ['\\'] = 'Maipo',
-  ['2'] = 'QuickTab for Trello',
-  ['3'] = 'Teambition',
+  ['2'] = 'Teambition',
   ['5'] = 'Sequel Pro',
   ['6'] = 'Robo 3T',
   ['9'] = 'ShadowsocksX-NG',
