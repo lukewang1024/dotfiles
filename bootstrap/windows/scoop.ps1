@@ -35,8 +35,10 @@ function installScoopPackages
     cmder `
     concfg `
     conemu `
-    doublecmd `
+    cpu-z `
     ditto `
+    doublecmd `
+    etcher `
     everything `
     far `
     filezilla `
@@ -44,14 +46,15 @@ function installScoopPackages
     foobar2000 `
     foxit-reader `
     fzf `
-    git `
     gcloud `
+    git `
     git-lfs `
     gow `
     hain `
     heidisql `
     heroku-cli `
     hexchat `
+    hwmonitor `
     hyper `
     irfanview `
     jq `
@@ -61,6 +64,7 @@ function installScoopPackages
     kubectl `
     licecap `
     ln `
+    losslesscut `
     mc `
     miniconda3 `
     mobaxterm `
@@ -69,6 +73,8 @@ function installScoopPackages
     nmap `
     nodejs `
     nodejs-lts `
+    now-cli `
+    openhardwaremonitor `
     openssh `
     oraclejdk `
     pandoc `
@@ -90,9 +96,11 @@ function installScoopPackages
     sublime-text `
     sudo `
     sumatrapdf `
+    synctrayzor `
     sysinternals `
     telegram `
     touch `
+    unlocker `
     vagrant `
     vcxsrv `
     vim `

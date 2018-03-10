@@ -15,6 +15,7 @@ yaourtInstallPkgs()
 prepareArchEnvCLI()
 {
   pkgs=(
+    android-tools
     aws-cli
     axel
     cloc
@@ -34,6 +35,8 @@ prepareArchEnvCLI()
     httpie
     imagemagick
     irssi
+    jdk8-openjdk
+    jdk9-openjdk
     jq
     lolcat
     mc
@@ -54,6 +57,7 @@ prepareArchEnvCLI()
     ruby
     shadowsocks-libev
     the_silver_searcher
+    tldr
     tmux
     tree
     unzip
@@ -61,6 +65,8 @@ prepareArchEnvCLI()
     w3m
     wget
     wtf
+    xcape
+    yarn
     you-get
     zip
     zsh
@@ -75,12 +81,9 @@ prepareArchEnvCLI()
     google-cloud-sdk
     heroku-cli
     icdiff
-    jdk
     mycli
     sparklines-git
-    tldr-git
     translate-shell
-    yarn
   )
   yaourtInstallPkgs
 
@@ -90,33 +93,42 @@ prepareArchEnvCLI()
 prepareArchEnvGUI()
 {
   pkgs=(
+    android-file-transfer
+    atom
     chromium
     firefox
+    firefox-developer-edition
     kdiff3
     keepass
+    rofi
     screenfetch
     shadowsocks-qt5
     wkhtmltopdf
+    zathura
+    zathura-cb
+    zathura-djvu
+    zathura-pdf-mupdf
+    zathura-ps
+    zeal
   )
   pacmanInstallPkgs
 
   pkgs=(
+    android-sdk
+    android-sdk-platform-tools
+    android-studio
     dropbox
     electronic-wechat
-    firefox-developer
+    etcher
+    genymotion
+    git-cola
     google-chrome
-    keepass-plugin-dbbackup
-    keepass-plugin-favicon
-    keepass-plugin-haveibeenpwned
-    keepass-plugin-http
-    keepass-plugin-keeotp
     keepass-plugin-qualitycolumn
     keepass-plugin-quickunlock
-    keepass-plugin-rpc
-    keepass-plugin-traytotp
-    skypeforlinux-bin
+    losslesscut
+    skypeforlinux-stable-bin
     sublime-text-dev
-    visual-studio-code
+    visual-studio-code-bin
   )
   yaourtInstallPkgs
 }

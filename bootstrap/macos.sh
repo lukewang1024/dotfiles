@@ -189,10 +189,12 @@ prepareMacOSEnvGUI()
     cakebrew
     calibre
     duet
+    etcher
     fantastical
     istat-menus
     kap
     keycastr
+    losslesscut
     onyx
     pdfexpert
     pdfsam-basic
