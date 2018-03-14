@@ -1,14 +1,20 @@
 source "$partial_dir/env.sh"
 
+configPacman()
+{
+  timedatectl set-ntp true
+  sudo pacman-mirrors -c Hong_Kong,Taiwan
+}
+
 pacmanInstallPkgs()
 {
-  sudo pacman -Sy `join ' ' "${pkgs[@]}"` --needed
+  sudo pacman -Sy --needed --noconfirm `join ' ' "${pkgs[@]}"`
   unset pkgs
 }
 
-yaourtInstallPkgs()
+aurInstallPkgs()
 {
-  yaourt -Sy `join ' ' "${pkgs[@]}"`
+  pacaur -Sy --needed --noconfirm --noedit `join ' ' "${pkgs[@]}"`
   unset pkgs
 }
 
@@ -24,6 +30,9 @@ prepareArchEnvCLI()
     cpulimit
     dstat
     fasd
+    fcitx
+    fcitx-im
+    fcitx-rime
     figlet
     fish
     fortune-mod
@@ -41,12 +50,14 @@ prepareArchEnvCLI()
     lolcat
     mc
     multitail
+    mutt
     nghttp2
     nodejs
     npm
     offlineimap
     openssh
     p7zip
+    pacaur
     polipo
     python
     python-pip
@@ -57,6 +68,7 @@ prepareArchEnvCLI()
     ruby
     shadowsocks-libev
     the_silver_searcher
+    tig
     tldr
     tmux
     tree
@@ -66,6 +78,7 @@ prepareArchEnvCLI()
     wget
     wtf
     xcape
+    yaourt
     yarn
     you-get
     zip
@@ -82,16 +95,33 @@ prepareArchEnvCLI()
     heroku-cli
     icdiff
     mycli
+    nerd-fonts-complete
     sparklines-git
     translate-shell
   )
-  yaourtInstallPkgs
+  aurInstallPkgs
 
   envSetup
 }
 
+addSublimeTextRepo()
+{
+  if ! grep -q '\[sublime-text\]' /etc/pacman.conf; then
+    curl -O https://download.sublimetext.com/sublimehq-pub.gpg && \
+      sudo pacman-key --add sublimehq-pub.gpg && \
+      sudo pacman-key --lsign-key 8A8F901A && \
+      rm sublimehq-pub.gpg
+
+    echo -e "\n[sublime-text]\nServer = https://download.sublimetext.com/arch/stable/x86_64" | sudo tee -a /etc/pacman.conf
+  else
+    echo 'Sublime Text repository has been added. Skip.'
+  fi
+}
+
 prepareArchEnvGUI()
 {
+  addSublimeTextRepo
+
   pkgs=(
     android-file-transfer
     atom
@@ -103,6 +133,7 @@ prepareArchEnvGUI()
     rofi
     screenfetch
     shadowsocks-qt5
+    sublime-text
     wkhtmltopdf
     zathura
     zathura-cb
@@ -127,8 +158,7 @@ prepareArchEnvGUI()
     keepass-plugin-quickunlock
     losslesscut
     skypeforlinux-stable-bin
-    sublime-text-dev
     visual-studio-code-bin
   )
-  yaourtInstallPkgs
+  aurInstallPkgs
 }

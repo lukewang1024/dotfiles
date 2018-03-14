@@ -34,6 +34,8 @@ case $1 in
   'arch' | 'alwsl')
     source "$partial_dir/arch.sh"
 
+    subroutines+=('configPacman')
+
     if [[ $1 == 'alwsl' || $2 != 'gui' ]]; then
       subroutines+=('prepareArchEnvCLI')
     fi
