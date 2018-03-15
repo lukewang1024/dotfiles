@@ -110,8 +110,8 @@ prepareMacOSEnvGUI()
     1012930195 # HandShaker
     1147396723 # WhatsApp
     1176895641 # Spark
-    1231406087 # QuickTab for Trello
     1254743014 # LyricsX
+    1278508951 # Trello
     1295203466 # Microsoft Remote Desktop
     1314842898 # miniQpicview (Kantu)
   )
@@ -238,7 +238,7 @@ prepareMacOSEnvGUI()
     sqlpro-for-postgres
 
     # Browser
-    caskroom/versions/firefoxdeveloperedition
+    caskroom/versions/firefox-developer-edition
     chromium
     firefox
     google-chrome
@@ -326,6 +326,9 @@ betterMacOSDefaults()
   defaults write com.apple.dock showhidden -bool true
   defaults write com.apple.dock springboard-columns -int 8
   defaults write com.apple.dock springboard-rows -int 7
+
+  # Notification
+  defaults write com.apple.notificationcenterui bannerTime 3
 
   # Safari
   defaults write com.apple.Safari IncludeInternalDebugMenu 1
