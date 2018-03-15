@@ -48,7 +48,7 @@ setAppToggles(hyper, {
   [']'] = 'LINE',
   ['\\'] = 'MacPass',
   ['1'] = 'Fantastical',
-  ['2'] = 'QuickTab for Trello',
+  ['2'] = 'Trello',
   ['4'] = 'licecap',
   ['5'] = 'SQLPro for Postgres',
   ['6'] = 'MongoDB Compass',

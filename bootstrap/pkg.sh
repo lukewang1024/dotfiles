@@ -71,6 +71,7 @@ installNpmPackages()
     semantic-release-cli
     serve
     serverless
+    svgexport
     tldr
     trash
     ts-node
