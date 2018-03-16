@@ -26,13 +26,14 @@ prepareArchEnvCLI()
     axel
     cloc
     cmatrix
+    composer
     cowsay
     cpulimit
+    docker
+    docker-compose
+    docker-machine
     dstat
     fasd
-    fcitx
-    fcitx-im
-    fcitx-rime
     figlet
     fish
     fortune-mod
@@ -58,6 +59,7 @@ prepareArchEnvCLI()
     openssh
     p7zip
     pacaur
+    php71
     polipo
     python
     python-pip
@@ -73,6 +75,7 @@ prepareArchEnvCLI()
     tmux
     tree
     unzip
+    vagrant
     vim
     w3m
     wget
@@ -126,6 +129,10 @@ prepareArchEnvGUI()
     android-file-transfer
     atom
     chromium
+    fcitx
+    fcitx-configtool
+    fcitx-im
+    fcitx-rime
     firefox
     firefox-developer-edition
     kdiff3
@@ -134,6 +141,7 @@ prepareArchEnvGUI()
     screenfetch
     shadowsocks-qt5
     sublime-text
+    telegram-desktop
     wkhtmltopdf
     zathura
     zathura-cb
@@ -151,14 +159,19 @@ prepareArchEnvGUI()
     dropbox
     electronic-wechat
     etcher
+    feedreader
     genymotion
     git-cola
     google-chrome
     keepass-plugin-qualitycolumn
     keepass-plugin-quickunlock
+    kitematic
     losslesscut
+    mailspring
     skypeforlinux-stable-bin
+    slack-desktop
     visual-studio-code-bin
+    whatsapp-desktop
   )
   aurInstallPkgs
 }
