@@ -124,7 +124,7 @@ installCpanPackages()
 
 installOtherPackages()
 {
-  installAnyScript md2resume https://raw.githubusercontent.com/there4/markdown-resume/master/bin/md2resume
+  backupThenSymlink "$util_dir/shell/md2resume" ~/bin/md2resume
   installAnyScript hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }
 
