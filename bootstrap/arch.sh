@@ -26,7 +26,6 @@ prepareArchEnvCLI()
     axel
     cloc
     cmatrix
-    composer
     cowsay
     cpulimit
     docker
@@ -53,21 +52,13 @@ prepareArchEnvCLI()
     multitail
     mutt
     nghttp2
-    nodejs
-    npm
     offlineimap
     openssh
     p7zip
     pacaur
-    php71
     polipo
-    python
-    python-pip
-    python2
-    python2-pip
     readline
     rsync
-    ruby
     shadowsocks-libev
     the_silver_searcher
     tig
@@ -104,7 +95,12 @@ prepareArchEnvCLI()
   )
   aurInstallPkgs
 
+  installLinuxBrew
+  installLinuxBrewBuildTools
+  installNixBrewRuntimes
+
   envSetup
+  applyAppConfigs
 }
 
 addSublimeTextRepo()

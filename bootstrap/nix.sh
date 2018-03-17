@@ -6,6 +6,17 @@ brewInstallPkgs()
   unset pkgs
 }
 
+installNixBrewRuntimes()
+{
+  pkgs=(
+    node
+    python
+    python3
+    ruby
+  )
+  brewInstallPkgs
+}
+
 installNixBrewPackages()
 {
   pkgs=(
@@ -63,8 +74,6 @@ installNixBrewPackages()
     p7zip
     pandoc
     proxychains-ng
-    python
-    python3
     ranger
     redis
     rsync

@@ -97,9 +97,12 @@ prepareUbuntuEnvCLI()
   ubuntuInstallPkgs
 
   installLinuxBrew
-  installLinuxBrewPackages
+  installLinuxBrewBuildTools
+  installNixBrewRuntimes
+  installNixBrewPackages
 
   envSetup
+  applyAppConfigs
   fixENOSPC
   fixLocale
 }

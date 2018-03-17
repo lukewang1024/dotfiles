@@ -60,7 +60,17 @@ rbenvSetup()
 {
   blankLines
   echo 'Installing rbenv...'
-  curl https://raw.githubusercontent.com/fesplugas/rbenv-installer/master/bin/rbenv-installer | bash
+  local GH='https://github.com'
+  local ROOT="$HOME/.rbenv"
+  local PLUGINS="$ROOT/plugins"
+  syncConfigRepo "$ROOT"                        "$GH/rbenv/rbenv"
+  syncConfigRepo "$PLUGINS/ruby-build"          "$GH/rbenv/ruby-build"
+  syncConfigRepo "$PLUGINS/rbenv-vars"          "$GH/rbenv/rbenv-vars"
+  syncConfigRepo "$PLUGINS/rbenv-each"          "$GH/rbenv/rbenv-each"
+  syncConfigRepo "$PLUGINS/rbenv-default-gems"  "$GH/rbenv/rbenv-default-gems"
+  syncConfigRepo "$PLUGINS/rbenv-update"        "$GH/rkh/rbenv-update"
+  syncConfigRepo "$PLUGINS/rbenv-communal-gems" "$GH/tpope/rbenv-communal-gems"
+  syncConfigRepo "$PLUGINS/rbenv-user-gems"     "$GH/mislav/rbenv-user-gems"
   echo 'Done.'
 }
 
@@ -68,7 +78,15 @@ pyenvSetup()
 {
   blankLines
   echo 'Installing pyenv...'
-  curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+  local GH='https://github.com'
+  local ROOT="$HOME/.pyenv"
+  local PLUGINS="$ROOT/plugins"
+  syncConfigRepo "$ROOT"                     "$GH/pyenv/pyenv"
+  syncConfigRepo "$PLUGINS/pyenv-doctor"     "$GH/pyenv/pyenv-doctor"
+  syncConfigRepo "$PLUGINS/pyenv-installer"  "$GH/pyenv/pyenv-installer"
+  syncConfigRepo "$PLUGINS/pyenv-update"     "$GH/pyenv/pyenv-update"
+  syncConfigRepo "$PLUGINS/pyenv-virtualenv" "$GH/pyenv/pyenv-virtualenv"
+  syncConfigRepo "$PLUGINS/pyenv-which-ext"  "$GH/pyenv/pyenv-which-ext"
   echo 'Done.'
 }
 
@@ -76,14 +94,15 @@ nodenvSetup()
 {
   blankLines
   echo 'Installing nodenv...'
-  local NODENV_ROOT="$HOME/.nodenv"
-  local NODENV_PLUGINS="$NODENV_ROOT/plugins"
-  syncConfigRepo "$NODENV_ROOT" https://github.com/nodenv/nodenv
-  syncConfigRepo "$NODENV_PLUGINS/node-build" https://github.com/nodenv/node-build
-  syncConfigRepo "$NODENV_PLUGINS/nodenv-default-packages" https://github.com/nodenv/nodenv-default-packages
-  syncConfigRepo "$NODENV_PLUGINS/nodenv-package-json-engine" https://github.com/nodenv/nodenv-package-json-engine
-  syncConfigRepo "$NODENV_PLUGINS/nodenv-package-rehash" https://github.com/nodenv/nodenv-package-rehash
-  syncConfigRepo "$NODENV_PLUGINS/nodenv-update" https://github.com/nodenv/nodenv-update
+  local GH='https://github.com'
+  local ROOT="$HOME/.nodenv"
+  local PLUGINS="$ROOT/plugins"
+  syncConfigRepo "$ROOT"                               "$GH/nodenv/nodenv"
+  syncConfigRepo "$PLUGINS/node-build"                 "$GH/nodenv/node-build"
+  syncConfigRepo "$PLUGINS/nodenv-default-packages"    "$GH/nodenv/nodenv-default-packages"
+  syncConfigRepo "$PLUGINS/nodenv-package-json-engine" "$GH/nodenv/nodenv-package-json-engine"
+  syncConfigRepo "$PLUGINS/nodenv-package-rehash"      "$GH/nodenv/nodenv-package-rehash"
+  syncConfigRepo "$PLUGINS/nodenv-update"              "$GH/nodenv/nodenv-update"
   echo 'Done.'
 }
 
