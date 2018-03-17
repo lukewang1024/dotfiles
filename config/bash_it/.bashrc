@@ -23,3 +23,5 @@ export SCM_CHECK=true
 
 # Load Bash It
 source "$BASH_IT"/bash_it.sh
+
+source ~/.dotfiles/config/shared/ssh-agent-connect.bash

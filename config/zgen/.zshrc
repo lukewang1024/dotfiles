@@ -83,4 +83,4 @@ EOPLUGINS
   zgen save
 fi
 
-source ~/.dotfiles/util/shell/ssh-agent-connect
+source ~/.dotfiles/config/shared/ssh-agent-connect.zsh

@@ -75,4 +75,4 @@ zplug load
 
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
-source ~/.dotfiles/util/shell/ssh-agent-connect
+source ~/.dotfiles/config/shared/ssh-agent-connect.zsh
