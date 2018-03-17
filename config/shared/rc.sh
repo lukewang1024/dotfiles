@@ -27,6 +27,11 @@ alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 alias gitc='git --no-pager'
 
+if [[ $OSTYPE == 'linux-gnu' ]]; then
+  alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'
+  alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
+fi
+
 # Functions
 
 # Locate directly to a subsection in man page

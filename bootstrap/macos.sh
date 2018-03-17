@@ -26,6 +26,7 @@ prepareMacOSEnvCLI()
   )
   brewInstallPkgs
 
+  installNixBrewRuntimes
   installNixBrewPackages
 
   pkgs=(
@@ -209,6 +210,7 @@ prepareMacOSEnvGUI()
     toau
     ubersicht
     vnc-viewer
+    wkhtmltopdf
 
     # DevTool
     caskroom/versions/java8

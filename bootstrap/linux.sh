@@ -8,7 +8,7 @@ installLinuxBrew()
   PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 }
 
-installLinuxBrewPackages()
+installLinuxBrewBuildTools()
 {
   # Build tools
   pkgs=(
@@ -20,8 +20,11 @@ installLinuxBrewPackages()
     xz
   )
   brewInstallPkgs
+}
 
-  installNixBrewPackages
+applyAppConfigs()
+{
+  backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
 }
 
 fixENOSPC()
