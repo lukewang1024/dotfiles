@@ -120,7 +120,6 @@ utilSetup()
   printf 'Installing handy configs and wrappers... '
   backupThenSymlink "$config_dir/proxychains/proxychains.conf" ~/.config/proxychains.conf
   backupThenSymlink "$util_dir/shell/pyenv-install" ~/bin/pyenv-install
-  backupThenSymlink "$util_dir/shell/ssh-agent-connect" ~/bin/ssh-agent-connect
   backupThenSymlink "$util_dir/spark/pyspark-jupyter" ~/bin/pyspark-jupyter
   backupThenSymlink "$util_dir/spark/pyspark-jupyter-public" ~/bin/pyspark-jupyter-public
   echo 'Done.'
