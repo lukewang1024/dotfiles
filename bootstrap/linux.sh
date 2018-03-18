@@ -25,6 +25,7 @@ installLinuxBrewBuildTools()
 applyAppConfigs()
 {
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
+  backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
 }
 
 fixENOSPC()
