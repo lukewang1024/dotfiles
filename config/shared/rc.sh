@@ -28,6 +28,7 @@ alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 alias gitc='git --no-pager'
 
 if [[ $OSTYPE == 'linux-gnu' ]]; then
+  alias xcape-mod='xcape -e "Control_L=Escape;Mode_switch=Escape"'
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'
   alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
 fi

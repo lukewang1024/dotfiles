@@ -32,4 +32,58 @@ Other tasks:
 
 ## What it does
 
-TBC
+TODO
+
+## MacOS
+
+TODO
+
+## Linux
+
+### Keyboard modifications
+
+#### vim-style navigation with `xmodmap`
+
+Init script will create a symbolic link from `~/.Xmodmap` to `~/.dotfiles/config/x/.Xmodmap`, which provides vim-style cursor / mouse pointer navigation:
+
+From | To
+--- | ---
+`Caps_Lock` | `Mode_switch`
+`Shift + Caps_Lock` | `Caps_Lock`
+`Caps_Lock + 4` | line end
+`Caps_Lock + 0` | line start
+`Caps_Lock + h` | cursor left
+`Caps_Lock + j` | cursor down
+`Caps_Lock + k` | cursor up
+`Caps_Lock + l` | cursor right
+`Caps_Lock + x` | delete
+
+Some modifications require accessibility feature to work:
+
+From | To
+--- | ---
+`Caps_Lock + s` | mouse pointer left
+`Caps_Lock + d` | mouse pointer down
+`Caps_Lock + f` | mouse pointer up
+`Caps_Lock + g` | mouse pointer right
+`Caps_Lock + v` | mouse button 1
+`Caps_Lock + b` | mouse button 2
+`Caps_Lock + n` | mouse button 3
+
+#### More escapes with `xcape`
+
+Drop the below line to `.xinitrc`, after `xmodmap ~/.Xmodmap` line to have short press of `Caps_Lock` and `Control_L` to dispatch `Esc` key instead.
+
+```
+xcape -e 'Control_L=Escape;Mode_switch=Escape'
+```
+
+## Windows
+
+### WSL
+
+TODO
+
+### Powershell
+
+TODO
