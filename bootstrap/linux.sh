@@ -28,6 +28,8 @@ applyAppConfigs()
   backupThenSymlink "$config_dir/screenlayout" ~/.screenlayout
   backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
+
+  backupThenSymlink "$util_dir/shell/zzz" ~/bin/zzz
 }
 
 fixENOSPC()
