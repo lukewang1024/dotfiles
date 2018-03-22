@@ -35,6 +35,7 @@ prepareArchEnvCLI()
     fasd
     figlet
     fish
+    flatpak
     fortune-mod
     fzf
     gifsicle
@@ -60,6 +61,7 @@ prepareArchEnvCLI()
     readline
     rsync
     shadowsocks-libev
+    snapd
     the_silver_searcher
     tig
     tldr
@@ -71,7 +73,6 @@ prepareArchEnvCLI()
     w3m
     wget
     wtf
-    xcape
     yaourt
     yarn
     you-get
@@ -101,6 +102,8 @@ prepareArchEnvCLI()
 
   envSetup
   applyAppConfigs
+
+  sudo systemctl enable --now snapd.socket # enable snapd
 }
 
 addSublimeTextRepo()
@@ -123,12 +126,16 @@ prepareArchEnvGUI()
 
   pkgs=(
     android-file-transfer
+    arandr
     atom
+    i3
     chromium
+    compton
     fcitx
     fcitx-configtool
     fcitx-im
     fcitx-rime
+    feh
     firefox
     firefox-developer-edition
     kdiff3
@@ -139,6 +146,8 @@ prepareArchEnvGUI()
     sublime-text
     telegram-desktop
     wkhtmltopdf
+    xcape
+    xorg-xrandr
     zathura
     zathura-cb
     zathura-djvu
@@ -166,6 +175,8 @@ prepareArchEnvGUI()
     mailspring
     skypeforlinux-stable-bin
     slack-desktop
+    spotify
+    ttf-ms-fonts
     visual-studio-code-bin
     whatsapp-desktop
   )
