@@ -33,7 +33,7 @@ symlink()
   elif [[ "$OSTYPE" == 'linux-gnu' || "$OSTYPE" == 'cygwin' ]]; then
     args="-sb"
   fi
-  eval "ln $args $1 ${2:-.}"
+  eval "ln -v $args $1 ${2:-.}"
 }
 
 backupThenSymlink()

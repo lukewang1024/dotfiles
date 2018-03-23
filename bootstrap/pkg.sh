@@ -125,6 +125,7 @@ installCpanPackages()
 installOtherPackages()
 {
   backupThenSymlink "$util_dir/shell/md2resume" ~/bin/md2resume
+  backupThenSymlink "$util_dir/shell/mann" ~/bin/mann
   installAnyScript hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }
 

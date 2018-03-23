@@ -33,11 +33,4 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
 fi
 
-# Functions
-
-# Locate directly to a subsection in man page
-mann () {
-  man $1 | less -p "^( |\t){0,8}$2 "
-}
-
 [ -f ~/.rc.local ] && source ~/.rc.local

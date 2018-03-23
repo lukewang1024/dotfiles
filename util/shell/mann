@@ -1,0 +1,23 @@
+#!/bin/bash
+
+printUsage()
+{
+  echo "Locate the position of an option in command's man page."
+  echo 'Usage:'
+  echo 'mann [command] [option]'
+  echo 'Example:'
+  echo 'mann wget -O'
+}
+
+main()
+{
+  if [ $# -lt 1 ]; then
+    printUsage
+  elif [ $# -eq 1 ]; then
+    man "$1"
+  else
+    man "$1" | less -p "^( |\\t){0,8}$2 "
+  fi
+}
+
+main "$@"

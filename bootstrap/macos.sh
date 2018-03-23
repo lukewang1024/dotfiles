@@ -240,7 +240,6 @@ prepareMacOSEnvGUI()
     sqlpro-for-postgres
 
     # Browser
-    caskroom/versions/firefox-developer-edition
     chromium
     firefox
     google-chrome
@@ -266,7 +265,6 @@ prepareMacOSEnvGUI()
     bilibili
     caskroom/versions/openemu-experimental
     gog-downloader
-    neteasemusic
     origin
     spotifree
     spotify
