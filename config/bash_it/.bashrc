@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 source ~/.dotfiles/config/shared/rc.sh
 source ~/.dotfiles/config/shared/rc.bash
 

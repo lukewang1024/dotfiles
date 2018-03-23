@@ -50,6 +50,7 @@ prepareArchEnvCLI()
     jq
     lolcat
     mc
+    mpc
     multitail
     mutt
     nghttp2
@@ -61,6 +62,7 @@ prepareArchEnvCLI()
     readline
     rsync
     shadowsocks-libev
+    shellcheck
     snapd
     the_silver_searcher
     tig
@@ -137,11 +139,11 @@ prepareArchEnvGUI()
     fcitx-rime
     feh
     firefox
-    firefox-developer-edition
     kdiff3
     keepass
     rofi
     screenfetch
+    scrot
     shadowsocks-qt5
     sublime-text
     telegram-desktop

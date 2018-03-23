@@ -62,7 +62,7 @@ set $workspace4 "4 "
 set $workspace5 "5 "
 set $workspace6 "6 "
 set $workspace7 "7 "
-set $workspace8 "8 "
+set $workspace8 "8 "
 set $workspace9 "9 "
 set $workspace10 "10 "
 
@@ -125,9 +125,9 @@ bindsym XF86AudioPrev exec playerctl previous
 bindsym $mod+Shift+f exec firefox
 bindsym $mod+Return exec i3-sensible-terminal
 bindsym Print exec screenshot
-bindsym $mod+F1 exec ~/.screenlayout/internal-only.sh
-bindsym $mod+F2 exec ~/.screenlayout/external-only.sh
-bindsym $mod+F3 exec ~/.screenlayout/both.sh
+bindsym $mod+Mod1+F1 exec xrandr-int
+bindsym $mod+Mod1+F2 exec xrandr-hdmi
+bindsym $mod+Mod1+F3 exec xrandr-both
 bindsym $mod+d exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
 
 # startup
