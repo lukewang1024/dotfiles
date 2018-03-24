@@ -25,6 +25,7 @@ installLinuxBrewBuildTools()
 applyAppConfigs()
 {
   backupThenSymlink "$config_dir/i3" ~/.config/i3
+  backupThenSymlink "$config_dir/polybar" ~/.config/polybar
   backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
 

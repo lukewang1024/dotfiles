@@ -111,7 +111,6 @@ prepareUbuntuEnvGUI()
 {
   ppas=(
     ppa:jtaylor/keepass     # KeyPass2
-    ppa:djcj/screenfetch    # screenfetch
     ppa:zeal-developers/ppa # Zeal
   )
   ubuntuAddPPAs
@@ -126,7 +125,6 @@ prepareUbuntuEnvGUI()
     kdiff3
     keepass2
     oneko
-    screenfetch
     sublime-text
     zeal
   )

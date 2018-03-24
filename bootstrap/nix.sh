@@ -11,7 +11,7 @@ installNixBrewRuntimes()
   pkgs=(
     node
     python
-    python3
+    python@2
     ruby
   )
   brewInstallPkgs
@@ -65,6 +65,7 @@ installNixBrewPackages()
     nano
     ncdu
     ncurses
+    neofetch
     neovim
     nmap
     offlineimap
