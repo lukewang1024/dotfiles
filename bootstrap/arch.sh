@@ -14,7 +14,7 @@ pacmanInstallPkgs()
 
 aurInstallPkgs()
 {
-  pacaur -Sy --needed --noconfirm --noedit `join ' ' "${pkgs[@]}"`
+  pacaur -Sy --needed --noconfirm --noedit `join ' ' "aur/${pkgs[@]}"`
   unset pkgs
 }
 
@@ -51,6 +51,7 @@ prepareArchEnvCLI()
     lolcat
     mc
     mpc
+    mpd
     multitail
     mutt
     nghttp2
@@ -59,6 +60,7 @@ prepareArchEnvCLI()
     p7zip
     pacaur
     polipo
+    ranger
     readline
     rsync
     shadowsocks-libev
@@ -68,6 +70,7 @@ prepareArchEnvCLI()
     tig
     tldr
     tmux
+    transmission-cli
     tree
     unzip
     vagrant
@@ -130,7 +133,7 @@ prepareArchEnvGUI()
     android-file-transfer
     arandr
     atom
-    i3
+    blueman
     chromium
     compton
     fcitx
@@ -139,16 +142,26 @@ prepareArchEnvGUI()
     fcitx-rime
     feh
     firefox
+    i3-gaps
+    i3blocks
+    i3status
     kdiff3
     keepass
+    neofetch
+    network-manager-applet
+    polybar
+    redshift
     rofi
-    screenfetch
+    rxvt-unicode
     scrot
     shadowsocks-qt5
     sublime-text
     telegram-desktop
+    termite
+    tilda
     wkhtmltopdf
     xcape
+    xorg-xdpyinfo
     xorg-xrandr
     zathura
     zathura-cb
@@ -163,6 +176,7 @@ prepareArchEnvGUI()
     android-sdk
     android-sdk-platform-tools
     android-studio
+    betterlockscreen
     dropbox
     electronic-wechat
     etcher
@@ -170,11 +184,13 @@ prepareArchEnvGUI()
     genymotion
     git-cola
     google-chrome
+    i3lock-color
     keepass-plugin-qualitycolumn
     keepass-plugin-quickunlock
     kitematic
     losslesscut
     mailspring
+    python-pywal
     skypeforlinux-stable-bin
     slack-desktop
     spotify

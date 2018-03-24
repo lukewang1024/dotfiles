@@ -1,6 +1,7 @@
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export EDITOR='vim'
+export BROWSER='firefox'
 
 # Use xterm-256color when not in tmux
 [[ $TMUX == '' ]] && export TERM='xterm-256color'
@@ -13,6 +14,7 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   export PATH="/home/linuxbrew/.linuxbrew/sbin:$PATH"
   export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 fi
+export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
 # Aliases

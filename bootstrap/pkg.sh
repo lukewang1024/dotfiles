@@ -101,6 +101,7 @@ installPipPackages()
     myqr
     powerline-status
     pygments
+    pywal
     rainbowstream
     rdbtools
     rtv

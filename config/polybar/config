@@ -1,0 +1,157 @@
+[colors]
+background = #80000000
+background-alt = ${xrdb:color0:#000}
+foreground = ${xrdb:color7:#ccc}
+foreground-alt = #555
+primary = ${xrdb:color3:#ddd}
+alert = #bd2c40
+transparent = #00000000
+black = #000
+underline = ${xrdb:color1:#eee}
+
+[bar/i3]
+monitor = ${env:MONITOR:LVDS1}
+width = 100%
+height = 24
+fixed-center = true
+background = ${colors.background}
+foreground = ${colors.foreground}
+line-size = 3
+line-color = {$colors.underline}
+border-size = 0
+border-color = {$colors.transparent}
+module-margin = 1
+font-0 = UbuntuMono Nerd Font:size=10;0
+font-1 = Icons:size=10;1
+modules-left = i3 cpu memory temperature battery
+modules-center = xwindow
+modules-right = volume xbacklight wlan lan date
+tray-position = right
+tray-padding = 5
+scroll-up = i3wm-wsnext
+scroll-down = i3wm-wsprev
+
+[module/xwindow]
+type = internal/xwindow
+label = %title:0:100:...%
+
+[module/xkeyboard]
+type = internal/xkeyboard
+blacklist-0 = num lock
+format-underline = ${colors.underline}
+format-prefix = ""
+format-prefix-padding = 1
+label-layout-padding = 1
+label-indicator-padding = 2
+
+[module/i3]
+type = internal/i3
+format = <label-state> <label-mode>
+index-sort = true
+wrapping-scroll = false
+label-mode-padding = 2
+label-mode-foreground = ${colors.black}
+label-mode-background = ${colors.primary}
+label-focused = %index%
+label-focused-background = ${colors.background-alt}
+label-focused-underline = ${colors.primary}
+label-focused-padding = 2
+label-unfocused = %index%
+label-unfocused-padding = 2
+label-visible = %index%
+label-visible-background = ${colors.background-alt}
+label-visible-underline = ${colors.primary}
+label-visible-padding = 2
+label-urgent = %index%
+label-urgent-background = ${colors.alert}
+label-urgent-padding = 2
+
+[module/xbacklight]
+type = internal/xbacklight
+format-underline = ${colors.underline}
+label = : %percentage%%
+
+[module/backlight]
+type = internal/backlight
+card = intel_backlight
+label = : %percentage%%
+
+[module/cpu]
+type = internal/cpu
+interval = 5
+format-prefix = " "
+
+[module/memory]
+type = internal/memory
+interval = 5
+format-prefix = " "
+
+[module/wlan]
+type = internal/network
+accumulate-stats = true
+interface = wlo1
+interval = 1
+label-connected =  %essid%|U:%upspeed%|D:%downspeed%
+
+[module/lan]
+type = internal/network
+accumulate-stats = true
+interface = eno1
+interval = 1
+label-connected =  U:%upspeed%|D:%downspeed%
+
+[module/date]
+type = internal/date
+interval = 1
+format-underline = ${colors.underline}
+label =  %date%  %time%
+date = "%b%d"
+time = "%I:%M%p"
+date-alt = "%a,%b%d,%Y"
+time-alt = "%I:%M:%S%p"
+
+[module/volume]
+type = internal/volume
+format-volume = <ramp-volume> <label-volume>
+format-volume-underline = ${colors.underline}
+label-muted =  muted
+ramp-volume-0 = 
+ramp-volume-1 = 
+ramp-volume-2 = 
+
+[module/battery]
+type = internal/battery
+full-at = 100
+battery = BAT0
+adapter = ADP1
+poll-interval = 5
+time-format = %H:%M
+format-charging =  <label-charging>
+label-charging = %percentage%%
+format-discharging = <ramp-capacity> <label-discharging>
+label-discharging = %time% (%percentage%%)
+label-full =  Charged
+ramp-capacity-0 = 
+ramp-capacity-1 = 
+ramp-capacity-2 = 
+ramp-capacity-3 = 
+ramp-capacity-4 = 
+
+[module/temperature]
+type = internal/temperature
+warn-temperature = 80
+format = <ramp> <label>
+format-warn = <ramp> <label-warn>
+format-warn-foreground = ${colors.alert}
+ramp-0 = 
+ramp-1 = 
+ramp-2 = 
+ramp-3 = 
+ramp-4 = 
+
+[settings]
+screenchange-reload = true
+
+[global/wm]
+margin-top = 5
+margin-bottom = 5

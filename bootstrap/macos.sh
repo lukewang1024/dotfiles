@@ -59,7 +59,6 @@ prepareMacOSEnvCLI()
     netcat
     phantomjs
     reattach-to-user-namespace
-    screenfetch
     spark
     telnet
     tmate
