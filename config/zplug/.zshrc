@@ -65,7 +65,7 @@ fi
 
 zplug 'zsh-users/zsh-syntax-highlighting', defer:2
 zplug 'zsh-users/zsh-history-substring-search', defer:3, \
-  hook-load:'source ~/.dotfiles/config/shared/rc.zsh'
+  hook-load:'source ~/.dotfiles/config/shared/rc.zsh; source ~/.dotfiles/config/todoist/todoist_functions.sh'
 
 # Tip: Use `--verbose` upon `check` and `load` to debug issues
 if ! zplug check; then

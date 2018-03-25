@@ -114,6 +114,9 @@ bindsym $mod+Shift+e exit
 assign [class="Skype"] $workspace9
 assign [class="Spotify"] $workspace10
 
+# app configs
+for_window [class="Galculator"] floating enable
+
 # key bindings
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 2 +5% # increase sound volume
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 2 -5% # decrease sound volume
@@ -123,13 +126,13 @@ bindsym XF86AudioPause exec playerctl play-pause
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
 bindsym $mod+Shift+f exec firefox
-bindsym $mod+Return exec i3-sensible-terminal
+bindsym $mod+Return exec termite
 bindsym Print exec screenshot
 bindsym $mod+Mod1+F1 exec xrandr-int
 bindsym $mod+Mod1+F2 exec xrandr-hdmi
 bindsym $mod+Mod1+F3 exec xrandr-both
 bindsym Mod1+space exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
-bindsym $mod+grave exec i3-sensible-terminal
+bindsym $mod+grave exec urxvt
 
 #
 # start external scripts
@@ -137,6 +140,10 @@ bindsym $mod+grave exec i3-sensible-terminal
 
 # Increase key rate
 exec --no-startup-id xset r rate 300 50
+# Attempt to use external display if connected
+exec --no-startup-id xrandr-both
+# IME support
+exec --no-startup-id fcitx
 # Music player daemon
 exec --no-startup-id mpd
 # Torrent daemon
@@ -145,10 +152,8 @@ exec --no-startup-id transmission-daemon
 exec --no-startup-id compton --fading
 # Make display color warmer
 exec --no-startup-id redshift-gtk
-# Set lockscreen image
-exec --no-startup-id betterlockscreen --update ~/Pictures/Wallpapers
-# Set wallpaper and color scheme
-exec --no-startup-id wal -c -i ~/Pictures/Wallpapers
+# Set wallpaper and lockscreen image
+exec --no-startup-id wallpaper
 # Unclutter makes the mouse invisible after a brief period
 exec --no-startup-id unclutter
 # Network Manager applet

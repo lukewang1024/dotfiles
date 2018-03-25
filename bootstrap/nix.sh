@@ -74,10 +74,12 @@ installNixBrewPackages()
     openssh
     p7zip
     pandoc
+    peco
     proxychains-ng
     ranger
     redis
     rsync
+    sachaos/todoist/todoist
     shadowsocks-libev
     shellcheck
     the_silver_searcher

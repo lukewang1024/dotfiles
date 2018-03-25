@@ -96,6 +96,7 @@ prepareArchEnvCLI()
     icdiff
     mycli
     nerd-fonts-complete
+    peco
     sparklines-git
     translate-shell
   )
@@ -142,6 +143,8 @@ prepareArchEnvGUI()
     fcitx-rime
     feh
     firefox
+    galculator
+    gsimplecal
     i3-gaps
     i3blocks
     i3status
@@ -152,6 +155,7 @@ prepareArchEnvGUI()
     polybar
     redshift
     rofi
+    rofi-scripts
     rxvt-unicode
     scrot
     shadowsocks-qt5
@@ -162,7 +166,9 @@ prepareArchEnvGUI()
     wkhtmltopdf
     xcape
     xorg-xdpyinfo
+    xorg-xprop
     xorg-xrandr
+    xorg-xwininfo
     zathura
     zathura-cb
     zathura-djvu
@@ -194,6 +200,7 @@ prepareArchEnvGUI()
     skypeforlinux-stable-bin
     slack-desktop
     spotify
+    todoist
     ttf-ms-fonts
     visual-studio-code-bin
     whatsapp-desktop
