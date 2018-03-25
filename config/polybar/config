@@ -33,7 +33,7 @@ scroll-down = i3wm-wsprev
 
 [module/xwindow]
 type = internal/xwindow
-label = %title:0:100:...%
+label = %title:0:50:...%
 
 [module/xkeyboard]
 type = internal/xkeyboard
@@ -86,19 +86,19 @@ type = internal/memory
 interval = 5
 format-prefix = " "
 
-[module/wlan]
+[module/network]
 type = internal/network
 accumulate-stats = true
-interface = wlo1
-interval = 1
-label-connected =  %essid%|U:%upspeed%|D:%downspeed%
-
-[module/lan]
-type = internal/network
-accumulate-stats = true
-interface = eno1
 interval = 1
 label-connected =  U:%upspeed%|D:%downspeed%
+
+[module/wlan]
+inherit = module/network
+interface = wlo1
+
+[module/lan]
+inherit = module/network
+interface = eno1
 
 [module/date]
 type = internal/date

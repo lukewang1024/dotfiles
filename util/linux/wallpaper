@@ -1,0 +1,14 @@
+#!/bin/bash
+# Usage:
+#   wallpaper <path-to-an-image> : set wallpaper with image
+#   wallpaper                    : reload wallpaper
+
+exists()
+{
+  command -v "$1" >/dev/null 2>&1
+}
+
+WALL="$HOME/.wallpaper"
+[[ -f $1 ]] && ln -sf "$1" "$WALL"
+exists feh && feh --bg-scale "$WALL"
+exists betterlockscreen && betterlockscreen --update "$WALL" &>/dev/null &

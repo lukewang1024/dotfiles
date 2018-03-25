@@ -78,6 +78,7 @@ EOPLUGINS
   zgen load zsh-users/zsh-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
   zgen load ~/.dotfiles/config/shared/rc.zsh
+  zgen load ~/.dotfiles/config/todoist/todoist_functions.sh
   [ -f ~/.zshrc.local ] && zgen load ~/.zshrc.local
 
   zgen save

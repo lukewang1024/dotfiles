@@ -26,10 +26,12 @@ applyAppConfigs()
 {
   backupThenSymlink "$config_dir/i3" ~/.config/i3
   backupThenSymlink "$config_dir/polybar" ~/.config/polybar
+  backupThenSymlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
 
   # Handy scripts
+  backupThenSymlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
   backupThenSymlink "$util_dir/linux/zzz" ~/bin/zzz
   backupThenSymlink "$util_dir/xrandr/xrandr-both" ~/bin/xrandr-both
   backupThenSymlink "$util_dir/xrandr/xrandr-hdmi" ~/bin/xrandr-hdmi
