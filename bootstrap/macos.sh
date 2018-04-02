@@ -11,7 +11,7 @@ caskInstallPkgs()
 
 prepareMacOSEnvCLI()
 {
-  which brew &> /dev/null || ( \
+  exists brew || ( \
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
     xcode-select --install \
   )

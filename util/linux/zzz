@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # zzz - really simple suspend script
 
 USAGE="Usage: ${0##*/} [-nSzZR]

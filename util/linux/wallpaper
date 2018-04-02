@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Usage:
 #   wallpaper <path-to-an-image> : set wallpaper with image
 #   wallpaper                    : reload wallpaper

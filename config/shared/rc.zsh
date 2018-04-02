@@ -1,4 +1,4 @@
-export SHELL=zsh
+export SHELL=$(command -v zsh)
 
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 ZSH_AUTOSUGGEST_USE_ASYNC=1
