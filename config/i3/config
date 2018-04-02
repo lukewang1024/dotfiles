@@ -142,23 +142,29 @@ bindsym $mod+grave exec urxvt
 exec --no-startup-id xset r rate 300 50
 # Attempt to use external display if connected
 exec --no-startup-id xrandr-both
-# IME support
-exec --no-startup-id fcitx
 # Music player daemon
 exec --no-startup-id mpd
 # Torrent daemon
 exec --no-startup-id transmission-daemon
 # Composite manager
 exec --no-startup-id compton --fading
-# Make display color warmer
-exec --no-startup-id redshift-gtk
 # Set wallpaper and lockscreen image
 exec --no-startup-id wallpaper
 # Unclutter makes the mouse invisible after a brief period
 exec --no-startup-id unclutter
+# IME support
+exec --no-startup-id fcitx
+# Volume tray icon
+exec --no-startup-id pa-applet
 # Network Manager applet
 exec --no-startup-id nm-applet
 # Bluetooth Manager applet
 exec --no-startup-id blueman-applet
+# Make display color warmer
+exec --no-startup-id redshift-gtk
+# Launch syncthing
+exec --no-startup-id syncthing-gtk --minimized
+# Launch dropbox
+exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
 # Launch Polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars

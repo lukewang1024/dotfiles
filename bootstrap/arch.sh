@@ -58,7 +58,9 @@ prepareArchEnvCLI()
     offlineimap
     openssh
     p7zip
+    pa-applet
     pacaur
+    pandoc
     polipo
     ranger
     readline
@@ -89,6 +91,7 @@ prepareArchEnvCLI()
   pkgs=(
     apache-spark
     cheat-git
+    fswatch
     git-lfs
     gitflow-avh
     google-cloud-sdk
@@ -99,6 +102,7 @@ prepareArchEnvCLI()
     peco
     sparklines-git
     translate-shell
+    urlview
   )
   aurInstallPkgs
 
@@ -149,7 +153,7 @@ prepareArchEnvGUI()
     i3blocks
     i3status
     kdiff3
-    keepass
+    keepassxc
     neofetch
     network-manager-applet
     polybar
@@ -184,15 +188,13 @@ prepareArchEnvGUI()
     android-studio
     betterlockscreen
     dropbox
-    electronic-wechat
+    deepin-wechat
     etcher
     feedreader
     genymotion
     git-cola
     google-chrome
     i3lock-color
-    keepass-plugin-qualitycolumn
-    keepass-plugin-quickunlock
     kitematic
     losslesscut
     mailspring
