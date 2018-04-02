@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 repo_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 partial_dir="$repo_path/bootstrap"
@@ -55,6 +55,11 @@ case $1 in
     if [[ $2 == 'all' || $2 == 'gui' ]]; then
       subroutines+=('prepareMacOSEnvGUI')
     fi
+    ;;
+
+  'chromeos')
+    source "$partial_dir/chromeos.sh"
+    subroutines+=('prepareChromeOS')
     ;;
 
   'cygwin')

@@ -31,6 +31,7 @@ applyAppConfigs()
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
 
   # Handy scripts
+  backupThenSymlink "$util_dir/linux/enable-exec" ~/bin/enable-exec
   backupThenSymlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
   backupThenSymlink "$util_dir/linux/zzz" ~/bin/zzz
   backupThenSymlink "$util_dir/xrandr/xrandr-both" ~/bin/xrandr-both

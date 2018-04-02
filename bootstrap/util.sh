@@ -1,6 +1,11 @@
 # Util join function
 function join { local IFS="$1"; shift; echo "$*"; }
 
+exists()
+{
+  command -v "$1" >/dev/null 2>&1
+}
+
 # Back up target file with appending ~
 backup()
 {
@@ -83,6 +88,7 @@ printUsage()
   echo '  cygwin      - Cygwin'
   echo '  ubuntu      - Ubuntu'
   echo '  arch        - Arch Linux'
+  echo '  chromeos    - ChromeOS (requires developer mode)'
   echo
   echo 'List of options:'
   echo
