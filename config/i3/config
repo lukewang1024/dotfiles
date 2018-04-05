@@ -1,12 +1,19 @@
 # i3 config file (v4)
 
+# mod
+set $alt Mod1
+set $super Mod4
+set $default_gap 10
+
 # i3-gaps
 for_window [class="^.*"] border pixel 3
-gaps inner 15
-gaps outer 15
+gaps inner $default_gap
+gaps outer $default_gap
 
-# mod
-set $mod Mod4
+# Adjust gap size
+bindsym $super+Control+0 gaps inner current set $default_gap; gaps outer current set $default_gap
+bindsym $super+Control+minus gaps inner current plus 5
+bindsym $super+Control+equal gaps inner current minus 5
 
 # font
 font pango:UbuntuMono Nerd Font 10
@@ -15,109 +22,136 @@ font pango:UbuntuMono Nerd Font 10
 hide_edge_borders both
 
 # drag floating windows
-floating_modifier $mod
+floating_modifier $super
 
 # split in horizontal orientation
-bindsym $mod+b split h
+bindsym $super+b split h
 
 # split in vertical orientation
-bindsym $mod+v split v
+bindsym $super+v split v
 
 # change focus
-bindsym $mod+h focus left
-bindsym $mod+j focus down
-bindsym $mod+k focus up
-bindsym $mod+l focus right
-bindsym $mod+Left focus left
-bindsym $mod+Down focus down
-bindsym $mod+Up focus up
-bindsym $mod+Right focus right
+bindsym $super+h focus left
+bindsym $super+j focus down
+bindsym $super+k focus up
+bindsym $super+l focus right
+bindsym $super+Left focus left
+bindsym $super+Down focus down
+bindsym $super+Up focus up
+bindsym $super+Right focus right
 
 # move focused window
-bindsym $mod+Shift+h move left
-bindsym $mod+Shift+j move down
-bindsym $mod+Shift+k move up
-bindsym $mod+Shift+l move right
-bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Down move down
-bindsym $mod+Shift+Up move up
-bindsym $mod+Shift+Right move right
+bindsym $super+Shift+h move left
+bindsym $super+Shift+j move down
+bindsym $super+Shift+k move up
+bindsym $super+Shift+l move right
+bindsym $super+Shift+Left move left
+bindsym $super+Shift+Down move down
+bindsym $super+Shift+Up move up
+bindsym $super+Shift+Right move right
 
-# enter fullscreen mode for the focused container
-bindsym $mod+f fullscreen
-
-# change container layout
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
-
-# toggle tiling / floating
-bindsym $mod+Shift+space floating toggle
-
-# change focus between tiling / floating windows
-bindsym $mod+space focus mode_toggle
-
-# focus the parent container
-bindsym $mod+a focus parent
-
-set $workspace1 "1 "
-set $workspace2 "2 "
-set $workspace3 "3 "
-set $workspace4 "4 "
-set $workspace5 "5 "
-set $workspace6 "6 "
-set $workspace7 "7 "
-set $workspace8 "8 "
-set $workspace9 "9 "
-set $workspace10 "10 "
-
-# move focused container to workspace
-bindsym $mod+Shift+1 move container to workspace $workspace1
-bindsym $mod+Shift+2 move container to workspace $workspace2
-bindsym $mod+Shift+3 move container to workspace $workspace3
-bindsym $mod+Shift+4 move container to workspace $workspace4
-bindsym $mod+Shift+5 move container to workspace $workspace5
-bindsym $mod+Shift+6 move container to workspace $workspace6
-bindsym $mod+Shift+7 move container to workspace $workspace7
-bindsym $mod+Shift+8 move container to workspace $workspace8
-bindsym $mod+Shift+9 move container to workspace $workspace9
-bindsym $mod+Shift+0 move container to workspace $workspace10
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+set $ws11 "11"
+set $ws12 "12"
 
 # switch to workspace
-bindsym $mod+1 workspace $workspace1
-bindsym $mod+2 workspace $workspace2
-bindsym $mod+3 workspace $workspace3
-bindsym $mod+4 workspace $workspace4
-bindsym $mod+5 workspace $workspace5
-bindsym $mod+6 workspace $workspace6
-bindsym $mod+7 workspace $workspace7
-bindsym $mod+8 workspace $workspace8
-bindsym $mod+9 workspace $workspace9
-bindsym $mod+0 workspace $workspace10
+bindsym $super+1 workspace $ws1
+bindsym $super+2 workspace $ws2
+bindsym $super+3 workspace $ws3
+bindsym $super+4 workspace $ws4
+bindsym $super+5 workspace $ws5
+bindsym $super+6 workspace $ws6
+bindsym $super+7 workspace $ws7
+bindsym $super+8 workspace $ws8
+bindsym $super+9 workspace $ws9
+bindsym $super+0 workspace $ws10
+bindsym $super+minus workspace $ws11
+bindsym $super+equal workspace $ws12
+
+# move focused container to workspace
+bindsym $super+Shift+1 move container to workspace $ws1
+bindsym $super+Shift+2 move container to workspace $ws2
+bindsym $super+Shift+3 move container to workspace $ws3
+bindsym $super+Shift+4 move container to workspace $ws4
+bindsym $super+Shift+5 move container to workspace $ws5
+bindsym $super+Shift+6 move container to workspace $ws6
+bindsym $super+Shift+7 move container to workspace $ws7
+bindsym $super+Shift+8 move container to workspace $ws8
+bindsym $super+Shift+9 move container to workspace $ws9
+bindsym $super+Shift+0 move container to workspace $ws10
+bindsym $super+Shift+minus move container to workspace $ws11
+bindsym $super+Shift+equal move container to workspace $ws12
+
+# move workspace between screens
+bindsym $super+Control+$alt+Left move workspace to output left
+bindsym $super+Control+$alt+Right move workspace to output right
+
+# enter fullscreen mode for the focused container
+bindsym $super+f fullscreen
+
+# change container layout
+bindsym $super+s layout stacking
+bindsym $super+w layout tabbed
+bindsym $super+e layout toggle split
+
+# toggle tiling / floating
+bindsym $super+Shift+space floating toggle
+
+# change focus between tiling / floating windows
+bindsym $super+space focus mode_toggle
+
+# focus the parent container
+bindsym $super+a focus parent
 
 # kill focused window
-bindsym $mod+Shift+q kill
+bindsym $super+Shift+q kill
 
 # lock
-bindsym $mod+Shift+x exec ~/.config/i3/scripts/lock
+bindsym $super+Control+l exec --no-startup-id ~/.config/i3/scripts/lock
+
+# sleep
+bindsym $super+Control+s exec --no-startup-id betterlockscreen -s
 
 # reload the configuration file
-bindsym $mod+Shift+c reload
+bindsym $super+Control+r reload
 
 # restart i3 inplace
-bindsym $mod+Shift+r restart
+bindsym $super+Control+$alt+r restart
 
 # exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exit
+bindsym $super+Control+$alt+e exit
 
+#
 # default workspaces
-assign [class="Skype"] $workspace9
-assign [class="Spotify"] $workspace10
+#
+assign [class="Firefox"] $ws1
+assign [class="Code"] $ws3
+assign [class="Mailspring"] $ws4
+assign [class="Feedreader"] $ws6
+assign [class="Skype"] $ws8
+assign [class="Telegram"] $ws9
+assign [class="Musixmatch"] $ws10
 
+# apps that fail to work with `assign`
+for_window [class="Spotify"] move to workspace $ws10
+
+#
 # app configs
+#
 for_window [class="Galculator"] floating enable
 
+#
 # key bindings
+#
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 2 +5% # increase sound volume
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 2 -5% # decrease sound volume
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 2 toggle # mute sound
@@ -125,14 +159,19 @@ bindsym XF86AudioPlay exec playerctl play-pause
 bindsym XF86AudioPause exec playerctl play-pause
 bindsym XF86AudioNext exec playerctl next
 bindsym XF86AudioPrev exec playerctl previous
-bindsym $mod+Shift+f exec firefox
-bindsym $mod+Return exec termite
+bindsym $super+Shift+f exec firefox
+bindsym $super+Return exec termite
 bindsym Print exec screenshot
-bindsym $mod+Mod1+F1 exec xrandr-int
-bindsym $mod+Mod1+F2 exec xrandr-hdmi
-bindsym $mod+Mod1+F3 exec xrandr-both
-bindsym Mod1+space exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
-bindsym $mod+grave exec urxvt
+bindsym $alt+space exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
+bindsym $super+grave exec urxvt
+
+# Some apps
+bindsym $super+c exec --no-startup-id gsimplecal
+
+# Toggle between internal monitor and external ones
+bindsym $super+Control+F1 exec xrandr-int
+bindsym $super+Control+F2 exec xrandr-hdmi
+bindsym $super+Control+F3 exec xrandr-both
 
 #
 # start external scripts
