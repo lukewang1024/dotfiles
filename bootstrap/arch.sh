@@ -74,6 +74,7 @@ prepareArchEnvCLI()
     tmux
     transmission-cli
     tree
+    ttf-font-awesome
     unzip
     vagrant
     vim
@@ -102,6 +103,7 @@ prepareArchEnvCLI()
     peco
     sparklines-git
     translate-shell
+    ttf-weather-icons
     urlview
   )
   aurInstallPkgs
@@ -169,10 +171,7 @@ prepareArchEnvGUI()
     tilda
     wkhtmltopdf
     xcape
-    xorg-xdpyinfo
-    xorg-xprop
-    xorg-xrandr
-    xorg-xwininfo
+    xorg-apps
     zathura
     zathura-cb
     zathura-djvu
@@ -188,7 +187,6 @@ prepareArchEnvGUI()
     android-studio
     betterlockscreen
     dropbox
-    deepin-wechat
     etcher
     feedreader
     genymotion
@@ -198,10 +196,12 @@ prepareArchEnvGUI()
     kitematic
     losslesscut
     mailspring
+    musixmatch-bin
     python-pywal
     skypeforlinux-stable-bin
     slack-desktop
     spotify
+    spotify-adkiller-dns-block-git
     todoist
     ttf-ms-fonts
     visual-studio-code-bin
