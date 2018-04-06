@@ -8,20 +8,6 @@ installLinuxBrew()
   PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 }
 
-installLinuxBrewBuildTools()
-{
-  # Build tools
-  pkgs=(
-    bzip2
-    gcc
-    openssl
-    readline
-    sqlite
-    xz
-  )
-  brewInstallPkgs
-}
-
 applyAppConfigs()
 {
   backupThenSymlink "$config_dir/i3" ~/.config/i3

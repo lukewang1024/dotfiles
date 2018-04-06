@@ -97,7 +97,6 @@ prepareUbuntuEnvCLI()
   ubuntuInstallPkgs
 
   installLinuxBrew
-  installLinuxBrewBuildTools
   installNixBrewRuntimes
   installNixBrewPackages
 

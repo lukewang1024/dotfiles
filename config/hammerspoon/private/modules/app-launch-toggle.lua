@@ -68,7 +68,7 @@ setAppToggles(hyperAlt, {
   n = 'Knotes',
   p = 'Postman',
   s = 'Spotify',
-  v = 'MacVim',
+  v = 'Visual Studio Code',
   w = 'WhatsApp',
   x = 'Todoist',
   y = 'Slack',

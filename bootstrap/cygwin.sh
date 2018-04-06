@@ -58,9 +58,7 @@ installCygwinPackages()
     mutt
     nano
     nc
-    ncurses
     openssh
-    openssl
     perl
     python
     python-setuptools

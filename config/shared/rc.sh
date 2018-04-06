@@ -5,6 +5,9 @@ export EDITOR='vim'
 # Use xterm-256color when not in tmux
 [[ $TMUX == '' ]] && export TERM='xterm-256color'
 
+# Set ANDROID_HOME per platform
+[[ $OSTYPE == *'darwin'* ]] && export ANDROID_HOME=$HOME/Library/Android/sdk
+
 # PATH
 export PATH="/usr/bin/core_perl:$PATH"
 export PATH="/usr/local/sbin:$PATH"
