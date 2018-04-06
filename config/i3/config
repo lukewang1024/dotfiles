@@ -140,6 +140,7 @@ assign [class="Feedreader"] $ws6
 assign [class="Skype"] $ws8
 assign [class="Telegram"] $ws9
 assign [class="Musixmatch"] $ws10
+assign [class="keepassxc"] $ws12
 
 # apps that fail to work with `assign`
 for_window [class="Spotify"] move to workspace $ws10
@@ -148,6 +149,7 @@ for_window [class="Spotify"] move to workspace $ws10
 # app configs
 #
 for_window [class="Galculator"] floating enable
+for_window [class="Firefox" title="Library"] floating enable
 
 #
 # key bindings

@@ -32,6 +32,8 @@ installNpmPackages()
 {
   echo 'Installing global npm packages...'
 
+  npm config set python python2.7
+
   local pkgs=(
     @angular/cli
     @storybook/cli
