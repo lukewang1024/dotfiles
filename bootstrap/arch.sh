@@ -1,4 +1,5 @@
 source "$partial_dir/env.sh"
+source "$partial_dir/linux.sh"
 
 configPacman()
 {
@@ -28,6 +29,7 @@ prepareArchEnvCLI()
     cmatrix
     cmus
     cowsay
+    cpanminus
     cpulimit
     docker
     docker-compose
@@ -53,6 +55,8 @@ prepareArchEnvCLI()
     mc
     mpc
     mpd
+    mps-youtube
+    mpv
     multitail
     mutt
     ncmpcpp

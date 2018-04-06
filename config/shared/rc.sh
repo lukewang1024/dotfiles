@@ -7,14 +7,17 @@ export EDITOR='vim'
 
 # Set ANDROID_HOME per platform
 [[ $OSTYPE == *'darwin'* ]] && export ANDROID_HOME=$HOME/Library/Android/sdk
+[[ $OSTYPE == 'linux-gnu' ]] && export ANDROID_HOME=$HOME/android-sdk
 
 # PATH
 export PATH="/usr/bin/core_perl:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 if [[ $OSTYPE == 'linux-gnu' ]]; then
-  export PATH="/home/linuxbrew/.linuxbrew/sbin:$PATH"
-  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+  LINUXBREW='/home/linuxbrew/.linuxbrew'
+  export PATH="$LINUXBREW/sbin:$PATH"
+  export PATH="$LINUXBREW/bin:$PATH"
+  export PATH="$LINUXBREW/opt/python/libexec/bin:$PATH"
 fi
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"

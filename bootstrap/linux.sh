@@ -3,9 +3,12 @@ source "$partial_dir/nix.sh"
 # Use LinuxBrew for latest version of tools
 installLinuxBrew()
 {
-  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)"
-  # Make sure brew can be found right after installation
-  PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+  exists brew || \
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)" && \
+    # Make sure brew can be found right after installation
+    PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+
+  brew update; brew upgrade
 }
 
 applyAppConfigs()
@@ -13,6 +16,8 @@ applyAppConfigs()
   backupThenSymlink "$config_dir/i3" ~/.config/i3
   backupThenSymlink "$config_dir/polybar" ~/.config/polybar
   backupThenSymlink "$config_dir/gsimplecal" ~/.config/gsimplecal
+  backupThenSymlink "$config_dir/x/.xinitrc" ~/.xinitrc
+  backupThenSymlink "$config_dir/x/.Xresources" ~/.Xresources
   backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
 
