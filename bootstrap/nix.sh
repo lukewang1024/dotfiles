@@ -64,7 +64,6 @@ installNixBrewPackages()
     mycli
     nano
     ncdu
-    ncurses
     neofetch
     neovim
     nmap

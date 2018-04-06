@@ -26,6 +26,7 @@ prepareArchEnvCLI()
     axel
     cloc
     cmatrix
+    cmus
     cowsay
     cpulimit
     docker
@@ -54,6 +55,7 @@ prepareArchEnvCLI()
     mpd
     multitail
     mutt
+    ncmpcpp
     nghttp2
     offlineimap
     openssh
@@ -63,7 +65,6 @@ prepareArchEnvCLI()
     pandoc
     polipo
     ranger
-    readline
     rsync
     shadowsocks-libev
     shellcheck
@@ -109,7 +110,6 @@ prepareArchEnvCLI()
   aurInstallPkgs
 
   installLinuxBrew
-  installLinuxBrewBuildTools
   installNixBrewRuntimes
 
   envSetup

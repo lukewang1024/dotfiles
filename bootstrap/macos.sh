@@ -18,14 +18,6 @@ prepareMacOSEnvCLI()
 
   brew update; brew upgrade
 
-  # Build tools
-  pkgs=(
-    openssl
-    readline
-    xz
-  )
-  brewInstallPkgs
-
   installNixBrewRuntimes
   installNixBrewPackages
 
@@ -56,6 +48,11 @@ prepareMacOSEnvCLI()
     m-cli
     mackup
     mas
+    mpc
+    mpd
+    mps-youtube
+    mpv
+    ncmpcpp
     netcat
     phantomjs
     reattach-to-user-namespace
@@ -270,6 +267,8 @@ prepareMacOSEnvGUI()
     spotify-notifications
   )
   caskInstallPkgs
+
+  sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 
   brew cask cleanup; brew cleanup; brew prune
 
