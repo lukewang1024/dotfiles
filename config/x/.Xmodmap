@@ -1,7 +1,18 @@
-! remove Caps Lock functionality
+! remove capslock functionality
 clear lock
-! use Caps Lock to access 3rd and 4th value in keycode definition below
-keycode 66 = Mode_switch Caps_Lock
+
+! use capslock as hyper key
+keycode 66 = Hyper_L Caps_Lock
+
+! use Esc to access 3rd and 4th value in keycode definition below
+keycode 999 = Escape
+keycode 9 = Mode_switch
+
+! leave mod4 as super key only
+remove mod4 = Hyper_L
+
+! set mod3 to hyper key
+add mod3 = Hyper_L
 
 ! more accessible end
 keycode 13 = 4 dollar End End
@@ -9,17 +20,11 @@ keycode 13 = 4 dollar End End
 ! more accessible home
 keycode 19 = 0 parenright Home Home
 
-! more accessible escape
-keycode 26 = e E Escape Escape
-
-! compose key is Mode_switch o
-keycode 32 = o O Multi_key Multi_key
-
 ! move mouse pointer (requires accessibility feature to be enabled)
-keycode 39 = s S KP_Left  KP_Left
-keycode 40 = d D KP_Down  KP_Down
-keycode 41 = f F KP_Up    KP_Up
-keycode 42 = g G KP_Right KP_Right
+keycode 29 = y Y KP_Left  KP_Left
+keycode 30 = u U KP_Down  KP_Down
+keycode 31 = i I KP_Up    KP_Up
+keycode 32 = o O KP_Right KP_Right
 
 ! simulate arrow keys vim style
 keycode 43 = h H Left  Left
@@ -27,10 +32,7 @@ keycode 44 = j J Down  Down
 keycode 45 = k K Up    Up
 keycode 46 = l L Right Right
 
-! more accessible delete
-keycode 53 = x X Delete Delete
-
 ! allow clicking with keyboard
-keycode 55 = v V Pointer_Button1 Pointer_Button1
-keycode 56 = b B Pointer_Button2 Pointer_Button2
-keycode 57 = n N Pointer_Button3 Pointer_Button3
+keycode 58 = m M Pointer_Button1 Pointer_Button1
+keycode 59 = comma less Pointer_Button2 Pointer_Button2
+keycode 60 = period greater Pointer_Button3 Pointer_Button3

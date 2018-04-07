@@ -66,10 +66,6 @@ prepareMacOSEnvCLI()
   brewInstallPkgs
 
   pkgs=(
-    # Fonts
-    caskroom/fonts/font-sourcecodepro-nerd-font-mono
-
-    # CLI tools
     docker
     dotnet
     dotnet-sdk
@@ -121,6 +117,9 @@ prepareMacOSEnvGUI()
   brew update
 
   local pkgs=(
+    # Fonts
+    caskroom/fonts/font-sourcecodepro-nerd-font-mono
+
     # Quicklook plugin
     betterzipql
     provisionql
