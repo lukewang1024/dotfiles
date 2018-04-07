@@ -64,9 +64,10 @@ prepareArchEnvCLI()
     offlineimap
     openssh
     p7zip
-    pa-applet
     pacaur
+    pamixer
     pandoc
+    playerctl
     polipo
     ranger
     rsync
@@ -79,7 +80,6 @@ prepareArchEnvCLI()
     tmux
     transmission-cli
     tree
-    ttf-font-awesome
     unzip
     vagrant
     vim
@@ -104,7 +104,6 @@ prepareArchEnvCLI()
     heroku-cli
     icdiff
     mycli
-    nerd-fonts-complete
     peco
     sparklines-git
     translate-shell
@@ -162,6 +161,7 @@ prepareArchEnvGUI()
     keepassxc
     neofetch
     network-manager-applet
+    pa-applet
     polybar
     redshift
     rofi
@@ -172,7 +172,7 @@ prepareArchEnvGUI()
     sublime-text
     telegram-desktop
     termite
-    tilda
+    ttf-font-awesome
     wkhtmltopdf
     xcape
     xorg-apps
@@ -201,6 +201,7 @@ prepareArchEnvGUI()
     losslesscut
     mailspring
     musixmatch-bin
+    nerd-fonts-complete
     python-pywal
     skypeforlinux-stable-bin
     slack-desktop

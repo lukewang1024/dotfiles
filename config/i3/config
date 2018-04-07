@@ -1,19 +1,114 @@
 # i3 config file (v4)
 
-# mod
-set $alt Mod1
-set $super Mod4
-set $default_gap 10
+#########################
+# Workspace definitions #
+#########################
 
-# i3-gaps
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+set $ws-sublime_text "b"
+set $ws-firefox "f"
+set $ws-androidstudio "i"
+set $ws-feedreader "r"
+set $ws-spotify "s"
+set $ws-telegram "t"
+set $ws-vscode "v"
+set $ws-mailspring "x"
+set $ws-skype "y"
+set $ws-keepass "\ "
+
+###############################
+# audio and music definitions #
+###############################
+
+# PulseAudio / pamixer
+set $inc --no-startup-id pamixer --allow-boost -i 5
+set $biginc --no-startup-id pamixer --allow-boost -i 15
+set $dec --no-startup-id pamixer --allow-boost -d 5
+set $bigdec --no-startup-id pamixer --allow-boost -d 15
+set $mute --no-startup-id pamixer --allow-boost -t
+set $truemute --no-startup-id pamixer -m
+
+# mpris
+set $toggle --no-startup-id playerctl play-pause
+set $pause --no-startup-id playerctl pause
+set $next --no-startup-id playerctl next
+set $prev --no-startup-id playerctl previous
+set $lilfor --no-startup-id playerctl position 10+
+set $bigfor --no-startup-id playerctl position 120+
+set $lilbak --no-startup-id playerctl position 10-
+set $bigbak --no-startup-id playerctl position 120-
+set $beg --no-startup-id playerctl position 0
+
+# spotify
+#set $music spotify
+#set $toggle dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause
+#set $pause dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Pause
+#set $play dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Play
+#set $next dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next
+#set $prev dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous
+#set $lilfor dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Seek
+#set $bigfor dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Seek(
+
+# mpd
+#set $music --no-startup-id st -e ncmpcpp
+#set $toggle --no-startup-id mpc toggle
+#set $pause --no-startup-id mpc pause
+#set $next --no-startup-id mpc next
+#set $prev --no-startup-id mpc prev
+#set $lilfor --no-startup-id mpc seek +10
+#set $bigfor --no-startup-id mpc seek +120
+#set $lilbak --no-startup-id mpc seek -10
+#set $bigbak --no-startup-id mpc seek -120
+#set $beg --no-startup-id mpc seek 0%
+
+# cmus
+#set $music --no-startup-id st -e cmus
+#set $toggle --no-startup-id cmus-remote -u
+#set $next --no-startup-id cmus-remote -n
+#set $prev --no-startup-id cmus-remote -r
+#set $lilfor --no-startup-id cmus-remote -k +10
+#set $bigfor --no-startup-id cmus-remote -k +120
+#set $lilbak --no-startup-id cmus-remote -k -10
+#set $bigbak --no-startup-id cmus-remote -k -120
+#set $beg --no-startup-id cmus-remote -k 00:00:00
+
+# moc
+#set $music --no-startup-id st -e mocp
+#set $toggle --no-startup-id mocp -G
+#set $truepause --no-startup-id mocp -P
+#set $next --no-startup-id mocp -f
+#set $prev --no-startup-id mocp -r
+#set $lilfor --no-startup-id mocp -k 10
+#set $bigfor --no-startup-id mocp -k 120
+#set $lilbak --no-startup-id mocp -k -10
+#set $bigbak --no-startup-id mocp -k -120
+#set $beg --no-startup-id mocp -j 0%
+
+#################
+# Basic configs #
+#################
+
+set $hyper Mod3
+set $super Mod4
+set $alt Mod1
+set $default_gap 10
+set $term --no-startup-id urxvt
+set $browser --no-startup-id firefox
+set $xf86_key_default --no-startup-id i3-nagbar -t warning -m 'Please bind this XF86 key.'
+
+# For i3-gaps
 for_window [class="^.*"] border pixel 3
 gaps inner $default_gap
 gaps outer $default_gap
-
-# Adjust gap size
-bindsym $super+Control+0 gaps inner current set $default_gap; gaps outer current set $default_gap
-bindsym $super+Control+minus gaps inner current plus 5
-bindsym $super+Control+equal gaps inner current minus 5
 
 # font
 font pango:UbuntuMono Nerd Font 10
@@ -23,6 +118,50 @@ hide_edge_borders both
 
 # drag floating windows
 floating_modifier $super
+
+##########################
+# start external scripts #
+##########################
+
+# Increase key rate
+exec --no-startup-id xset r rate 300 30
+# Attempt to use external display if connected
+exec --no-startup-id xrandr-both
+# Music player daemon
+exec --no-startup-id mpd
+# Torrent daemon
+exec --no-startup-id transmission-daemon
+# Composite manager
+exec --no-startup-id compton --fading
+# Set wallpaper and lockscreen image
+exec --no-startup-id wallpaper
+# Unclutter makes the mouse invisible after a brief period
+exec --no-startup-id unclutter
+# IME support
+exec --no-startup-id fcitx
+# Volume tray icon
+exec --no-startup-id pa-applet
+# Network Manager applet
+exec --no-startup-id nm-applet
+# Bluetooth Manager applet
+exec --no-startup-id blueman-applet
+# Make display color warmer
+exec --no-startup-id redshift-gtk
+# Launch syncthing
+exec --no-startup-id syncthing-gtk --minimized
+# Launch dropbox
+exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
+# Launch Polybar where appropriate
+exec_always --no-startup-id ~/.config/polybar/launch-bars
+
+####################
+# layout shortcuts #
+####################
+
+# Adjust gap size
+bindsym $super+Control+0 gaps inner current set $default_gap; gaps outer current set $default_gap
+bindsym $super+Control+minus gaps inner current plus 5
+bindsym $super+Control+equal gaps inner current minus 5
 
 # split in horizontal orientation
 bindsym $super+b split h
@@ -50,18 +189,11 @@ bindsym $super+Shift+Down move down
 bindsym $super+Shift+Up move up
 bindsym $super+Shift+Right move right
 
-set $ws1 "1"
-set $ws2 "2"
-set $ws3 "3"
-set $ws4 "4"
-set $ws5 "5"
-set $ws6 "6"
-set $ws7 "7"
-set $ws8 "8"
-set $ws9 "9"
-set $ws10 "10"
-set $ws11 "11"
-set $ws12 "12"
+##############
+# Workspaces #
+##############
+
+bindsym $super+Tab workspace back_and_forth
 
 # switch to workspace
 bindsym $super+1 workspace $ws1
@@ -74,8 +206,6 @@ bindsym $super+7 workspace $ws7
 bindsym $super+8 workspace $ws8
 bindsym $super+9 workspace $ws9
 bindsym $super+0 workspace $ws10
-bindsym $super+minus workspace $ws11
-bindsym $super+equal workspace $ws12
 
 # move focused container to workspace
 bindsym $super+Shift+1 move container to workspace $ws1
@@ -88,8 +218,63 @@ bindsym $super+Shift+7 move container to workspace $ws7
 bindsym $super+Shift+8 move container to workspace $ws8
 bindsym $super+Shift+9 move container to workspace $ws9
 bindsym $super+Shift+0 move container to workspace $ws10
-bindsym $super+Shift+minus move container to workspace $ws11
-bindsym $super+Shift+equal move container to workspace $ws12
+
+################################
+# App specific workspaces      #
+# Use with Caslock (hyper) key #
+################################
+
+# Sublime - b
+bindsym $hyper+b workspace $ws-sublime_text
+assign [class="Sublime_text"] $ws-sublime_text
+
+# Firefox - f
+bindsym $hyper+f workspace $ws-firefox
+assign [class="Firefox"] $ws-firefox
+for_window [class="Firefox" title="Library"] floating enable
+
+# Android Studio - i
+bindsym $hyper+i workspace $ws-androidstudio
+assign [class="jetbrains-studio"] $ws-androidstudio
+
+# Feedreader - r
+bindsym $hyper+r workspace $ws-feedreader
+assign [class="Feedreader"] $ws-feedreader
+
+# Spotify - s
+bindsym $hyper+s workspace $ws-spotify
+assign [class="Musixmatch"] $ws-spotify
+for_window [class="Spotify"] move to workspace $ws-spotify
+
+# Telegram - t
+bindsym $hyper+t workspace $ws-telegram
+assign [class="Telegram"] $ws-telegram
+
+# VSCode - v
+bindsym $hyper+v workspace $ws-vscode
+assign [class="Code"] $ws-vscode
+
+# Mailspring - x
+bindsym $hyper+x workspace $ws-mailspring
+assign [class="Mailspring"] $ws-mailspring
+
+# Skype - y
+bindsym $hyper+y workspace $ws-skype
+assign [class="Skype"] $ws-skype
+
+# Keepass - \
+bindsym $hyper+backslash workspace $ws-keepass
+assign [class="keepassxc"] $ws-keepass
+
+###############
+# app configs #
+###############
+
+for_window [class="Galculator"] floating enable
+
+#############
+# shortcuts #
+#############
 
 # move workspace between screens
 bindsym $super+Control+$alt+Left move workspace to output left
@@ -130,82 +315,111 @@ bindsym $super+Control+$alt+r restart
 # exit i3 (logs you out of your X session)
 bindsym $super+Control+$alt+e exit
 
-#
-# default workspaces
-#
-assign [class="Firefox"] $ws1
-assign [class="Code"] $ws3
-assign [class="Mailspring"] $ws4
-assign [class="Feedreader"] $ws6
-assign [class="Skype"] $ws8
-assign [class="Telegram"] $ws9
-assign [class="Musixmatch"] $ws10
-assign [class="keepassxc"] $ws12
-
-# apps that fail to work with `assign`
-for_window [class="Spotify"] move to workspace $ws10
-
-#
-# app configs
-#
-for_window [class="Galculator"] floating enable
-for_window [class="Firefox" title="Library"] floating enable
-
-#
-# key bindings
-#
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume 2 +5% # increase sound volume
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume 2 -5% # decrease sound volume
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute 2 toggle # mute sound
-bindsym XF86AudioPlay exec playerctl play-pause
-bindsym XF86AudioPause exec playerctl play-pause
-bindsym XF86AudioNext exec playerctl next
-bindsym XF86AudioPrev exec playerctl previous
 bindsym $super+Shift+f exec firefox
 bindsym $super+Return exec termite
 bindsym Print exec screenshot
 bindsym $alt+space exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
 bindsym $super+grave exec urxvt
-
-# Some apps
 bindsym $super+c exec --no-startup-id gsimplecal
 
-# Toggle between internal monitor and external ones
+# toggle between internal monitor and external ones
 bindsym $super+Control+F1 exec xrandr-int
 bindsym $super+Control+F2 exec xrandr-hdmi
 bindsym $super+Control+F3 exec xrandr-both
 
-#
-# start external scripts
-#
+# Media controls
+bindsym $hyper+Left exec $lilbak
+bindsym $hyper+Right exec $lilfor
+bindsym $hyper+$alt+Left exec $bigbak
+bindsym $hyper+$alt+Right exec $bigfor
+bindsym $hyper+F5 exec $prev
+bindsym $hyper+F6 exec $next
+bindsym $hyper+F7 exec $toggle
+bindsym $hyper+F9 exec $mute
+bindsym $hyper+F10 exec $dec
+bindsym $hyper+F11 exec $inc
 
-# Increase key rate
-exec --no-startup-id xset r rate 300 50
-# Attempt to use external display if connected
-exec --no-startup-id xrandr-both
-# Music player daemon
-exec --no-startup-id mpd
-# Torrent daemon
-exec --no-startup-id transmission-daemon
-# Composite manager
-exec --no-startup-id compton --fading
-# Set wallpaper and lockscreen image
-exec --no-startup-id wallpaper
-# Unclutter makes the mouse invisible after a brief period
-exec --no-startup-id unclutter
-# IME support
-exec --no-startup-id fcitx
-# Volume tray icon
-exec --no-startup-id pa-applet
-# Network Manager applet
-exec --no-startup-id nm-applet
-# Bluetooth Manager applet
-exec --no-startup-id blueman-applet
-# Make display color warmer
-exec --no-startup-id redshift-gtk
-# Launch syncthing
-exec --no-startup-id syncthing-gtk --minimized
-# Launch dropbox
-exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
-# Launch Polybar where appropriate
-exec_always --no-startup-id ~/.config/polybar/launch-bars
+###########################################################
+# extra XF86 keys                                         #
+# these are the extra media keys that some keyboards have #
+###########################################################
+
+bindsym XF86AudioForward      exec $lilfor
+bindsym XF86AudioLowerVolume  exec $dec
+bindsym XF86AudioMedia        exec $music
+bindsym XF86AudioMicMute      exec $micmute
+bindsym XF86AudioMute         exec $mute
+bindsym XF86AudioNext         exec $next
+bindsym XF86AudioPlay         exec $toggle
+bindsym XF86AudioPause        exec $toggle
+bindsym XF86AudioPrev         exec $prev
+bindsym XF86AudioRaiseVolume  exec $inc
+bindsym XF86AudioRecord       exec $audio
+bindsym XF86AudioRewind       exec $lilbak
+bindsym XF86AudioStop         exec $toggle
+bindsym XF86Back              exec $xf86_key_default
+bindsym XF86Battery           exec $xf86_key_default
+bindsym XF86Bluetooth         exec $xf86_key_default
+bindsym XF86Calculator        exec --no-startup-id galculator
+bindsym XF86Close             kill
+bindsym XF86Copy              exec $xf86_key_default
+bindsym XF86Cut               exec $xf86_key_default
+bindsym XF86Display           exec --no-startup-id arandr
+bindsym XF86Documents         exec $term -e ranger ~/Documents
+bindsym XF86DOS               exec $xf86_key_default
+bindsym XF86Eject             exec $xf86_key_default
+bindsym XF86Explorer          exec $term -e ranger
+bindsym XF86Favorites         exec $xf86_key_default
+bindsym XF86Finance           exec $xf86_key_default
+bindsym XF86Forward           exec $xf86_key_default
+bindsym XF86Game              exec $xf86_key_default
+bindsym XF86Go                exec $xf86_key_default
+bindsym XF86HomePage          exec $browser; workspace $ws-firefox
+bindsym XF86KbdBrightnessDown exec $xf86_key_default
+bindsym XF86KbdBrightnessUp   exec $xf86_key_default
+bindsym XF86KbdLightOnOff     exec $xf86_key_default
+bindsym XF86Launch1           exec $xf86_key_default
+bindsym XF86Launch2           exec $xf86_key_default
+bindsym XF86Launch3           exec $xf86_key_default
+bindsym XF86Launch4           exec $xf86_key_default
+bindsym XF86Launch5           exec $xf86_key_default
+bindsym XF86Launch6           exec $xf86_key_default
+bindsym XF86Launch7           exec $xf86_key_default
+bindsym XF86Launch8           exec $xf86_key_default
+bindsym XF86Launch9           exec $xf86_key_default
+bindsym XF86LaunchA           exec $xf86_key_default
+bindsym XF86LaunchB           exec $xf86_key_default
+bindsym XF86Mail              exec $xf86_key_default
+bindsym XF86MailForward       exec $xf86_key_default
+bindsym XF86MenuKB            exec $xf86_key_default
+bindsym XF86Messenger         exec $xf86_key_default
+bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 10
+bindsym XF86MonBrightnessUp   exec --no-startup-id xbacklight -inc 10
+bindsym XF86MyComputer        exec $xf86_key_default
+bindsym XF86New               exec $xf86_key_default
+bindsym XF86Open              exec $xf86_key_default
+bindsym XF86Paste             exec $xf86_key_default
+bindsym XF86Phone             exec $xf86_key_default
+bindsym XF86PowerOff          exec $xf86_key_default
+bindsym XF86Reload            restart
+bindsym XF86Reply             exec $xf86_key_default
+bindsym XF86RotateWindows     exec $xf86_key_default
+bindsym XF86Save              exec $xf86_key_default
+bindsym XF86ScreenSaver       exec $xf86_key_default
+bindsym XF86ScrollDown        exec $xf86_key_default
+bindsym XF86ScrollUp          exec $xf86_key_default
+bindsym XF86Search            exec $xf86_key_default
+bindsym XF86Send              exec $xf86_key_default
+bindsym XF86Shop              exec $xf86_key_default
+bindsym XF86Sleep             exec $xf86_key_default
+bindsym XF86Suspend           exec $xf86_key_default
+bindsym XF86TaskPane          exec $xf86_key_default
+bindsym XF86Tools             exec urxvt -e mpsyt
+bindsym XF86TouchpadOff       exec $xf86_key_default
+bindsym XF86TouchpadOn        exec $xf86_key_default
+bindsym XF86TouchpadToggle    exec $xf86_key_default
+bindsym XF86WakeUp            exec $xf86_key_default
+bindsym XF86WebCam            exec $xf86_key_default
+bindsym XF86WLAN              exec $xf86_key_default
+bindsym XF86WWW               exec $xf86_key_default
+bindsym XF86Xfer              exec $xf86_key_default
