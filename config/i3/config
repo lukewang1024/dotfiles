@@ -14,16 +14,16 @@ set $ws7 "7"
 set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
-set $ws-sublime_text ""
-set $ws-firefox ""
 set $ws-androidstudio ""
 set $ws-feedreader ""
-set $ws-spotify ""
-set $ws-telegram ""
-set $ws-vscode ""
+set $ws-firefox ""
 set $ws-mailspring ""
 set $ws-skype ""
-set $ws-keepass ""
+set $ws-slack ""
+set $ws-spotify ""
+set $ws-sublime_text ""
+set $ws-termite ""
+set $ws-vscode ""
 
 ###############################
 # audio and music definitions #
@@ -158,6 +158,8 @@ exec --no-startup-id syncthing-gtk --minimized
 exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
 # dropdown terminal
 exec $term -name dropdown
+# Termite for tmux
+exec --no-startup-id termite
 # Launch Polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
@@ -232,20 +234,20 @@ bindsym $super+Shift+0 move container to workspace $ws10
 ################################
 
 # Sublime - b
-bindsym $hyper+b workspace $ws-sublime_text
+bindsym $hyper+b [class="Sublime_text"] move to workspace $ws-sublime_text; workspace $ws-sublime_text
 assign [class="Sublime_text"] $ws-sublime_text
 
 # Firefox - f
-bindsym $hyper+f workspace $ws-firefox
+bindsym $hyper+f [class="Firefox"] move to workspace $ws-firefox; workspace $ws-firefox
 assign [class="Firefox"] $ws-firefox
 for_window [class="Firefox" title="Library"] floating enable
 
 # Android Studio - i
-bindsym $hyper+i workspace $ws-androidstudio
+bindsym $hyper+i [class="jetbrains-studio"] move to workspace $ws-androidstudio; workspace $ws-androidstudio
 assign [class="jetbrains-studio"] $ws-androidstudio
 
 # Feedreader - r
-bindsym $hyper+r workspace $ws-feedreader
+bindsym $hyper+r [class="Feedreader"] move to workspace $ws-feedreader; workspace $ws-feedreader
 assign [class="Feedreader"] $ws-feedreader
 
 # Spotify - s
@@ -254,24 +256,45 @@ assign [class="Musixmatch"] $ws-spotify
 for_window [class="Spotify"] move to workspace $ws-spotify
 
 # Telegram - t
-bindsym $hyper+t workspace $ws-telegram
-assign [class="Telegram"] $ws-telegram
+for_window [class="Telegram"] floating enable
+for_window [class="Telegram"] resize set 1024 960
+for_window [class="Telegram"] move scratchpad
+for_window [class="Telegram"] border pixel 5
+bindsym $hyper+t [class="Telegram"] scratchpad show; [class="Telegram"] move position center
 
 # VSCode - v
-bindsym $hyper+v workspace $ws-vscode
+bindsym $hyper+v [class="Code"] move to workspace $ws-vscode; workspace $ws-vscode
 assign [class="Code"] $ws-vscode
 
 # Mailspring - x
-bindsym $hyper+x workspace $ws-mailspring
+bindsym $hyper+x [class="Mailspring"] move to workspace $ws-mailspring; workspace $ws-mailspring
 assign [class="Mailspring"] $ws-mailspring
 
 # Skype - y
-bindsym $hyper+y workspace $ws-skype
+bindsym $hyper+y [class="Skype"] move to workspace $ws-skype; workspace $ws-skype
 assign [class="Skype"] $ws-skype
 
+# Slack - u
+bindsym $hyper+u [class="Slack"] move to workspace $ws-slack; workspace $ws-slack
+assign [class="Slack"] $ws-slack
+
+# wewechat - w
+for_window [class="wewechat"] floating enable
+for_window [class="wewechat"] resize set 960 640
+for_window [class="wewechat"] move scratchpad
+for_window [class="wewechat"] border pixel 5
+bindsym $hyper+w [class="wewechat"] scratchpad show; [class="wewechat"] move position center
+
+# Termite - ;
+bindsym $hyper+semicolon [class="Termite"] move to workspace $ws-termite; workspace $ws-termite
+assign [class="Termite"] $ws-termite
+
 # Keepass - \
-bindsym $hyper+backslash workspace $ws-keepass
-assign [class="keepassxc"] $ws-keepass
+for_window [class="keepassxc"] floating enable
+for_window [class="keepassxc"] resize set 1360 720
+for_window [class="keepassxc"] move scratchpad
+for_window [class="keepassxc"] border pixel 5
+bindsym $hyper+backslash [class="keepassxc"] scratchpad show; [class="keepassxc"] move position center
 
 ###############
 # app configs #
@@ -322,8 +345,8 @@ bindsym $super+Control+$alt+r restart
 # exit i3 (logs you out of your X session)
 bindsym $super+Control+$alt+e exit
 
+# dropdown terminal
 bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
-bindsym $super+Shift+grave resize shrink height 10 px or 10 ppt
 
 bindsym $super+Shift+f exec firefox
 bindsym $super+Return exec $term
