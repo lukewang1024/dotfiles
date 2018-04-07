@@ -104,6 +104,7 @@ set $default_gap 10
 set $term --no-startup-id urxvt
 set $browser --no-startup-id firefox
 set $xf86_key_default --no-startup-id i3-nagbar -t warning -m 'Please bind this XF86 key.'
+set $mpsyt --no-startup-id urxvt -name mps-youtube -e mpsyt
 
 # For i3-gaps
 for_window [class="^.*"] border pixel 3
@@ -160,6 +161,8 @@ exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
 exec $term -name dropdown
 # Termite for tmux
 exec --no-startup-id termite
+# mps-youtube music client
+exec $mpsyt
 # Launch Polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
@@ -245,6 +248,13 @@ for_window [class="Firefox" title="Library"] floating enable
 # Android Studio - i
 bindsym $hyper+i [class="jetbrains-studio"] move to workspace $ws-androidstudio; workspace $ws-androidstudio
 assign [class="jetbrains-studio"] $ws-androidstudio
+
+# mps-youtube - M
+for_window [instance="mps-youtube"] floating enable
+for_window [instance="mps-youtube"] resize set 1280 720
+for_window [instance="mps-youtube"] move scratchpad
+for_window [instance="mps-youtube"] border pixel 5
+bindsym $hyper+Shift+m [instance="mps-youtube"] scratchpad show; [instance="mps-youtube"] move position center
 
 # Feedreader - r
 bindsym $hyper+r [class="Feedreader"] move to workspace $ws-feedreader; workspace $ws-feedreader
@@ -362,8 +372,8 @@ bindsym $super+Control+F3 exec xrandr-both
 # Media controls
 bindsym $hyper+Left exec $lilbak
 bindsym $hyper+Right exec $lilfor
-bindsym $hyper+$alt+Left exec $bigbak
-bindsym $hyper+$alt+Right exec $bigfor
+bindsym $hyper+Shift+Left exec $bigbak
+bindsym $hyper+Shift+Right exec $bigfor
 bindsym $hyper+F5 exec $prev
 bindsym $hyper+F6 exec $next
 bindsym $hyper+F7 exec $toggle
@@ -446,7 +456,7 @@ bindsym XF86Shop              exec $xf86_key_default
 bindsym XF86Sleep             exec $xf86_key_default
 bindsym XF86Suspend           exec $xf86_key_default
 bindsym XF86TaskPane          exec $xf86_key_default
-bindsym XF86Tools             exec $term -e mpsyt
+bindsym XF86Tools             exec $mpsyt
 bindsym XF86TouchpadOff       exec $xf86_key_default
 bindsym XF86TouchpadOn        exec $xf86_key_default
 bindsym XF86TouchpadToggle    exec $xf86_key_default

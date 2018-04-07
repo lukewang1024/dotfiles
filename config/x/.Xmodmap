@@ -2,7 +2,7 @@
 clear lock
 
 ! use capslock as hyper key
-keycode 66 = Hyper_L Caps_Lock
+keycode 66 = Hyper_L Hyper_L Caps_Lock
 
 ! use Esc to access 3rd and 4th value in keycode definition below
 keycode 999 = Escape
