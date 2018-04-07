@@ -174,6 +174,7 @@ prepareArchEnvGUI()
     termite
     ttf-font-awesome
     wkhtmltopdf
+    wqy-zenhei
     xcape
     xorg-apps
     zathura
@@ -209,6 +210,7 @@ prepareArchEnvGUI()
     spotify-adkiller-dns-block-git
     todoist
     ttf-ms-fonts
+    urxvt-fullscreen
     visual-studio-code-bin
     whatsapp-desktop
   )

@@ -1,5 +1,5 @@
 [colors]
-background = #00000000
+background = #333
 background-alt = ${xrdb:color0:#000}
 foreground = ${xrdb:color7:#ccc}
 foreground-alt = #555
