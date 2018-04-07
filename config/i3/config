@@ -14,16 +14,16 @@ set $ws7 "7"
 set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
-set $ws-sublime_text "b"
-set $ws-firefox "f"
-set $ws-androidstudio "i"
-set $ws-feedreader "r"
-set $ws-spotify "s"
-set $ws-telegram "t"
-set $ws-vscode "v"
-set $ws-mailspring "x"
-set $ws-skype "y"
-set $ws-keepass "\ "
+set $ws-sublime_text ""
+set $ws-firefox ""
+set $ws-androidstudio ""
+set $ws-feedreader ""
+set $ws-spotify ""
+set $ws-telegram ""
+set $ws-vscode ""
+set $ws-mailspring ""
+set $ws-skype ""
+set $ws-keepass ""
 
 ###############################
 # audio and music definitions #
@@ -119,6 +119,11 @@ hide_edge_borders both
 # drag floating windows
 floating_modifier $super
 
+for_window [instance="dropdown"] floating enable
+for_window [instance="dropdown"] resize set 625 400
+for_window [instance="dropdown"] move scratchpad
+for_window [instance="dropdown"] border pixel 5
+
 ##########################
 # start external scripts #
 ##########################
@@ -151,6 +156,8 @@ exec --no-startup-id redshift-gtk
 exec --no-startup-id syncthing-gtk --minimized
 # Launch dropbox
 exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
+# dropdown terminal
+exec $term -name dropdown
 # Launch Polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
@@ -315,11 +322,13 @@ bindsym $super+Control+$alt+r restart
 # exit i3 (logs you out of your X session)
 bindsym $super+Control+$alt+e exit
 
+bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
+bindsym $super+Shift+grave resize shrink height 10 px or 10 ppt
+
 bindsym $super+Shift+f exec firefox
-bindsym $super+Return exec termite
+bindsym $super+Return exec $term
 bindsym Print exec screenshot
 bindsym $alt+space exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
-bindsym $super+grave exec urxvt
 bindsym $super+c exec --no-startup-id gsimplecal
 
 # toggle between internal monitor and external ones
@@ -414,7 +423,7 @@ bindsym XF86Shop              exec $xf86_key_default
 bindsym XF86Sleep             exec $xf86_key_default
 bindsym XF86Suspend           exec $xf86_key_default
 bindsym XF86TaskPane          exec $xf86_key_default
-bindsym XF86Tools             exec urxvt -e mpsyt
+bindsym XF86Tools             exec $term -e mpsyt
 bindsym XF86TouchpadOff       exec $xf86_key_default
 bindsym XF86TouchpadOn        exec $xf86_key_default
 bindsym XF86TouchpadToggle    exec $xf86_key_default
