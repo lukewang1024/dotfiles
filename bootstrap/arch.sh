@@ -196,7 +196,6 @@ prepareArchEnvGUI()
     feedreader
     genymotion
     git-cola
-    google-chrome
     i3lock-color
     kitematic
     losslesscut
