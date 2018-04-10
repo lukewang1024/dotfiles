@@ -15,6 +15,7 @@ set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
 set $ws-androidstudio ""
+set $ws-chromium ""
 set $ws-feedreader ""
 set $ws-firefox ""
 set $ws-mailspring ""
@@ -239,6 +240,10 @@ bindsym $super+Shift+0 move container to workspace $ws10
 # Sublime - b
 bindsym $hyper+b [class="Sublime_text"] move to workspace $ws-sublime_text; workspace $ws-sublime_text
 assign [class="Sublime_text"] $ws-sublime_text
+
+# Chromium - c
+bindsym $hyper+c [class="Chromium"] move to workspace $ws-chromium; workspace $ws-chromium
+assign [class="Chromium"] $ws-chromium
 
 # Firefox - f
 bindsym $hyper+f [class="Firefox"] move to workspace $ws-firefox; workspace $ws-firefox
