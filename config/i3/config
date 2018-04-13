@@ -136,6 +136,8 @@ exec --no-startup-id xset r rate 300 30
 exec --no-startup-id xrandr-both
 # Music player daemon
 exec --no-startup-id mpd
+# Downloader
+exec --no-startup-id cd ~; aria2c
 # Torrent daemon
 exec --no-startup-id transmission-daemon
 # Composite manager

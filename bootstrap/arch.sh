@@ -23,6 +23,7 @@ prepareArchEnvCLI()
 {
   pkgs=(
     android-tools
+    aria2
     aws-cli
     axel
     cloc
@@ -173,6 +174,7 @@ prepareArchEnvGUI()
     telegram-desktop
     termite
     ttf-font-awesome
+    uget
     wkhtmltopdf
     wqy-zenhei
     xcape
