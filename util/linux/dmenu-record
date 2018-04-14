@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# A dmenu recording prompt
+
+choices="screencast\nvideo\naudio"
+chosen=$(echo -e "$choices" | dmenu -i -p "Select recording style:")
+case "$chosen" in
+  screencast) record-screencast ;;
+  audio) record-audio ;;
+  video) record-video ;;
+esac

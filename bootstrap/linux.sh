@@ -23,12 +23,21 @@ applyAppConfigs()
   backupThenSymlink "$config_dir/aria2" ~/.aria2
 
   # Handy scripts
+  backupThenSymlink "$util_dir/linux/dmenu-display" ~/bin/dmenu-display
+  backupThenSymlink "$util_dir/linux/dmenu-handler" ~/bin/dmenu-handler
+  backupThenSymlink "$util_dir/linux/dmenu-mount" ~/bin/dmenu-mount
+  backupThenSymlink "$util_dir/linux/dmenu-prompt" ~/bin/dmenu-prompt
+  backupThenSymlink "$util_dir/linux/dmenu-record" ~/bin/dmenu-record
+  backupThenSymlink "$util_dir/linux/dmenu-umount" ~/bin/dmenu-umount
   backupThenSymlink "$util_dir/linux/enable-exec" ~/bin/enable-exec
+  backupThenSymlink "$util_dir/linux/record-audio" ~/bin/record-audio
+  backupThenSymlink "$util_dir/linux/record-screencast" ~/bin/record-screencast
+  backupThenSymlink "$util_dir/linux/record-video" ~/bin/record-video
   backupThenSymlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
   backupThenSymlink "$util_dir/linux/zzz" ~/bin/zzz
-  backupThenSymlink "$util_dir/xrandr/xrandr-both" ~/bin/xrandr-both
-  backupThenSymlink "$util_dir/xrandr/xrandr-hdmi" ~/bin/xrandr-hdmi
-  backupThenSymlink "$util_dir/xrandr/xrandr-int" ~/bin/xrandr-int
+
+  # Misc settings
+  mkdir -p "$HOME/Recordings"
 }
 
 fixENOSPC()
