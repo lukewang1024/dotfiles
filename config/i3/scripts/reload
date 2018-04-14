@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+[ $# -eq 0 ] && exit
+pkill -x "$1"
+"$1"
