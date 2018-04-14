@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# This is the ffmpeg command that the screencast shortcut in i3 will run.
+
+# Picks a file name for the output file based on availability
+while [[ -f $HOME/Recordings/video$n.mkv ]]; do
+  n=$((n+1))
+done
+filename="$HOME/Recordings/video$n.mkv"
+
+size=$(xdpyinfo | grep dimensions | awk '{print $2;}')
+ffmpeg -f x11grab -s "$size" -i :0.0 -c:v libx264 -qp 0 -r 30 $filename

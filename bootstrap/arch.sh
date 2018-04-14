@@ -104,6 +104,7 @@ prepareArchEnvCLI()
     google-cloud-sdk
     heroku-cli
     icdiff
+    mons
     mycli
     peco
     sparklines-git
@@ -205,6 +206,7 @@ prepareArchEnvGUI()
     musixmatch-bin
     nerd-fonts-complete
     python-pywal
+    screenkey
     skypeforlinux-stable-bin
     slack-desktop
     spotify

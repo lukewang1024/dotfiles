@@ -132,8 +132,8 @@ for_window [instance="dropdown"] border pixel 5
 
 # Increase key rate
 exec --no-startup-id xset r rate 300 30
-# Attempt to use external display if connected
-exec --no-startup-id xrandr-both
+# Automatic display management
+exec --no-startup-id mons -a
 # Music player daemon
 exec --no-startup-id mpd
 # Downloader
@@ -168,6 +168,12 @@ exec --no-startup-id termite
 exec $mpsyt
 # Launch Polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
+
+#######
+# bar #
+#######
+
+#bar {}
 
 ####################
 # layout shortcuts #
@@ -367,14 +373,15 @@ bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"
 
 bindsym $super+Shift+f exec firefox
 bindsym $super+Return exec $term
-bindsym Print exec screenshot
-bindsym $alt+space exec rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
+bindsym $super+d exec --no-startup-id dmenu_run
+bindsym $alt+space exec --no-startup-id rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
 bindsym $super+c exec --no-startup-id gsimplecal
 
 # toggle between internal monitor and external ones
-bindsym $super+Control+F1 exec xrandr-int
-bindsym $super+Control+F2 exec xrandr-hdmi
-bindsym $super+Control+F3 exec xrandr-both
+bindsym $super+Control+F1 exec --no-startup-id dmenu-display primary
+bindsym $super+Control+F2 exec --no-startup-id dmenu-display secondary
+bindsym $super+Control+F3 exec --no-startup-id dmenu-display extend-right
+bindsym $super+Control+F4 exec --no-startup-id dmenu-display
 
 # Media controls
 bindsym $hyper+Left exec $lilbak
@@ -387,6 +394,16 @@ bindsym $hyper+F7 exec $toggle
 bindsym $hyper+F9 exec $mute
 bindsym $hyper+F10 exec $dec
 bindsym $hyper+F11 exec $inc
+
+#################################
+# For screenshots and recording #
+#################################
+
+bindsym Print              exec --no-startup-id scrot
+bindsym Shift+Print        exec --no-startup-id scrot -u
+bindsym $super+Print       exec --no-startup-id dmenu-record
+bindsym $super+Scroll_Lock exec --no-startup-id "killall screenkey || screenkey"
+bindsym $super+Pause       exec --no-startup-id killall ffmpeg
 
 ###########################################################
 # extra XF86 keys                                         #
