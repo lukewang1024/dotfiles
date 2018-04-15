@@ -123,7 +123,7 @@ hide_edge_borders both
 floating_modifier $super
 
 for_window [instance="dropdown"] floating enable
-for_window [instance="dropdown"] resize set 625 400
+for_window [instance="dropdown"] resize set 900 600
 for_window [instance="dropdown"] move scratchpad
 for_window [instance="dropdown"] border pixel 5
 

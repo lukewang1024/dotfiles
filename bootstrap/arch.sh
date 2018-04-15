@@ -166,6 +166,7 @@ prepareArchEnvGUI()
     pa-applet
     polybar
     redshift
+    retroarch
     rofi
     rofi-scripts
     rxvt-unicode

@@ -24,7 +24,7 @@ module-margin = 2
 font-0 = Font Awesome:size=10;1
 font-1 = UbuntuMono Nerd Font:size=10;0
 font-2 = Weather Icons:size=10;1
-modules-left = i3 cpu memory temperature wlan lan battery-combined-udev
+modules-left = i3 cpu memory temperature battery-combined-udev wlan lan
 modules-center = xwindow
 modules-right = volume xbacklight info-trash system-usb-udev openweathermap-fullfeatured date
 tray-position = right
