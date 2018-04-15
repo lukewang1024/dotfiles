@@ -18,7 +18,6 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   LINUXBREW='/home/linuxbrew/.linuxbrew'
   export PATH="$LINUXBREW/sbin:$PATH"
   export PATH="$LINUXBREW/bin:$PATH"
-  export PATH="$LINUXBREW/opt/python/libexec/bin:$PATH"
 fi
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
