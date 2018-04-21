@@ -16,7 +16,7 @@ prepareMacOSEnvCLI()
     xcode-select --install \
   )
 
-  brew update; brew upgrade
+  brew upgrade
 
   installNixBrewRuntimes
   installNixBrewPackages
@@ -114,9 +114,7 @@ prepareMacOSEnvGUI()
 
   # Cask packages
 
-  brew update
-
-  local pkgs=(
+  pkgs=(
     # Fonts
     caskroom/fonts/font-sourcecodepro-nerd-font-mono
 
@@ -256,11 +254,7 @@ prepareMacOSEnvGUI()
     folx
 
     # Entertainment
-    battle-net
     bilibili
-    caskroom/versions/openemu-experimental
-    gog-downloader
-    origin
     spotifree
     spotify
     spotify-notifications
@@ -359,4 +353,15 @@ backupAutomatorStuff()
 {
   rsync -au ~/Library/Services/ ~/Dropbox/Sync/Automator/Services --progress
   rsync -au ~/Applications/Automator/ ~/Dropbox/Sync/Automator/Applications --progress
+}
+
+setupMacOSGaming()
+{
+  pkgs=(
+    battle-net
+    caskroom/versions/openemu-experimental
+    gog-downloader
+    origin
+  )
+  caskInstallPkgs
 }

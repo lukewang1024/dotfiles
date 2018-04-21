@@ -13,48 +13,46 @@ fi
 
 subroutines=()
 
+addSubroutine()
+{
+  local arg=$1
+  local funcCLI=$2
+  local funcGUI=$3
+  local funcGaming=$4
+
+  if [[ $arg == 'game' ]]; then
+    subroutines+=("$funcGaming")
+  else
+    if [[ $arg != 'gui' ]]; then
+      subroutines+=("$funcCLI")
+    fi
+
+    if [[ $arg == 'all' || $arg == 'gui' ]]; then
+      subroutines+=("$funcGUI")
+    fi
+  fi
+}
+
 case $1 in
   'basic')
     source "$partial_dir/env.sh"
     subroutines+=('basicSetup')
     ;;
 
-  'ubuntu' | 'wsl')
+  'ubuntu')
     source "$partial_dir/ubuntu.sh"
-
-    if [[ $1 == 'wsl' || $2 != 'gui' ]]; then
-      subroutines+=('prepareUbuntuEnvCLI')
-    fi
-
-    if [[ $1 != 'wsl' && ($2 == 'all' || $2 == 'gui') ]]; then
-      subroutines+=('prepareUbuntuEnvGUI')
-    fi
+    addSubroutine "$2" 'prepareUbuntuEnvCLI' 'prepareUbuntuEnvGUI'
     ;;
 
-  'arch' | 'alwsl')
+  'arch')
     source "$partial_dir/arch.sh"
-
     subroutines+=('configPacman')
-
-    if [[ $1 == 'alwsl' || $2 != 'gui' ]]; then
-      subroutines+=('prepareArchEnvCLI')
-    fi
-
-    if [[ $1 != 'alwsl' && ($2 == 'all' || $2 == 'gui') ]]; then
-      subroutines+=('prepareArchEnvGUI')
-    fi
+    addSubroutine "$2" 'prepareArchEnvCLI' 'prepareArchEnvGUI' 'setupArchGaming'
     ;;
 
   'macos' | 'osx')
     source "$partial_dir/macos.sh"
-
-    if [[ $2 != 'gui' ]]; then
-      subroutines+=('prepareMacOSEnvCLI')
-    fi
-
-    if [[ $2 == 'all' || $2 == 'gui' ]]; then
-      subroutines+=('prepareMacOSEnvGUI')
-    fi
+    addSubroutine "$2" 'prepareMacOSEnvCLI' 'prepareMacOSEnvGUI' 'setupMacOSGaming'
     ;;
 
   'chromeos')

@@ -46,6 +46,7 @@ prepareArchEnvCLI()
     git
     go
     haproxy
+    htop
     httpie
     imagemagick
     irssi
@@ -166,7 +167,6 @@ prepareArchEnvGUI()
     pa-applet
     polybar
     redshift
-    retroarch
     rofi
     rofi-scripts
     rxvt-unicode
@@ -217,6 +217,22 @@ prepareArchEnvGUI()
     urxvt-fullscreen
     visual-studio-code-bin
     whatsapp-desktop
+  )
+  aurInstallPkgs
+}
+
+setupArchGaming()
+{
+  pkgs=(
+    retroarch
+    retroarch-assets-xmb
+    retroarch-autoconfig-udev
+  )
+  pacmanInstallPkgs
+
+  pkgs=(
+    emulationstation
+    libretro-mame-git
   )
   aurInstallPkgs
 }

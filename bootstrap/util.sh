@@ -83,8 +83,6 @@ printUsage()
   echo 'List of platforms:'
   echo
   echo '  macos | osx - MacOS'
-  echo '  wsl         - Default WSL with Ubuntu (CLI only)'
-  echo '  alwsl       - Custom WSL with Arch Linux (CLI only)'
   echo '  cygwin      - Cygwin'
   echo '  ubuntu      - Ubuntu'
   echo '  arch        - Arch Linux'
@@ -92,9 +90,10 @@ printUsage()
   echo
   echo 'List of options:'
   echo
-  echo '  cli - Prepare CLI environment only (default)'
-  echo '  gui - Prepare GUI environment only'
-  echo '  all - Prepare both environments'
+  echo '  cli  - Prepare CLI environment only (default)'
+  echo '  gui  - Prepare GUI environment only'
+  echo '  all  - Prepare both environments'
+  echo '  game - Setup some games'
   echo
   echo 'Other tasks:'
   echo
