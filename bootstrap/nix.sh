@@ -49,6 +49,7 @@ installNixBrewPackages()
     go
     gzip
     haproxy
+    htop
     httpie
     icdiff
     imagemagick

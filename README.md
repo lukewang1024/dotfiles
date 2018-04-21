@@ -14,15 +14,14 @@ $ ~/.dotfiles/init macos # Bootstrap MacOS CLI environment
 ./init [platform] [option]
 List of platforms:
   macos | osx - MacOS
-  wsl         - Default WSL with Ubuntu (CLI only)
-  alwsl       - Custom WSL with Arch Linux (CLI only)
   cygwin      - Cygwin
   ubuntu      - Ubuntu
   arch        - Arch Linux
 List of options:
-  cli - Prepare CLI environment only (default)
-  gui - Prepare GUI environment only
-  all - Prepare both environments
+  cli  - Prepare CLI environment only (default)
+  gui  - Prepare GUI environment only
+  all  - Prepare both environments
+  game - Setup some games
 Other tasks:
   npmg - Install global npm packages (in case of version switch in nvm)
 ```
