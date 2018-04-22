@@ -162,6 +162,13 @@ prepareArchEnvGUI()
     i3status
     kdiff3
     keepassxc
+    nemo
+    nemo-bulk-rename
+    nemo-fileroller
+    nemo-image-converter
+    nemo-preview
+    nemo-seahorse
+    nemo-share
     neofetch
     network-manager-applet
     pa-applet
@@ -176,7 +183,6 @@ prepareArchEnvGUI()
     telegram-desktop
     termite
     ttf-font-awesome
-    uget
     wkhtmltopdf
     wqy-zenhei
     xcape
