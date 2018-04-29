@@ -20,6 +20,7 @@ applyAppConfigs()
   backupThenSymlink "$config_dir/x/.Xresources" ~/.Xresources
   backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
+  backupThenSymlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
   backupThenSymlink "$config_dir/aria2" ~/.aria2
   backupThenSymlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 

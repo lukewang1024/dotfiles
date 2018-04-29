@@ -182,6 +182,7 @@ prepareArchEnvGUI()
     sublime-text
     telegram-desktop
     termite
+    tilda
     ttf-font-awesome
     wkhtmltopdf
     wqy-zenhei
@@ -221,10 +222,13 @@ prepareArchEnvGUI()
     todoist
     ttf-ms-fonts
     urxvt-fullscreen
+    urxvt-resize-font-git
     visual-studio-code-bin
     whatsapp-desktop
   )
   aurInstallPkgs
+
+  setDefaultApps
 }
 
 setupArchGaming()
@@ -241,4 +245,11 @@ setupArchGaming()
     libretro-mame-git
   )
   aurInstallPkgs
+}
+
+setDefaultApps()
+{
+  xdg-mime default nemo.desktop inode/directory
+  xdg-mime default chromium.desktop x-scheme-handler/http
+  xdg-mime default chromium.desktop x-scheme-handler/https
 }
