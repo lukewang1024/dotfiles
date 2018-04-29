@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# A dmenu power config prompt
+
+if [[ $# -ge 1 ]]; then
+  chosen="$1"
+else
+  choices="sleep\nhibernate\npoweroff\nreboot"
+  chosen=$(echo -e "$choices" | dmenu -i)
+fi
+
+case "$chosen" in
+  sleep) ~/.config/i3/scripts/lock suspend ;;
+  hibernate) ~/.config/i3/scripts/lock hibernate ;;
+  poweroff) systemctl poweroff ;;
+  reboot) systemctl reboot ;;
+esac

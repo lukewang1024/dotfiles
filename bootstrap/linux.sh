@@ -28,6 +28,7 @@ applyAppConfigs()
   backupThenSymlink "$util_dir/linux/dmenu-display" ~/bin/dmenu-display
   backupThenSymlink "$util_dir/linux/dmenu-handler" ~/bin/dmenu-handler
   backupThenSymlink "$util_dir/linux/dmenu-mount" ~/bin/dmenu-mount
+  backupThenSymlink "$util_dir/linux/dmenu-power" ~/bin/dmenu-power
   backupThenSymlink "$util_dir/linux/dmenu-prompt" ~/bin/dmenu-prompt
   backupThenSymlink "$util_dir/linux/dmenu-record" ~/bin/dmenu-record
   backupThenSymlink "$util_dir/linux/dmenu-umount" ~/bin/dmenu-umount
