@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
 
-# Pause music (mpd):
-mpc pause
+# Pause music
+playerctl pause # mpris
+mpc pause       # mpd
 
 # Lock it up!
 betterlockscreen --lock dimblur
 
-# If still locked after 20 seconds, turn off screen.
-sleep 20 && pgrep i3lock && xset dpms force off
+case $1 in
+  'suspend')
+    systemctl suspend
+    ;;
+
+  'hibernate')
+    systemctl hibernate
+    ;;
+
+  *)
+    # If still locked after 10 seconds, turn off screen.
+    sleep 10 && pgrep i3lock && xset dpms force off
+    ;;
+esac

@@ -105,6 +105,7 @@ set $default_gap 10
 set $term --no-startup-id urxvt
 set $browser --no-startup-id firefox
 set $reload --no-startup-id ~/.config/i3/scripts/reload
+set $lock --no-startup-id ~/.config/i3/scripts/lock
 set $xf86_key_default --no-startup-id i3-nagbar -t warning -m 'Please bind this XF86 key.'
 set $mpsyt --no-startup-id urxvt -name mps-youtube -e mpsyt
 
@@ -353,10 +354,13 @@ bindsym $super+a focus parent
 bindsym $super+Shift+q kill
 
 # lock
-bindsym $super+Control+l exec --no-startup-id ~/.config/i3/scripts/lock
+bindsym $super+Control+l exec $lock
 
 # sleep
-bindsym $super+Control+s exec --no-startup-id betterlockscreen -s
+bindsym $super+Control+s exec $lock suspend
+
+# power management menu
+bindsym $super+Control+$alt+p exec --no-startup-id dmenu-power
 
 # reload the configuration file
 bindsym $super+Control+r reload
