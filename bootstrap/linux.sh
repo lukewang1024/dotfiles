@@ -13,15 +13,16 @@ installLinuxBrew()
 
 applyAppConfigs()
 {
+  backupThenSymlink "$config_dir/aria2" ~/.aria2
+  backupThenSymlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
+  backupThenSymlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backupThenSymlink "$config_dir/i3" ~/.config/i3
   backupThenSymlink "$config_dir/polybar" ~/.config/polybar
-  backupThenSymlink "$config_dir/gsimplecal" ~/.config/gsimplecal
-  backupThenSymlink "$config_dir/x/.xinitrc" ~/.xinitrc
-  backupThenSymlink "$config_dir/x/.Xresources" ~/.Xresources
-  backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backupThenSymlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
-  backupThenSymlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
-  backupThenSymlink "$config_dir/aria2" ~/.aria2
+  backupThenSymlink "$config_dir/rofi" ~/.config/rofi
+  backupThenSymlink "$config_dir/x/.xinitrc" ~/.xinitrc
+  backupThenSymlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
+  backupThenSymlink "$config_dir/x/.Xresources" ~/.Xresources
   backupThenSymlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 
   # Handy scripts
@@ -37,7 +38,6 @@ applyAppConfigs()
   backupThenSymlink "$util_dir/linux/record-screencast" ~/bin/record-screencast
   backupThenSymlink "$util_dir/linux/record-video" ~/bin/record-video
   backupThenSymlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
-  backupThenSymlink "$util_dir/linux/zzz" ~/bin/zzz
 
   # Misc settings
   mkdir -p "$HOME/Recordings"

@@ -102,6 +102,7 @@ set $hyper Mod3
 set $super Mod4
 set $alt Mod1
 set $default_gap 10
+set $rofi --no-startup-id rofi -show
 set $term --no-startup-id urxvt
 set $browser --no-startup-id firefox
 set $reload --no-startup-id ~/.config/i3/scripts/reload
@@ -374,10 +375,12 @@ bindsym $super+Control+$alt+e exit
 # dropdown terminal
 bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
 
+bindsym $super+Shift+c exec chromium
 bindsym $super+Shift+f exec firefox
 bindsym $super+Return exec $term
 bindsym $super+d exec --no-startup-id dmenu_run
-bindsym $alt+space exec --no-startup-id rofi -show run -lines 3 -eh 2 -width 100 -padding 800 -opacity "85" -bw 0 -bc "$bg-color" -bg "$bg-color" -fg "$text-color" -hlbg "$bg-color" -hlfg "#9575cd" -font "System San Francisco Display 18"
+bindsym $alt+space exec $rofi run
+bindsym $alt+Tab exec $rofi window
 bindsym $super+c exec --no-startup-id gsimplecal
 
 # toggle between internal monitor and external ones
