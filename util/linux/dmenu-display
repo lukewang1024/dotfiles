@@ -13,7 +13,11 @@ else
 extend-top\nextend-left\nextend-right\nextend-bottom\n\
 manual-config"
 
-  chosen=$(echo -e "$choices" | dmenu -i)
+  if exists rofi; then
+    chosen=$(echo -e "$choices" | rofi -dmenu)
+  else
+    chosen=$(echo -e "$choices" | dmenu -i)
+  fi
 fi
 
 case "$chosen" in
