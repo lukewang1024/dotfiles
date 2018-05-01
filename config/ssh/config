@@ -1,3 +1,5 @@
+# syntax:sshConfig
+
 Include config.local
 
 Host github.com

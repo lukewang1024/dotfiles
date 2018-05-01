@@ -1,4 +1,6 @@
-# Variables
+# syntax:ssHash
+
+# >> Variables
 
 set horizontal-scroll = 33% # Number of columns to scroll as % of width
 set mouse             = yes # Enable mouse support?
@@ -7,8 +9,7 @@ set line-graphics     = yes # Enum: ascii, default, utf-8
 set tab-size          = 4   # Number of spaces to use when expanding tabs
 set ignore-case       = yes # Ignore case when searching
 
-
-# View settings
+# >> View settings
 
 set blame-view  = date:default author:abbreviated file-name:auto id:yes,color line-number:yes,interval=5 text
 set grep-view   = file-name:yes line-number:yes,interval=1 text
@@ -19,8 +20,7 @@ set status-view = line-number:no,interval=5 status:short file-name
 set tree-view   = line-number:no,interval=5 mode author:abbreviated file-size:units date:default id:no file-name
 set pager-view  = line-number:yes,interval=10 text
 
-
-# Colors
+# >> Colors
 
 color cursor white 89
 color status white default
@@ -35,12 +35,9 @@ color stat-untracked yellow default
 color tree.header white default
 color tree.directory cyan default
 
+# >> Bindings
 
-# Bindings
-
-###########
-# generic #
-###########
+# >>> generic
 
 # Add/edit notes for the current commit used during a review
 bind generic T !git notes edit %(commit)
@@ -69,9 +66,7 @@ bind generic d move-page-down
 bind generic F !git fetch
 bind generic S :source ~/.tigrc # Reload ~/.tigrc
 
-########
-# main #
-########
+# >>> main
 
 # Revert
 bind main ! !git revert %(commit)
@@ -99,9 +94,7 @@ bind main F !@sh -c "git show %(commit) --pretty=format: --name-only | xargs | c
 bind main E !<sh -c "vim -c 'Gedit %(commit)' $(ls | head -1)"
 bind main V !<sh -c "vim $(git show %(commit) --pretty=format: --name-only | xargs)"
 
-########
-# diff #
-########
+# >>> diff
 
 # Move in diff view with arrow keys
 bind diff <Up> move-up
@@ -121,9 +114,7 @@ bind diff E !<sh -c "vim -c 'Gedit %(commit)' $(ls | head -1)"
 bind diff V !<sh -c "vim $(git show %(commit) --pretty=format: --name-only | xargs)"
 bind diff 4 !git diff %(commit)^ %(commit)
 
-#########
-# stash #
-#########
+# >>> stash
 
 # Drop the selected stash
 bind stash D !?git stash drop %(stash)
@@ -131,24 +122,18 @@ bind stash D !?git stash drop %(stash)
 # Apply the selected stash
 bind stash A !?git stash apply %(stash)
 
-########
-# tree #
-########
+# >>> tree
 
 bind tree V !vim %(file)
 
-##########
-# branch #
-##########
+# >>> branch
 
 bind branch N !@git branch %(prompt)
 bind branch C !@git checkout %(branch)
 bind branch <Ctrl-R> !@git rebase
 bind branch D !@git branch -D %(branch)
 
-##########
-# status #
-##########
+# >>> status
 
 # Intent to add
 bind status N !@git add -N %(file)
@@ -177,9 +162,7 @@ bind status L !less %(file)
 bind status <Ctrl-D> !@git reset HEAD %(file)
 bind status A !@git commit --amend
 
-#########
-# stage #
-#########
+# >>> stage
 
 # Stage a single line
 bind stage 1 stage-update-line
@@ -187,9 +170,7 @@ bind stage 1 stage-update-line
 # Commit staging changes
 bind stage C !@git commit
 
-########
-# refs #
-########
+# >>> refs
 
 # Create a new branch
 bind refs n !@git branch "%(prompt Enter branch name: )"

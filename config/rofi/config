@@ -1,6 +1,7 @@
-! ------------------------------------------------------------------------------
-! ROFI Arc Color theme
-! ------------------------------------------------------------------------------
+! syntax:ssExcla
+
+! >> ROFI Arc Color theme
+
 rofi.color-enabled: true
 ! Color scheme for normal row
 rofi.color-normal: #ffffff,#525d76,#f5f5f5,#5294e2,#ffffff
@@ -13,9 +14,8 @@ rofi.color-window: #ffffff,#f5f5f5
 ! Separator style (none, dash, solid)
 rofi.separator-style: solid
 
-! ------------------------------------------------------------------------------
-! Other configs
-! ------------------------------------------------------------------------------
+! >> Other configs
+
 rofi.font:              System San Francisco Display 12
 rofi.hide-scrollbar:    true
 rofi.fake-transparency: true
