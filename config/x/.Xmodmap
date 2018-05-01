@@ -1,3 +1,5 @@
+! syntax:ssExcla
+
 ! remove capslock functionality
 clear lock
 
