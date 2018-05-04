@@ -1,4 +1,4 @@
-brewInstallPkgs()
+brew_install_pkgs()
 {
   for pkg in "${pkgs[@]}"; do
     brew install "$pkg"
@@ -6,7 +6,7 @@ brewInstallPkgs()
   unset pkgs
 }
 
-installNixBrewRuntimes()
+install_nix_brew_runtimes()
 {
   pkgs=(
     node
@@ -14,10 +14,10 @@ installNixBrewRuntimes()
     python@2
     ruby
   )
-  brewInstallPkgs
+  brew_install_pkgs
 }
 
-installNixBrewPackages()
+install_nix_brew_packages()
 {
   pkgs=(
     apache-spark
@@ -101,5 +101,5 @@ installNixBrewPackages()
     zsh
     zsh-completions
   )
-  brewInstallPkgs
+  brew_install_pkgs
 }

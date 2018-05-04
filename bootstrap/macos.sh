@@ -1,7 +1,7 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/nix.sh"
 
-caskInstallPkgs()
+cask_install_pkgs()
 {
   for pkg in "${pkgs[@]}"; do
     brew cask install "$pkg"
@@ -9,7 +9,7 @@ caskInstallPkgs()
   unset pkgs
 }
 
-prepareMacOSEnvCLI()
+prepare_macos_env_cli()
 {
   exists brew || ( \
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
@@ -18,8 +18,8 @@ prepareMacOSEnvCLI()
 
   brew upgrade
 
-  installNixBrewRuntimes
-  installNixBrewPackages
+  install_nix_brew_runtimes
+  install_nix_brew_packages
 
   pkgs=(
     ansifilter
@@ -63,7 +63,7 @@ prepareMacOSEnvCLI()
     urlview
     yarn
   )
-  brewInstallPkgs
+  brew_install_pkgs
 
   pkgs=(
     docker
@@ -72,14 +72,14 @@ prepareMacOSEnvCLI()
     google-cloud-sdk
     vagrant
   )
-  caskInstallPkgs
+  cask_install_pkgs
 
   brew cask cleanup; brew cleanup; brew prune
 
-  envSetup
+  env_setup
 }
 
-prepareMacOSEnvGUI()
+prepare_macos_env_gui()
 {
   # MAS apps
 
@@ -259,7 +259,7 @@ prepareMacOSEnvGUI()
     spotify
     spotify-notifications
   )
-  caskInstallPkgs
+  cask_install_pkgs
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 
@@ -270,9 +270,9 @@ prepareMacOSEnvGUI()
 
 setMacOSConfigs()
 {
-  syncConfigRepo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
-  backupThenSymlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
-  backupThenSymlink "$config_dir/karabiner" ~/.config/karabiner
+  sync_config_repo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
+  backup_then_symlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
+  backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
 
   betterMacOSDefaults
   brewMultiUserPermission
@@ -344,7 +344,7 @@ installMacWeChatPlugin()
 {
   echo 'Installing Mac WeChat plugin...'
   local localPath=/tmp/WeChatPlugin-MacOS
-  syncConfigRepo $localPath https://github.com/TKkk-iOSer/WeChatPlugin-MacOS
+  sync_config_repo $localPath https://github.com/TKkk-iOSer/WeChatPlugin-MacOS
   `$localPath/Other/Install.sh`
   echo 'Done.'
 }
@@ -355,7 +355,7 @@ backupAutomatorStuff()
   rsync -au ~/Applications/Automator/ ~/Dropbox/Sync/Automator/Applications --progress
 }
 
-setupMacOSGaming()
+setup_macos_gaming()
 {
   pkgs=(
     battle-net
@@ -363,5 +363,5 @@ setupMacOSGaming()
     gog-downloader
     origin
   )
-  caskInstallPkgs
+  cask_install_pkgs
 }

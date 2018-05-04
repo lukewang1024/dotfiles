@@ -8,12 +8,12 @@ util_dir="$repo_path/util"
 source "$partial_dir/util.sh"
 
 if [ $# -lt 1 ]; then
-  printUsage
+  print_usage
 fi
 
 subroutines=()
 
-addSubroutine()
+add_subroutine()
 {
   local arg=$1
   local funcCLI=$2
@@ -41,46 +41,46 @@ case $1 in
 
   'ubuntu')
     source "$partial_dir/ubuntu.sh"
-    addSubroutine "$2" 'prepareUbuntuEnvCLI' 'prepareUbuntuEnvGUI'
+    add_subroutine "$2" 'prepare_ubuntu_env_cli' 'prepare_ubuntu_env_gui'
     ;;
 
   'arch')
     source "$partial_dir/arch.sh"
-    subroutines+=('configPacman')
-    addSubroutine "$2" 'prepareArchEnvCLI' 'prepareArchEnvGUI' 'setupArchGaming'
+    subroutines+=('config_pacman')
+    add_subroutine "$2" 'prepare_arch_env_cli' 'prepare_arch_env_gui' 'setup_arch_gaming'
     ;;
 
   'macos' | 'osx')
     source "$partial_dir/macos.sh"
-    addSubroutine "$2" 'prepareMacOSEnvCLI' 'prepareMacOSEnvGUI' 'setupMacOSGaming'
+    add_subroutine "$2" 'prepare_macos_env_cli' 'prepare_macos_env_gui' 'setup_macos_gaming'
     ;;
 
   'chromeos')
     source "$partial_dir/chromeos.sh"
-    subroutines+=('prepareChromeOS')
+    subroutines+=('prepare_chromeos')
     ;;
 
   'cygwin')
     source "$partial_dir/cygwin.sh"
-    subroutines+=('checkAdmin')
-    subroutines+=('setupCygwinEnv')
-    subroutines+=('installSage')
-    subroutines+=('installCygwinPackages')
+    subroutines+=('check_admin')
+    subroutines+=('setup_cygwin_env')
+    subroutines+=('install_sage')
+    subroutines+=('install_cygwin_packages')
     ;;
 
   'npmg')
     source "$partial_dir/pkg.sh"
-    subroutines+=('installNpmPackages')
+    subroutines+=('install_npm_packages')
     ;;
 
   'zgen')
     source "$partial_dir/shell.sh"
-    subroutines+=('zgenSetup')
+    subroutines+=('zgen_setup')
     ;;
 
   'zplug')
     source "$partial_dir/shell.sh"
-    subroutines+=('zplugSetup')
+    subroutines+=('zplug_setup')
     ;;
 
   'run')
@@ -91,7 +91,7 @@ case $1 in
     ;;
 
   *)
-    printUsage
+    print_usage
     ;;
 esac
 

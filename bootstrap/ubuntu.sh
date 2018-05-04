@@ -1,7 +1,7 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/linux.sh"
 
-ubuntuAddPPAs()
+ubuntu_add_PPAs()
 {
   for ppa in "${ppas[@]}"; do
     sudo add-apt-repository -y $ppa
@@ -9,7 +9,7 @@ ubuntuAddPPAs()
   unset ppas
 }
 
-ubuntuInstallPkgs()
+ubuntu_install_pkgs()
 {
   sudo apt update
   sudo apt -f install
@@ -18,7 +18,7 @@ ubuntuInstallPkgs()
   unset pkgs
 }
 
-prepareUbuntuEnvCLI()
+prepare_ubuntu_env_cli()
 {
   # Build tools
   pkgs=(
@@ -44,14 +44,14 @@ prepareUbuntuEnvCLI()
     xz-utils
     zlib1g-dev
   )
-  ubuntuInstallPkgs
+  ubuntu_install_pkgs
 
   ppas=(
     ppa:aacebedo/fasd     # fasd
     ppa:saiarcot895/myppa # apt-fast
     ppa:webupd8team/java  # java
   )
-  ubuntuAddPPAs
+  ubuntu_add_PPAs
 
   # Docker
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -94,25 +94,25 @@ prepareUbuntuEnvCLI()
     yarn
     zsh
   )
-  ubuntuInstallPkgs
+  ubuntu_install_pkgs
 
-  installLinuxBrew
-  installNixBrewRuntimes
-  installNixBrewPackages
+  install_linuxbrew
+  install_nix_brew_runtimes
+  install_nix_brew_packages
 
-  envSetup
-  applyAppConfigs
-  fixENOSPC
-  fixLocale
+  env_setup
+  apply_app_configs
+  fix_ENOSPC
+  fix_locale
 }
 
-prepareUbuntuEnvGUI()
+prepare_ubuntu_env_gui()
 {
   ppas=(
     ppa:jtaylor/keepass     # KeyPass2
     ppa:zeal-developers/ppa # Zeal
   )
-  ubuntuAddPPAs
+  ubuntu_add_PPAs
 
   # Sublime Text 3 (Stable)
   wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
@@ -127,5 +127,5 @@ prepareUbuntuEnvGUI()
     sublime-text
     zeal
   )
-  ubuntuInstallPkgs
+  ubuntu_install_pkgs
 }

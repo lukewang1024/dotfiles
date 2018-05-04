@@ -1,6 +1,6 @@
 . $PSScriptRoot\util.ps1
 
-function installScoop
+function install_scoop
 {
   Set-ExecutionPolicy RemoteSigned -scope CurrentUser
 
@@ -11,7 +11,7 @@ function installScoop
   }
 }
 
-function installScoopPackages
+function install_scoop_packages
 {
   scoop bucket add `
     extras `
@@ -131,5 +131,5 @@ function installScoopPackages
   # Keep a blank line
 }
 
-installScoop
-installScoopPackages
+install_scoop
+install_scoop_packages
