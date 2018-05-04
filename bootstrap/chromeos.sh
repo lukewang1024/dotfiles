@@ -1,12 +1,12 @@
 source "$partial_dir/env.sh"
 
-crewInstallPkgs()
+crew_install_pkgs()
 {
   crew install `join ' ' "${pkgs[@]}"`
   unset pkgs
 }
 
-prepareChromeOS()
+prepare_chromeos()
 {
   exists crew || curl -Ls git.io/vddgY | bash
 
@@ -40,8 +40,8 @@ prepareChromeOS()
     zip
     zsh
   )
-  crewInstallPkgs
+  crew_install_pkgs
 
-  envSetup
+  env_setup
 }
 

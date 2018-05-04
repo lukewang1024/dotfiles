@@ -1,25 +1,25 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/linux.sh"
 
-configPacman()
+config_pacman()
 {
   timedatectl set-ntp true
   sudo pacman-mirrors -c Hong_Kong,Taiwan
 }
 
-pacmanInstallPkgs()
+pacman_install_pkgs()
 {
   sudo pacman -Sy --needed --noconfirm `join ' ' "${pkgs[@]}"`
   unset pkgs
 }
 
-aurInstallPkgs()
+aur_install_pkgs()
 {
   pacaur -Sy --needed --noconfirm --noedit `join ' ' "aur/${pkgs[@]}"`
   unset pkgs
 }
 
-prepareArchEnvCLI()
+prepare_arch_env_cli()
 {
   pkgs=(
     android-tools
@@ -94,7 +94,7 @@ prepareArchEnvCLI()
     zip
     zsh
   )
-  pacmanInstallPkgs
+  pacman_install_pkgs
 
   pkgs=(
     apache-spark
@@ -113,18 +113,18 @@ prepareArchEnvCLI()
     ttf-weather-icons
     urlview
   )
-  aurInstallPkgs
+  aur_install_pkgs
 
-  installLinuxBrew
-  installNixBrewRuntimes
+  install_linuxbrew
+  install_nix_brew_runtimes
 
-  envSetup
-  applyAppConfigs
+  env_setup
+  apply_app_configs
 
   sudo systemctl enable --now snapd.socket # enable snapd
 }
 
-addSublimeTextRepo()
+add_sublime_text_repo()
 {
   if ! grep -q '\[sublime-text\]' /etc/pacman.conf; then
     curl -O https://download.sublimetext.com/sublimehq-pub.gpg && \
@@ -138,9 +138,9 @@ addSublimeTextRepo()
   fi
 }
 
-prepareArchEnvGUI()
+prepare_arch_env_gui()
 {
-  addSublimeTextRepo
+  add_sublime_text_repo
 
   pkgs=(
     android-file-transfer
@@ -195,7 +195,7 @@ prepareArchEnvGUI()
     zathura-ps
     zeal
   )
-  pacmanInstallPkgs
+  pacman_install_pkgs
 
   pkgs=(
     android-sdk
@@ -226,28 +226,29 @@ prepareArchEnvGUI()
     visual-studio-code-bin
     whatsapp-desktop
   )
-  aurInstallPkgs
+  aur_install_pkgs
 
-  setDefaultApps
+  install_i3ass
+  set_default_apps
 }
 
-setupArchGaming()
+setup_arch_gaming()
 {
   pkgs=(
     retroarch
     retroarch-assets-xmb
     retroarch-autoconfig-udev
   )
-  pacmanInstallPkgs
+  pacman_install_pkgs
 
   pkgs=(
     emulationstation
     libretro-mame-git
   )
-  aurInstallPkgs
+  aur_install_pkgs
 }
 
-setDefaultApps()
+set_default_apps()
 {
   xdg-mime default nemo.desktop inode/directory
   xdg-mime default chromium.desktop x-scheme-handler/http

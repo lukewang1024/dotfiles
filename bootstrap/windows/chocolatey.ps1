@@ -1,8 +1,8 @@
 . $PSScriptRoot\util.ps1
 
-function installChocolatey
+function install_chocolatey
 {
-  blankLines
+  blank_lines
   'Install Chocolatey...'
 
   if ((Get-Command 'chocolatey' -ErrorAction SilentlyContinue) -eq $null)
@@ -17,9 +17,9 @@ function installChocolatey
   }
 }
 
-function installChocoPackages
+function install_choco_packages
 {
-  blankLines
+  blank_lines
   'Install packages using Chocolatey...'
 
   cinst -y `
@@ -59,5 +59,5 @@ function installChocoPackages
     # Keep a blank line
 }
 
-installChocolatey
-installChocoPackages
+install_chocolatey
+install_choco_packages

@@ -41,7 +41,7 @@ symlink()
   eval "ln -v $args $1 ${2:-.}"
 }
 
-backupThenSymlink()
+backup_then_symlink()
 {
   if [[ -z "$1" ]]; then
     echo '[util.backupAndSymlink] No target file provided, return...'
@@ -52,7 +52,7 @@ backupThenSymlink()
   symlink $1 $2
 }
 
-syncConfigRepo()
+sync_config_repo()
 {
   local configPath=$1
   local repoUrl=$2
@@ -69,14 +69,14 @@ syncConfigRepo()
   git clone --depth 1 $repoUrl $configPath
 }
 
-blankLines()
+blank_lines()
 {
   echo
   echo
 }
 
 # Print the usage of the script and exit
-printUsage()
+print_usage()
 {
   echo './init [platform] [option]'
   echo

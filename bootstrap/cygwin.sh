@@ -1,7 +1,7 @@
 source "$partial_dir/env.sh"
 
 # Make sure we only proceed if the Cygwin terminal has enough previllege
-checkAdmin()
+check_admin()
 {
   id -G | grep -qE '\<(544|0)\>'
   if [[ $? != 0 ]]; then
@@ -10,7 +10,7 @@ checkAdmin()
   fi
 }
 
-setupCygwinEnv()
+setup_cygwin_env()
 {
   echo 'Setting common Cygwin environment...'
 
@@ -22,7 +22,7 @@ setupCygwinEnv()
   mkpasswd -c | sed -e 'sX/bashX/zshX' | tee -a /etc/passwd
 
   printf 'Create sudo wrapper for Cygwin... '
-  backupThenSymlink "$util_dir/cygwin/sudo" ~/bin/sudo
+  backup_then_symlink "$util_dir/cygwin/sudo" ~/bin/sudo
   echo 'Done.'
 
   printf 'Making Cygwin ~ and Windows native USERPROFILE the same one... '
@@ -31,15 +31,15 @@ setupCygwinEnv()
   echo 'Done.'
 }
 
-installSage()
+install_sage()
 {
   echo 'Installing sage...'
-  syncConfigRepo ~/.sage https://github.com/svnpenn/sage
+  sync_config_repo ~/.sage https://github.com/svnpenn/sage
   ~/.sage/install.sh
   echo 'Done.'
 }
 
-installCygwinPackages()
+install_cygwin_packages()
 {
   sage update
 

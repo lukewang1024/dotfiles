@@ -1,13 +1,13 @@
-installCommonPackages()
+install_common_packages()
 {
-  installNpmPackages
-  installGemPackages
-  installPipPackages
-  installCpanPackages
-  installOtherPackages
+  install_npm_packages
+  install_gem_packages
+  install_pip_packages
+  install_cpan_packages
+  install_other_packages
 }
 
-installGemPackages()
+install_gem_packages()
 {
   echo 'Installing gems...'
 
@@ -28,7 +28,7 @@ installGemPackages()
   echo 'Done.'
 }
 
-installNpmPackages()
+install_npm_packages()
 {
   echo 'Installing global npm packages...'
 
@@ -91,7 +91,7 @@ installNpmPackages()
   echo 'Done.'
 }
 
-installPipPackages()
+install_pip_packages()
 {
   echo 'Installing pip packages...'
 
@@ -113,7 +113,7 @@ installPipPackages()
   for pkg in "${pkgs[@]}"; do pip install -U "$pkg"; done
 }
 
-installCpanPackages()
+install_cpan_packages()
 {
   echo 'Installing CPAN packages...'
 
@@ -125,14 +125,14 @@ installCpanPackages()
   sudo cpanm install `join ' ' "${pkgs[@]}"`
 }
 
-installOtherPackages()
+install_other_packages()
 {
-  backupThenSymlink "$util_dir/shell/md2resume" ~/bin/md2resume
-  backupThenSymlink "$util_dir/shell/mann" ~/bin/mann
-  installAnyScript hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
+  backup_then_symlink "$util_dir/shell/md2resume" ~/bin/md2resume
+  backup_then_symlink "$util_dir/shell/mann" ~/bin/mann
+  install_any_script hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }
 
-installAnyScript()
+install_any_script()
 {
   printf "Installing $1 to $HOME/bin... "
   curl -s "$2" > "$HOME/bin/$1"

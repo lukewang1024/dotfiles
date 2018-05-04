@@ -1,85 +1,85 @@
-tmuxSetup()
+tmux_setup()
 {
-  blankLines
+  blank_lines
   printf 'Symlinking tmux config files... '
-  backupThenSymlink "$config_dir/tmux/.tmux.conf" ~/.tmux.conf
+  backup_then_symlink "$config_dir/tmux/.tmux.conf" ~/.tmux.conf
   echo 'Done.'
 }
 
-tigSetup()
+tig_setup()
 {
-  blankLines
+  blank_lines
   printf 'Symlinking .tigrc... '
-  backupThenSymlink "$config_dir/tig/.tigrc" ~/.tigrc
+  backup_then_symlink "$config_dir/tig/.tigrc" ~/.tigrc
   echo 'Done.'
 }
 
-vimSetup()
+vim_setup()
 {
   printf 'Symlinking .vimrc... '
-  backupThenSymlink "$config_dir/vim/.vimrc" ~/.vimrc
+  backup_then_symlink "$config_dir/vim/.vimrc" ~/.vimrc
   echo 'Done.'
 
   echo 'Installing Vundle...'
-  syncConfigRepo ~/.vim/bundle/Vundle.vim https://github.com/gmarik/Vundle.vim
+  sync_config_repo ~/.vim/bundle/Vundle.vim https://github.com/gmarik/Vundle.vim
   vim +PluginInstall +qall
   echo 'Done.'
 }
 
-sshSetup()
+ssh_setup()
 {
-  blankLines
+  blank_lines
   printf 'Symlinking SSH config... '
-  backupThenSymlink "$config_dir/ssh/config" ~/.ssh/config
+  backup_then_symlink "$config_dir/ssh/config" ~/.ssh/config
   local localConfig="$HOME/.ssh/config.local"
   touch "$localConfig"
   chmod 644 "$localConfig"
   echo 'Done.'
 }
 
-zgenSetup()
+zgen_setup()
 {
-  blankLines
+  blank_lines
   echo 'Setup zgen...'
-  syncConfigRepo ~/.zgen https://github.com/tarjoilija/zgen
+  sync_config_repo ~/.zgen https://github.com/tarjoilija/zgen
   echo 'Done.'
 
   printf 'Symlinking .zshrc... '
-  backupThenSymlink "$config_dir/zgen/.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zgen/.zshrc" ~/.zshrc
   echo 'Done.'
 
-  purePromptSetup
+  pure_prompt_setup
 }
 
-zplugSetup()
+zplug_setup()
 {
-  blankLines
+  blank_lines
   echo 'Setup zplug...'
   if [ -d ~/.zplug ]; then
-    syncConfigRepo ~/.zplug https://github.com/zplug/zplug
+    sync_config_repo ~/.zplug https://github.com/zplug/zplug
   else
     curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
   fi
   echo 'Done.'
 
   printf 'Symlinking .zshrc... '
-  backupThenSymlink "$config_dir/zplug/.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zplug/.zshrc" ~/.zshrc
   echo 'Done.'
 
-  purePromptSetup
+  pure_prompt_setup
 }
 
-bashItSetup()
+bashit_setup()
 {
-  blankLines
+  blank_lines
   echo 'Setup bash-it...'
-  syncConfigRepo ~/.bash_it https://github.com/Bash-it/bash-it
+  sync_config_repo ~/.bash_it https://github.com/Bash-it/bash-it
   ~/.bash_it/install.sh --no-modify-config
   echo 'Done.'
 
   printf 'Symlinking .bash_profile and .bashrc... '
-  backupThenSymlink "$config_dir/bash_it/.bash_profile" ~/.bash_profile
-  backupThenSymlink "$config_dir/bash_it/.bashrc" ~/.bashrc
+  backup_then_symlink "$config_dir/bash_it/.bash_profile" ~/.bash_profile
+  backup_then_symlink "$config_dir/bash_it/.bashrc" ~/.bashrc
   echo 'Done.'
 
   # Enable common plugins
@@ -90,9 +90,9 @@ bashItSetup()
     exit'
 }
 
-purePromptSetup()
+pure_prompt_setup()
 {
-  blankLines
+  blank_lines
   echo 'Installing pure prompt...'
   npm install -g pure-prompt
   echo 'Done.'

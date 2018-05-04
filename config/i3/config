@@ -231,8 +231,8 @@ bindsym $super+Shift+0 move container to workspace $ws10
 # >> App specific workspaces
 # Use with Caslock (hyper) key
 
-# Sublime - b
-bindsym $hyper+b [class="Sublime_text"] move to workspace $ws-sublime_text; workspace $ws-sublime_text
+# Sublime - s
+bindsym $hyper+s [class="Sublime_text"] move to workspace $ws-sublime_text; workspace $ws-sublime_text
 assign [class="Sublime_text"] $ws-sublime_text
 
 # Chromium - c
@@ -260,7 +260,7 @@ bindsym $hyper+r [class="Feedreader"] move to workspace $ws-feedreader; workspac
 assign [class="Feedreader"] $ws-feedreader
 
 # Spotify - s
-bindsym $hyper+s workspace $ws-spotify
+bindsym $hyper+Shift+s workspace $ws-spotify
 assign [class="Musixmatch"] $ws-spotify
 for_window [class="Spotify"] move to workspace $ws-spotify
 
