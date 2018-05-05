@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-repo_path="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+repo_path=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 partial_dir="$repo_path/bootstrap"
 config_dir="$repo_path/config"
 util_dir="$repo_path/util"

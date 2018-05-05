@@ -1,0 +1,13 @@
+# syntax:ssHash
+
+"xte 'key Up'"
+  mod3+k+release
+
+"xte 'key Down'"
+  mod3+j+release
+
+"xte 'key Left'"
+  mod3+h+release
+
+"xte 'key Right'"
+  mod3+l+release

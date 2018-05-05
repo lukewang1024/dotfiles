@@ -371,16 +371,16 @@ bindsym $super+Control+F3 exec --no-startup-id dmenu-display extend-right
 bindsym $super+Control+F4 exec --no-startup-id dmenu-display
 
 # Media controls
-bindsym $hyper+Left exec $lilbak
-bindsym $hyper+Right exec $lilfor
-bindsym $hyper+Shift+Left exec $bigbak
-bindsym $hyper+Shift+Right exec $bigfor
-bindsym $hyper+F5 exec $prev
-bindsym $hyper+F6 exec $next
-bindsym $hyper+F7 exec $toggle
-bindsym $hyper+F9 exec $mute
-bindsym $hyper+F10 exec $dec
-bindsym $hyper+F11 exec $inc
+bindsym $super+bracketleft exec $lilbak
+bindsym $super+bracketright exec $lilfor
+bindsym $super+Shift+bracketleft exec $bigbak
+bindsym $super+Shift+bracketright exec $bigfor
+bindsym $super+F5 exec $prev
+bindsym $super+F6 exec $next
+bindsym $super+F7 exec $toggle
+bindsym $super+F9 exec $mute
+bindsym $super+F10 exec $dec
+bindsym $super+F11 exec $inc
 
 # >> For screenshots and recording
 

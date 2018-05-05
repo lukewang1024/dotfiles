@@ -186,6 +186,7 @@ prepare_arch_env_gui()
     ttf-font-awesome
     wkhtmltopdf
     wqy-zenhei
+    xbindkeys
     xcape
     xorg-apps
     zathura
