@@ -162,6 +162,7 @@ prepare_arch_env_gui()
     i3status
     kdiff3
     keepassxc
+    lxappearance
     nemo
     nemo-bulk-rename
     nemo-fileroller
