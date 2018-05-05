@@ -7,7 +7,7 @@ export EDITOR='vim'
 
 # Set ANDROID_HOME per platform
 [[ $OSTYPE == *'darwin'* ]] && export ANDROID_HOME=$HOME/Library/Android/sdk
-[[ $OSTYPE == 'linux-gnu' ]] && export ANDROID_HOME=$HOME/android-sdk
+[[ $OSTYPE == 'linux-gnu' ]] && export ANDROID_HOME=$HOME/android-sdk && export I3FYRA_WS=1
 
 # PATH
 export PATH="/usr/bin/core_perl:$PATH"
