@@ -1,6 +1,8 @@
 # i3 config file (v4)
 # syntax:ssHash
 
+set $exe exec --no-startup-id
+
 # >> Workspace definitions
 
 set $ws1 "1"
@@ -28,23 +30,23 @@ set $ws-vscode ""
 # >> audio and music definitions
 
 # PulseAudio / pamixer
-set $inc --no-startup-id pamixer --allow-boost -i 5
-set $biginc --no-startup-id pamixer --allow-boost -i 15
-set $dec --no-startup-id pamixer --allow-boost -d 5
-set $bigdec --no-startup-id pamixer --allow-boost -d 15
-set $mute --no-startup-id pamixer --allow-boost -t
-set $truemute --no-startup-id pamixer -m
+set $inc pamixer --allow-boost -i 5
+set $biginc pamixer --allow-boost -i 15
+set $dec pamixer --allow-boost -d 5
+set $bigdec pamixer --allow-boost -d 15
+set $mute pamixer --allow-boost -t
+set $truemute pamixer -m
 
 # mpris
-set $toggle --no-startup-id playerctl play-pause
-set $pause --no-startup-id playerctl pause
-set $next --no-startup-id playerctl next
-set $prev --no-startup-id playerctl previous
-set $lilfor --no-startup-id playerctl position 10+
-set $bigfor --no-startup-id playerctl position 120+
-set $lilbak --no-startup-id playerctl position 10-
-set $bigbak --no-startup-id playerctl position 120-
-set $beg --no-startup-id playerctl position 0
+set $toggle playerctl play-pause
+set $pause playerctl pause
+set $next playerctl next
+set $prev playerctl previous
+set $lilfor playerctl position 10+
+set $bigfor playerctl position 120+
+set $lilbak playerctl position 10-
+set $bigbak playerctl position 120-
+set $beg playerctl position 0
 
 # spotify
 #set $music spotify
@@ -57,39 +59,39 @@ set $beg --no-startup-id playerctl position 0
 #set $bigfor dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Seek(
 
 # mpd
-#set $music --no-startup-id st -e ncmpcpp
-#set $toggle --no-startup-id mpc toggle
-#set $pause --no-startup-id mpc pause
-#set $next --no-startup-id mpc next
-#set $prev --no-startup-id mpc prev
-#set $lilfor --no-startup-id mpc seek +10
-#set $bigfor --no-startup-id mpc seek +120
-#set $lilbak --no-startup-id mpc seek -10
-#set $bigbak --no-startup-id mpc seek -120
-#set $beg --no-startup-id mpc seek 0%
+#set $music st -e ncmpcpp
+#set $toggle mpc toggle
+#set $pause mpc pause
+#set $next mpc next
+#set $prev mpc prev
+#set $lilfor mpc seek +10
+#set $bigfor mpc seek +120
+#set $lilbak mpc seek -10
+#set $bigbak mpc seek -120
+#set $beg mpc seek 0%
 
 # cmus
-#set $music --no-startup-id st -e cmus
-#set $toggle --no-startup-id cmus-remote -u
-#set $next --no-startup-id cmus-remote -n
-#set $prev --no-startup-id cmus-remote -r
-#set $lilfor --no-startup-id cmus-remote -k +10
-#set $bigfor --no-startup-id cmus-remote -k +120
-#set $lilbak --no-startup-id cmus-remote -k -10
-#set $bigbak --no-startup-id cmus-remote -k -120
-#set $beg --no-startup-id cmus-remote -k 00:00:00
+#set $music st -e cmus
+#set $toggle cmus-remote -u
+#set $next cmus-remote -n
+#set $prev cmus-remote -r
+#set $lilfor cmus-remote -k +10
+#set $bigfor cmus-remote -k +120
+#set $lilbak cmus-remote -k -10
+#set $bigbak cmus-remote -k -120
+#set $beg cmus-remote -k 00:00:00
 
 # moc
-#set $music --no-startup-id st -e mocp
-#set $toggle --no-startup-id mocp -G
-#set $truepause --no-startup-id mocp -P
-#set $next --no-startup-id mocp -f
-#set $prev --no-startup-id mocp -r
-#set $lilfor --no-startup-id mocp -k 10
-#set $bigfor --no-startup-id mocp -k 120
-#set $lilbak --no-startup-id mocp -k -10
-#set $bigbak --no-startup-id mocp -k -120
-#set $beg --no-startup-id mocp -j 0%
+#set $music st -e mocp
+#set $toggle mocp -G
+#set $truepause mocp -P
+#set $next mocp -f
+#set $prev mocp -r
+#set $lilfor mocp -k 10
+#set $bigfor mocp -k 120
+#set $lilbak mocp -k -10
+#set $bigbak mocp -k -120
+#set $beg mocp -j 0%
 
 # >> Basic configs
 
@@ -97,18 +99,19 @@ set $hyper Mod3
 set $super Mod4
 set $alt Mod1
 set $default_gap 10
-set $rofi --no-startup-id rofi -show
-set $term --no-startup-id urxvt
-set $browser --no-startup-id firefox
-set $reload --no-startup-id ~/.config/i3/scripts/reload
-set $lock --no-startup-id ~/.config/i3/scripts/lock
-set $xf86_key_default --no-startup-id i3-nagbar -t warning -m 'Please bind this XF86 key.'
-set $mpsyt --no-startup-id urxvt -name mps-youtube -e mpsyt
+set $rofi rofi -show
+set $term urxvt
+set $browser firefox
+set $reload ~/.config/i3/scripts/reload
+set $lock ~/.config/i3/scripts/lock
+set $xf86_key_default i3-nagbar -t warning -m 'Please bind this XF86 key.'
+set $mpsyt urxvt -name mps-youtube -e mpsyt
 
 # For i3-gaps
-for_window [class="^.*"] border pixel 3
+# for_window [class="^.*"] border pixel 3
 gaps inner $default_gap
-gaps outer $default_gap
+
+for_window [class="^.*"] floating enable
 
 # font
 font pango:UbuntuMono Nerd Font 10
@@ -127,31 +130,31 @@ for_window [instance="dropdown"] border pixel 5
 # >> start external scripts
 
 # Increase key rate
-exec --no-startup-id xset r rate 300 30
+$exe xset r rate 300 30
 # Automatic display management
-exec --no-startup-id mons -a
+$exe mons -a
 # Music player daemon
-exec --no-startup-id mpd
+$exe mpd
 # Downloader
-exec --no-startup-id cd ~; aria2c
+$exe cd ~; aria2c
 # Torrent daemon
-exec --no-startup-id transmission-daemon
+$exe transmission-daemon
 # Composite manager
-exec --no-startup-id compton --fading
+$exe compton --fading
 # Set wallpaper and lockscreen image
-exec --no-startup-id wallpaper
+$exe wallpaper
 # Unclutter makes the mouse invisible after a brief period
-exec --no-startup-id unclutter
+$exe unclutter
 # IME support
-exec --no-startup-id fcitx
+$exe fcitx
 # Launch dropbox
-exec --no-startup-id "sh -c 'sleep 3; exec dropbox'"
+$exe "sh -c 'sleep 3; exec dropbox'"
 # dropdown terminal
-exec $term -name dropdown
+$exe $term -name dropdown
 # Termite for tmux
-exec --no-startup-id termite
+$exe termite
 # mps-youtube music client
-exec $mpsyt
+$exe $mpsyt
 # Volume tray icon
 exec_always $reload pa-applet
 # Network Manager applet
@@ -170,7 +173,7 @@ exec_always --no-startup-id ~/.config/polybar/launch-bars
 # >> layout shortcuts
 
 # Adjust gap size
-bindsym $super+Control+0 gaps inner current set $default_gap; gaps outer current set $default_gap
+bindsym $super+Control+0 gaps inner current set $default_gap
 bindsym $super+Control+minus gaps inner current plus 5
 bindsym $super+Control+equal gaps inner current minus 5
 
@@ -324,7 +327,7 @@ bindsym $super+w layout tabbed
 bindsym $super+e layout toggle split
 
 # toggle tiling / floating
-bindsym $super+Shift+space floating toggle
+bindsym $super+Shift+space $exe i3fyra -a
 
 # change focus between tiling / floating windows
 bindsym $super+space focus mode_toggle
@@ -336,13 +339,13 @@ bindsym $super+a focus parent
 bindsym $super+Shift+q kill
 
 # lock
-bindsym $super+Control+l exec $lock
+bindsym $super+Control+l $exe $lock
 
 # sleep
-bindsym $super+Control+s exec $lock suspend
+bindsym $super+Control+s $exe $lock suspend
 
 # power management menu
-bindsym $super+Control+$alt+p exec --no-startup-id dmenu-power
+bindsym $super+Control+$alt+p $exe dmenu-power
 
 # reload the configuration file
 bindsym $super+Control+r reload
@@ -356,119 +359,119 @@ bindsym $super+Control+$alt+e exit
 # dropdown terminal
 bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
 
-bindsym $super+Shift+c exec chromium
-bindsym $super+Shift+f exec firefox
-bindsym $super+Return exec $term
-bindsym $super+d exec --no-startup-id dmenu_run
-bindsym $alt+space exec $rofi run
-bindsym $alt+Tab exec $rofi window
-bindsym $super+c exec --no-startup-id gsimplecal
+bindsym $super+Shift+c $exe chromium
+bindsym $super+Shift+f $exe firefox
+bindsym $super+Return $exe $term
+bindsym $super+d $exe dmenu_run
+bindsym $alt+space $exe $rofi run
+bindsym $alt+Tab $exe $rofi window
+bindsym $super+c $exe gsimplecal
 
 # toggle between internal monitor and external ones
-bindsym $super+Control+F1 exec --no-startup-id dmenu-display primary
-bindsym $super+Control+F2 exec --no-startup-id dmenu-display secondary
-bindsym $super+Control+F3 exec --no-startup-id dmenu-display extend-right
-bindsym $super+Control+F4 exec --no-startup-id dmenu-display
+bindsym $super+Control+F1 $exe dmenu-display primary
+bindsym $super+Control+F2 $exe dmenu-display secondary
+bindsym $super+Control+F3 $exe dmenu-display extend-right
+bindsym $super+Control+F4 $exe dmenu-display
 
 # Media controls
-bindsym $super+bracketleft exec $lilbak
-bindsym $super+bracketright exec $lilfor
-bindsym $super+Shift+bracketleft exec $bigbak
-bindsym $super+Shift+bracketright exec $bigfor
-bindsym $super+F5 exec $prev
-bindsym $super+F6 exec $next
-bindsym $super+F7 exec $toggle
-bindsym $super+F9 exec $mute
-bindsym $super+F10 exec $dec
-bindsym $super+F11 exec $inc
+bindsym $super+bracketleft $exe $lilbak
+bindsym $super+bracketright $exe $lilfor
+bindsym $super+Shift+bracketleft $exe $bigbak
+bindsym $super+Shift+bracketright $exe $bigfor
+bindsym $super+F5 $exe $prev
+bindsym $super+F6 $exe $next
+bindsym $super+F7 $exe $toggle
+bindsym $super+F9 $exe $mute
+bindsym $super+F10 $exe $dec
+bindsym $super+F11 $exe $inc
 
 # >> For screenshots and recording
 
-bindsym Print              exec --no-startup-id scrot
-bindsym Shift+Print        exec --no-startup-id scrot -u
-bindsym $super+Print       exec --no-startup-id dmenu-record
-bindsym $super+Scroll_Lock exec --no-startup-id "killall screenkey || screenkey"
-bindsym $super+Pause       exec --no-startup-id killall ffmpeg
+bindsym Print              $exe scrot
+bindsym Shift+Print        $exe scrot -u
+bindsym $super+Print       $exe dmenu-record
+bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
+bindsym $super+Pause       $exe killall ffmpeg
 
 # >> extra XF86 keys
 # these are the extra media keys that some keyboards have
 
-bindsym XF86AudioForward      exec $lilfor
-bindsym XF86AudioLowerVolume  exec $dec
-bindsym XF86AudioMedia        exec $music
-bindsym XF86AudioMicMute      exec $micmute
-bindsym XF86AudioMute         exec $mute
-bindsym XF86AudioNext         exec $next
-bindsym XF86AudioPlay         exec $toggle
-bindsym XF86AudioPause        exec $toggle
-bindsym XF86AudioPrev         exec $prev
-bindsym XF86AudioRaiseVolume  exec $inc
-bindsym XF86AudioRecord       exec $audio
-bindsym XF86AudioRewind       exec $lilbak
-bindsym XF86AudioStop         exec $toggle
-bindsym XF86Back              exec $xf86_key_default
-bindsym XF86Battery           exec $xf86_key_default
-bindsym XF86Bluetooth         exec $xf86_key_default
-bindsym XF86Calculator        exec --no-startup-id galculator
+bindsym XF86AudioForward      $exe $lilfor
+bindsym XF86AudioLowerVolume  $exe $dec
+bindsym XF86AudioMedia        $exe $music
+bindsym XF86AudioMicMute      $exe $micmute
+bindsym XF86AudioMute         $exe $mute
+bindsym XF86AudioNext         $exe $next
+bindsym XF86AudioPlay         $exe $toggle
+bindsym XF86AudioPause        $exe $toggle
+bindsym XF86AudioPrev         $exe $prev
+bindsym XF86AudioRaiseVolume  $exe $inc
+bindsym XF86AudioRecord       $exe $audio
+bindsym XF86AudioRewind       $exe $lilbak
+bindsym XF86AudioStop         $exe $toggle
+bindsym XF86Back              $exe $xf86_key_default
+bindsym XF86Battery           $exe $xf86_key_default
+bindsym XF86Bluetooth         $exe $xf86_key_default
+bindsym XF86Calculator        $exe galculator
 bindsym XF86Close             kill
-bindsym XF86Copy              exec $xf86_key_default
-bindsym XF86Cut               exec $xf86_key_default
-bindsym XF86Display           exec --no-startup-id arandr
-bindsym XF86Documents         exec $term -e ranger ~/Documents
-bindsym XF86DOS               exec $xf86_key_default
-bindsym XF86Eject             exec $xf86_key_default
-bindsym XF86Explorer          exec $term -e ranger
-bindsym XF86Favorites         exec $xf86_key_default
-bindsym XF86Finance           exec $xf86_key_default
-bindsym XF86Forward           exec $xf86_key_default
-bindsym XF86Game              exec $xf86_key_default
-bindsym XF86Go                exec $xf86_key_default
-bindsym XF86HomePage          exec $browser; workspace $ws-firefox
-bindsym XF86KbdBrightnessDown exec $xf86_key_default
-bindsym XF86KbdBrightnessUp   exec $xf86_key_default
-bindsym XF86KbdLightOnOff     exec $xf86_key_default
-bindsym XF86Launch1           exec $xf86_key_default
-bindsym XF86Launch2           exec $xf86_key_default
-bindsym XF86Launch3           exec $xf86_key_default
-bindsym XF86Launch4           exec $xf86_key_default
-bindsym XF86Launch5           exec $xf86_key_default
-bindsym XF86Launch6           exec $xf86_key_default
-bindsym XF86Launch7           exec $xf86_key_default
-bindsym XF86Launch8           exec $xf86_key_default
-bindsym XF86Launch9           exec $xf86_key_default
-bindsym XF86LaunchA           exec $xf86_key_default
-bindsym XF86LaunchB           exec $xf86_key_default
-bindsym XF86Mail              exec $xf86_key_default
-bindsym XF86MailForward       exec $xf86_key_default
-bindsym XF86MenuKB            exec $xf86_key_default
-bindsym XF86Messenger         exec $xf86_key_default
-bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 10
-bindsym XF86MonBrightnessUp   exec --no-startup-id xbacklight -inc 10
-bindsym XF86MyComputer        exec $xf86_key_default
-bindsym XF86New               exec $xf86_key_default
-bindsym XF86Open              exec $xf86_key_default
-bindsym XF86Paste             exec $xf86_key_default
-bindsym XF86Phone             exec $xf86_key_default
-bindsym XF86PowerOff          exec $xf86_key_default
+bindsym XF86Copy              $exe $xf86_key_default
+bindsym XF86Cut               $exe $xf86_key_default
+bindsym XF86Display           $exe arandr
+bindsym XF86Documents         $exe $term -e ranger ~/Documents
+bindsym XF86DOS               $exe $xf86_key_default
+bindsym XF86Eject             $exe $xf86_key_default
+bindsym XF86Explorer          $exe $term -e ranger
+bindsym XF86Favorites         $exe $xf86_key_default
+bindsym XF86Finance           $exe $xf86_key_default
+bindsym XF86Forward           $exe $xf86_key_default
+bindsym XF86Game              $exe $xf86_key_default
+bindsym XF86Go                $exe $xf86_key_default
+bindsym XF86HomePage          $exe $browser; workspace $ws-firefox
+bindsym XF86KbdBrightnessDown $exe $xf86_key_default
+bindsym XF86KbdBrightnessUp   $exe $xf86_key_default
+bindsym XF86KbdLightOnOff     $exe $xf86_key_default
+bindsym XF86Launch1           $exe $xf86_key_default
+bindsym XF86Launch2           $exe $xf86_key_default
+bindsym XF86Launch3           $exe $xf86_key_default
+bindsym XF86Launch4           $exe $xf86_key_default
+bindsym XF86Launch5           $exe $xf86_key_default
+bindsym XF86Launch6           $exe $xf86_key_default
+bindsym XF86Launch7           $exe $xf86_key_default
+bindsym XF86Launch8           $exe $xf86_key_default
+bindsym XF86Launch9           $exe $xf86_key_default
+bindsym XF86LaunchA           $exe $xf86_key_default
+bindsym XF86LaunchB           $exe $xf86_key_default
+bindsym XF86Mail              $exe $xf86_key_default
+bindsym XF86MailForward       $exe $xf86_key_default
+bindsym XF86MenuKB            $exe $xf86_key_default
+bindsym XF86Messenger         $exe $xf86_key_default
+bindsym XF86MonBrightnessDown $exe xbacklight -dec 10
+bindsym XF86MonBrightnessUp   $exe xbacklight -inc 10
+bindsym XF86MyComputer        $exe $xf86_key_default
+bindsym XF86New               $exe $xf86_key_default
+bindsym XF86Open              $exe $xf86_key_default
+bindsym XF86Paste             $exe $xf86_key_default
+bindsym XF86Phone             $exe $xf86_key_default
+bindsym XF86PowerOff          $exe $xf86_key_default
 bindsym XF86Reload            restart
-bindsym XF86Reply             exec $xf86_key_default
-bindsym XF86RotateWindows     exec $xf86_key_default
-bindsym XF86Save              exec $xf86_key_default
-bindsym XF86ScreenSaver       exec $xf86_key_default
-bindsym XF86ScrollDown        exec $xf86_key_default
-bindsym XF86ScrollUp          exec $xf86_key_default
-bindsym XF86Search            exec $xf86_key_default
-bindsym XF86Send              exec $xf86_key_default
-bindsym XF86Shop              exec $xf86_key_default
-bindsym XF86Sleep             exec $xf86_key_default
-bindsym XF86Suspend           exec $xf86_key_default
-bindsym XF86TaskPane          exec $xf86_key_default
-bindsym XF86Tools             exec $mpsyt
-bindsym XF86TouchpadOff       exec $xf86_key_default
-bindsym XF86TouchpadOn        exec $xf86_key_default
-bindsym XF86TouchpadToggle    exec $xf86_key_default
-bindsym XF86WakeUp            exec $xf86_key_default
-bindsym XF86WebCam            exec $xf86_key_default
-bindsym XF86WLAN              exec $xf86_key_default
-bindsym XF86WWW               exec $xf86_key_default
-bindsym XF86Xfer              exec $xf86_key_default
+bindsym XF86Reply             $exe $xf86_key_default
+bindsym XF86RotateWindows     $exe $xf86_key_default
+bindsym XF86Save              $exe $xf86_key_default
+bindsym XF86ScreenSaver       $exe $xf86_key_default
+bindsym XF86ScrollDown        $exe $xf86_key_default
+bindsym XF86ScrollUp          $exe $xf86_key_default
+bindsym XF86Search            $exe $xf86_key_default
+bindsym XF86Send              $exe $xf86_key_default
+bindsym XF86Shop              $exe $xf86_key_default
+bindsym XF86Sleep             $exe $xf86_key_default
+bindsym XF86Suspend           $exe $xf86_key_default
+bindsym XF86TaskPane          $exe $xf86_key_default
+bindsym XF86Tools             $exe $mpsyt
+bindsym XF86TouchpadOff       $exe $xf86_key_default
+bindsym XF86TouchpadOn        $exe $xf86_key_default
+bindsym XF86TouchpadToggle    $exe $xf86_key_default
+bindsym XF86WakeUp            $exe $xf86_key_default
+bindsym XF86WebCam            $exe $xf86_key_default
+bindsym XF86WLAN              $exe $xf86_key_default
+bindsym XF86WWW               $exe $xf86_key_default
+bindsym XF86Xfer              $exe $xf86_key_default
