@@ -48,7 +48,9 @@ bindsym $super+Control+$alt+p $exe dmenu-power
 
 # >> Terminal
 
-bindsym $super+Return $exe i3-sensible-terminal
+bindsym $super+Return         $exe i3-sensible-terminal
+bindsym $super+Shift+Return   $exe i3run -i cterm -e '$term -name cterm'
+bindsym $super+Control+Return $exe $term -name tiledterm
 
 # dropdown terminal
 for_window [instance="dropdown"] floating enable
@@ -62,6 +64,24 @@ bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"
 bindsym $super+r   $exe dmenu_run
 bindsym $alt+space $exe $rofi run
 bindsym $alt+Tab   $exe $rofi window
+
+# >> Hyper shortcuts
+
+bindsym $hyper+c  $exe i3run -i chromium -e 'chromium'
+bindsym $hyper+f  $exe i3run -i firefox -e 'firefox'
+bindsym $hyper+s  $exe i3run -i sublime_text -e 'subl'
+bindsym $hyper+t  $exe i3run -i telegram-desktop -e 'telegram-desktop'
+bindsym $hyper+u  $exe i3run -i slack -e 'slack'
+bindsym $hyper+v  $exe i3run -i code -e 'code'
+bindsym $hyper+y  $exe i3run -i skype -e 'skypeforlinux'
+
+bindsym $hyper+backslash  $exe i3run -i keepassxc -e 'keepassxc'
+bindsym $hyper+semicolon  $exe i3run -i termite -e 'termite'
+
+# >> Hyper+Shift shortcuts
+
+bindsym $hyper+Shift+a  $exe i3run -c jetbrains-studio -e 'android-studio'
+bindsym $hyper+Shift+s  $exe i3run -i spotify -e 'spotify-adkiller-dns-block'
 
 # >> Focus
 
@@ -111,15 +131,22 @@ bindsym $super+Control+$alt+Right move workspace to output right
 
 # >> Window rules
 
-for_window [class="^.*"] floating enable
-
-# Container A
-for_window [class="Sublime_text"] focus; $fyra -m A
-for_window [class="Chromium"] focus; $fyra -m A
-for_window [class="Termite"] focus; $fyra -m A
-
-# Container C
-for_window [class="Lxappearance"] focus; $fyra -m C
+for_window [class="^.*"]                  floating enable
+for_window [class="jetbrains-studio"]     focus; $fyra -m A
+for_window [instance="chromium"]          focus; $fyra -m A
+for_window [instance="code"]              focus; $fyra -m A
+for_window [instance="cterm"]             focus; $fyra -m C
+for_window [instance="firefox"]           focus; $fyra -m A
+for_window [instance="irssi"]             focus; $fyra -m D
+for_window [instance="lxappearance"]      focus; $fyra -m D
+for_window [instance="musixmatch"]        focus; $fyra -m B
+for_window [instance="ncmpcpp"]           focus; $fyra -m B
+for_window [instance="skype"]             focus; $fyra -m D
+for_window [instance="slack"]             focus; $fyra -m A
+for_window [instance="sublime_text"]      focus; $fyra -m A
+for_window [instance="telegram-desktop"]  focus; $fyra -m D
+for_window [instance="termite"]           focus; $fyra -m A
+for_window [instance="tiledterm"]         floating disable
 
 # >> i3-gaps
 
@@ -271,7 +298,7 @@ $exe xset r rate 300 30
 # Automatic display management
 $exe mons -a
 # i3fyra layout
-$fyra -l 'AB=-450 BD=-200 AC=-100'
+$fyra -l 'AB=-480 BD=200 AC=-160'
 # Music player daemon
 $exe mpd
 # Downloader
