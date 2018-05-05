@@ -1,23 +1,14 @@
 #!/usr/bin/env bash
 # A dmenu display config prompt
 
-exists()
-{
-  command -v "$1" >/dev/null 2>&1
-}
+script_path=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+source "$script_path/helper.sh"
 
 if [[ $# -ge 1 ]]; then
   chosen="$1"
 else
-  choices="primary\nsecondary\n\
-extend-top\nextend-left\nextend-right\nextend-bottom\n\
-manual-config"
-
-  if exists rofi; then
-    chosen=$(echo -e "$choices" | rofi -dmenu)
-  else
-    chosen=$(echo -e "$choices" | dmenu -i)
-  fi
+  choices="primary\\nsecondary\\nextend-top\\nextend-left\\nextend-right\\nextend-bottom\\nmanual-config"
+  chosen=$(dmenu_filter "$choices" 'Choose display')
 fi
 
 case "$chosen" in
