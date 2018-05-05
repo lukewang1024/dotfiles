@@ -1,9 +1,135 @@
 # i3 config file (v4)
-# syntax:ssHash
 
-set $exe exec --no-startup-id
+# >> Initialization
 
-# >> Workspace definitions
+set $alt         Mod1
+set $hyper       Mod3
+set $super       Mod4
+set $default_gap 10
+set $exe         exec --no-startup-id exec
+set $fyra        exec --no-startup-id exec i3fyra
+set $rofi        rofi -show
+set $term        urxvt
+set $browser     chromium
+set $reload      ~/.config/i3/scripts/reload
+set $lock        ~/.config/i3/scripts/lock
+
+set $dirl  h
+set $dird  j
+set $diru  k
+set $dirr  l
+set $dirla Left
+set $dirda Down
+set $dirua Up
+set $dirra Right
+
+font pango:UbuntuMono Nerd Font 10
+
+floating_modifier $alt
+
+focus_follows_mouse no
+
+hide_edge_borders both
+
+# >> Panic
+
+bindsym $super+Shift+q kill
+bindsym $super+Shift+c reload
+bindsym $super+Shift+r restart
+bindsym $super+Shift+e exec --no-startup-id \
+  "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? \
+  This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+# >> Power
+
+bindsym $super+Control+$alt+l $exe $lock
+bindsym $super+Control+$alt+s $exe $lock suspend
+bindsym $super+Control+$alt+p $exe dmenu-power
+
+# >> Terminal
+
+bindsym $super+Return $exe i3-sensible-terminal
+
+# dropdown terminal
+for_window [instance="dropdown"] floating enable
+for_window [instance="dropdown"] resize set 900 600
+for_window [instance="dropdown"] move scratchpad
+for_window [instance="dropdown"] border pixel 5
+bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
+
+# >> Program launch
+
+bindsym $super+r   $exe dmenu_run
+bindsym $alt+space $exe $rofi run
+bindsym $alt+Tab   $exe $rofi window
+
+# >> Focus
+
+bindsym $super+$dirl  $fyra -f l
+bindsym $super+$dird  $fyra -f d
+bindsym $super+$diru  $fyra -f u
+bindsym $super+$dirr  $fyra -f r
+bindsym $super+$dirla $fyra -f l
+bindsym $super+$dirda $fyra -f d
+bindsym $super+$dirua $fyra -f u
+bindsym $super+$dirra $fyra -f r
+
+# >> Moving
+
+bindsym $super+Shift+$dirl  $fyra -m l
+bindsym $super+Shift+$dird  $fyra -m d
+bindsym $super+Shift+$diru  $fyra -m u
+bindsym $super+Shift+$dirr  $fyra -m r
+bindsym $super+Shift+$dirla $fyra -m l
+bindsym $super+Shift+$dirda $fyra -m d
+bindsym $super+Shift+$dirua $fyra -m u
+bindsym $super+Shift+$dirra $fyra -m r
+
+# >> Resizing
+
+bindsym $super+Control+$dirl  resize shrink width 10 px or 10 ppt
+bindsym $super+Control+$dird  resize grow height 10 px or 10 ppt
+bindsym $super+Control+$diru  resize shrink height 10 px or 10 ppt
+bindsym $super+Control+$dirr  resize grow width 10 px or 10 ppt
+bindsym $super+Control+$dirla resize shrink width 10 px or 10 ppt
+bindsym $super+Control+$dirda resize grow height 10 px or 10 ppt
+bindsym $super+Control+$dirua resize shrink height 10 px or 10 ppt
+bindsym $super+Control+$dirra resize grow width 10 px or 10 ppt
+
+# >> Window manipulation
+
+bindsym $super+f fullscreen toggle
+bindsym $super+g layout toggle tabbed splith splitv
+bindsym $super+space focus mode_toggle
+
+# toggle tiling / floating
+bindsym $super+Shift+space $fyra -a
+
+# move workspace between screens
+bindsym $super+Control+$alt+Left move workspace to output left
+bindsym $super+Control+$alt+Right move workspace to output right
+
+# >> Window rules
+
+for_window [class="^.*"] floating enable
+
+# Container A
+for_window [class="Sublime_text"] focus; $fyra -m A
+for_window [class="Chromium"] focus; $fyra -m A
+for_window [class="Termite"] focus; $fyra -m A
+
+# Container C
+for_window [class="Lxappearance"] focus; $fyra -m C
+
+# >> i3-gaps
+
+for_window [class="^.*"] border pixel 3
+gaps inner $default_gap
+bindsym $super+Control+0 gaps inner current set $default_gap
+bindsym $super+Control+minus gaps inner current plus 5
+bindsym $super+Control+equal gaps inner current minus 5
+
+# >> Workspace management
 
 set $ws1 "1"
 set $ws2 "2"
@@ -15,19 +141,47 @@ set $ws7 "7"
 set $ws8 "8"
 set $ws9 "9"
 set $ws10 "10"
-set $ws-androidstudio ""
-set $ws-chromium ""
-set $ws-feedreader ""
-set $ws-firefox ""
-set $ws-mailspring ""
-set $ws-skype ""
-set $ws-slack ""
-set $ws-spotify ""
-set $ws-sublime_text ""
-set $ws-termite ""
-set $ws-vscode ""
 
-# >> audio and music definitions
+# switch to workspace
+bindsym $super+1 workspace $ws1
+bindsym $super+2 workspace $ws2
+bindsym $super+3 workspace $ws3
+bindsym $super+4 workspace $ws4
+bindsym $super+5 workspace $ws5
+bindsym $super+6 workspace $ws6
+bindsym $super+7 workspace $ws7
+bindsym $super+8 workspace $ws8
+bindsym $super+9 workspace $ws9
+bindsym $super+0 workspace $ws10
+
+# move focused container to workspace
+bindsym $super+Shift+1 move container to workspace $ws1
+bindsym $super+Shift+2 move container to workspace $ws2
+bindsym $super+Shift+3 move container to workspace $ws3
+bindsym $super+Shift+4 move container to workspace $ws4
+bindsym $super+Shift+5 move container to workspace $ws5
+bindsym $super+Shift+6 move container to workspace $ws6
+bindsym $super+Shift+7 move container to workspace $ws7
+bindsym $super+Shift+8 move container to workspace $ws8
+bindsym $super+Shift+9 move container to workspace $ws9
+bindsym $super+Shift+0 move container to workspace $ws10
+
+# >> Display management
+
+bindsym $super+Control+F1 $exe dmenu-display primary
+bindsym $super+Control+F2 $exe dmenu-display secondary
+bindsym $super+Control+F3 $exe dmenu-display extend-right
+bindsym $super+Control+F4 $exe dmenu-display
+
+# >> Screenshots and recording
+
+bindsym Print              $exe scrot
+bindsym Shift+Print        $exe scrot -u
+bindsym $super+Print       $exe dmenu-record
+bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
+bindsym $super+Pause       $exe killall ffmpeg
+
+# >> Audio and music definitions
 
 # PulseAudio / pamixer
 set $inc pamixer --allow-boost -i 5
@@ -93,46 +247,31 @@ set $beg playerctl position 0
 #set $bigbak mocp -k -120
 #set $beg mocp -j 0%
 
-# >> Basic configs
+# >> Media controls
 
-set $hyper Mod3
-set $super Mod4
-set $alt Mod1
-set $default_gap 10
-set $rofi rofi -show
-set $term urxvt
-set $browser firefox
-set $reload ~/.config/i3/scripts/reload
-set $lock ~/.config/i3/scripts/lock
-set $xf86_key_default i3-nagbar -t warning -m 'Please bind this XF86 key.'
-set $mpsyt urxvt -name mps-youtube -e mpsyt
+bindsym $super+bracketleft $exe $lilbak
+bindsym $super+bracketright $exe $lilfor
+bindsym $super+Shift+bracketleft $exe $bigbak
+bindsym $super+Shift+bracketright $exe $bigfor
+bindsym $super+F5 $exe $prev
+bindsym $super+F6 $exe $next
+bindsym $super+F7 $exe $toggle
+bindsym $super+F9 $exe $mute
+bindsym $super+F10 $exe $dec
+bindsym $super+F11 $exe $inc
 
-# For i3-gaps
-# for_window [class="^.*"] border pixel 3
-gaps inner $default_gap
+# >> Bar
 
-for_window [class="^.*"] floating enable
+# bar {}
 
-# font
-font pango:UbuntuMono Nerd Font 10
-
-# thin borders
-hide_edge_borders both
-
-# drag floating windows
-floating_modifier $super
-
-for_window [instance="dropdown"] floating enable
-for_window [instance="dropdown"] resize set 900 600
-for_window [instance="dropdown"] move scratchpad
-for_window [instance="dropdown"] border pixel 5
-
-# >> start external scripts
+# >> Autostart
 
 # Increase key rate
 $exe xset r rate 300 30
 # Automatic display management
 $exe mons -a
+# i3fyra layout
+$fyra -l 'AB=-450 BD=-200 AC=-100'
 # Music player daemon
 $exe mpd
 # Downloader
@@ -151,10 +290,6 @@ $exe fcitx
 $exe "sh -c 'sleep 3; exec dropbox'"
 # dropdown terminal
 $exe $term -name dropdown
-# Termite for tmux
-$exe termite
-# mps-youtube music client
-$exe $mpsyt
 # Volume tray icon
 exec_always $reload pa-applet
 # Network Manager applet
@@ -166,235 +301,10 @@ exec_always $reload redshift-gtk
 # Launch Polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
-# >> bar
-
-#bar {}
-
-# >> layout shortcuts
-
-# Adjust gap size
-bindsym $super+Control+0 gaps inner current set $default_gap
-bindsym $super+Control+minus gaps inner current plus 5
-bindsym $super+Control+equal gaps inner current minus 5
-
-# split in horizontal orientation
-bindsym $super+b split h
-
-# split in vertical orientation
-bindsym $super+v split v
-
-# change focus
-bindsym $super+h focus left
-bindsym $super+j focus down
-bindsym $super+k focus up
-bindsym $super+l focus right
-bindsym $super+Left focus left
-bindsym $super+Down focus down
-bindsym $super+Up focus up
-bindsym $super+Right focus right
-
-# move focused window
-bindsym $super+Shift+h move left
-bindsym $super+Shift+j move down
-bindsym $super+Shift+k move up
-bindsym $super+Shift+l move right
-bindsym $super+Shift+Left move left
-bindsym $super+Shift+Down move down
-bindsym $super+Shift+Up move up
-bindsym $super+Shift+Right move right
-
-# >> Workspaces
-
-bindsym $super+Tab workspace back_and_forth
-
-# switch to workspace
-bindsym $super+1 workspace $ws1
-bindsym $super+2 workspace $ws2
-bindsym $super+3 workspace $ws3
-bindsym $super+4 workspace $ws4
-bindsym $super+5 workspace $ws5
-bindsym $super+6 workspace $ws6
-bindsym $super+7 workspace $ws7
-bindsym $super+8 workspace $ws8
-bindsym $super+9 workspace $ws9
-bindsym $super+0 workspace $ws10
-
-# move focused container to workspace
-bindsym $super+Shift+1 move container to workspace $ws1
-bindsym $super+Shift+2 move container to workspace $ws2
-bindsym $super+Shift+3 move container to workspace $ws3
-bindsym $super+Shift+4 move container to workspace $ws4
-bindsym $super+Shift+5 move container to workspace $ws5
-bindsym $super+Shift+6 move container to workspace $ws6
-bindsym $super+Shift+7 move container to workspace $ws7
-bindsym $super+Shift+8 move container to workspace $ws8
-bindsym $super+Shift+9 move container to workspace $ws9
-bindsym $super+Shift+0 move container to workspace $ws10
-
-# >> App specific workspaces
-# Use with Caslock (hyper) key
-
-# Sublime - s
-bindsym $hyper+s [class="Sublime_text"] move to workspace $ws-sublime_text; workspace $ws-sublime_text
-assign [class="Sublime_text"] $ws-sublime_text
-
-# Chromium - c
-bindsym $hyper+c [class="Chromium"] move to workspace $ws-chromium; workspace $ws-chromium
-assign [class="Chromium"] $ws-chromium
-
-# Firefox - f
-bindsym $hyper+f [class="Firefox"] move to workspace $ws-firefox; workspace $ws-firefox
-assign [class="Firefox"] $ws-firefox
-for_window [class="Firefox" title="Library"] floating enable
-
-# Android Studio - i
-bindsym $hyper+i [class="jetbrains-studio"] move to workspace $ws-androidstudio; workspace $ws-androidstudio
-assign [class="jetbrains-studio"] $ws-androidstudio
-
-# mps-youtube - M
-for_window [instance="mps-youtube"] floating enable
-for_window [instance="mps-youtube"] resize set 1280 720
-for_window [instance="mps-youtube"] move scratchpad
-for_window [instance="mps-youtube"] border pixel 5
-bindsym $hyper+Shift+m [instance="mps-youtube"] scratchpad show; [instance="mps-youtube"] move position center
-
-# Feedreader - r
-bindsym $hyper+r [class="Feedreader"] move to workspace $ws-feedreader; workspace $ws-feedreader
-assign [class="Feedreader"] $ws-feedreader
-
-# Spotify - s
-bindsym $hyper+Shift+s workspace $ws-spotify
-assign [class="Musixmatch"] $ws-spotify
-for_window [class="Spotify"] move to workspace $ws-spotify
-
-# Telegram - t
-for_window [class="Telegram"] floating enable
-for_window [class="Telegram"] resize set 1024 960
-for_window [class="Telegram"] move scratchpad
-for_window [class="Telegram"] border pixel 5
-bindsym $hyper+t [class="Telegram"] scratchpad show; [class="Telegram"] move position center
-
-# VSCode - v
-bindsym $hyper+v [class="Code"] move to workspace $ws-vscode; workspace $ws-vscode
-assign [class="Code"] $ws-vscode
-
-# Mailspring - x
-bindsym $hyper+x [class="Mailspring"] move to workspace $ws-mailspring; workspace $ws-mailspring
-assign [class="Mailspring"] $ws-mailspring
-
-# Skype - y
-bindsym $hyper+y [class="Skype"] move to workspace $ws-skype; workspace $ws-skype
-assign [class="Skype"] $ws-skype
-
-# Slack - u
-bindsym $hyper+u [class="Slack"] move to workspace $ws-slack; workspace $ws-slack
-assign [class="Slack"] $ws-slack
-
-# wewechat - w
-for_window [class="wewechat"] floating enable
-for_window [class="wewechat"] resize set 960 640
-for_window [class="wewechat"] move scratchpad
-for_window [class="wewechat"] border pixel 5
-bindsym $hyper+w [class="wewechat"] scratchpad show; [class="wewechat"] move position center
-
-# Termite - ;
-bindsym $hyper+semicolon [class="Termite"] move to workspace $ws-termite; workspace $ws-termite
-assign [class="Termite"] $ws-termite
-
-# Keepass - \
-for_window [class="keepassxc"] floating enable
-for_window [class="keepassxc"] resize set 1360 720
-for_window [class="keepassxc"] move scratchpad
-for_window [class="keepassxc"] border pixel 5
-bindsym $hyper+backslash [class="keepassxc"] scratchpad show; [class="keepassxc"] move position center
-
-# >> app configs
-
-for_window [class="Galculator"] floating enable
-
-# >> shortcuts
-
-# move workspace between screens
-bindsym $super+Control+$alt+Left move workspace to output left
-bindsym $super+Control+$alt+Right move workspace to output right
-
-# enter fullscreen mode for the focused container
-bindsym $super+f fullscreen
-
-# change container layout
-bindsym $super+s layout stacking
-bindsym $super+w layout tabbed
-bindsym $super+e layout toggle split
-
-# toggle tiling / floating
-bindsym $super+Shift+space $exe i3fyra -a
-
-# change focus between tiling / floating windows
-bindsym $super+space focus mode_toggle
-
-# focus the parent container
-bindsym $super+a focus parent
-
-# kill focused window
-bindsym $super+Shift+q kill
-
-# lock
-bindsym $super+Control+l $exe $lock
-
-# sleep
-bindsym $super+Control+s $exe $lock suspend
-
-# power management menu
-bindsym $super+Control+$alt+p $exe dmenu-power
-
-# reload the configuration file
-bindsym $super+Control+r reload
-
-# restart i3 inplace
-bindsym $super+Control+$alt+r restart
-
-# exit i3 (logs you out of your X session)
-bindsym $super+Control+$alt+e exit
-
-# dropdown terminal
-bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
-
-bindsym $super+Shift+c $exe chromium
-bindsym $super+Shift+f $exe firefox
-bindsym $super+Return $exe $term
-bindsym $super+d $exe dmenu_run
-bindsym $alt+space $exe $rofi run
-bindsym $alt+Tab $exe $rofi window
-bindsym $super+c $exe gsimplecal
-
-# toggle between internal monitor and external ones
-bindsym $super+Control+F1 $exe dmenu-display primary
-bindsym $super+Control+F2 $exe dmenu-display secondary
-bindsym $super+Control+F3 $exe dmenu-display extend-right
-bindsym $super+Control+F4 $exe dmenu-display
-
-# Media controls
-bindsym $super+bracketleft $exe $lilbak
-bindsym $super+bracketright $exe $lilfor
-bindsym $super+Shift+bracketleft $exe $bigbak
-bindsym $super+Shift+bracketright $exe $bigfor
-bindsym $super+F5 $exe $prev
-bindsym $super+F6 $exe $next
-bindsym $super+F7 $exe $toggle
-bindsym $super+F9 $exe $mute
-bindsym $super+F10 $exe $dec
-bindsym $super+F11 $exe $inc
-
-# >> For screenshots and recording
-
-bindsym Print              $exe scrot
-bindsym Shift+Print        $exe scrot -u
-bindsym $super+Print       $exe dmenu-record
-bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
-bindsym $super+Pause       $exe killall ffmpeg
-
-# >> extra XF86 keys
+# >> Extra XF86 keys
 # these are the extra media keys that some keyboards have
+
+set $xf86_default             i3-nagbar -t warning -m 'Bind this XF86 key.'
 
 bindsym XF86AudioForward      $exe $lilfor
 bindsym XF86AudioLowerVolume  $exe $dec
@@ -409,69 +319,74 @@ bindsym XF86AudioRaiseVolume  $exe $inc
 bindsym XF86AudioRecord       $exe $audio
 bindsym XF86AudioRewind       $exe $lilbak
 bindsym XF86AudioStop         $exe $toggle
-bindsym XF86Back              $exe $xf86_key_default
-bindsym XF86Battery           $exe $xf86_key_default
-bindsym XF86Bluetooth         $exe $xf86_key_default
+bindsym XF86Back              $exe $xf86_default
+bindsym XF86Battery           $exe $xf86_default
+bindsym XF86Bluetooth         $exe $xf86_default
 bindsym XF86Calculator        $exe galculator
 bindsym XF86Close             kill
-bindsym XF86Copy              $exe $xf86_key_default
-bindsym XF86Cut               $exe $xf86_key_default
+bindsym XF86Copy              $exe $xf86_default
+bindsym XF86Cut               $exe $xf86_default
 bindsym XF86Display           $exe arandr
 bindsym XF86Documents         $exe $term -e ranger ~/Documents
-bindsym XF86DOS               $exe $xf86_key_default
-bindsym XF86Eject             $exe $xf86_key_default
+bindsym XF86DOS               $exe $xf86_default
+bindsym XF86Eject             $exe $xf86_default
 bindsym XF86Explorer          $exe $term -e ranger
-bindsym XF86Favorites         $exe $xf86_key_default
-bindsym XF86Finance           $exe $xf86_key_default
-bindsym XF86Forward           $exe $xf86_key_default
-bindsym XF86Game              $exe $xf86_key_default
-bindsym XF86Go                $exe $xf86_key_default
-bindsym XF86HomePage          $exe $browser; workspace $ws-firefox
-bindsym XF86KbdBrightnessDown $exe $xf86_key_default
-bindsym XF86KbdBrightnessUp   $exe $xf86_key_default
-bindsym XF86KbdLightOnOff     $exe $xf86_key_default
-bindsym XF86Launch1           $exe $xf86_key_default
-bindsym XF86Launch2           $exe $xf86_key_default
-bindsym XF86Launch3           $exe $xf86_key_default
-bindsym XF86Launch4           $exe $xf86_key_default
-bindsym XF86Launch5           $exe $xf86_key_default
-bindsym XF86Launch6           $exe $xf86_key_default
-bindsym XF86Launch7           $exe $xf86_key_default
-bindsym XF86Launch8           $exe $xf86_key_default
-bindsym XF86Launch9           $exe $xf86_key_default
-bindsym XF86LaunchA           $exe $xf86_key_default
-bindsym XF86LaunchB           $exe $xf86_key_default
-bindsym XF86Mail              $exe $xf86_key_default
-bindsym XF86MailForward       $exe $xf86_key_default
-bindsym XF86MenuKB            $exe $xf86_key_default
-bindsym XF86Messenger         $exe $xf86_key_default
+bindsym XF86Favorites         $exe $xf86_default
+bindsym XF86Finance           $exe $xf86_default
+bindsym XF86Forward           $exe $xf86_default
+bindsym XF86Game              $exe $xf86_default
+bindsym XF86Go                $exe $xf86_default
+bindsym XF86HomePage          $exe $browser
+bindsym XF86KbdBrightnessDown $exe $xf86_default
+bindsym XF86KbdBrightnessUp   $exe $xf86_default
+bindsym XF86KbdLightOnOff     $exe $xf86_default
+bindsym XF86Launch1           $exe $xf86_default
+bindsym XF86Launch2           $exe $xf86_default
+bindsym XF86Launch3           $exe $xf86_default
+bindsym XF86Launch4           $exe $xf86_default
+bindsym XF86Launch5           $exe $xf86_default
+bindsym XF86Launch6           $exe $xf86_default
+bindsym XF86Launch7           $exe $xf86_default
+bindsym XF86Launch8           $exe $xf86_default
+bindsym XF86Launch9           $exe $xf86_default
+bindsym XF86LaunchA           $exe $xf86_default
+bindsym XF86LaunchB           $exe $xf86_default
+bindsym XF86Mail              $exe $xf86_default
+bindsym XF86MailForward       $exe $xf86_default
+bindsym XF86MenuKB            $exe $xf86_default
+bindsym XF86Messenger         $exe $xf86_default
 bindsym XF86MonBrightnessDown $exe xbacklight -dec 10
 bindsym XF86MonBrightnessUp   $exe xbacklight -inc 10
-bindsym XF86MyComputer        $exe $xf86_key_default
-bindsym XF86New               $exe $xf86_key_default
-bindsym XF86Open              $exe $xf86_key_default
-bindsym XF86Paste             $exe $xf86_key_default
-bindsym XF86Phone             $exe $xf86_key_default
-bindsym XF86PowerOff          $exe $xf86_key_default
+bindsym XF86MyComputer        $exe $xf86_default
+bindsym XF86New               $exe $xf86_default
+bindsym XF86Open              $exe $xf86_default
+bindsym XF86Paste             $exe $xf86_default
+bindsym XF86Phone             $exe $xf86_default
+bindsym XF86PowerOff          $exe $xf86_default
 bindsym XF86Reload            restart
-bindsym XF86Reply             $exe $xf86_key_default
-bindsym XF86RotateWindows     $exe $xf86_key_default
-bindsym XF86Save              $exe $xf86_key_default
-bindsym XF86ScreenSaver       $exe $xf86_key_default
-bindsym XF86ScrollDown        $exe $xf86_key_default
-bindsym XF86ScrollUp          $exe $xf86_key_default
-bindsym XF86Search            $exe $xf86_key_default
-bindsym XF86Send              $exe $xf86_key_default
-bindsym XF86Shop              $exe $xf86_key_default
-bindsym XF86Sleep             $exe $xf86_key_default
-bindsym XF86Suspend           $exe $xf86_key_default
-bindsym XF86TaskPane          $exe $xf86_key_default
-bindsym XF86Tools             $exe $mpsyt
-bindsym XF86TouchpadOff       $exe $xf86_key_default
-bindsym XF86TouchpadOn        $exe $xf86_key_default
-bindsym XF86TouchpadToggle    $exe $xf86_key_default
-bindsym XF86WakeUp            $exe $xf86_key_default
-bindsym XF86WebCam            $exe $xf86_key_default
-bindsym XF86WLAN              $exe $xf86_key_default
-bindsym XF86WWW               $exe $xf86_key_default
-bindsym XF86Xfer              $exe $xf86_key_default
+bindsym XF86Reply             $exe $xf86_default
+bindsym XF86RotateWindows     $exe $xf86_default
+bindsym XF86Save              $exe $xf86_default
+bindsym XF86ScreenSaver       $exe $xf86_default
+bindsym XF86ScrollDown        $exe $xf86_default
+bindsym XF86ScrollUp          $exe $xf86_default
+bindsym XF86Search            $exe $xf86_default
+bindsym XF86Send              $exe $xf86_default
+bindsym XF86Shop              $exe $xf86_default
+bindsym XF86Sleep             $exe $xf86_default
+bindsym XF86Suspend           $exe $xf86_default
+bindsym XF86TaskPane          $exe $xf86_default
+bindsym XF86Tools             $exe $xf86_default
+bindsym XF86TouchpadOff       $exe $xf86_default
+bindsym XF86TouchpadOn        $exe $xf86_default
+bindsym XF86TouchpadToggle    $exe $xf86_default
+bindsym XF86WakeUp            $exe $xf86_default
+bindsym XF86WebCam            $exe $xf86_default
+bindsym XF86WLAN              $exe $xf86_default
+bindsym XF86WWW               $exe $xf86_default
+bindsym XF86Xfer              $exe $xf86_default
+
+# >> App icons
+#           
+
+# syntax:ssHash
