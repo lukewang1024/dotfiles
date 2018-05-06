@@ -163,13 +163,6 @@ prepare_arch_env_gui()
     kdiff3
     keepassxc
     lxappearance
-    nemo
-    nemo-bulk-rename
-    nemo-fileroller
-    nemo-image-converter
-    nemo-preview
-    nemo-seahorse
-    nemo-share
     neofetch
     network-manager-applet
     pa-applet
@@ -183,6 +176,11 @@ prepare_arch_env_gui()
     sublime-text
     telegram-desktop
     termite
+    thunar
+    thunar-archive-plugin
+    thunar-media-tags-plugin
+    thunar-shares-plugin
+    thunar-volman
     tilda
     ttf-font-awesome
     wkhtmltopdf
@@ -252,7 +250,7 @@ setup_arch_gaming()
 
 set_default_apps()
 {
-  xdg-mime default nemo.desktop inode/directory
+  xdg-mime default thunar.desktop inode/directory
   xdg-mime default chromium.desktop x-scheme-handler/http
   xdg-mime default chromium.desktop x-scheme-handler/https
 }

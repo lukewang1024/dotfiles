@@ -5,14 +5,18 @@
 set $alt         Mod1
 set $hyper       Mod3
 set $super       Mod4
-set $default_gap 10
+set $default_gap 0
+set $gap_step    5
 set $exe         exec --no-startup-id exec
 set $fyra        exec --no-startup-id exec i3fyra
+set $fyra_reset  exec --no-startup-id exec i3fyra -l 'AB=-480 BD=200 AC=-160'
 set $rofi        rofi -show
 set $term        urxvt
 set $browser     chromium
-set $reload      ~/.config/i3/scripts/reload
+
 set $lock        ~/.config/i3/scripts/lock
+set $reload      ~/.config/i3/scripts/reload
+set $thunar      ~/.config/i3/scripts/thunar
 
 set $dirl  h
 set $dird  j
@@ -61,19 +65,23 @@ bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"
 
 # >> Program launch
 
-bindsym $super+r   $exe dmenu_run
 bindsym $alt+space $exe $rofi run
 bindsym $alt+Tab   $exe $rofi window
+
+bindsym $super+r         $exe dmenu_run
+bindsym $super+e         $exe $thunar filemanagerB ThunarIconView
+bindsym $super+Control+e $exe $thunar filemanagerD ThunarDetailsView
 
 # >> Hyper shortcuts
 
 bindsym $hyper+c  $exe i3run -i chromium -e 'chromium'
-bindsym $hyper+f  $exe i3run -i firefox -e 'firefox'
+bindsym $hyper+f  $exe i3run -c Firefox -e 'firefox'
 bindsym $hyper+s  $exe i3run -i sublime_text -e 'subl'
 bindsym $hyper+t  $exe i3run -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+u  $exe i3run -i slack -e 'slack'
 bindsym $hyper+v  $exe i3run -i code -e 'code'
 bindsym $hyper+y  $exe i3run -i skype -e 'skypeforlinux'
+bindsym $hyper+z  $exe i3run -i zeal -e 'zeal'
 
 bindsym $hyper+backslash  $exe i3run -i keepassxc -e 'keepassxc'
 bindsym $hyper+semicolon  $exe i3run -i termite -e 'termite'
@@ -82,6 +90,27 @@ bindsym $hyper+semicolon  $exe i3run -i termite -e 'termite'
 
 bindsym $hyper+Shift+a  $exe i3run -c jetbrains-studio -e 'android-studio'
 bindsym $hyper+Shift+s  $exe i3run -i spotify -e 'spotify-adkiller-dns-block'
+
+# >> Window rules
+
+for_window [class="^.*"]                  floating enable
+for_window [class="jetbrains-studio"]     focus; $fyra -m A
+for_window [instance="code"]              focus; $fyra -m A
+for_window [instance="cterm"]             focus; $fyra -m C
+for_window [instance="irssi"]             focus; $fyra -m D
+for_window [instance="musixmatch"]        focus; $fyra -m B
+for_window [instance="ncmpcpp"]           focus; $fyra -m B
+for_window [instance="skype"]             focus; $fyra -m D
+for_window [instance="slack"]             focus; $fyra -m A
+for_window [instance="telegram-desktop"]  focus; $fyra -m D
+for_window [instance="termite"]           focus; $fyra -m A
+for_window [instance="filemanagerB"]      focus; $fyra -m B
+for_window [instance="filemanagerD"]      focus; $fyra -m D
+for_window [instance="tiledterm"]         floating disable
+
+for_window [class="Firefox" title="- Mozilla Firefox"]       focus; $fyra -m A
+for_window [instance="chromium" title="- Chromium"]          focus; $fyra -m A
+for_window [instance="sublime_text" title="- Sublime Text"]  focus; $fyra -m A
 
 # >> Focus
 
@@ -93,6 +122,11 @@ bindsym $super+$dirla $fyra -f l
 bindsym $super+$dirda $fyra -f d
 bindsym $super+$dirua $fyra -f u
 bindsym $super+$dirra $fyra -f r
+
+# >> Tabswitch
+
+bindsym $super+Tab       $exe i3flip n
+bindsym $super+Shift+Tab $exe i3flip p
 
 # >> Moving
 
@@ -125,36 +159,21 @@ bindsym $super+space focus mode_toggle
 # toggle tiling / floating
 bindsym $super+Shift+space $fyra -a
 
+# reset fyra layout
+bindsym $super+$alt+0      $fyra_reset
+
 # move workspace between screens
 bindsym $super+Control+$alt+Left move workspace to output left
 bindsym $super+Control+$alt+Right move workspace to output right
-
-# >> Window rules
-
-for_window [class="^.*"]                  floating enable
-for_window [class="jetbrains-studio"]     focus; $fyra -m A
-for_window [instance="chromium"]          focus; $fyra -m A
-for_window [instance="code"]              focus; $fyra -m A
-for_window [instance="cterm"]             focus; $fyra -m C
-for_window [instance="firefox"]           focus; $fyra -m A
-for_window [instance="irssi"]             focus; $fyra -m D
-for_window [instance="lxappearance"]      focus; $fyra -m D
-for_window [instance="musixmatch"]        focus; $fyra -m B
-for_window [instance="ncmpcpp"]           focus; $fyra -m B
-for_window [instance="skype"]             focus; $fyra -m D
-for_window [instance="slack"]             focus; $fyra -m A
-for_window [instance="sublime_text"]      focus; $fyra -m A
-for_window [instance="telegram-desktop"]  focus; $fyra -m D
-for_window [instance="termite"]           focus; $fyra -m A
-for_window [instance="tiledterm"]         floating disable
 
 # >> i3-gaps
 
 for_window [class="^.*"] border pixel 3
 gaps inner $default_gap
+gaps outer $default_gap
 bindsym $super+Control+0 gaps inner current set $default_gap
-bindsym $super+Control+minus gaps inner current plus 5
-bindsym $super+Control+equal gaps inner current minus 5
+bindsym $super+Control+minus gaps inner current plus $gap_step
+bindsym $super+Control+equal gaps inner current minus $gap_step
 
 # >> Workspace management
 
@@ -293,39 +312,39 @@ bindsym $super+F11 $exe $inc
 
 # >> Autostart
 
-# Increase key rate
+# increase key rate
 $exe xset r rate 300 30
-# Automatic display management
+# automatic display management
 $exe mons -a
 # i3fyra layout
-$fyra -l 'AB=-480 BD=200 AC=-160'
-# Music player daemon
+$fyra_reset
+# music player daemon
 $exe mpd
-# Downloader
+# downloader
 $exe cd ~; aria2c
-# Torrent daemon
+# torrent daemon
 $exe transmission-daemon
-# Composite manager
+# composite manager
 $exe compton --fading
-# Set wallpaper and lockscreen image
+# set wallpaper and lockscreen image
 $exe wallpaper
-# Unclutter makes the mouse invisible after a brief period
+# unclutter makes the mouse invisible after a brief period
 $exe unclutter
 # IME support
 $exe fcitx
-# Launch dropbox
+# launch dropbox
 $exe "sh -c 'sleep 3; exec dropbox'"
 # dropdown terminal
 $exe $term -name dropdown
-# Volume tray icon
+# volume tray icon
 exec_always $reload pa-applet
-# Network Manager applet
+# network manager applet
 exec_always $reload nm-applet
-# Bluetooth Manager applet
+# bluetooth manager applet
 exec_always $reload blueman-applet
-# Make display color warmer
+# make display color warmer
 exec_always $reload redshift-gtk
-# Launch Polybar where appropriate
+# launch polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
 # >> Extra XF86 keys
