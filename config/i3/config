@@ -65,8 +65,9 @@ bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"
 
 # >> Program launch
 
-bindsym $alt+space $exe $rofi run
-bindsym $alt+Tab   $exe $rofi window
+bindsym $super+$alt+space $exe $rofi run
+bindsym $alt+space        $exe $rofi drun
+bindsym $alt+Tab          $exe $rofi window
 
 bindsym $super+r         $exe dmenu_run
 bindsym $super+e         $exe $thunar filemanagerB ThunarIconView
@@ -166,9 +167,16 @@ bindsym $super+$alt+0      $fyra_reset
 bindsym $super+Control+$alt+Left move workspace to output left
 bindsym $super+Control+$alt+Right move workspace to output right
 
+# >> Appearance
+
+# with titlebar
+for_window [class="^.*"] border normal 1
+
+# without titelbar
+# for_window [class="^.*"] border pixel 1
+
 # >> i3-gaps
 
-for_window [class="^.*"] border pixel 3
 gaps inner $default_gap
 gaps outer $default_gap
 bindsym $super+Control+0 gaps inner current set $default_gap
