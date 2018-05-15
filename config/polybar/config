@@ -26,7 +26,7 @@ font-1 = UbuntuMono Nerd Font:size=10;0
 font-2 = Weather Icons:size=10;1
 modules-left = i3 cpu memory temperature battery-combined-udev wlan lan
 modules-center = xwindow
-modules-right = volume xbacklight system-usb-udev openweathermap-fullfeatured date
+modules-right = volume xbacklight system-usb-udev date
 tray-position = right
 tray-padding = 5
 scroll-up = i3wm-wsnext
@@ -35,7 +35,7 @@ enable-ipc = true
 
 [module/xwindow]
 type = internal/xwindow
-label = %title:0:100:...%
+label = %title:0:50:...%
 
 [module/xkeyboard]
 type = internal/xkeyboard

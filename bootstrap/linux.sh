@@ -35,6 +35,7 @@ apply_app_configs()
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 
   # Handy scripts
+  backup_then_symlink "$util_dir/linux/chrome-launcher" ~/bin/chrome-launcher
   backup_then_symlink "$util_dir/linux/dmenu-display" ~/bin/dmenu-display
   backup_then_symlink "$util_dir/linux/dmenu-handler" ~/bin/dmenu-handler
   backup_then_symlink "$util_dir/linux/dmenu-mount" ~/bin/dmenu-mount
@@ -46,6 +47,7 @@ apply_app_configs()
   backup_then_symlink "$util_dir/linux/record-audio" ~/bin/record-audio
   backup_then_symlink "$util_dir/linux/record-screencast" ~/bin/record-screencast
   backup_then_symlink "$util_dir/linux/record-video" ~/bin/record-video
+  backup_then_symlink "$util_dir/linux/touchpad-toggle" ~/bin/touchpad-toggle
   backup_then_symlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
 
   # Misc settings

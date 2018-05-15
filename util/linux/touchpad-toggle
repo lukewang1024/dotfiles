@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+offFile=/tmp/touchpad-state-syndaemon.cmdline
+
+if [[ -f $offFile ]]; then
+  touchpad-state --on
+else
+  touchpad-state --off
+fi
