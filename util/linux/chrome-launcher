@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+case $1 in
+  chrome)
+    cmd='google-chrome-stable'
+    ;;
+  chromium)
+    cmd='chromium'
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+
+if [[ $2 == 'nosecurity' ]]; then
+  cmd+=' --disable-web-security --user-data-dir'
+fi
+
+eval "$cmd"

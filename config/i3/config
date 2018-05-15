@@ -44,11 +44,12 @@ bindsym $super+Shift+e exec --no-startup-id \
   "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? \
   This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
-# >> Power
+# >> Power & peripheral
 
 bindsym $super+Control+$alt+l $exe $lock
 bindsym $super+Control+$alt+s $exe $lock suspend
 bindsym $super+Control+$alt+p $exe dmenu-power
+bindsym $super+Control+$alt+t $exe touchpad-toggle
 
 # >> Terminal
 
@@ -75,22 +76,26 @@ bindsym $super+Control+e $exe $thunar filemanagerD ThunarDetailsView
 
 # >> Hyper shortcuts
 
-bindsym $hyper+c  $exe i3run -i chromium -e 'chromium'
-bindsym $hyper+f  $exe i3run -c Firefox -e 'firefox'
-bindsym $hyper+s  $exe i3run -i sublime_text -e 'subl'
-bindsym $hyper+t  $exe i3run -i telegram-desktop -e 'telegram-desktop'
-bindsym $hyper+u  $exe i3run -i slack -e 'slack'
-bindsym $hyper+v  $exe i3run -i code -e 'code'
-bindsym $hyper+y  $exe i3run -i skype -e 'skypeforlinux'
-bindsym $hyper+z  $exe i3run -i zeal -e 'zeal'
+bindsym $hyper+c       $exe i3run -i chromium -e 'chrome-launcher chromium'
+bindsym $hyper+$alt+c  $exe i3run -i chromium -e 'chrome-launcher chromium nosecurity'
+bindsym $hyper+f       $exe i3run -c Firefox -e 'firefox'
+bindsym $hyper+s       $exe i3run -i sublime_text -e 'subl'
+bindsym $hyper+t       $exe i3run -i telegram-desktop -e 'telegram-desktop'
+bindsym $hyper+u       $exe i3run -i slack -e 'slack'
+bindsym $hyper+v       $exe i3run -i code -e 'code'
+bindsym $hyper+y       $exe i3run -i skype -e 'skypeforlinux'
+bindsym $hyper+z       $exe i3run -i zeal -e 'zeal'
 
 bindsym $hyper+backslash  $exe i3run -i keepassxc -e 'keepassxc'
 bindsym $hyper+semicolon  $exe i3run -i termite -e 'termite'
 
 # >> Hyper+Shift shortcuts
 
-bindsym $hyper+Shift+a  $exe i3run -c jetbrains-studio -e 'android-studio'
-bindsym $hyper+Shift+s  $exe i3run -i spotify -e 'spotify-adkiller-dns-block'
+bindsym $hyper+Shift+a       $exe i3run -c jetbrains-studio -e 'android-studio'
+bindsym $hyper+Shift+c       $exe i3run -i google-chrome -e 'chrome-launcher chrome'
+bindsym $hyper+Shift+$alt+c  $exe i3run -i google-chrome -e 'chrome-launcher chrome nosecurity'
+bindsym $hyper+Shift+s       $exe i3run -i spotify -e 'spotify-adkiller-dns-block'
+
 
 # >> Window rules
 

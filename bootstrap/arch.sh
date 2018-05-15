@@ -71,6 +71,7 @@ prepare_arch_env_cli()
     pandoc
     playerctl
     polipo
+    proxychains-ng
     ranger
     rsync
     shadowsocks-libev
@@ -109,6 +110,7 @@ prepare_arch_env_cli()
     mycli
     peco
     sparklines-git
+    touchpad-state-git
     translate-shell
     ttf-weather-icons
     urlview
@@ -207,6 +209,7 @@ prepare_arch_env_gui()
     feedreader
     genymotion
     git-cola
+    google-chrome-stable
     i3lock-color
     kitematic
     losslesscut
