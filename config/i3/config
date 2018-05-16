@@ -7,6 +7,7 @@ set $hyper       Mod3
 set $super       Mod4
 set $default_gap 0
 set $gap_step    5
+set $exec        exec --no-startup-id
 set $exe         exec --no-startup-id exec
 set $fyra        exec --no-startup-id exec i3fyra
 set $fyra_reset  exec --no-startup-id exec i3fyra -l 'AB=-480 BD=200 AC=-160'
@@ -184,9 +185,12 @@ for_window [class="^.*"] border normal 1
 
 gaps inner $default_gap
 gaps outer $default_gap
-bindsym $super+Control+0 gaps inner current set $default_gap
-bindsym $super+Control+minus gaps inner current plus $gap_step
-bindsym $super+Control+equal gaps inner current minus $gap_step
+bindsym $super+Control+0          gaps inner current set $default_gap
+bindsym $super+Control+minus      gaps inner current plus $gap_step
+bindsym $super+Control+equal      gaps inner current minus $gap_step
+bindsym $super+Control+$alt+0     gaps outer current set $default_gap
+bindsym $super+Control+$alt+minus gaps outer current plus $gap_step
+bindsym $super+Control+$alt+equal gaps outer current minus $gap_step
 
 # >> Workspace management
 
@@ -329,6 +333,8 @@ bindsym $super+F11 $exe $inc
 $exe xset r rate 300 30
 # automatic display management
 $exe mons -a
+# synaptic daemon
+$exe syndaemon -k
 # i3fyra layout
 $fyra_reset
 # music player daemon
@@ -346,7 +352,7 @@ $exe unclutter
 # IME support
 $exe fcitx
 # launch dropbox
-$exe "sh -c 'sleep 3; exec dropbox'"
+$exec "sh -c 'sleep 3; exec dropbox'"
 # dropdown terminal
 $exe $term -name dropdown
 # volume tray icon

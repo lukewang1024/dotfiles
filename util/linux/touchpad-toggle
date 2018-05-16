@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-offFile=/tmp/touchpad-state-syndaemon.cmdline
-
-if [[ -f $offFile ]]; then
+if ! pgrep -x syndaemon > /dev/null; then
+  echo 'syndaemon -k' > /tmp/touchpad-state-syndaemon.cmdline
   touchpad-state --on
 else
   touchpad-state --off
