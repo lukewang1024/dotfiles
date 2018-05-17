@@ -56,7 +56,12 @@ apply_app_configs()
 
 fix_ENOSPC()
 {
-  echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+  local tweak='fs.inotify.max_user_watches=524288'
+  if [ -f /etc/arch-release ]; then
+    echo "$tweak" | sudo tee /etc/sysctl.d/40-max-user-watches.conf && sudo sysctl --system
+  else
+    echo "$tweak" | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+  fi
 }
 
 # Make sure default locale is available
