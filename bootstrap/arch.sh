@@ -122,6 +122,7 @@ prepare_arch_env_cli()
 
   env_setup
   apply_app_configs
+  fix_ENOSPC
 
   sudo systemctl enable --now snapd.socket # enable snapd
 }
@@ -253,7 +254,7 @@ setup_arch_gaming()
 
 set_default_apps()
 {
-  xdg-mime default thunar.desktop inode/directory
   xdg-mime default chromium.desktop x-scheme-handler/http
   xdg-mime default chromium.desktop x-scheme-handler/https
+  xdg-mime default Thunar.desktop inode/directory
 }
