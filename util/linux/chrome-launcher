@@ -13,7 +13,7 @@ case $1 in
 esac
 
 if [[ $2 == 'nosecurity' ]]; then
-  cmd+=' --disable-web-security --user-data-dir'
+  cmd+=' --disable-web-security --user-data-dir --disable-features=CrossSiteDocumentBlockingIfIsolating'
 fi
 
 eval "$cmd"
