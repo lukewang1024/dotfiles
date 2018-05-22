@@ -340,7 +340,7 @@ $fyra_reset
 # music player daemon
 $exe mpd
 # downloader
-$exe cd ~; aria2c
+$exec "cd ~; aria2c"
 # torrent daemon
 $exe transmission-daemon
 # composite manager
