@@ -329,8 +329,6 @@ bindsym $super+F11 $exe $inc
 
 # >> Autostart
 
-# increase key rate
-$exe xset r rate 300 30
 # automatic display management
 $exe mons -a
 # synaptic daemon

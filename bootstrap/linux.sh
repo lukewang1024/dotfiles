@@ -44,6 +44,7 @@ apply_app_configs()
   backup_then_symlink "$util_dir/linux/dmenu-record" ~/bin/dmenu-record
   backup_then_symlink "$util_dir/linux/dmenu-umount" ~/bin/dmenu-umount
   backup_then_symlink "$util_dir/linux/enable-exec" ~/bin/enable-exec
+  backup_then_symlink "$util_dir/linux/kbmod" ~/bin/kbmod
   backup_then_symlink "$util_dir/linux/record-audio" ~/bin/record-audio
   backup_then_symlink "$util_dir/linux/record-screencast" ~/bin/record-screencast
   backup_then_symlink "$util_dir/linux/record-video" ~/bin/record-video

@@ -5,8 +5,8 @@
 # Executed by startx (run your window manager from here)
 
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
-[ -f ~/.Xmodmap ] && xmodmap ~/.Xmodmap
-xcape -e 'Control_L=Escape;Hyper_L=Escape;Mode_switch=Escape'
+
+command -v kbmod >/dev/null 2>&1 && kbmod
 
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
