@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+xset r rate 300 30 && echo 'xset loaded.'
+
+[ -f ~/.Xmodmap ] && xmodmap ~/.Xmodmap && echo 'xmodmap loaded.'
+
+pkill xcape
+xcape -e 'Control_L=Escape;Hyper_L=Escape;Mode_switch=Escape' && echo 'xcape loaded.'
+
+pkill xbindkeys
+xbindkeys && echo 'xbindkeys loaded.'
