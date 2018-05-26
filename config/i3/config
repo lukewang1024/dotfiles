@@ -84,8 +84,10 @@ bindsym $hyper+s       $exe i3run -i sublime_text -e 'subl'
 bindsym $hyper+t       $exe i3run -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+u       $exe i3run -i slack -e 'slack'
 bindsym $hyper+v       $exe i3run -i code -e 'code'
+bindsym $hyper+w       $exe i3run -i wewechat -e 'wewechat'
 bindsym $hyper+y       $exe i3run -i skype -e 'skypeforlinux'
 bindsym $hyper+z       $exe i3run -i zeal -e 'zeal'
+bindsym $hyper+1       $exe i3run -i gsimplecal -e 'gsimplecal'
 
 bindsym $hyper+backslash  $exe i3run -i keepassxc -e 'keepassxc'
 bindsym $hyper+semicolon  $exe i3run -i termite -e 'termite'
@@ -96,7 +98,7 @@ bindsym $hyper+Shift+a       $exe i3run -c jetbrains-studio -e 'android-studio'
 bindsym $hyper+Shift+c       $exe i3run -i google-chrome -e 'chrome-launcher chrome'
 bindsym $hyper+Shift+$alt+c  $exe i3run -i google-chrome -e 'chrome-launcher chrome nosecurity'
 bindsym $hyper+Shift+s       $exe i3run -i spotify -e 'spotify-adkiller-dns-block'
-
+bindsym $hyper+Shift+w       $exe i3run -i whats-app-nativefier* -e 'whatsapp-web-desktop'
 
 # >> Window rules
 
