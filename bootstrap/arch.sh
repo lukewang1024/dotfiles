@@ -166,6 +166,7 @@ prepare_arch_env_gui()
     kdiff3
     keepassxc
     lxappearance
+    lxtask
     neofetch
     network-manager-applet
     pa-applet
@@ -228,7 +229,7 @@ prepare_arch_env_gui()
     urxvt-fullscreen
     urxvt-resize-font-git
     visual-studio-code-bin
-    whatsapp-desktop
+    whatsapp-web-desktop
   )
   aur_install_pkgs
 
@@ -241,13 +242,13 @@ setup_arch_gaming()
   pkgs=(
     retroarch
     retroarch-assets-xmb
-    retroarch-autoconfig-udev
   )
   pacman_install_pkgs
 
   pkgs=(
     emulationstation
     libretro-mame-git
+    retroarch-autoconfig-udev-git
   )
   aur_install_pkgs
 }
