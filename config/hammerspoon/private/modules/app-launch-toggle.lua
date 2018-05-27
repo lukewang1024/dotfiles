@@ -19,7 +19,7 @@ end
 
 setAppToggles(hyper, {
   a = 'Activity Monitor',
-  b = 'Sublime Text',
+  b = 'Safari',
   c = 'Google Chrome',
   d = 'Dictionary',
   e = 'Pocket',
@@ -31,8 +31,9 @@ setAppToggles(hyper, {
   p = 'PDF Expert',
   q = 'Commander One',
   r = 'Reeder',
-  s = 'Safari',
+  s = 'Sublime Text',
   t = 'Telegram',
+  u = 'Slack',
   v = 'Code',
   w = 'WeChat',
   x = 'Spark',
@@ -71,7 +72,6 @@ setAppToggles(hyperAlt, {
   v = 'Visual Studio Code',
   w = 'WhatsApp',
   x = 'Todoist',
-  y = 'Slack',
   z = 'Zeplin',
   ['`'] = 'FutuNiuniu',
   [';'] = 'Terminal',
