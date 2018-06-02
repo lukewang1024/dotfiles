@@ -82,6 +82,7 @@ function install_scoop_packages
     postman `
     pshazz `
     putty `
+    qutebrowser `
     robo3t `
     rufus `
     runat `

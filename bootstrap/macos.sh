@@ -31,6 +31,7 @@ prepare_macos_env_cli()
     extract_url
     figlet
     fortune
+    fswatch
     gawk
     ghi
     gist
@@ -236,6 +237,7 @@ prepare_macos_env_gui()
     chromium
     firefox
     google-chrome
+    qutebrowser
 
     # Storage
     dropbox

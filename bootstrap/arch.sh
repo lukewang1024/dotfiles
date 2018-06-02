@@ -100,6 +100,7 @@ prepare_arch_env_cli()
   pkgs=(
     apache-spark
     cheat-git
+    downgrader
     fswatch
     git-lfs
     gitflow-avh
@@ -171,6 +172,7 @@ prepare_arch_env_gui()
     network-manager-applet
     pa-applet
     polybar
+    qutebrowser
     redshift
     rofi
     rofi-scripts
@@ -206,6 +208,8 @@ prepare_arch_env_gui()
     android-sdk-platform-tools
     android-studio
     betterlockscreen
+    deepin-wechat
+    deepin-wine-tim
     dropbox
     etcher
     feedreader
