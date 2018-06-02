@@ -10,7 +10,9 @@ set $gap_step    5
 set $exec        exec --no-startup-id
 set $exe         exec --no-startup-id exec
 set $fyra        exec --no-startup-id exec i3fyra
-set $fyra_reset  exec --no-startup-id exec i3fyra -l 'AB=-480 BD=200 AC=-160'
+set $fyra_l0     -l 'AB=-480 BD=290 AC=-160'
+set $fyra_l9     -l 'AB=-640 BD=390 AC=-160'
+set $fyra_l8     -l 'AB=-920 BD=540 AC=-160'
 set $rofi        rofi -show
 set $term        urxvt
 set $browser     chromium
@@ -80,11 +82,12 @@ bindsym $super+Control+e $exe $thunar filemanagerD ThunarDetailsView
 bindsym $hyper+c       $exe i3run -i chromium -e 'chrome-launcher chromium'
 bindsym $hyper+$alt+c  $exe i3run -i chromium -e 'chrome-launcher chromium nosecurity'
 bindsym $hyper+f       $exe i3run -c Firefox -e 'firefox'
+bindsym $hyper+q       $exe i3run -i qutebrowser -e 'qutebrowser'
 bindsym $hyper+s       $exe i3run -i sublime_text -e 'subl'
 bindsym $hyper+t       $exe i3run -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+u       $exe i3run -i slack -e 'slack'
 bindsym $hyper+v       $exe i3run -i code -e 'code'
-bindsym $hyper+w       $exe i3run -i wewechat -e 'wewechat'
+bindsym $hyper+w       $exe i3run -i wechat.exe -e 'gtk-launch deepin.com.wechat'
 bindsym $hyper+y       $exe i3run -i skype -e 'skypeforlinux'
 bindsym $hyper+z       $exe i3run -i zeal -e 'zeal'
 bindsym $hyper+1       $exe i3run -i gsimplecal -e 'gsimplecal'
@@ -104,18 +107,22 @@ bindsym $hyper+Shift+w       $exe i3run -i whats-app-nativefier* -e 'whatsapp-we
 
 for_window [class="^.*"]                  floating enable
 for_window [class="jetbrains-studio"]     focus; $fyra -m A
+for_window [class="mpv"]                  focus; $fyra -m B
 for_window [instance="code"]              focus; $fyra -m A
 for_window [instance="cterm"]             focus; $fyra -m C
+for_window [instance="filemanagerB"]      focus; $fyra -m B
+for_window [instance="filemanagerD"]      focus; $fyra -m D
+for_window [instance="FoxitReader"]       focus; $fyra -m A
 for_window [instance="irssi"]             focus; $fyra -m D
 for_window [instance="musixmatch"]        focus; $fyra -m B
 for_window [instance="ncmpcpp"]           focus; $fyra -m B
+for_window [instance="qutebrowser"]       focus; $fyra -m B
 for_window [instance="skype"]             focus; $fyra -m D
 for_window [instance="slack"]             focus; $fyra -m A
 for_window [instance="telegram-desktop"]  focus; $fyra -m D
 for_window [instance="termite"]           focus; $fyra -m A
-for_window [instance="filemanagerB"]      focus; $fyra -m B
-for_window [instance="filemanagerD"]      focus; $fyra -m D
 for_window [instance="tiledterm"]         floating disable
+for_window [instance="zathura"]           focus; $fyra -m D
 
 for_window [class="Firefox" title="- Mozilla Firefox"]       focus; $fyra -m A
 for_window [instance="chromium" title="- Chromium"]          focus; $fyra -m A
@@ -169,7 +176,9 @@ bindsym $super+space focus mode_toggle
 bindsym $super+Shift+space $fyra -a
 
 # reset fyra layout
-bindsym $super+$alt+0      $fyra_reset
+bindsym $super+$alt+0      $fyra $fyra_l0
+bindsym $super+$alt+9      $fyra $fyra_l9
+bindsym $super+$alt+8      $fyra $fyra_l8
 
 # move workspace between screens
 bindsym $super+Control+$alt+Left move workspace to output left
@@ -336,7 +345,7 @@ $exe mons -a
 # synaptic daemon
 $exe syndaemon -k
 # i3fyra layout
-$fyra_reset
+$fyra $fyra_l0
 # music player daemon
 $exe mpd
 # downloader
@@ -387,7 +396,7 @@ bindsym XF86AudioStop         $exe $toggle
 bindsym XF86Back              $exe $xf86_default
 bindsym XF86Battery           $exe $xf86_default
 bindsym XF86Bluetooth         $exe $xf86_default
-bindsym XF86Calculator        $exe galculator
+bindsym XF86Calculator        $exe i3run -i galculator -e 'galculator'
 bindsym XF86Close             kill
 bindsym XF86Copy              $exe $xf86_default
 bindsym XF86Cut               $exe $xf86_default
