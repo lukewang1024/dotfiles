@@ -200,7 +200,6 @@ prepare_macos_env_gui()
     stretchly
     suspicious-package
     switchhosts
-    teambition
     toau
     ubersicht
     vnc-viewer
