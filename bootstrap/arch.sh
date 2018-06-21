@@ -236,6 +236,7 @@ prepare_arch_env_gui()
     urxvt-resize-font-git
     visual-studio-code-bin
     whatsapp-web-desktop
+    xinit-xsession
   )
   aur_install_pkgs
 
