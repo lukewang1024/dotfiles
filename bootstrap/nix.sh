@@ -54,6 +54,7 @@ install_nix_brew_packages()
     icdiff
     imagemagick
     irssi
+    jpegoptim
     jq
     less
     make

@@ -368,6 +368,8 @@ $exe $term -name dropdown
 exec_always $reload pa-applet
 # network manager applet
 exec_always $reload nm-applet
+# udiskie mount helper
+exec_always $reload udiskie --tray
 # bluetooth manager applet
 exec_always $reload blueman-applet
 # make display color warmer
