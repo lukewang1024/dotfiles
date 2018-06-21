@@ -52,6 +52,7 @@ prepare_arch_env_cli()
     irssi
     jdk8-openjdk
     jdk9-openjdk
+    jpegoptim
     jq
     lolcat
     mc
@@ -189,6 +190,7 @@ prepare_arch_env_gui()
     thunar-volman
     tilda
     ttf-font-awesome
+    udiskie
     wkhtmltopdf
     wqy-zenhei
     xbindkeys
