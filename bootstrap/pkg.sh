@@ -64,7 +64,7 @@ install_npm_packages()
     nativescript
     nls
     now
-    ntl
+    npm-quick-run
     opn-cli
     pm2
     react-devtools
