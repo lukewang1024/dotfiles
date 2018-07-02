@@ -75,7 +75,7 @@ install_npm_packages()
     serverless
     svgexport
     tldr
-    trash
+    trash-cli
     ts-node
     typescript
     updtr

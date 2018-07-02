@@ -117,7 +117,12 @@ prepare_macos_env_gui()
 
   pkgs=(
     # Fonts
-    caskroom/fonts/font-sourcecodepro-nerd-font-mono
+    homebrew/cask-fonts/font-anonymouspro-nerd-font
+    homebrew/cask-fonts/font-dejavusansmono-nerd-font
+    homebrew/cask-fonts/font-firacode-nerd-font
+    homebrew/cask-fonts/font-hack-nerd-font
+    homebrew/cask-fonts/font-sourcecodepro-nerd-font
+    homebrew/cask-fonts/font-ubuntumono-nerd-font
 
     # Quicklook plugin
     betterzipql
