@@ -103,8 +103,8 @@ print_usage()
   echo '  zplug - Use zplug as preferred zsh plugin manager'
   echo '  run   - Run arbitrary function in any bootstrap scripts'
   echo '    `./init run [module] [task]`, below are tasks available:'
-  echo '    `macos backupAutomatorStuff`: Backup Automator stuff to Dropbox'
-  echo '    `macos installMacWeChatPlugin`: Tweak WeChat to save login session'
+  echo '    `macos backup_automator_stuff`: Backup Automator stuff to Dropbox'
+  echo '    `macos install_mac_wechat_plugin`: Tweak WeChat to save login session'
   echo
   exit 1
 }

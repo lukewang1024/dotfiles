@@ -125,7 +125,6 @@ prepare_macos_env_gui()
     homebrew/cask-fonts/font-ubuntumono-nerd-font
 
     # Quicklook plugin
-    betterzipql
     provisionql
     qlcolorcode
     qlimagesize
@@ -254,6 +253,7 @@ prepare_macos_env_gui()
     caskroom/versions/skype7
     flume
     tweeten
+    zoomus
 
     # Download
     aria2gui
@@ -271,22 +271,22 @@ prepare_macos_env_gui()
 
   brew cask cleanup; brew cleanup; brew prune
 
-  setMacOSConfigs
+  set_macos_configs
 }
 
-setMacOSConfigs()
+set_macos_configs()
 {
   sync_config_repo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
   backup_then_symlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
 
-  betterMacOSDefaults
-  brewMultiUserPermission
-  fixBatteryDrainOverSleep
-  installMacWeChatPlugin
+  better_macos_defaults
+  brew_multi_user_permission
+  fix_battery_drain_over_sleep
+  install_mac_wechat_plugin
 }
 
-betterMacOSDefaults()
+better_macos_defaults()
 {
   # Keyboard
   defaults write -g ApplePressAndHoldEnabled -bool false
@@ -336,17 +336,17 @@ betterMacOSDefaults()
   killall Dock
 }
 
-brewMultiUserPermission()
+brew_multi_user_permission()
 {
   sudo chmod -R g+w /usr/local/*
 }
 
-fixBatteryDrainOverSleep()
+fix_battery_drain_over_sleep()
 {
   sudo pmset -b tcpkeepalive 0
 }
 
-installMacWeChatPlugin()
+install_mac_wechat_plugin()
 {
   echo 'Installing Mac WeChat plugin...'
   local localPath=/tmp/WeChatPlugin-MacOS
@@ -355,7 +355,7 @@ installMacWeChatPlugin()
   echo 'Done.'
 }
 
-backupAutomatorStuff()
+backup_automator_stuff()
 {
   rsync -au ~/Library/Services/ ~/Dropbox/Sync/Automator/Services --progress
   rsync -au ~/Applications/Automator/ ~/Dropbox/Sync/Automator/Applications --progress

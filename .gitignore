@@ -18,3 +18,4 @@ config/vim/bundle/
 ehthumbs.db
 Icon?
 Thumbs.db
+config/karabiner/automatic_backups
