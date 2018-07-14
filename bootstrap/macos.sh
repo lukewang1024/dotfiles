@@ -190,6 +190,7 @@ prepare_macos_env_gui()
     duet
     etcher
     fantastical
+    handbrake
     istat-menus
     kap
     keycastr

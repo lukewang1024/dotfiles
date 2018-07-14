@@ -162,6 +162,7 @@ prepare_arch_env_gui()
     firefox
     galculator
     gsimplecal
+    handbrake
     i3-gaps
     i3blocks
     i3status

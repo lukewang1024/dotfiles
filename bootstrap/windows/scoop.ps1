@@ -15,9 +15,14 @@ function install_scoop_packages
 {
   scoop bucket add `
     extras `
+    java `
     nerd-fonts `
+    nightlies `
+    nirsoft `
     nonportable `
     versions `
+
+  scoop bucket add customize https://github.com/ChinLong/scoop-customize.git
 
   scoop install `
     7zip `
@@ -51,6 +56,7 @@ function install_scoop_packages
     git-lfs `
     gow `
     hain `
+    handbrake `
     heidisql `
     heroku-cli `
     hexchat `
@@ -101,6 +107,7 @@ function install_scoop_packages
     sysinternals `
     telegram `
     touch `
+    translucent-tb `
     unlocker `
     vagrant `
     vcxsrv `

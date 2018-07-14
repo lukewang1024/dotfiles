@@ -35,6 +35,7 @@ function install_choco_packages
     docker-for-windows `
     docker-toolbox `
     dropbox `
+    dropit.install `
     f.lux `
     fiddler4 `
     googlechrome `
