@@ -362,6 +362,8 @@ $exe unclutter
 $exe fcitx
 # launch dropbox
 $exec "sh -c 'sleep 3; exec dropbox'"
+# Shadowsocks Qt5
+$exe ss-qt5
 # dropdown terminal
 $exe $term -name dropdown
 # volume tray icon
