@@ -34,7 +34,6 @@ prepare_macos_env_cli()
     fswatch
     gawk
     ghi
-    gist
     git-appraise
     git-lfs
     gnu-indent
@@ -86,6 +85,7 @@ prepare_macos_env_gui()
 
   local masApps=(
     406056744  # Evernote
+    425424353  # The Unarchiver
     441258766  # Magnet
     451108668  # QQ
     497799835  # Xcode
@@ -114,6 +114,8 @@ prepare_macos_env_gui()
   mas upgrade
 
   # Cask packages
+
+  brew tap dteoh/sqa
 
   pkgs=(
     # Fonts
@@ -160,6 +162,7 @@ prepare_macos_env_gui()
     keka
     macpass
     mos
+    slowquitapps
     snipaste
     soundflower
     squirrel
@@ -192,11 +195,13 @@ prepare_macos_env_gui()
     fantastical
     handbrake
     istat-menus
+    itsycal
     kap
     keycastr
+    lepton
     losslesscut
     onyx
-    pdfexpert
+    pdf-expert
     pdfsam-basic
     proxifier
     shadowsocksx-ng
@@ -218,6 +223,7 @@ prepare_macos_env_gui()
     kitematic
     vagrant-manager
     virtualbox
+    virtualbox-extension-pack
     zeplin
 
     # Network diagnostic tools
@@ -262,6 +268,7 @@ prepare_macos_env_gui()
 
     # Entertainment
     bilibili
+    qqmusic
     spotifree
     spotify
     spotify-notifications
@@ -280,6 +287,9 @@ set_macos_configs()
   sync_config_repo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
   backup_then_symlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
+
+  # Handy scripts
+  backup_then_symlink "$util_dir/macos/virtualbox-kext" ~/bin/virtualbox-kext
 
   better_macos_defaults
   brew_multi_user_permission
@@ -334,6 +344,9 @@ better_macos_defaults()
   # Forklift
   defaults write -g NSFileViewer -string com.binarynights.ForkLift-3
 
+  # SlowQuitApps
+  defaults write com.dteoh.SlowQuitApps delay -int 500
+
   killall Dock
 }
 
@@ -369,6 +382,7 @@ setup_macos_gaming()
     caskroom/versions/openemu-experimental
     gog-downloader
     origin
+    steam
   )
   cask_install_pkgs
 }

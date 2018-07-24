@@ -43,6 +43,7 @@ install_nix_brew_packages()
     fpp
     fzf
     gifsicle
+    gist
     git
     git-extras
     git-flow-avh
