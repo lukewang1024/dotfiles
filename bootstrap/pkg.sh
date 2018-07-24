@@ -65,6 +65,7 @@ install_npm_packages()
     nls
     now
     npm-quick-run
+    nrm
     opn-cli
     pm2
     react-devtools

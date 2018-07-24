@@ -355,7 +355,7 @@
             },
             "devices": [
                 {
-                    "disable_built_in_keyboard_if_exists": true,
+                    "disable_built_in_keyboard_if_exists": false,
                     "fn_function_keys": [],
                     "identifiers": {
                         "is_keyboard": true,
@@ -368,7 +368,7 @@
                     "simple_modifications": []
                 },
                 {
-                    "disable_built_in_keyboard_if_exists": true,
+                    "disable_built_in_keyboard_if_exists": false,
                     "fn_function_keys": [],
                     "identifiers": {
                         "is_keyboard": true,
@@ -1680,7 +1680,7 @@
             },
             "devices": [
                 {
-                    "disable_built_in_keyboard_if_exists": true,
+                    "disable_built_in_keyboard_if_exists": false,
                     "fn_function_keys": [],
                     "identifiers": {
                         "is_keyboard": true,
@@ -1693,7 +1693,7 @@
                     "simple_modifications": []
                 },
                 {
-                    "disable_built_in_keyboard_if_exists": true,
+                    "disable_built_in_keyboard_if_exists": false,
                     "fn_function_keys": [],
                     "identifiers": {
                         "is_keyboard": true,
@@ -2185,7 +2185,7 @@
             },
             "devices": [
                 {
-                    "disable_built_in_keyboard_if_exists": true,
+                    "disable_built_in_keyboard_if_exists": false,
                     "fn_function_keys": [],
                     "identifiers": {
                         "is_keyboard": true,
@@ -2198,7 +2198,7 @@
                     "simple_modifications": []
                 },
                 {
-                    "disable_built_in_keyboard_if_exists": true,
+                    "disable_built_in_keyboard_if_exists": false,
                     "fn_function_keys": [],
                     "identifiers": {
                         "is_keyboard": true,
