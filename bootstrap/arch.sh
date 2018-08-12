@@ -84,6 +84,7 @@ prepare_arch_env_cli()
     tmux
     transmission-cli
     tree
+    unrar
     unzip
     vagrant
     vim
@@ -197,6 +198,7 @@ prepare_arch_env_gui()
     xbindkeys
     xcape
     xorg-apps
+    xscreensaver
     zathura
     zathura-cb
     zathura-djvu
@@ -218,6 +220,7 @@ prepare_arch_env_gui()
     feedreader
     genymotion
     git-cola
+    gluqlo-git
     google-chrome-stable
     i3lock-color
     kitematic

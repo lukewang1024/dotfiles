@@ -33,6 +33,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/x/.xinitrc" ~/.xinitrc
   backup_then_symlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backup_then_symlink "$config_dir/x/.Xresources" ~/.Xresources
+  backup_then_symlink "$config_dir/x/.xscreensaver" ~/.xscreensaver
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 
   # Handy scripts

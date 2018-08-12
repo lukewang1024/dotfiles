@@ -10,9 +10,10 @@ set $gap_step    5
 set $exec        exec --no-startup-id
 set $exe         exec --no-startup-id exec
 set $fyra        exec --no-startup-id exec i3fyra
-set $fyra_l0     -l 'AB=-480 BD=290 AC=-160'
-set $fyra_l9     -l 'AB=-640 BD=390 AC=-160'
-set $fyra_l8     -l 'AB=-920 BD=540 AC=-160'
+set $fyra_l0     -l 'AB=-360 BD=228 AC=-160'
+set $fyra_l9     -l 'AB=-480 BD=300 AC=-160'
+set $fyra_l8     -l 'AB=-640 BD=390 AC=-160'
+set $fyra_l7     -l 'AB=-920 BD=540 AC=-160'
 set $rofi        rofi -show
 set $term        urxvt
 set $browser     chromium
@@ -179,6 +180,8 @@ bindsym $super+Shift+space $fyra -a
 bindsym $super+$alt+0      $fyra $fyra_l0
 bindsym $super+$alt+9      $fyra $fyra_l9
 bindsym $super+$alt+8      $fyra $fyra_l8
+bindsym $super+$alt+7      $fyra $fyra_l7
+bindsym $super+$alt+6      $fyra $fyra_l6
 
 # move workspace between screens
 bindsym $super+Control+$alt+Left move workspace to output left
@@ -249,8 +252,9 @@ bindsym $super+Control+F4 $exe dmenu-display
 
 # >> Screenshots and recording
 
-bindsym Print              $exe scrot
-bindsym Shift+Print        $exe scrot -u
+bindsym Print              $exe i3-scrot
+bindsym Shift+Print        $exe i3-scrot -w
+bindsym --release F1       $exe i3-scrot -s
 bindsym $super+Print       $exe dmenu-record
 bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
 bindsym $super+Pause       $exe killall ffmpeg
@@ -344,6 +348,8 @@ bindsym $super+F11 $exe $inc
 $exe mons -a
 # synaptic daemon
 $exe syndaemon -k
+# xscreensaver daemon
+$exe xscreensaver
 # i3fyra layout
 $fyra $fyra_l0
 # music player daemon
