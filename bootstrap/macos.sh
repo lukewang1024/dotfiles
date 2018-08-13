@@ -254,6 +254,7 @@ prepare_macos_env_gui()
     google-backup-and-sync
     onedrive
     resilio-sync
+    syncthing-app
 
     # Social
     caprine

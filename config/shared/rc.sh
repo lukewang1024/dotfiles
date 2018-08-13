@@ -24,6 +24,9 @@ export PATH="$HOME/bin:$PATH"
 # Aliases
 alias cb=clipboard
 alias sap='source ~/.agent-profile'
+alias ap='all_proxy=socks5://localhost:1080'
+alias ape='export all_proxy=socks5://localhost:1080'
+alias apd='unset all_proxy'
 alias hp='http_proxy=localhost:8123 https_proxy=localhost:8123'
 alias hpe='export http_proxy=localhost:8123 https_proxy=localhost:8123'
 alias hpd='unset http_proxy https_proxy'
