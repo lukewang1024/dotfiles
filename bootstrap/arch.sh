@@ -183,6 +183,7 @@ prepare_arch_env_gui()
     scrot
     shadowsocks-qt5
     sublime-text
+    syncthing-gtk
     telegram-desktop
     termite
     thunar
@@ -229,6 +230,7 @@ prepare_arch_env_gui()
     musixmatch-bin
     nerd-fonts-complete
     python-pywal
+    rslsync
     screenkey
     skypeforlinux-stable-bin
     slack-desktop
