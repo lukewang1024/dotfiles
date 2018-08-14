@@ -370,6 +370,8 @@ $exe fcitx
 $exec "sh -c 'sleep 3; exec dropbox'"
 # Shadowsocks Qt5
 $exe ss-qt5
+# polipo for HTTP proxy
+$exe polipo -c ~/.config/polipo/config
 # dropdown terminal
 $exe $term -name dropdown
 # volume tray icon

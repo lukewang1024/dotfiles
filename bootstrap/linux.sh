@@ -27,6 +27,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backup_then_symlink "$config_dir/i3" ~/.config/i3
   backup_then_symlink "$config_dir/polybar" ~/.config/polybar
+  backup_then_symlink "$config_dir/polipo" ~/.config/polipo
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
   backup_then_symlink "$config_dir/x/.xbindkeysrc" ~/.xbindkeysrc
@@ -35,6 +36,8 @@ apply_app_configs()
   backup_then_symlink "$config_dir/x/.Xresources" ~/.Xresources
   backup_then_symlink "$config_dir/x/.xscreensaver" ~/.xscreensaver
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
+
+  mkdir -p ~/.polipo-cache
 
   # Handy scripts
   backup_then_symlink "$util_dir/linux/chrome-launcher" ~/bin/chrome-launcher

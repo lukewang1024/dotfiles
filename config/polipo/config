@@ -1,0 +1,7 @@
+# polipo configs
+
+socksParentProxy = "localhost:1080"
+socksProxyType = socks5
+diskCacheRoot = "~/.polipo-cache/"
+
+# syntax:ssHash
