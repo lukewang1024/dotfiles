@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# $1: Instance identifier
+# $2: Thunar view types
+#     ThunarIconView, ThunarCompactView, ThunarDetailsView
+
 cmd="i3run -i $1 -e \
   'xfconf-query --channel thunar --property /last-view --create --type string --set $2 \
    && thunar & xdotool set_window --classname $1 \`i3get -i thunar -r d -y\`'"
