@@ -75,6 +75,8 @@ bindsym $alt+space        $exe $rofi drun
 bindsym $alt+Tab          $exe $rofi window
 
 bindsym $super+r         $exe dmenu_run
+
+bindsym $hyper+e         $exe $thunar filemanagerA ThunarDetailsView
 bindsym $super+e         $exe $thunar filemanagerB ThunarIconView
 bindsym $super+Control+e $exe $thunar filemanagerD ThunarDetailsView
 
@@ -111,6 +113,7 @@ for_window [class="jetbrains-studio"]     focus; $fyra -m A
 for_window [class="mpv"]                  focus; $fyra -m B
 for_window [instance="code"]              focus; $fyra -m A
 for_window [instance="cterm"]             focus; $fyra -m C
+for_window [instance="filemanagerA"]      focus; $fyra -m A
 for_window [instance="filemanagerB"]      focus; $fyra -m B
 for_window [instance="filemanagerD"]      focus; $fyra -m D
 for_window [instance="FoxitReader"]       focus; $fyra -m A

@@ -174,6 +174,7 @@ prepare_macos_env_gui()
     marp
     mweb
     nvalt
+    simplenote
     sublime-text
     typora
     visual-studio-code

@@ -232,6 +232,7 @@ prepare_arch_env_gui()
     python-pywal
     rslsync
     screenkey
+    simplenote-electron-bin
     skypeforlinux-stable-bin
     slack-desktop
     spotify
