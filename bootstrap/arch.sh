@@ -194,6 +194,7 @@ prepare_arch_env_gui()
     tilda
     ttf-font-awesome
     udiskie
+    winetricks
     wkhtmltopdf
     wqy-zenhei
     xbindkeys
