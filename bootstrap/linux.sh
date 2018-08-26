@@ -26,6 +26,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/dunst" ~/.config/dunst
   backup_then_symlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backup_then_symlink "$config_dir/i3" ~/.config/i3
+  backup_then_symlink "$config_dir/mpv" ~/.config/mpv
   backup_then_symlink "$config_dir/polybar" ~/.config/polybar
   backup_then_symlink "$config_dir/polipo" ~/.config/polipo
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf

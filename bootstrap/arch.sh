@@ -197,6 +197,7 @@ prepare_arch_env_gui()
     winetricks
     wkhtmltopdf
     wqy-zenhei
+    xautomation
     xbindkeys
     xcape
     xorg-apps
