@@ -14,8 +14,8 @@ install_linuxbrew()
 install_i3ass()
 {
   echo 'Installing i3ass...'
-  sync_config_repo ~/.i3ass https://github.com/budRich/i3ass
-  (cd ~/.i3ass && ./install.sh -q ~/bin)
+  sync_config_repo ~/.config/i3ass https://github.com/budRich/i3ass
+  (cd ~/.config/i3ass && ./install.sh -q ~/bin)
   echo 'Done.'
 }
 
