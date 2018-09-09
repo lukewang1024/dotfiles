@@ -225,6 +225,7 @@ prepare_arch_env_gui()
     git-cola
     gluqlo-git
     google-chrome-stable
+    i3ass
     i3lock-color
     kitematic
     losslesscut
@@ -249,7 +250,6 @@ prepare_arch_env_gui()
   )
   aur_install_pkgs
 
-  install_i3ass
   set_default_apps
 }
 
@@ -263,7 +263,7 @@ setup_arch_gaming()
 
   pkgs=(
     emulationstation
-    libretro-mame-git
+    libretro-mame2003-git
     retroarch-autoconfig-udev-git
   )
   aur_install_pkgs

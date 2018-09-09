@@ -9,6 +9,8 @@ set $default_gap 0
 set $gap_step    5
 set $exec        exec --no-startup-id
 set $exe         exec --no-startup-id exec
+set $viswiz      exec --no-startup-id i3viswiz
+set $Kornhe      exec --no-startup-id i3Kornhe
 set $fyra        exec --no-startup-id exec i3fyra
 set $fyra_l0     -l 'AB=-360 BD=228 AC=-160'
 set $fyra_l9     -l 'AB=-480 BD=300 AC=-160'
@@ -22,14 +24,14 @@ set $lock        ~/.config/i3/scripts/lock
 set $reload      ~/.config/i3/scripts/reload
 set $thunar      ~/.config/i3/scripts/thunar
 
-set $dirl  h
-set $dird  j
-set $diru  k
-set $dirr  l
-set $dirla Left
-set $dirda Down
-set $dirua Up
-set $dirra Right
+set $dirl  Left
+set $dird  Down
+set $diru  Up
+set $dirr  Right
+set $dirla h
+set $dirda j
+set $dirua k
+set $dirra l
 
 font pango:UbuntuMono Nerd Font 10
 
@@ -73,6 +75,7 @@ bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"
 bindsym $super+$alt+space $exe $rofi run
 bindsym $alt+space        $exe $rofi drun
 bindsym $alt+Tab          $exe $rofi window
+bindsym Control+$alt+c    $exe $rofi clipboard -modi "clipboard:greenclip print" -run-command '{cmd}'
 
 bindsym $super+r         $exe dmenu_run
 
@@ -137,14 +140,14 @@ for_window [instance="sublime_text" title="- Sublime Text"]  focus; $fyra -m A
 
 # >> Focus
 
-bindsym $super+$dirl  $fyra -f l
-bindsym $super+$dird  $fyra -f d
-bindsym $super+$diru  $fyra -f u
-bindsym $super+$dirr  $fyra -f r
-bindsym $super+$dirla $fyra -f l
-bindsym $super+$dirda $fyra -f d
-bindsym $super+$dirua $fyra -f u
-bindsym $super+$dirra $fyra -f r
+bindsym $super+$dirl  $viswiz l
+bindsym $super+$dird  $viswiz d
+bindsym $super+$diru  $viswiz u
+bindsym $super+$dirr  $viswiz r
+bindsym $super+$dirla $viswiz l
+bindsym $super+$dirda $viswiz d
+bindsym $super+$dirua $viswiz u
+bindsym $super+$dirra $viswiz r
 
 # >> Tabswitch
 
@@ -164,14 +167,69 @@ bindsym $super+Shift+$dirra $fyra -m r
 
 # >> Resizing
 
-bindsym $super+Control+$dirl  resize shrink width 10 px or 10 ppt
-bindsym $super+Control+$dird  resize grow height 10 px or 10 ppt
-bindsym $super+Control+$diru  resize shrink height 10 px or 10 ppt
-bindsym $super+Control+$dirr  resize grow width 10 px or 10 ppt
-bindsym $super+Control+$dirla resize shrink width 10 px or 10 ppt
-bindsym $super+Control+$dirda resize grow height 10 px or 10 ppt
-bindsym $super+Control+$dirua resize shrink height 10 px or 10 ppt
-bindsym $super+Control+$dirra resize grow width 10 px or 10 ppt
+# group A, enter size mode with direction:
+bindsym $super+Control+$dirl  $Kornhe s l
+bindsym $super+Control+$dird  $Kornhe s d
+bindsym $super+Control+$diru  $Kornhe s u
+bindsym $super+Control+$dirr  $Kornhe s r
+bindsym $super+Control+$dirla $Kornhe s l
+bindsym $super+Control+$dirda $Kornhe s d
+bindsym $super+Control+$dirua $Kornhe s u
+bindsym $super+Control+$dirra $Kornhe s r
+
+# group B, enter move mode with direction:
+# by using speed 0 (-p 0), this will only enter the mode without
+# moving the window.
+bindsym $super+Control+m $Kornhe m -p 0 l
+
+mode "sizemode" {
+  # group 1 only send direction speed 30:
+  bindsym $dirl  $Kornhe -p 30 l
+  bindsym $dird  $Kornhe -p 30 d
+  bindsym $diru  $Kornhe -p 30 u
+  bindsym $dirr  $Kornhe -p 30 r
+  bindsym $dirla $Kornhe -p 30 l
+  bindsym $dirda $Kornhe -p 30 d
+  bindsym $dirua $Kornhe -p 30 u
+  bindsym $dirra $Kornhe -p 30 r
+
+  # group 2 only send direction speed 5:
+  bindsym Shift+$dirl  $Kornhe -p 5 l
+  bindsym Shift+$dird  $Kornhe -p 5 d
+  bindsym Shift+$diru  $Kornhe -p 5 u
+  bindsym Shift+$dirr  $Kornhe -p 5 r
+  bindsym Shift+$dirla $Kornhe -p 5 l
+  bindsym Shift+$dirda $Kornhe -p 5 d
+  bindsym Shift+$dirua $Kornhe -p 5 u
+  bindsym Shift+$dirra $Kornhe -p 5 r
+
+  # group 3 change size direction:
+  bindsym $super+$dirl  $Kornhe s l
+  bindsym $super+$dird  $Kornhe s d
+  bindsym $super+$diru  $Kornhe s u
+  bindsym $super+$dirr  $Kornhe s r
+  bindsym $super+$dirla $Kornhe s l
+  bindsym $super+$dirda $Kornhe s d
+  bindsym $super+$dirua $Kornhe s u
+  bindsym $super+$dirra $Kornhe s r
+
+  # group 4 enter move mode:
+  bindsym m $Kornhe m -p 0 l
+
+  # group 5 move to absolute position 1-9:
+  bindsym 1 $Kornhe 1
+  bindsym 2 $Kornhe 2
+  bindsym 3 $Kornhe 3
+  bindsym 4 $Kornhe 4
+  bindsym 5 $Kornhe 5
+  bindsym 6 $Kornhe 6
+  bindsym 7 $Kornhe 7
+  bindsym 8 $Kornhe 8
+  bindsym 9 $Kornhe 9
+
+  # group 6 exit the mode
+  bindsym Escape $Kornhe x
+}
 
 # >> Window manipulation
 
@@ -183,11 +241,11 @@ bindsym $super+space focus mode_toggle
 bindsym $super+Shift+space $fyra -a
 
 # reset fyra layout
-bindsym $super+$alt+0      $fyra $fyra_l0
-bindsym $super+$alt+9      $fyra $fyra_l9
-bindsym $super+$alt+8      $fyra $fyra_l8
-bindsym $super+$alt+7      $fyra $fyra_l7
-bindsym $super+$alt+6      $fyra $fyra_l6
+bindsym $super+$alt+0 $fyra $fyra_l0
+bindsym $super+$alt+9 $fyra $fyra_l9
+bindsym $super+$alt+8 $fyra $fyra_l8
+bindsym $super+$alt+7 $fyra $fyra_l7
+bindsym $super+$alt+6 $fyra $fyra_l6
 
 # move workspace between screens
 bindsym $super+Control+$alt+Left move workspace to output left
@@ -364,6 +422,8 @@ $exe mpd
 $exec "cd ~; aria2c"
 # torrent daemon
 $exe transmission-daemon
+# greenclip daemon
+$exe greenclip daemon
 # composite manager
 $exe compton --fading
 # set wallpaper and lockscreen image
