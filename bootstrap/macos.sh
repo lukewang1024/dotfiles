@@ -74,7 +74,7 @@ prepare_macos_env_cli()
   )
   cask_install_pkgs
 
-  brew cask cleanup; brew cleanup; brew prune
+  brew cleanup; brew prune
 
   env_setup
 }
@@ -279,7 +279,7 @@ prepare_macos_env_gui()
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 
-  brew cask cleanup; brew cleanup; brew prune
+  brew cleanup; brew prune
 
   set_macos_configs
 }
