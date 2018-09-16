@@ -136,6 +136,7 @@ env_setup()
   tig_setup
   vim_setup
   ssh_setup
+  bashit_setup
   zgen_setup
   util_setup
 
@@ -149,5 +150,6 @@ basic_setup()
   tig_setup
   vim_setup
   ssh_setup
+  bashit_setup
   zgen_setup
 }

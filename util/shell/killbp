@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+print_usage()
+{
+  echo "Kill the process that occupies a certain port."
+  echo 'Usage:'
+  echo '  killbp [port_number]'
+  echo 'Example:'
+  echo '  killbp 3001'
+  exit 1
+}
+
+main()
+{
+  if [ $# -lt 1 ]; then
+    print_usage
+  fi
+
+  kill $(lsof -nP -i4TCP:"$1" | grep LISTEN | awk '{ print $2 }')
+}
+
+main "$@"
