@@ -41,6 +41,7 @@ apply_app_configs()
   mkdir -p ~/.polipo-cache
 
   # Handy scripts
+  backup_then_symlink "$config_dir/polybar/launch-bars" ~/bin/polybar-launch
   backup_then_symlink "$util_dir/linux/chrome-launcher" ~/bin/chrome-launcher
   backup_then_symlink "$util_dir/linux/dmenu-display" ~/bin/dmenu-display
   backup_then_symlink "$util_dir/linux/dmenu-handler" ~/bin/dmenu-handler

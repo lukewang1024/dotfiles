@@ -25,5 +25,5 @@ esac
 # Reset i3 and wallpaper if there was a selection
 if [[ -n $chosen ]]; then
   exists wallpaper && wallpaper
-  exists i3-msg && i3-msg restart
+  exists polybar-launch && polybar-launch
 fi
