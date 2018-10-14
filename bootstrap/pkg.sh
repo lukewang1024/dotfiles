@@ -97,6 +97,7 @@ install_pip_packages()
   echo 'Installing pip packages...'
 
   local pkgs=(
+    argcomplete
     cppman
     glances
     httpstat

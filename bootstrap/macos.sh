@@ -115,16 +115,19 @@ prepare_macos_env_gui()
 
   # Cask packages
 
+  brew tap homebrew/cask-fonts
+  brew tap homebrew/cask-versions
+  brew tap lukewang1024/homebrew-legacy
   brew tap dteoh/sqa
 
   pkgs=(
     # Fonts
-    homebrew/cask-fonts/font-anonymouspro-nerd-font
-    homebrew/cask-fonts/font-dejavusansmono-nerd-font
-    homebrew/cask-fonts/font-firacode-nerd-font
-    homebrew/cask-fonts/font-hack-nerd-font
-    homebrew/cask-fonts/font-sourcecodepro-nerd-font
-    homebrew/cask-fonts/font-ubuntumono-nerd-font
+    font-anonymouspro-nerd-font
+    font-dejavusansmono-nerd-font
+    font-firacode-nerd-font
+    font-hack-nerd-font
+    font-sourcecodepro-nerd-font
+    font-ubuntumono-nerd-font
 
     # Quicklook plugin
     provisionql
@@ -169,10 +172,11 @@ prepare_macos_env_gui()
 
     # Editor
     atom
+    boostnote
     macdown
     macvim
     marp
-    mweb
+    mweb2
     nvalt
     simplenote
     sublime-text
@@ -217,7 +221,7 @@ prepare_macos_env_gui()
     wkhtmltopdf
 
     # DevTool
-    caskroom/versions/java8
+    java8
     imagealpha
     imageoptim
     java
@@ -259,8 +263,8 @@ prepare_macos_env_gui()
 
     # Social
     caprine
-    caskroom/versions/skype7
     flume
+    skype
     tweeten
     zoomus
 

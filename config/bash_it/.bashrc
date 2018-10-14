@@ -1,6 +1,9 @@
 source ~/.dotfiles/config/shared/rc.sh
 source ~/.dotfiles/config/shared/rc.bash
 
+# Only set paths & aliases for non-login shell
+shopt -q login_shell || return
+
 # Path to the bash it configuration
 export BASH_IT="$HOME/.bash_it"
 

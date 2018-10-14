@@ -33,6 +33,7 @@ function install_scoop_packages
     atom `
     autohotkey `
     azure-cli `
+    boostnote `
     calibre `
     ccleaner `
     chromium `
