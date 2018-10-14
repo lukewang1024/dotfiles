@@ -216,6 +216,7 @@ prepare_arch_env_gui()
     android-sdk-platform-tools
     android-studio
     betterlockscreen
+    boostnote
     deepin-wechat
     deepin-wine-tim
     dropbox
