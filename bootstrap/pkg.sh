@@ -64,6 +64,7 @@ install_npm_packages()
     nativescript
     nls
     now
+    npm-check
     npm-quick-run
     nrm
     opn-cli
