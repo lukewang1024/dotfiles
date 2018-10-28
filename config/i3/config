@@ -59,16 +59,15 @@ bindsym $super+Control+$alt+t $exe touchpad-toggle
 
 # >> Terminal
 
+bindsym $super+grave          $exe i3run -i dropdown -e '$term -name dropdown'
 bindsym $super+Return         $exe i3-sensible-terminal
 bindsym $super+Shift+Return   $exe i3run -i cterm -e '$term -name cterm'
 bindsym $super+Control+Return $exe $term -name tiledterm
 
 # dropdown terminal
-for_window [instance="dropdown"] floating enable
 for_window [instance="dropdown"] resize set 900 600
 for_window [instance="dropdown"] move scratchpad
 for_window [instance="dropdown"] border pixel 5
-bindsym $super+grave [instance="dropdown"] scratchpad show; [instance="dropdown"] move position center
 
 # >> Program launch
 
@@ -129,7 +128,6 @@ for_window [instance="ncmpcpp"]           focus; $fyra -m B
 for_window [instance="qutebrowser"]       focus; $fyra -m B
 for_window [instance="skype"]             focus; $fyra -m D
 for_window [instance="slack"]             focus; $fyra -m A
-for_window [instance="telegram-desktop"]  focus; $fyra -m D
 for_window [instance="termite"]           focus; $fyra -m A
 for_window [instance="tiledterm"]         floating disable
 for_window [instance="zathura"]           focus; $fyra -m D
@@ -137,6 +135,7 @@ for_window [instance="zathura"]           focus; $fyra -m D
 for_window [class="Firefox" title="- Mozilla Firefox"]       focus; $fyra -m A
 for_window [instance="chromium" title="- Chromium"]          focus; $fyra -m A
 for_window [instance="sublime_text" title="- Sublime Text"]  focus; $fyra -m A
+for_window [instance="telegram-desktop" title="Telegram"]    focus; $fyra -m D
 
 # >> Focus
 
@@ -438,8 +437,6 @@ $exec "sh -c 'sleep 3; exec dropbox'"
 $exe ss-qt5
 # polipo for HTTP proxy
 $exe polipo -c ~/.config/polipo/config
-# dropdown terminal
-$exe $term -name dropdown
 # volume tray icon
 exec_always $reload pa-applet
 # network manager applet

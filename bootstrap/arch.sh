@@ -164,6 +164,7 @@ prepare_arch_env_gui()
     galculator
     gsimplecal
     handbrake
+    hardinfo
     i3-gaps
     i3blocks
     i3status
@@ -264,7 +265,7 @@ setup_arch_gaming()
 
   pkgs=(
     emulationstation
-    libretro-mame2003-git
+    libretro-mame-git
     retroarch-autoconfig-udev-git
   )
   aur_install_pkgs
