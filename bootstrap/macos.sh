@@ -343,6 +343,13 @@ better_macos_defaults()
 
   # Notification
   defaults write com.apple.notificationcenterui bannerTime 3
+  defaults write com.apple.CrashReporter UseUNC 1
+
+  # Print
+  defaults write -g PMPrintingExpandedStateForPrint -bool true
+
+  # Mojave non-Retina font rendering fix
+  defaults write -g CGFontRenderingFontSmoothingDisabled -bool false
 
   # Safari
   defaults write com.apple.Safari IncludeInternalDebugMenu 1
