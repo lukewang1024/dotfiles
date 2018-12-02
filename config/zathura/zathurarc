@@ -1,0 +1,22 @@
+set statusbar-h-padding 0
+set statusbar-v-padding 0
+set page-padding 1
+
+map u scroll half-up
+map d scroll half-down
+map D toggle_page_mode
+map <C-r> reload
+map R rotate rotate-ccw
+map K zoom in
+map J zoom out
+map i recolor
+
+map [fullscreen] u scroll half-up
+map [fullscreen] d scroll half-down
+map [fullscreen] D toggle_page_mode
+map [fullscreen] <C-r> reload
+map [fullscreen] R rotate rotate-ccw
+map [fullscreen] K zoom in
+map [fullscreen] J zoom out
+map [fullscreen] i recolor
+
