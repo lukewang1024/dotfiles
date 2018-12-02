@@ -413,6 +413,8 @@ $exe mons -a
 $exe syndaemon -k
 # xscreensaver daemon
 $exe xscreensaver
+# disable screensaver with app in fullscreen
+$exe caffeine
 # i3fyra layout
 $fyra $fyra_l0
 # music player daemon
