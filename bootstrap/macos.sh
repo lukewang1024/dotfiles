@@ -168,6 +168,7 @@ prepare_macos_env_gui()
     slowquitapps
     snipaste
     soundflower
+    soundflowerbed
     squirrel
 
     # Editor
