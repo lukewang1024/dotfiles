@@ -55,6 +55,7 @@ prepare_macos_env_cli()
     ncmpcpp
     netcat
     phantomjs
+    progress
     reattach-to-user-namespace
     spark
     telnet

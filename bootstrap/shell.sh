@@ -44,7 +44,8 @@ zgen_setup()
   sync_config_repo ~/.zgen https://github.com/tarjoilija/zgen
   echo 'Done.'
 
-  printf 'Symlinking .zshrc... '
+  printf 'Symlinking .zprofile and .zshrc... '
+  backup_then_symlink "$config_dir/shared/.zprofile" ~/.zprofile
   backup_then_symlink "$config_dir/zgen/.zshrc" ~/.zshrc
   echo 'Done.'
 
@@ -62,7 +63,8 @@ zplug_setup()
   fi
   echo 'Done.'
 
-  printf 'Symlinking .zshrc... '
+  printf 'Symlinking .zprofile and .zshrc... '
+  backup_then_symlink "$config_dir/shared/.zprofile" ~/.zprofile
   backup_then_symlink "$config_dir/zplug/.zshrc" ~/.zshrc
   echo 'Done.'
 

@@ -72,6 +72,7 @@ prepare_arch_env_cli()
     pandoc
     playerctl
     polipo
+    progress
     proxychains-ng
     ranger
     rsync
