@@ -411,14 +411,14 @@ bindsym $super+F11 $exe $inc
 
 # >> Autostart
 
+# session management
+$exe lxsession
 # automatic display management
 $exe mons -a
 # synaptic daemon
 $exe syndaemon -k
 # xscreensaver daemon
 $exe xscreensaver
-# disable screensaver with app in fullscreen
-$exe caffeine
 # i3fyra layout
 $fyra $fyra_l0
 # music player daemon
@@ -435,24 +435,10 @@ $exe compton --fading
 $exe wallpaper
 # unclutter makes the mouse invisible after a brief period
 $exe unclutter
-# IME support
-$exe fcitx
-# launch dropbox
-$exec "sh -c 'sleep 3; exec dropbox'"
-# Shadowsocks Qt5
-$exe ss-qt5
 # polipo for HTTP proxy
 $exe polipo -c ~/.config/polipo/config
-# volume tray icon
-exec_always $reload pa-applet
-# network manager applet
-exec_always $reload nm-applet
 # udiskie mount helper
 exec_always $reload udiskie --tray
-# bluetooth manager applet
-exec_always $reload blueman-applet
-# make display color warmer
-exec_always $reload redshift-gtk
 # launch polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
