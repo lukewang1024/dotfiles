@@ -172,6 +172,7 @@ prepare_arch_env_gui()
     kdiff3
     keepassxc
     lxappearance
+    lxsession
     lxtask
     neofetch
     network-manager-applet
