@@ -5,7 +5,7 @@
 # Otherwise, you'll be prompted to give a mountpoint from already existsing directories.
 # If you input a novel directory, it will prompt you to create that directory.
 
-script_path=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+script_path=$(dirname `which $0`)
 source "$script_path/helper.sh"
 
 mountable=$(lsblk -lp | grep part | grep -v "t /" | awk '{print $1, "(" $4 ")"}')
