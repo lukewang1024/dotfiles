@@ -42,7 +42,6 @@ prepare_macos_env_cli()
     gnu-which
     gnutls
     grep
-    heroku
     httpstat
     kubernetes-cli
     m-cli
@@ -54,7 +53,6 @@ prepare_macos_env_cli()
     mpv
     ncmpcpp
     netcat
-    phantomjs
     progress
     reattach-to-user-namespace
     spark
@@ -68,7 +66,6 @@ prepare_macos_env_cli()
 
   pkgs=(
     docker
-    dotnet
     dotnet-sdk
     google-cloud-sdk
     vagrant
@@ -159,6 +156,7 @@ prepare_macos_env_gui()
     forklift
     go2shell
     hammerspoon
+    haptickey
     hyperswitch
     iina
     iterm2
@@ -223,11 +221,12 @@ prepare_macos_env_gui()
     wkhtmltopdf
 
     # DevTool
-    java8
     imagealpha
     imageoptim
     java
+    java8
     kitematic
+    phantomjs
     vagrant-manager
     virtualbox
     virtualbox-extension-pack
