@@ -59,7 +59,6 @@ function install_scoop_packages
     hain `
     handbrake `
     heidisql `
-    heroku-cli `
     hexchat `
     hwmonitor `
     hyper `

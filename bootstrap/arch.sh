@@ -108,7 +108,6 @@ prepare_arch_env_cli()
     git-lfs
     gitflow-avh
     google-cloud-sdk
-    heroku-cli
     icdiff
     mons
     mycli
