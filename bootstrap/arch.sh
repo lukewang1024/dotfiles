@@ -175,6 +175,7 @@ prepare_arch_env_gui()
     lxtask
     neofetch
     network-manager-applet
+    noto-fonts-emoji
     pa-applet
     polybar
     qutebrowser

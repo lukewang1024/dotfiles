@@ -24,6 +24,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/aria2" ~/.aria2
   backup_then_symlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
   backup_then_symlink "$config_dir/dunst" ~/.config/dunst
+  backup_then_symlink "$config_dir/fontconfig" ~/.config/fontconfig
   backup_then_symlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backup_then_symlink "$config_dir/i3" ~/.config/i3
   backup_then_symlink "$config_dir/mpv" ~/.config/mpv
@@ -38,8 +39,6 @@ apply_app_configs()
   backup_then_symlink "$config_dir/x/.xscreensaver" ~/.xscreensaver
   backup_then_symlink "$config_dir/zathura" ~/.config/zathura
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
-
-  mkdir -p ~/.polipo-cache
 
   # Handy scripts
   backup_then_symlink "$config_dir/polybar/launch-bars" ~/bin/polybar-launch
@@ -60,7 +59,11 @@ apply_app_configs()
   backup_then_symlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
 
   # Misc settings
-  mkdir -p "$HOME/Recordings"
+  mkdir -p ~/.polipo-cache
+  mkdir -p ~/Recordings
+
+  # Refresh font cache
+  fc-cache -f -v
 }
 
 fix_ENOSPC()

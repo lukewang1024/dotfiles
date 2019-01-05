@@ -36,7 +36,7 @@ set $dirda j
 set $dirua k
 set $dirra l
 
-font pango:UbuntuMono Nerd Font 10
+font pango:Noto Sans 10
 
 floating_modifier $alt
 
