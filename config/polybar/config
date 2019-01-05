@@ -21,9 +21,8 @@ line-color = {$colors.underline}
 border-size = 0
 border-color = {$colors.transparent}
 module-margin = 2
-font-0 = Font Awesome:size=10;1
-font-1 = UbuntuMono Nerd Font:size=10;0
-font-2 = Weather Icons:size=10;1
+font-0 = Noto Sans:size=10;1
+font-1 = Ubuntu Nerd Font:size=10;0
 modules-left = i3 cpu memory temperature battery-combined-udev wlan lan
 modules-center = xwindow
 modules-right = volume xbacklight date
