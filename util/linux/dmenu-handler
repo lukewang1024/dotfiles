@@ -2,7 +2,7 @@
 # Feed this script a link and it will give dmenu
 # some choice programs to use to open it.
 
-script_path=$(dirname `which $0`)
+script_path=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 source "$script_path/helper.sh"
 
 # The URL will be shown visually in 30 characters or less

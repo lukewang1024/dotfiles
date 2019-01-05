@@ -4,7 +4,7 @@
 # Drives mounted at /, /boot and /home will not be options to unmount.
 # This can be changed by modifying $exclusionregex.
 
-script_path=$(dirname `which $0`)
+script_path=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 source "$script_path/helper.sh"
 
 exclusionregex="\(/boot\|/home\|/\)$"
