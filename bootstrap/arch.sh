@@ -219,11 +219,10 @@ prepare_arch_env_gui()
     android-sdk-platform-tools
     android-studio
     betterlockscreen
-    boostnote
     deepin-wechat
     deepin-wine-tim
     dropbox
-    etcher
+    etcher-bin
     feedreader
     genymotion
     git-cola
@@ -236,15 +235,15 @@ prepare_arch_env_gui()
     mailspring
     musixmatch-bin
     nerd-fonts-complete
+    notable-bin
     python-pywal
     rslsync
     screenkey
-    simplenote-electron-bin
     skypeforlinux-stable-bin
     slack-desktop
     spotify
     spotify-adkiller-dns-block-git
-    todoist
+    typora
     ttf-ms-fonts
     urxvt-fullscreen
     urxvt-resize-font-git

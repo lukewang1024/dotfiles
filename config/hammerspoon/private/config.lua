@@ -27,11 +27,9 @@ hsapp_list = {
     {key = 'i', name = 'iTerm'},
     {key = 'k', name = 'KeyCastr'},
     {key = 'l', name = 'Sublime Text'},
-    {key = 'm', name = 'MacVim'},
     {key = 's', name = 'Safari'},
     {key = 't', name = 'Terminal'},
     {key = 'v', id = 'com.apple.ActivityMonitor'},
-    {key = 'w', name = 'Mweb'},
     {key = 'y', id = 'com.apple.systempreferences'},
 }
 

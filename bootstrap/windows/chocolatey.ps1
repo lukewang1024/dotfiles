@@ -46,7 +46,6 @@ function install_choco_packages
     pngoptimizer `
     potplayer `
     resilio-sync-home `
-    simplenote `
     skype `
     spacesniffer `
     spotify `

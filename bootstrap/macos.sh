@@ -146,7 +146,6 @@ prepare_macos_env_gui()
     # Screen saver
     aerial
     fliqlo
-    padbury-clock
 
     # OS enhancement
     alfred
@@ -172,17 +171,12 @@ prepare_macos_env_gui()
 
     # Editor
     atom
-    boostnote
-    macdown
-    macvim
-    marp
     mweb2
+    notable
     nvalt
-    simplenote
     sublime-text
     typora
     visual-studio-code
-    yu-writer
 
     # Utility
     airdroid
@@ -192,11 +186,11 @@ prepare_macos_env_gui()
     android-studio
     androidtool
     appcleaner
+    balenaetcher
     bitbar
     cakebrew
     calibre
     duet
-    etcher
     fantastical
     handbrake
     istat-menus
