@@ -33,7 +33,6 @@ function install_scoop_packages
     atom `
     autohotkey `
     azure-cli `
-    boostnote `
     calibre `
     ccleaner `
     chromium `
@@ -79,6 +78,7 @@ function install_scoop_packages
     nmap `
     nodejs `
     nodejs-lts `
+    notable `
     now-cli `
     openhardwaremonitor `
     openssh `
