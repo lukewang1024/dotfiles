@@ -10,7 +10,5 @@ exists winetricks || ( \
   exit 1 \
 )
 
-shortcutPath='/usr/share/applications/deepin.com.wechat.desktop'
-execPath=$(ag '^Exec=' "$shortcutPath" | awk -F\" '{print $2}')
-wineprefix=$(ag '^WINEPREFIX=' $execPath | awk -F\" '{print $2}')
+wineprefix="$HOME/.deepinwine/Deepin-WeChat"
 eval "WINEPREFIX=\"${wineprefix}\" winetricks wenquanyi fakechinese"
