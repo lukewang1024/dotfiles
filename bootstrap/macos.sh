@@ -149,6 +149,7 @@ prepare_macos_env_gui()
 
     # OS enhancement
     alfred
+    background-music
     bartender
     commander-one
     flux
