@@ -16,6 +16,8 @@ prepare_macos_env_cli()
     xcode-select --install \
   )
 
+  brew tap esphen/wsta https://github.com/esphen/wsta.git
+
   brew upgrade
 
   install_nix_brew_runtimes
@@ -60,6 +62,7 @@ prepare_macos_env_cli()
     tmate
     tpp
     urlview
+    wsta
     yarn
   )
   brew_install_pkgs
@@ -152,6 +155,7 @@ prepare_macos_env_gui()
     background-music
     bartender
     commander-one
+    ezip
     flux
     forklift
     go2shell
