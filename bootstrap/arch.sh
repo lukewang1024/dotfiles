@@ -117,6 +117,7 @@ prepare_arch_env_cli()
     translate-shell
     ttf-weather-icons
     urlview
+    wsta
   )
   aur_install_pkgs
 
