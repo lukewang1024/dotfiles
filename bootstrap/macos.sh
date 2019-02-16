@@ -1,14 +1,6 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/nix.sh"
 
-cask_install_pkgs()
-{
-  for pkg in "${pkgs[@]}"; do
-    brew cask install "$pkg"
-  done
-  unset pkgs
-}
-
 prepare_macos_env_cli()
 {
   exists brew || ( \
@@ -23,7 +15,7 @@ prepare_macos_env_cli()
   install_nix_brew_runtimes
   install_nix_brew_packages
 
-  pkgs=(
+  local pkgs=(
     ansifilter
     brightness
     cmatrix
@@ -65,15 +57,15 @@ prepare_macos_env_cli()
     wsta
     yarn
   )
-  brew_install_pkgs
+  brew install `join ' ' "${pkgs[@]}"`
 
-  pkgs=(
+  local casks=(
     docker
     dotnet-sdk
     google-cloud-sdk
     vagrant
   )
-  cask_install_pkgs
+  brew cask install `join ' ' "${casks[@]}"`
 
   brew cleanup; brew prune
 
@@ -111,7 +103,7 @@ prepare_macos_env_gui()
     1314842898 # miniQpicview (Kantu)
   )
 
-  mas install `join ' ' "${masApps[@]}"`
+  mas install $masApps
   mas upgrade
 
   # Cask packages
@@ -121,7 +113,7 @@ prepare_macos_env_gui()
   brew tap lukewang1024/homebrew-legacy
   brew tap dteoh/sqa
 
-  pkgs=(
+  local casks=(
     # Fonts
     font-anonymouspro-nerd-font
     font-dejavusansmono-nerd-font
@@ -279,7 +271,7 @@ prepare_macos_env_gui()
     spotify
     spotify-notifications
   )
-  cask_install_pkgs
+  brew cask install `join ' ' "${casks[@]}"`
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 
@@ -390,12 +382,12 @@ backup_automator_stuff()
 
 setup_macos_gaming()
 {
-  pkgs=(
+  local casks=(
     battle-net
     caskroom/versions/openemu-experimental
     gog-downloader
     origin
     steam
   )
-  cask_install_pkgs
+  brew cask install `join ' ' "${casks[@]}"`
 }

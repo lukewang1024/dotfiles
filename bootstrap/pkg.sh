@@ -19,11 +19,8 @@ install_gem_packages()
     tmuxinator
   )
 
-  for gem in "${pkgs[@]}"; do
-    gem list -i $gem &> /dev/null || gem install $gem
-  done
-
-  gem update `join ' ' "${pkgs[@]}"`
+  gem install `join ' ' "${pkgs[@]}"`
+  gem update
 
   echo 'Done.'
 }
@@ -86,9 +83,7 @@ install_npm_packages()
     yo
   )
 
-  for pkg in "${pkgs[@]}"; do
-    npm install -g $pkg
-  done
+  npm install -g `join ' ' "${pkgs[@]}"`
 
   echo 'Done.'
 }
@@ -113,7 +108,9 @@ install_pip_packages()
     thefuck
   )
 
-  for pkg in "${pkgs[@]}"; do pip install -U "$pkg"; done
+  pip install --upgrade `join ' ' "${pkgs[@]}"`
+
+  echo 'Done.'
 }
 
 install_cpan_packages()
@@ -126,6 +123,8 @@ install_cpan_packages()
   )
 
   sudo cpanm install `join ' ' "${pkgs[@]}"`
+
+  echo 'Done.'
 }
 
 install_other_packages()
