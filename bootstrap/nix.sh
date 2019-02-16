@@ -1,25 +1,17 @@
-brew_install_pkgs()
-{
-  for pkg in "${pkgs[@]}"; do
-    brew install "$pkg"
-  done
-  unset pkgs
-}
-
 install_nix_brew_runtimes()
 {
-  pkgs=(
+  local pkgs=(
     node
     python
     python@2
     ruby
   )
-  brew_install_pkgs
+  brew install `join ' ' "${pkgs[@]}"`
 }
 
 install_nix_brew_packages()
 {
-  pkgs=(
+  local pkgs=(
     apache-spark
     aria2
     awscli
@@ -103,5 +95,5 @@ install_nix_brew_packages()
     zsh
     zsh-completions
   )
-  brew_install_pkgs
+  brew install `join ' ' "${pkgs[@]}"`
 }
