@@ -112,6 +112,7 @@ prepare_arch_env_cli()
     mons
     mycli
     peco
+    pgcli
     sparklines-git
     touchpad-state-git
     translate-shell
