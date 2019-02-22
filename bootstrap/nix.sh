@@ -69,6 +69,7 @@ install_nix_brew_packages()
     p7zip
     pandoc
     peco
+    pgcli
     proxychains-ng
     ranger
     redis

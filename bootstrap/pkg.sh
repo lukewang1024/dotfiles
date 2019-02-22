@@ -51,6 +51,7 @@ install_npm_packages()
     flow-bin
     flow-typed
     gatsby-cli
+    git-file-history
     gulp-cli
     hexo-cli
     http-server
