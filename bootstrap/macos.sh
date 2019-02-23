@@ -1,5 +1,6 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/nix.sh"
+source "$partial_dir/macos-defaults.sh"
 
 prepare_macos_env_cli()
 {
@@ -293,66 +294,6 @@ set_macos_configs()
   brew_multi_user_permission
   fix_battery_drain_over_sleep
   install_mac_wechat_plugin
-}
-
-better_macos_defaults()
-{
-  # Keyboard
-  defaults write -g ApplePressAndHoldEnabled -bool false
-  defaults write -g InitialKeyRepeat -int 15 # minimum 10
-  defaults write -g KeyRepeat -int 2         # minimum 1
-
-  # Animation
-  defaults write -g NSAutomaticWindowAnimationsEnabled -bool false
-  defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
-  defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
-  defaults write -g NSScrollAnimationEnabled -bool false
-  defaults write -g NSScrollViewRubberbanding -bool false
-  defaults write -g NSToolbarFullScreenAnimationDuration -float 0
-  defaults write -g NSWindowResizeTime -float 0.001
-  defaults write -g QLPanelAnimationDuration -float 0
-  defaults write com.apple.dock autohide-delay -float 0
-  defaults write com.apple.dock autohide-time-modifier -float 0
-  defaults write com.apple.dock expose-animation-duration -float 0
-  defaults write com.apple.dock launchanim -bool false
-  defaults write com.apple.dock mineffect scale # genie, scale & suck (hidden effect)
-  defaults write com.apple.dock springboard-hide-duration -float 0
-  defaults write com.apple.dock springboard-page-duration -float 0
-  defaults write com.apple.dock springboard-show-duration -float 0
-  defaults write com.apple.finder DisableAllAnimations -bool true
-  defaults write com.apple.Mail DisableReplyAnimations -bool true
-  defaults write com.apple.Mail DisableSendAnimations -bool true
-  defaults write com.apple.Safari WebKitInitialTimedLayoutDelay 0.25
-  defaults write com.apple.universalaccess reduceMotion -bool true
-
-  # Dock
-  defaults write com.apple.dock mouse-over-hilite-stack -bool true
-  defaults write com.apple.dock ResetLaunchPad -bool true
-  defaults write com.apple.dock scroll-to-open -bool true
-  defaults write com.apple.dock showhidden -bool true
-  defaults write com.apple.dock springboard-columns -int 8
-  defaults write com.apple.dock springboard-rows -int 7
-
-  # Notification
-  defaults write com.apple.notificationcenterui bannerTime 3
-  defaults write com.apple.CrashReporter UseUNC 1
-
-  # Print
-  defaults write -g PMPrintingExpandedStateForPrint -bool true
-
-  # Mojave non-Retina font rendering fix
-  defaults write -g CGFontRenderingFontSmoothingDisabled -bool false
-
-  # Safari
-  defaults write com.apple.Safari IncludeInternalDebugMenu 1
-
-  # Forklift
-  defaults write -g NSFileViewer -string com.binarynights.ForkLift-3
-
-  # SlowQuitApps
-  defaults write com.dteoh.SlowQuitApps delay -int 500
-
-  killall Dock
 }
 
 brew_multi_user_permission()
