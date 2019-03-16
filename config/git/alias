@@ -4,8 +4,8 @@
   assume = update-index --assume-unchanged
   assumeall = !git st -s | awk {print
   assumed = !git ls-files -v | grep ^h | cut -c 3-
-  bcl = "!f() { git branch --merged ${1-master} | grep -vE \" ${1-master}$| master$| develop$\" | xargs -r git branch -d; }; f"
-  bclg = "!f() { git branch --merged ${1-master} | grep -vE \" ${1-master}$| master$| develop$\" | gxargs -r git branch -d; }; f"
+  bcl = "!f() { ref=${1-origin/master}; git branch --merged ${ref} | grep -vE \" ${ref}$\" | xargs -r git branch -d; }; f"
+  bclg = "!f() { ref=${1-origin/master}; git branch --merged ${ref} | grep -vE \" ${ref}$\" | gxargs -r git branch -d; }; f"
   br = branch
   ca = commit -am
   ci = commit -v
