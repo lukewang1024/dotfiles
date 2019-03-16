@@ -100,6 +100,7 @@ function install_scoop_packages
     slack `
     snipaste `
     sourcetree `
+    sublime-merge `
     sublime-text `
     sudo `
     sumatrapdf `

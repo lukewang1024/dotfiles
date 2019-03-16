@@ -15,7 +15,7 @@ pacman_install_pkgs()
 
 aur_install_pkgs()
 {
-  pacaur -Sy --needed --noconfirm --noedit `join ' ' "aur/${pkgs[@]}"`
+  yay -Sy --needed `join ' ' "aur/${pkgs[@]}"`
   unset pkgs
 }
 
@@ -67,7 +67,6 @@ prepare_arch_env_cli()
     offlineimap
     openssh
     p7zip
-    pacaur
     pamixer
     pandoc
     playerctl
@@ -92,13 +91,16 @@ prepare_arch_env_cli()
     w3m
     wget
     wtf
-    yaourt
     yarn
+    yay
     you-get
     zip
     zsh
   )
   pacman_install_pkgs
+
+  # Set some configs for yay
+  yay --save --nocleanmenu --nodiffmenu --noupgrademenu --noremovemake
 
   pkgs=(
     apache-spark
@@ -245,8 +247,9 @@ prepare_arch_env_gui()
     slack-desktop
     spotify
     spotify-adkiller-dns-block-git
-    typora
+    sublime-merge
     ttf-ms-fonts
+    typora
     urxvt-fullscreen
     urxvt-resize-font-git
     visual-studio-code-bin

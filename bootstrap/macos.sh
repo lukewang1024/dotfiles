@@ -234,6 +234,7 @@ prepare_macos_env_gui()
     kdiff3
     rowanj-gitx
     sourcetree
+    sublime-merge
 
     # DB tools
     mongodb-compass
