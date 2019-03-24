@@ -5,7 +5,7 @@ playerctl pause # mpris
 mpc pause       # mpd
 
 # Lock it up!
-betterlockscreen --lock dimblur
+betterlockscreen --lock dimblur &
 
 case $1 in
   'suspend')
