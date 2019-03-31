@@ -56,6 +56,7 @@ EOPLUGINS
     # env managers
     zgen oh-my-zsh plugins/rbenv
     zgen oh-my-zsh plugins/pyenv
+    zgen oh-my-zsh plugins/jenv
     zgen load jsahlen/nodenv.plugin.zsh
   fi
 

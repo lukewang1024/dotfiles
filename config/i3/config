@@ -103,6 +103,7 @@ bindsym $hyper+0       $srun -i ss-qt5 -e 'ss-qt5'
 
 bindsym $hyper+backslash  $srun -i keepassxc -e 'keepassxc'
 bindsym $hyper+semicolon  $grun -i termite -e 'termite'
+bindsym $hyper+space      $grun -i lark -e 'lark'
 
 # >> Hyper+Shift shortcuts
 
@@ -127,6 +128,7 @@ for_window [instance="filemanagerB"]      focus; $fyra -m B
 for_window [instance="filemanagerD"]      focus; $fyra -m D
 for_window [instance="FoxitReader"]       focus; $fyra -m A
 for_window [instance="irssi"]             focus; $fyra -m D
+for_window [instance="lark"]              focus; $fyra -m A
 for_window [instance="musixmatch"]        focus; $fyra -m B
 for_window [instance="ncmpcpp"]           focus; $fyra -m B
 for_window [instance="qutebrowser"]       focus; $fyra -m B

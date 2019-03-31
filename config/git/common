@@ -26,9 +26,12 @@
 [merge]
   conflictstyle = diff3
   stat = true
-  tool = kdiff3
+  # tool = kdiff3
+  tool = "Sublime Merge"
 [mergetool]
   prompt = false
+[mergetool "Sublime Merge"]
+  cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
 [push]
   default = simple
   followTags = true
