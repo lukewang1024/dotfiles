@@ -15,7 +15,3 @@ bindkey -M vicmd 'j' history-substring-search-down
 
 alias rrc='source ~/.zshrc && rehash'
 alias upenv='zgen update && nodenv update && pyenv update && rbenv update'
-
-# jenv
-export PATH="$HOME/.jenv/bin:$PATH"
-eval "$(jenv init -)"

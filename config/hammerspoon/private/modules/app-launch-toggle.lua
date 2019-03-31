@@ -63,7 +63,7 @@ setAppToggles(hyper, {
   ['7'] = 'Medis',
   -- ['8'] = '',
   ['9'] = 'Proxifier',
-  ['space'] = 'Lark',
+  ['space'] = 'Feishu',
 })
 
 -- hyperAlt application shortcuts

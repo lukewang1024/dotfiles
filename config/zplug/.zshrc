@@ -49,6 +49,7 @@ else # *nix
   # env managers
   zplug 'plugins/rbenv', from:oh-my-zsh
   zplug 'plugins/pyenv', from:oh-my-zsh
+  zplug 'plugins/jenv', from:oh-my-zsh
   zplug 'jsahlen/nodenv.plugin.zsh'
 fi
 
