@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 
-repo_path=$(dirname `which $0`)
+realpath() {
+  local filename=$1
+  local parent_dir=$(dirname "${filename}")
+
+  if [ -d "${filename}" ]; then
+    echo "$(cd "${filename}" && pwd)"
+  elif [ -d "${parent_dir}" ]; then
+    echo "$(cd "${parent_dir}" && pwd)/$(basename "${filename}")"
+  fi
+}
+
+repo_path=$(dirname `realpath $0`)
 partial_dir="$repo_path/bootstrap"
 config_dir="$repo_path/config"
 util_dir="$repo_path/util"
