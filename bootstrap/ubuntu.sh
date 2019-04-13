@@ -47,7 +47,6 @@ prepare_ubuntu_env_cli()
   ubuntu_install_pkgs
 
   ppas=(
-    ppa:aacebedo/fasd     # fasd
     ppa:saiarcot895/myppa # apt-fast
     ppa:webupd8team/java  # java
   )
@@ -73,7 +72,6 @@ prepare_ubuntu_env_cli()
     cmatrix
     cpulimit
     docker-ce
-    fasd
     figlet
     fortune-mod
     gnupg2

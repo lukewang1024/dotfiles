@@ -46,6 +46,7 @@ function install_scoop_packages
     etcher `
     everything `
     far `
+    fd `
     filezilla `
     firefox `
     foobar2000 `

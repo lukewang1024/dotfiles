@@ -28,6 +28,7 @@ install_nix_brew_packages()
     diffutils
     ed
     fasd
+    fd
     ffmpeg
     file-formula
     findutils
