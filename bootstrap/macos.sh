@@ -9,6 +9,7 @@ prepare_macos_env_cli()
     xcode-select --install \
   )
 
+  brew tap homebrew/command-not-found
   brew tap esphen/wsta https://github.com/esphen/wsta.git
 
   brew upgrade
@@ -48,6 +49,7 @@ prepare_macos_env_cli()
     mpv
     ncmpcpp
     netcat
+    nyancat
     progress
     reattach-to-user-namespace
     spark

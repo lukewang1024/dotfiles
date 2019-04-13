@@ -204,7 +204,7 @@ better_macos_defaults()
   ##########
 
   # Use ForkList 3 as default file viewer
-  defaults write NSGlobalDomain NSFileViewer -string com.binarynights.ForkLift-3
+  # defaults write NSGlobalDomain NSFileViewer -string com.binarynights.ForkLift-3
 
   # Finder: allow quitting via ⌘ + Q; doing so will also hide desktop icons
   defaults write com.apple.finder QuitMenuItem -bool true

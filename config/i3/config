@@ -57,6 +57,7 @@ bindsym $super+Shift+e exec --no-startup-id \
 
 bindsym $super+Control+$alt+l $exe $lock
 bindsym $super+Control+$alt+s $exe $lock suspend
+bindsym $super+Control+$alt+h $exe $lock hibernate
 bindsym $super+Control+$alt+p $exe dmenu-power
 bindsym $super+Control+$alt+t $exe touchpad-toggle
 

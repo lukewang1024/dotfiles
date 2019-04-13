@@ -29,6 +29,7 @@ prepare_arch_env_cli()
     cloc
     cmatrix
     cmus
+    command-not-found
     cowsay
     cpanminus
     cpulimit
@@ -37,6 +38,7 @@ prepare_arch_env_cli()
     docker-machine
     dstat
     fasd
+    fd
     figlet
     fish
     flatpak
@@ -54,6 +56,7 @@ prepare_arch_env_cli()
     jdk9-openjdk
     jpegoptim
     jq
+    kubectl
     lolcat
     mc
     mpc
@@ -64,6 +67,7 @@ prepare_arch_env_cli()
     mutt
     ncmpcpp
     nghttp2
+    nyancat
     offlineimap
     openssh
     p7zip
