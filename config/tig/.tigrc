@@ -2,12 +2,14 @@
 
 # >> Variables
 
-set horizontal-scroll = 33% # Number of columns to scroll as % of width
-set mouse             = yes # Enable mouse support?
-set mouse-scroll      = 10  # Number of lines to scroll via the mouse
-set line-graphics     = yes # Enum: ascii, default, utf-8
-set tab-size          = 4   # Number of spaces to use when expanding tabs
-set ignore-case       = yes # Ignore case when searching
+set commit-order      = default     # Use Git's default (reverse chronological) order, never automatically use topo-order for the commit graph
+set horizontal-scroll = 33%         # Number of columns to scroll as % of width
+set ignore-case       = yes         # Ignore case when searching
+set line-graphics     = yes         # Enum: ascii, default, utf-8
+set main-options      = -n 1000     # Limit number of commits loaded by default to 1000
+set mouse             = yes         # Enable mouse support?
+set mouse-scroll      = 10          # Number of lines to scroll via the mouse
+set tab-size          = 4           # Number of spaces to use when expanding tabs
 
 # >> View settings
 
