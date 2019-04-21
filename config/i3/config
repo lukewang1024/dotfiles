@@ -322,9 +322,10 @@ bindsym $super+Control+F4 $exe dmenu-display
 
 # >> Screenshots and recording
 
-bindsym Print              $exe i3-scrot
-bindsym Shift+Print        $exe i3-scrot -w
-bindsym --release F1       $exe i3-scrot -s
+set $maimArg --hidecursor | tee ~/Pictures/$(date +%s).png | xclip -selection clipboard -target image/png
+bindsym Print              $exe maim $maimArg
+bindsym Shift+Print        $exe maim --window=$(xdotool getactivewindow) $maimArg
+bindsym F1                 $exe maim --select $maimArg
 bindsym $super+Print       $exe dmenu-record
 bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
 bindsym $super+Pause       $exe killall ffmpeg
