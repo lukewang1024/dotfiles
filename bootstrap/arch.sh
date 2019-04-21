@@ -159,6 +159,8 @@ prepare_arch_env_gui()
   pkgs=(
     android-file-transfer
     arandr
+    arc-gtk-theme
+    arc-icon-theme
     atom
     blueman
     chromium
@@ -168,6 +170,7 @@ prepare_arch_env_gui()
     fcitx-im
     fcitx-rime
     feh
+    file-roller
     firefox
     galculator
     gsimplecal
@@ -181,6 +184,8 @@ prepare_arch_env_gui()
     lxappearance
     lxsession
     lxtask
+    maim
+    moka-icon-theme
     neofetch
     network-manager-applet
     noto-fonts-emoji
@@ -191,7 +196,6 @@ prepare_arch_env_gui()
     rofi
     rofi-scripts
     rxvt-unicode
-    scrot
     shadowsocks-qt5
     sublime-text
     syncthing-gtk
@@ -204,6 +208,7 @@ prepare_arch_env_gui()
     thunar-volman
     tilda
     ttf-font-awesome
+    tumbler
     udiskie
     winetricks
     wkhtmltopdf
@@ -211,8 +216,10 @@ prepare_arch_env_gui()
     xautomation
     xbindkeys
     xcape
+    xclip
     xorg-apps
     xscreensaver
+    xsel
     zathura
     zathura-cb
     zathura-djvu
