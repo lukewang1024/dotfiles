@@ -113,7 +113,7 @@ setAppToggles(hyperAlt, {
   -- ['7'] = '',
   -- ['8'] = '',
   ['9'] = 'ShadowsocksX-NG',
-  ['space'] = 'VirtualBox VM',
+  ['space'] = 'Lark',
 })
 
 -- reload
