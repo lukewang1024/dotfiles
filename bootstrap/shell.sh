@@ -20,9 +20,10 @@ vim_setup()
   backup_then_symlink "$config_dir/vim/.vimrc" ~/.vimrc
   echo 'Done.'
 
-  echo 'Installing Vundle...'
-  sync_config_repo ~/.vim/bundle/Vundle.vim https://github.com/gmarik/Vundle.vim
-  vim +PluginInstall +qall
+  echo 'Installing vim-plug...'
+  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  vim +PlugInstall +qall
   echo 'Done.'
 }
 
