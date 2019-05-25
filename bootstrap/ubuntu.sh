@@ -69,10 +69,7 @@ prepare_ubuntu_env_cli()
 
   pkgs=(
     apt-fast
-    cmatrix
-    cpulimit
     docker-ce
-    figlet
     fortune-mod
     gnupg2
     google-cloud-sdk
@@ -84,10 +81,7 @@ prepare_ubuntu_env_cli()
     python-software-properties
     python3-pip
     rxvt-unicode-256color
-    tmate
-    tpp
     yarn
-    zsh
   )
   ubuntu_install_pkgs
 
