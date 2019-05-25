@@ -12,6 +12,7 @@ install_nix_brew_runtimes()
 install_nix_brew_packages()
 {
   local pkgs=(
+    ansifilter
     apache-spark
     aria2
     awscli
@@ -23,46 +24,69 @@ install_nix_brew_packages()
     cheat
     cloc
     cmake
+    cmatrix
+    cmus
     coreutils
     cpanminus
+    cpulimit
+    ddgr
     diffutils
     ed
+    extract_url
     fasd
     fd
     ffmpeg
+    figlet
     file-formula
     findutils
     fish
     fpp
+    fswatch
     fzf
+    ghi
     gifsicle
     gist
     git
+    git-appraise
     git-extras
     git-flow-avh
+    git-lfs
+    glances
+    gnu-indent
     go
+    googler
     gzip
     haproxy
     htop
     httpie
+    httpstat
     icdiff
     imagemagick
     irssi
     jpegoptim
     jq
+    kubernetes-cli
     less
+    lolcat
     make
     midnight-commander
     mongodb
     mosh
+    mpc
+    mpd
+    mps-youtube
+    mpv
     multitail
     mutt
     mycli
     nano
     ncdu
+    ncmpcpp
     neofetch
     neovim
+    netcat
     nmap
+    nyancat
     offlineimap
     open-mpi
     openshift-cli
@@ -71,21 +95,29 @@ install_nix_brew_packages()
     pandoc
     peco
     pgcli
+    progress
     proxychains-ng
     ranger
     redis
+    ripgrep
     rsync
+    rtv
     sachaos/todoist/todoist
     shadowsocks-libev
     shellcheck
+    spark
     the_silver_searcher
     thefuck
     tig
     tldr
+    tldr
+    tmate
     tmux
+    tpp
     translate-shell
     tree
     unzip
+    urlview
     vim
     w3m
     watch

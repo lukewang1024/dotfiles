@@ -14,7 +14,6 @@ install_gem_packages()
   local pkgs=(
     boom
     gas
-    lolcat
     sass
     tmuxinator
   )
@@ -75,7 +74,6 @@ install_npm_packages()
     serve
     serverless
     svgexport
-    tldr
     trash-cli
     ts-node
     typescript
@@ -97,8 +95,6 @@ install_pip_packages()
   local pkgs=(
     argcomplete
     cppman
-    glances
-    httpstat
     ici
     myqr
     powerline-status
@@ -106,8 +102,6 @@ install_pip_packages()
     pywal
     rainbowstream
     rdbtools
-    rtv
-    thefuck
   )
 
   pip install --upgrade `join ' ' "${pkgs[@]}"`

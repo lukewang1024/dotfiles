@@ -18,45 +18,20 @@ prepare_macos_env_cli()
   install_nix_brew_packages
 
   local pkgs=(
-    ansifilter
     brightness
-    cmatrix
-    cmus
-    cpulimit
     csshx
-    extract_url
-    figlet
     fortune
-    fswatch
     gawk
-    ghi
-    git-appraise
-    git-lfs
-    gnu-indent
     gnu-sed
     gnu-tar
     gnu-which
     gnutls
     grep
-    httpstat
-    kubernetes-cli
+    inetutils
     m-cli
     mackup
     mas
-    mpc
-    mpd
-    mps-youtube
-    mpv
-    ncmpcpp
-    netcat
-    nyancat
-    progress
     reattach-to-user-namespace
-    spark
-    telnet
-    tmate
-    tpp
-    urlview
     wsta
     yarn
   )
