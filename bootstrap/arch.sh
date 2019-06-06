@@ -73,6 +73,7 @@ prepare_arch_env_cli()
     p7zip
     pamixer
     pandoc
+    percol
     playerctl
     polipo
     progress
@@ -110,6 +111,7 @@ prepare_arch_env_cli()
     apache-spark
     cheat-git
     downgrader
+    fpp
     fswatch
     git-lfs
     gitflow-avh
@@ -258,6 +260,7 @@ prepare_arch_env_gui()
     slack-desktop
     spotify
     spotify-adkiller-dns-block-git
+    st-luke-git
     sublime-merge
     ttf-ms-fonts
     typora

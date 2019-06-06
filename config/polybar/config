@@ -23,7 +23,7 @@ border-color = {$colors.transparent}
 module-margin = 2
 font-0 = Noto Sans:size=10;1
 font-1 = Ubuntu Nerd Font:size=10;0
-modules-left = i3 cpu memory temperature battery-combined-udev wlan lan
+modules-left = i3 cpu memory temperature battery wlan lan
 modules-center = xwindow
 modules-right = volume xbacklight date
 tray-position = right
@@ -143,33 +143,6 @@ ramp-1 = 
 ramp-2 = 
 ramp-3 = 
 ramp-4 = 
-
-[module/battery-combined-udev]
-type = custom/script
-exec = ~/.config/polybar/scripts/battery-combined-udev.sh
-tail = true
-
-[module/system-usb-udev]
-type = custom/script
-exec = ~/.config/polybar/scripts/system-usb-udev.sh
-tail = true
-format-underline = ${colors.underline}
-click-left = ~/.config/polybar/scripts/system-usb-udev.sh --mount
-click-right = ~/.config/polybar/scripts/system-usb-udev.sh --unmount
-
-[module/openweathermap-fullfeatured]
-type = custom/script
-exec = ~/.config/polybar/scripts/openweathermap-fullfeatured.sh
-interval = 600
-label-font = 3
-
-[module/info-trash]
-type = custom/script
-exec = ~/.config/polybar/scripts/info-trash.sh
-format-prefix = " "
-format-underline = ${colors.underline}
-interval = 60
-click-right = ~/.config/polybar/scripts/info-trash.sh --clean
 
 [settings]
 screenchange-reload = true
