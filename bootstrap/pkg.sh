@@ -66,6 +66,7 @@ install_npm_packages()
     npm-quick-run
     nrm
     opn-cli
+    pangu
     pm2
     react-devtools
     react-native-cli
@@ -74,6 +75,7 @@ install_npm_packages()
     serve
     serverless
     svgexport
+    textlint
     trash-cli
     ts-node
     typescript

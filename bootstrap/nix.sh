@@ -94,6 +94,7 @@ install_nix_brew_packages()
     p7zip
     pandoc
     peco
+    percol
     pgcli
     progress
     proxychains-ng
