@@ -77,6 +77,22 @@ Drop the below line to `.xinitrc`, after `xmodmap ~/.Xmodmap` line to have short
 xcape -e 'Control_L=Escape;Mode_switch=Escape'
 ```
 
+### i3 setup
+
+#### Launch arbitrary website with keyboard shortcut
+
+- Create shortcut for the website:
+  - Click `...` -> `More tools` -> `Create shortcut...`.
+  - Check `Open as window` and create.
+  - The shortcut is created at `~/Desktop` by default.
+- Open the web app window and find its instance identifier with `xprop`:
+  - e.g. `crx_cblkndcnkihlfpikpeedddgaecggkbcm`
+- Add the instance identifier to `~/.Xresources.d/custom` as a variable.
+- Read the variable in i3 config and use it to identify the exact app window.
+- Current list of configured web apps:
+  - `web_app.lark`
+  - ...
+
 ## Windows
 
 ### WSL

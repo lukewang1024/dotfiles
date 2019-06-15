@@ -1,0 +1,29 @@
+! >> Common
+
+URxvt.font: xft:Sauce Code Pro Nerd Font:size=10
+URxvt.intensityStyles: false
+URxvt.background: [70]#000000
+URxvt.depth: 32
+URxvt.scrollBar: false
+URxvt.cursorColor: white
+
+! >> Extensions
+
+URxvt.perl-ext-common: default,matcher,resize-font,url-select,keyboard-select,fullscreen
+URxvt.colorUL: #4682B4
+! url-select
+URxvt.keysym.M-u: perl:url-select:select_next
+URxvt.url-select.launcher: webview
+URxvt.url-select.underline: true
+! keyboard-select
+URxvt.keysym.M-Escape: perl:keyboard-select:activate
+! resize-font
+URxvt.resize-font.smaller: C-minus
+URxvt.resize-font.bigger: C-equal
+! Matcher
+URxvt.url-launcher: webview
+URxvt.matcher.button: 1
+! fullscreen
+URxvt.keysym.F11: perl:fullscreen:switch
+
+! syntax:ssExcla
