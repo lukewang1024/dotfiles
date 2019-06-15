@@ -20,7 +20,7 @@ set $fyra_l9     -l 'AB=-480 BD=300 AC=-160'
 set $fyra_l8     -l 'AB=-640 BD=390 AC=-160'
 set $fyra_l7     -l 'AB=-920 BD=540 AC=-160'
 set $rofi        rofi -show
-set $term        urxvt
+set $term        st
 set $browser     chromium
 
 set $lock        ~/.config/i3/scripts/lock
@@ -44,6 +44,8 @@ focus_follows_mouse no
 
 hide_edge_borders both
 
+set_from_resource $lark_web web_app.lark
+
 # >> Panic
 
 bindsym $super+Shift+q kill
@@ -63,10 +65,10 @@ bindsym $super+Control+$alt+t $exe touchpad-toggle
 
 # >> Terminal
 
-bindsym $super+grave          $srun -i dropdown -e '$term -name dropdown'
-bindsym $super+Return         $exe i3-sensible-terminal
-bindsym $super+Shift+Return   $grun -i cterm -e '$term -name cterm'
-bindsym $super+Control+Return $exe $term -name tiledterm
+bindsym $super+grave          $srun -i dropdown -e '$term -n dropdown'
+bindsym $super+Return         $exe $term
+bindsym $super+Shift+Return   $grun -i cterm -e '$term -n cterm'
+bindsym $super+Control+Return $exe $term -n tiledterm
 
 # dropdown terminal
 for_window [instance="dropdown"] resize set 900 600
@@ -91,7 +93,9 @@ bindsym $super+Control+e $exe $thunar filemanagerD ThunarDetailsView
 bindsym $hyper+c       $grun -i chromium -e 'chrome-launcher chromium'
 bindsym $hyper+$alt+c  $grun -i chromium -e 'chrome-launcher chromium nosecurity'
 bindsym $hyper+f       $grun -c Firefox -e 'firefox'
+bindsym $hyper+p       $grun -i FoxitReader -e 'foxitreader'
 bindsym $hyper+q       $grun -i qutebrowser -e 'qutebrowser'
+bindsym $hyper+r       $grun -i zathura -e 'zathura'
 bindsym $hyper+s       $grun -i sublime_text -e 'subl'
 bindsym $hyper+t       $grun -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+u       $grun -i slack
@@ -99,12 +103,13 @@ bindsym $hyper+v       $grun -i code
 bindsym $hyper+w       $srun -i wechat.exe -e 'gtk-launch deepin.com.wechat'
 bindsym $hyper+y       $grun -i skype
 bindsym $hyper+z       $srun -i zeal -e 'zeal'
+
 bindsym $hyper+1       $srun -i gsimplecal -e 'gsimplecal'
 bindsym $hyper+0       $srun -i ss-qt5 -e 'ss-qt5'
 
 bindsym $hyper+backslash  $srun -i keepassxc -e 'keepassxc'
 bindsym $hyper+semicolon  $grun -i termite -e 'termite'
-bindsym $hyper+space      $grun -i lark -e 'lark'
+bindsym $hyper+space      $grun -i $lark_web -e 'gtk-launch lark'
 
 # >> Hyper+Shift shortcuts
 
@@ -119,30 +124,30 @@ bindsym $hyper+Shift+y       $grun -i skype -e 'skypeforlinux'
 
 # >> Window rules
 
-for_window [class="^.*"]                  floating enable
-for_window [class="jetbrains-studio"]     focus; $fyra -m A
-for_window [class="mpv"]                  focus; $fyra -m B
-for_window [instance="code"]              focus; $fyra -m A
-for_window [instance="cterm"]             focus; $fyra -m C
-for_window [instance="filemanagerA"]      focus; $fyra -m A
-for_window [instance="filemanagerB"]      focus; $fyra -m B
-for_window [instance="filemanagerD"]      focus; $fyra -m D
-for_window [instance="FoxitReader"]       focus; $fyra -m A
-for_window [instance="irssi"]             focus; $fyra -m D
-for_window [instance="lark"]              focus; $fyra -m A
-for_window [instance="musixmatch"]        focus; $fyra -m B
-for_window [instance="ncmpcpp"]           focus; $fyra -m B
-for_window [instance="qutebrowser"]       focus; $fyra -m B
-for_window [instance="skype"]             focus; $fyra -m D
-for_window [instance="slack"]             focus; $fyra -m A
-for_window [instance="termite"]           focus; $fyra -m A
-for_window [instance="tiledterm"]         floating disable
-for_window [instance="zathura"]           focus; $fyra -m D
-
-for_window [class="Firefox" title="- Mozilla Firefox"]       focus; $fyra -m A
-for_window [instance="chromium" title="- Chromium"]          focus; $fyra -m A
-for_window [instance="sublime_text" title="- Sublime Text"]  focus; $fyra -m A
-for_window [instance="telegram-desktop" title="Telegram"]    focus; $fyra -m D
+for_window [class="^.*"]                                        floating enable
+for_window [class="Chromium" instance="$lark_web"]              focus; $fyra -m A
+for_window [class="Firefox" instance="Navigator"]               focus; $fyra -m A
+for_window [class="jetbrains-studio"]                           focus; $fyra -m A
+for_window [class="mpv"]                                        focus; $fyra -m B
+for_window [instance="chromium" window_role="browser"]          focus; $fyra -m A
+for_window [instance="chromium" window_role="pop-up"]           focus; $fyra -m D
+for_window [instance="code" window_type="normal"]               focus; $fyra -m A
+for_window [instance="cterm"]                                   focus; $fyra -m C
+for_window [instance="filemanagerA"]                            focus; $fyra -m A
+for_window [instance="filemanagerB"]                            focus; $fyra -m B
+for_window [instance="filemanagerD"]                            focus; $fyra -m D
+for_window [instance="FoxitReader" window_type="normal"]        focus; $fyra -m A
+for_window [instance="irssi"]                                   focus; $fyra -m D
+for_window [instance="musixmatch"]                              focus; $fyra -m B
+for_window [instance="ncmpcpp"]                                 focus; $fyra -m B
+for_window [instance="qutebrowser"]                             focus; $fyra -m B
+for_window [instance="skype"]                                   focus; $fyra -m D
+for_window [instance="slack" title="Slack -"]                   focus; $fyra -m A
+for_window [instance="sublime_text" window_type="normal"]       focus; $fyra -m A
+for_window [instance="telegram-desktop" window_type="normal"]   focus; $fyra -m D
+for_window [instance="termite"]                                 focus; $fyra -m A
+for_window [instance="tiledterm"]                               floating disable
+for_window [instance="zathura"]                                 focus; $fyra -m D
 
 # >> Focus
 

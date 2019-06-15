@@ -37,7 +37,6 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/npm
     robbyrussell/oh-my-zsh plugins/per-directory-history
     robbyrussell/oh-my-zsh plugins/rsync
-    robbyrussell/oh-my-zsh plugins/sublime
     robbyrussell/oh-my-zsh plugins/sudo
     robbyrussell/oh-my-zsh plugins/systemadmin
     robbyrussell/oh-my-zsh plugins/taskwarrior
@@ -91,8 +90,6 @@ EOPLUGINS
     elif [ -f /etc/debian_version ]; then
       if [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
         zgen oh-my-zsh plugins/ubuntu
-      else
-        zgen oh-my-zsh plugins/debian
       fi
     elif [ -f /etc/fedora-release ]; then
       zgen oh-my-zsh plugins/dnf

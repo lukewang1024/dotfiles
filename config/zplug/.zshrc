@@ -32,7 +32,6 @@ zplug 'plugins/httpie', from:oh-my-zsh
 zplug 'plugins/npm', from:oh-my-zsh
 zplug 'plugins/per-directory-history', from:oh-my-zsh
 zplug 'plugins/rsync', from:oh-my-zsh
-zplug 'plugins/sublime', from:oh-my-zsh
 zplug 'plugins/sudo', from:oh-my-zsh
 zplug 'plugins/systemadmin', from:oh-my-zsh
 zplug 'plugins/taskwarrior', from:oh-my-zsh
@@ -84,8 +83,6 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   elif [ -f /etc/debian_version ]; then
     if [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
       zplug 'plugins/ubuntu', from:oh-my-zsh
-    else
-      zplug 'plugins/debian', from:oh-my-zsh
     fi
   elif [ -f /etc/fedora-release ]; then
     zplug 'plugins/dnf', from:oh-my-zsh

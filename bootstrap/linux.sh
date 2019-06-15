@@ -36,6 +36,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/x/.xinitrc" ~/.xinitrc
   backup_then_symlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
   backup_then_symlink "$config_dir/x/.Xresources" ~/.Xresources
+  backup_then_symlink "$config_dir/x/.Xresources.d" ~/.Xresources.d
   backup_then_symlink "$config_dir/x/.xscreensaver" ~/.xscreensaver
   backup_then_symlink "$config_dir/zathura" ~/.config/zathura
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
@@ -61,6 +62,7 @@ apply_app_configs()
   # Misc settings
   mkdir -p ~/.polipo-cache
   mkdir -p ~/Recordings
+  touch "$config_dir/x/.Xresources.d/custom"
 
   # Refresh font cache
   fc-cache -f -v
