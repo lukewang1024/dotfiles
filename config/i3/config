@@ -96,11 +96,12 @@ bindsym $hyper+f       $grun -c Firefox -e 'firefox'
 bindsym $hyper+p       $grun -i FoxitReader -e 'foxitreader'
 bindsym $hyper+q       $grun -i qutebrowser -e 'qutebrowser'
 bindsym $hyper+r       $grun -i zathura -e 'zathura'
-bindsym $hyper+s       $grun -i sublime_text -e 'subl'
+bindsym $hyper+s       $grun -i sublime_text -x subl3 -e 'subl3'
 bindsym $hyper+t       $grun -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+u       $grun -i slack
 bindsym $hyper+v       $grun -i code
 bindsym $hyper+w       $srun -i wechat.exe -e 'gtk-launch deepin.com.wechat'
+bindsym $hyper+x       $srun -i seal -e 'gtk-launch seal'
 bindsym $hyper+y       $grun -i skype
 bindsym $hyper+z       $srun -i zeal -e 'zeal'
 

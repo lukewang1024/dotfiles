@@ -82,6 +82,7 @@ install_npm_packages()
     updtr
     vue-cli
     weinre
+    workbox-cli
     yo
   )
 

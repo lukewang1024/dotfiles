@@ -140,24 +140,8 @@ prepare_arch_env_cli()
   sudo systemctl enable --now snapd.socket # enable snapd
 }
 
-add_sublime_text_repo()
-{
-  if ! grep -q '\[sublime-text\]' /etc/pacman.conf; then
-    curl -O https://download.sublimetext.com/sublimehq-pub.gpg && \
-      sudo pacman-key --add sublimehq-pub.gpg && \
-      sudo pacman-key --lsign-key 8A8F901A && \
-      rm sublimehq-pub.gpg
-
-    echo -e "\n[sublime-text]\nServer = https://download.sublimetext.com/arch/stable/x86_64" | sudo tee -a /etc/pacman.conf
-  else
-    echo 'Sublime Text repository has been added. Skip.'
-  fi
-}
-
 prepare_arch_env_gui()
 {
-  add_sublime_text_repo
-
   pkgs=(
     android-file-transfer
     arandr
@@ -199,7 +183,6 @@ prepare_arch_env_gui()
     rofi-scripts
     rxvt-unicode
     shadowsocks-qt5
-    sublime-text
     syncthing-gtk
     telegram-desktop
     termite
@@ -261,6 +244,7 @@ prepare_arch_env_gui()
     spotify
     spotify-adkiller-dns-block-git
     st-luke-git
+    sublime-text-dev
     sublime-merge
     ttf-ms-fonts
     typora
