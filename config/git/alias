@@ -102,6 +102,7 @@
     fi;\
   };"
   tree = forest --pretty=format:\"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s\" --style=15 --reverse
+  trf = !sh -c \"git reflog --pretty=raw | tig --pretty=raw | cat\"
   unassume = update-index --no-assume-unchanged
   unassumeall = !git assumed | xargs git update-index --no-assume-unchanged
   unstage = reset HEAD --
