@@ -242,7 +242,6 @@ prepare_arch_env_gui()
     skypeforlinux-stable-bin
     slack-desktop
     spotify
-    spotify-adkiller-dns-block-git
     st-luke-git
     sublime-text-dev
     sublime-merge

@@ -74,6 +74,7 @@ install_npm_packages()
     semantic-release-cli
     serve
     serverless
+    source-map-explorer
     svgexport
     textlint
     trash-cli

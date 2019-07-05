@@ -83,7 +83,6 @@ pyenv_setup()
   local PLUGINS="$ROOT/plugins"
   sync_config_repo "$ROOT"                     "$GH/pyenv/pyenv"
   sync_config_repo "$PLUGINS/pyenv-doctor"     "$GH/pyenv/pyenv-doctor"
-  sync_config_repo "$PLUGINS/pyenv-installer"  "$GH/pyenv/pyenv-installer"
   sync_config_repo "$PLUGINS/pyenv-update"     "$GH/pyenv/pyenv-update"
   sync_config_repo "$PLUGINS/pyenv-virtualenv" "$GH/pyenv/pyenv-virtualenv"
   sync_config_repo "$PLUGINS/pyenv-which-ext"  "$GH/pyenv/pyenv-which-ext"

@@ -68,6 +68,12 @@ apply_app_configs()
   fc-cache -f -v
 }
 
+install_flatpak_packages()
+{
+  local pkgs=()
+  flatpak install -y flathub `join ' ' "${pkgs[@]}"`
+}
+
 fix_ENOSPC()
 {
   local tweak='fs.inotify.max_user_watches=524288'
