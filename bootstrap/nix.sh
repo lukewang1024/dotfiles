@@ -11,6 +11,8 @@ install_nix_brew_runtimes()
 
 install_nix_brew_packages()
 {
+  brew tap wtfutil/wtfutil
+
   local pkgs=(
     ansifilter
     apache-spark
@@ -60,6 +62,7 @@ install_nix_brew_packages()
     htop
     httpie
     httpstat
+    hyperfine
     icdiff
     imagemagick
     irssi
@@ -68,6 +71,7 @@ install_nix_brew_packages()
     kubernetes-cli
     less
     lolcat
+    lsd
     make
     midnight-commander
     mongodb
@@ -125,6 +129,7 @@ install_nix_brew_packages()
     wdiff
     wget
     wtf
+    wtfutil
     you-get
     youtube-dl
     zsh

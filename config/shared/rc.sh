@@ -24,6 +24,12 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
+# Functions
+exists()
+{
+  command -v "$1" >/dev/null 2>&1
+}
+
 # Aliases
 alias cb=clipboard
 alias sap='source ~/.agent-profile'

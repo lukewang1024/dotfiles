@@ -58,6 +58,7 @@ prepare_arch_env_cli()
     jq
     kubectl
     lolcat
+    lsd
     mc
     mpc
     mpd
@@ -116,6 +117,7 @@ prepare_arch_env_cli()
     git-lfs
     gitflow-avh
     google-cloud-sdk
+    hyperfine
     icdiff
     mons
     mycli

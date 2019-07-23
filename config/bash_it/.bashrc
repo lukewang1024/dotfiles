@@ -1,5 +1,4 @@
 source ~/.dotfiles/config/shared/rc.sh
-source ~/.dotfiles/config/shared/rc.bash
 
 # Only set paths & aliases for non-login shell
 shopt -q login_shell || return
@@ -24,5 +23,7 @@ export SCM_CHECK=true
 
 # Load Bash It
 source "$BASH_IT"/bash_it.sh
+
+source ~/.dotfiles/config/shared/rc.bash
 
 source ~/.dotfiles/config/shared/ssh-agent-connect.bash
