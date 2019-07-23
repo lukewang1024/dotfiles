@@ -53,6 +53,7 @@ install_npm_packages()
     git-file-history
     gulp-cli
     hexo-cli
+    hiper
     http-server
     leetcode-cli
     localtunnel
