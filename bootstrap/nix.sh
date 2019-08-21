@@ -34,6 +34,7 @@ install_nix_brew_packages()
     ddgr
     diffutils
     ed
+    exiftool
     extract_url
     fasd
     fd
@@ -73,6 +74,7 @@ install_nix_brew_packages()
     lolcat
     lsd
     make
+    media-info
     midnight-commander
     mongodb
     mosh

@@ -73,6 +73,7 @@ prepare_macos_env_gui()
     937984704  # Amphetamine
     998804308  # Blinks
     1012930195 # HandShaker
+    1025306797 # Resize Master
     1147396723 # WhatsApp
     1176895641 # Spark
     1254743014 # LyricsX
