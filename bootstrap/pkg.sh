@@ -14,7 +14,6 @@ install_gem_packages()
   local pkgs=(
     boom
     gas
-    sass
     tmuxinator
   )
 
@@ -33,6 +32,7 @@ install_npm_packages()
   local pkgs=(
     @angular/cli
     @storybook/cli
+    asar
     azure-functions-core-tools@core
     bower
     brightness-cli

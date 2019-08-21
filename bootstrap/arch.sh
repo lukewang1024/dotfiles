@@ -60,6 +60,7 @@ prepare_arch_env_cli()
     lolcat
     lsd
     mc
+    mediainfo
     mpc
     mpd
     mps-youtube
@@ -75,6 +76,7 @@ prepare_arch_env_cli()
     pamixer
     pandoc
     percol
+    perl-image-exiftool
     playerctl
     polipo
     progress
