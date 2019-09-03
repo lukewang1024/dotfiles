@@ -86,8 +86,7 @@ prepare_ubuntu_env_cli()
   ubuntu_install_pkgs
 
   install_linuxbrew
-  install_nix_brew_runtimes
-  install_nix_brew_packages
+  install_linux_brew_packages
 
   env_setup
   apply_app_configs

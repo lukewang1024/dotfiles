@@ -76,7 +76,6 @@ install_nix_brew_packages()
     make
     media-info
     midnight-commander
-    mongodb
     mosh
     mpc
     mpd
