@@ -215,6 +215,7 @@ prepare_macos_env_gui()
     sublime-merge
 
     # DB tools
+    mongodb
     mongodb-compass
     robo-3t
     sequel-pro
