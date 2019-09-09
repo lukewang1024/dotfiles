@@ -103,6 +103,7 @@ install_nix_brew_packages()
     pgcli
     progress
     proxychains-ng
+    qpdf
     ranger
     redis
     ripgrep

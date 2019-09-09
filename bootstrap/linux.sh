@@ -16,10 +16,10 @@ install_linux_brew_packages()
   install_nix_brew_runtimes
   install_nix_brew_packages
 
-  local pkgs=(
-    mongodb
-  )
-  brew install `join ' ' "${pkgs[@]}"`
+  # local pkgs=(
+  #
+  # )
+  # brew install `join ' ' "${pkgs[@]}"`
 }
 
 install_i3ass()
