@@ -1,31 +1,24 @@
 [advice]
-  pushNonFastForward = false
   statusHints = false
-[branch]
-  autosetupmerge = true
-[color]
-  ui = auto
 [core]
   fscache = true
-  preloadindex = true
-  whitespace = trailing-space,space-before-tab
   editor = nano
   fileMode = true
 [diff]
-  mnemonicprefix = true
+  mnemonicPrefix = true
   renames = copies
   tool = kdiff3
 [difftool]
   prompt = false
 [fetch]
   prune = true
+  pruneTags = true
 [gc]
   auto = 256
 [icdiff]
   options = --highlight --line-numbers
 [merge]
-  conflictstyle = diff3
-  stat = true
+  conflictStyle = diff3
   # tool = kdiff3
   tool = "Sublime Merge"
 [mergetool]
@@ -33,7 +26,6 @@
 [mergetool "Sublime Merge"]
   cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
 [push]
-  default = simple
   followTags = true
 [rerere]
   enabled = true
