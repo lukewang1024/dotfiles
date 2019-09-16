@@ -19,18 +19,18 @@ hspoon_list = {
 
 -- appM environment keybindings. Bundle `id` is prefered, but application `name` will be ok.
 hsapp_list = {
-    {key = 'a', name = 'Atom'},
-    {key = 'c', id = 'com.google.Chrome'},
-    {key = 'd', name = 'ShadowsocksX'},
-    {key = 'e', name = 'Visual Studio Code'},
-    {key = 'f', name = 'Finder'},
-    {key = 'i', name = 'iTerm'},
-    {key = 'k', name = 'KeyCastr'},
-    {key = 'l', name = 'Sublime Text'},
-    {key = 's', name = 'Safari'},
-    {key = 't', name = 'Terminal'},
-    {key = 'v', id = 'com.apple.ActivityMonitor'},
-    {key = 'y', id = 'com.apple.systempreferences'},
+  {key = 'a', name = 'Atom'},
+  {key = 'c', id = 'com.google.Chrome'},
+  {key = 'd', name = 'ShadowsocksX'},
+  {key = 'e', name = 'Visual Studio Code'},
+  {key = 'f', name = 'Finder'},
+  {key = 'i', name = 'iTerm'},
+  {key = 'k', name = 'KeyCastr'},
+  {key = 'l', name = 'Sublime Text'},
+  {key = 's', name = 'Safari'},
+  {key = 't', name = 'Terminal'},
+  {key = 'v', id = 'com.apple.ActivityMonitor'},
+  {key = 'y', id = 'com.apple.systempreferences'},
 }
 
 -- Modal supervisor keybinding, which can be used to temporarily disable ALL modal environments.
