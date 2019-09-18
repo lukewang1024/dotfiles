@@ -80,6 +80,7 @@ prepare_macos_env_gui()
     1278508951 # Trello
     1295203466 # Microsoft Remote Desktop
     1314842898 # miniQpicview (Kantu)
+    1477089520 # Backtrack
   )
 
   mas install $masApps
@@ -125,6 +126,7 @@ prepare_macos_env_gui()
     alfred
     background-music
     bartender
+    browserosaurus
     commander-one
     ezip
     flux
@@ -169,6 +171,7 @@ prepare_macos_env_gui()
     duet
     fantastical
     handbrake
+    hocus-focus
     istat-menus
     itsycal
     kap
