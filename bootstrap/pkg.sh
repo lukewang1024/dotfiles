@@ -64,6 +64,7 @@ install_npm_packages()
     nls
     now
     npm-check
+    npm-check-updates
     npm-quick-run
     nrm
     opn-cli

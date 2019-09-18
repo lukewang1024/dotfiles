@@ -113,6 +113,7 @@ install_nix_brew_packages()
     shadowsocks-libev
     shellcheck
     spark
+    testdisk
     the_silver_searcher
     thefuck
     tig
