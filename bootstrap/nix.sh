@@ -46,6 +46,7 @@ install_nix_brew_packages()
     fpp
     fswatch
     fzf
+    gawk
     ghi
     gifsicle
     gist
@@ -56,8 +57,13 @@ install_nix_brew_packages()
     git-lfs
     glances
     gnu-indent
+    gnu-sed
+    gnu-tar
+    gnu-which
+    gnutls
     go
     googler
+    grep
     gzip
     haproxy
     htop
@@ -66,6 +72,7 @@ install_nix_brew_packages()
     hyperfine
     icdiff
     imagemagick
+    inetutils
     irssi
     jpegoptim
     jq
@@ -133,6 +140,7 @@ install_nix_brew_packages()
     wget
     wtf
     wtfutil
+    yarn
     you-get
     youtube-dl
     zsh

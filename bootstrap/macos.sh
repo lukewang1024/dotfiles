@@ -21,19 +21,11 @@ prepare_macos_env_cli()
     brightness
     csshx
     fortune
-    gawk
-    gnu-sed
-    gnu-tar
-    gnu-which
-    gnutls
-    grep
-    inetutils
     m-cli
     mackup
     mas
     reattach-to-user-namespace
     wsta
-    yarn
   )
   brew install `join ' ' "${pkgs[@]}"`
 
