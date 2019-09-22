@@ -134,6 +134,7 @@ install_other_packages()
   backup_then_symlink "$util_dir/shell/killbp" ~/bin/killbp
   backup_then_symlink "$util_dir/shell/mann" ~/bin/mann
   backup_then_symlink "$util_dir/shell/md2resume" ~/bin/md2resume
+  backup_then_symlink "$util_dir/shell/pretty-csv" ~/bin/pretty-csv
   install_any_script hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }
 
