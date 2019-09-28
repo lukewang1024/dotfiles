@@ -22,6 +22,7 @@ install_nix_brew_packages()
     azure-cli
     bash
     bash-completion
+    bat
     binutils
     cheat
     cloc
@@ -32,7 +33,9 @@ install_nix_brew_packages()
     cpanminus
     cpulimit
     ddgr
+    diff-so-fancy
     diffutils
+    dive
     ed
     exiftool
     extract_url
@@ -108,6 +111,7 @@ install_nix_brew_packages()
     peco
     percol
     pgcli
+    prettyping
     progress
     proxychains-ng
     qpdf
@@ -140,6 +144,7 @@ install_nix_brew_packages()
     wget
     wtf
     wtfutil
+    xsv
     yarn
     you-get
     youtube-dl
