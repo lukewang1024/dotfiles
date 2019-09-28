@@ -26,6 +26,7 @@ prepare_arch_env_cli()
     aria2
     aws-cli
     axel
+    bat
     cloc
     cmatrix
     cmus
@@ -33,6 +34,7 @@ prepare_arch_env_cli()
     cowsay
     cpanminus
     cpulimit
+    diff-so-fancy
     docker
     docker-compose
     docker-machine
@@ -79,6 +81,7 @@ prepare_arch_env_cli()
     perl-image-exiftool
     playerctl
     polipo
+    prettyping
     progress
     proxychains-ng
     ranger
@@ -113,6 +116,7 @@ prepare_arch_env_cli()
   pkgs=(
     apache-spark
     cheat-git
+    dive
     downgrader
     fpp
     fswatch
@@ -131,6 +135,7 @@ prepare_arch_env_cli()
     ttf-weather-icons
     urlview
     wsta
+    xsv
   )
   aur_install_pkgs
 

@@ -16,4 +16,5 @@ bindkey -M vicmd 'j' history-substring-search-down
 alias rrc='source ~/.zshrc && rehash'
 alias upenv='zgen update && nodenv update && pyenv update && rbenv update'
 
+# aliases to overwrite the ones defined in plugins
 exists lsd && alias ls='lsd'

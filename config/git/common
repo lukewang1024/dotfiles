@@ -1,15 +1,33 @@
 [advice]
   statusHints = false
+[color]
+  ui = true
+[color "diff-highlight"]
+  newHighlight = green bold 22
+  newNormal = green bold
+  oldHighlight = red bold 52
+  oldNormal = red bold
+[color "diff"]
+  commit = yellow bold
+  frag = magenta bold
+  meta = yellow
+  new = green bold
+  old = red bold
+  whitespace = red reverse
+  whitespace = red reverse
 [core]
-  fscache = true
   editor = nano
   fileMode = true
+  fscache = true
+  pager = diff-so-fancy | less --tabs=4 -RFX
 [diff]
   mnemonicPrefix = true
   renames = copies
   tool = kdiff3
 [difftool]
   prompt = false
+[diff-so-fancy]
+  first-run = false
 [fetch]
   prune = true
   pruneTags = true
