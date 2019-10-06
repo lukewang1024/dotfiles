@@ -43,12 +43,9 @@ install_npm_packages()
     create-react-app
     create-react-native-app
     depcheck
-    ember-cli
     english-dictionary-cli
     exp
     express-generator
-    flow-bin
-    flow-typed
     gatsby-cli
     git-file-history
     gulp-cli
@@ -72,7 +69,6 @@ install_npm_packages()
     pm2
     react-devtools
     react-native-cli
-    react-vr-cli
     semantic-release-cli
     serve
     serverless

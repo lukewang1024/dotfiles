@@ -30,7 +30,6 @@
   first-run = false
 [fetch]
   prune = true
-  pruneTags = true
 [gc]
   auto = 256
 [icdiff]

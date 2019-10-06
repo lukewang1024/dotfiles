@@ -104,7 +104,6 @@ install_nix_brew_packages()
     nyancat
     offlineimap
     open-mpi
-    openshift-cli
     openssh
     p7zip
     pandoc

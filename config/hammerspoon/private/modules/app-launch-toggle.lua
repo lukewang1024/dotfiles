@@ -85,7 +85,7 @@ setAppToggles(hyperAlt, {
   -- o = '',
   p = 'Postman',
   q = 'Commander One',
-  -- r = '',
+  r = 'Resilio Sync',
   s = 'Spotify',
   -- t = '',
   u = 'QQMusic',
