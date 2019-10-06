@@ -434,7 +434,7 @@ $fyra $fyra_l0
 # music player daemon
 $exe mpd
 # downloader
-$exec "cd ~; aria2c"
+$exe aria2c
 # torrent daemon
 $exe transmission-daemon
 # greenclip daemon
@@ -447,6 +447,8 @@ $exe wallpaper
 $exe unclutter
 # polipo for HTTP proxy
 $exe polipo -c ~/.config/polipo/config
+# rslsync for P2P file sync
+$exe rslsync
 # udiskie mount helper
 exec_always $reload udiskie --tray
 # launch polybar where appropriate

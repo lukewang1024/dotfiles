@@ -184,6 +184,7 @@ prepare_macos_env_gui()
     ubersicht
     vnc-viewer
     wkhtmltopdf
+    xld
 
     # DevTool
     imagealpha
@@ -226,7 +227,7 @@ prepare_macos_env_gui()
     google-backup-and-sync
     onedrive
     resilio-sync
-    syncthing-app
+    syncthing
 
     # Social
     caprine
