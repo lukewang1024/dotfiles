@@ -20,7 +20,7 @@ git_setup()
   cat "$config_dir/git/common" >> ~/.gitconfig
 
   # MacOS
-  if [[ $OSTYPE == *'darwin'* ]]; then
+  if [[ $OSTYPE == 'darwin'* ]]; then
     git config --global credential.helper osxkeychain
   fi
 

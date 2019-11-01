@@ -78,7 +78,7 @@ EOPLUGINS
     zgen load jsahlen/nodenv.plugin.zsh
   fi
 
-  if [[ $OSTYPE == *'darwin'* ]]; then
+  if [[ $OSTYPE == 'darwin'* ]]; then
     zgen oh-my-zsh plugins/osx
     zgen oh-my-zsh plugins/brew
     zgen oh-my-zsh plugins/forklift

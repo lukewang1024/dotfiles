@@ -194,7 +194,7 @@ better_macos_defaults()
 
   # Enable subpixel font rendering on non-Apple LCDs
   # Reference: https://github.com/kevinSuttle/macOS-Defaults/issues/17#issuecomment-266633501
-  defaults write NSGlobalDomain AppleFontSmoothing -int 1
+  defaults -currentHost write NSGlobalDomain AppleFontSmoothing -int 1
 
   # Fix terrible blurry font rendering issue in Mojave
   defaults write NSGlobalDomain CGFontRenderingFontSmoothingDisabled -bool false

@@ -60,6 +60,7 @@ function install_scoop_packages
     handbrake `
     heidisql `
     hexchat `
+    hub `
     hwmonitor `
     hyper `
     irfanview `

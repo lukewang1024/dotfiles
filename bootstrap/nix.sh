@@ -72,6 +72,7 @@ install_nix_brew_packages()
     htop
     httpie
     httpstat
+    hub
     hyperfine
     icdiff
     imagemagick
