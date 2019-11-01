@@ -71,7 +71,7 @@ else # *nix
   zplug 'jsahlen/nodenv.plugin.zsh'
 fi
 
-if [[ $OSTYPE == *'darwin'* ]]; then
+if [[ $OSTYPE == 'darwin'* ]]; then
   zplug 'plugins/osx', from:oh-my-zsh
   zplug 'plugins/brew', from:oh-my-zsh
   zplug 'plugins/forklift', from:oh-my-zsh

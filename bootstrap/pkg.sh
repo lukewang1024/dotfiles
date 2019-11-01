@@ -52,6 +52,7 @@ install_npm_packages()
     hexo-cli
     hiper
     http-server
+    is-website-vulnerable
     leetcode-cli
     localtunnel
     loopback-cli

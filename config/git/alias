@@ -4,8 +4,11 @@
   assume = update-index --assume-unchanged
   assumeall = !git st -s | awk {print
   assumed = !git ls-files -v | grep ^h | cut -c 3-
-  bcl = "!f() { ref=${1-origin/master}; git branch --merged ${ref} | grep -vE \" ${ref}$\" | xargs -r git branch -d; }; f"
-  bclg = "!f() { ref=${1-origin/master}; git branch --merged ${ref} | grep -vE \" ${ref}$\" | gxargs -r git branch -d; }; f"
+  bcl = "!f() { \
+    ref=${1-origin/master}; \
+    [ "$(uname -s)" = 'Darwin' ] && cmd='gxargs' || cmd='xargs'; \
+    git branch --merged ${ref} | grep -vE \" ${ref}$\" | $cmd -r git branch -d; \
+  }; f"
   br = branch
   ca = commit -am
   ci = commit -v
@@ -42,7 +45,13 @@
   ft = fetch
   fu = fetch upstream
   gr = grep -Ii
-  gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
+  gra = "!f() { \
+    A=$(pwd) && \
+    TOPLEVEL=$(git rev-parse --show-toplevel) && \
+    cd $TOPLEVEL && \
+    git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && \
+    cd $A; \
+  }; f"
   la = !git config -l | grep alias | cut -c 7- | less
   last = !sh -c \"git log -${1:-1} HEAD\" -
   lc = "!f() { git ll \"$1\"^..\"$1\"; }; f"

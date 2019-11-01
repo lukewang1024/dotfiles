@@ -52,6 +52,7 @@ prepare_arch_env_cli()
     haproxy
     htop
     httpie
+    hub
     imagemagick
     irssi
     jdk8-openjdk
