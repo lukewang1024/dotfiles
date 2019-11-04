@@ -69,6 +69,7 @@ install_nix_brew_packages()
     grep
     gzip
     haproxy
+    hashcat
     htop
     httpie
     httpstat

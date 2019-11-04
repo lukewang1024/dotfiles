@@ -50,6 +50,7 @@ prepare_arch_env_cli()
     git
     go
     haproxy
+    hashcat
     htop
     httpie
     hub
