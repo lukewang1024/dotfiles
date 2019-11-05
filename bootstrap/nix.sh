@@ -58,6 +58,7 @@ install_nix_brew_packages()
     git-extras
     git-flow-avh
     git-lfs
+    git-quick-stats
     glances
     gnu-indent
     gnu-sed
@@ -66,6 +67,7 @@ install_nix_brew_packages()
     gnutls
     go
     googler
+    graphviz
     grep
     gzip
     haproxy

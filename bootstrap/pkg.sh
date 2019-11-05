@@ -56,6 +56,7 @@ install_npm_packages()
     leetcode-cli
     localtunnel
     loopback-cli
+    madge
     majestic
     nativefier
     nativescript
