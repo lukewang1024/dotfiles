@@ -49,6 +49,7 @@ prepare_arch_env_cli()
     gifsicle
     git
     go
+    graphviz
     haproxy
     hashcat
     htop
@@ -123,6 +124,7 @@ prepare_arch_env_cli()
     fpp
     fswatch
     git-lfs
+    git-quick-stats
     gitflow-avh
     google-cloud-sdk
     hyperfine
