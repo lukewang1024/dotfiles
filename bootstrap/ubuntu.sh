@@ -46,35 +46,12 @@ prepare_ubuntu_env_cli()
   )
   ubuntu_install_pkgs
 
-  ppas=(
-    ppa:saiarcot895/myppa # apt-fast
-    ppa:webupd8team/java  # java
-  )
-  ubuntu_add_PPAs
-
-  # Docker
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  sudo add-apt-repository \
-    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) \
-    stable"
-
-  # Google Cloud SDK
-  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-  echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-
   pkgs=(
-    apt-fast
-    docker-ce
     fortune-mod
     gnupg2
-    google-cloud-sdk
-    oracle-java8-installer
-    oracle-java8-set-default
     polipo
     python-dev
     python-pip
-    python-software-properties
     python3-pip
     rxvt-unicode-256color
   )
