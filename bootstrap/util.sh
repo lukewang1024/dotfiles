@@ -82,15 +82,16 @@ print_usage()
   echo
   echo 'List of platforms:'
   echo
-  echo '  macos | osx - MacOS'
-  echo '  cygwin      - Cygwin'
-  echo '  ubuntu      - Ubuntu'
+  echo '  macos | osx - macOS'
+  echo '  debian      - Debian'
   echo '  arch        - Arch Linux'
   echo '  chromeos    - ChromeOS (requires developer mode)'
+  echo '  cygwin      - Cygwin'
   echo
   echo 'List of options:'
   echo
-  echo '  cli  - Prepare CLI environment only (default)'
+  echo '  core - Prepare core environment only (default)'
+  echo '  cli  - Prepare CLI environment only'
   echo '  gui  - Prepare GUI environment only'
   echo '  all  - Prepare both environments'
   echo '  game - Setup some games'

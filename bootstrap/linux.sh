@@ -11,15 +11,15 @@ install_linuxbrew()
   brew update; brew upgrade
 }
 
-install_linux_brew_packages()
+install_linux_brew_core_packages()
 {
   install_nix_brew_runtimes
-  install_nix_brew_packages
+  install_nix_brew_core_packages
+}
 
-  # local pkgs=(
-  #
-  # )
-  # brew install `join ' ' "${pkgs[@]}"`
+install_linux_brew_extra_packages()
+{
+  install_nix_brew_extra_packages
 }
 
 install_i3ass()

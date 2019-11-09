@@ -1,7 +1,7 @@
 source "$partial_dir/env.sh"
 source "$partial_dir/linux.sh"
 
-ubuntu_add_PPAs()
+debian_add_PPAs()
 {
   for ppa in "${ppas[@]}"; do
     sudo add-apt-repository -y $ppa
@@ -9,26 +9,63 @@ ubuntu_add_PPAs()
   unset ppas
 }
 
-ubuntu_install_pkgs()
+debian_install_pkgs()
 {
   sudo apt update
-  sudo apt -f install
   sudo apt upgrade -y
   sudo apt install -y `join ' ' "${pkgs[@]}"`
   unset pkgs
 }
 
-prepare_ubuntu_env_cli()
+prepare_debian_env()
 {
-  # Build tools
+  case $1 in
+    'core')
+      prepare_debian_env_core
+      ;;
+    'cli')
+      prepare_debian_env_cli
+      ;;
+    'gui')
+      prepare_debian_env_gui
+      ;;
+    'all')
+      prepare_debian_env_cli
+      prepare_debian_env_gui
+      ;;
+    *)
+      prepare_debian_env_core
+      ;;
+  esac
+}
+
+prepare_debian_env_core()
+{
   pkgs=(
-    apt-transport-https
     build-essential
-    ca-certificates
     curl
-    dstat
     file
     git
+  )
+  debian_install_pkgs
+
+  install_linuxbrew
+  install_linux_brew_core_packages
+  basic_env_setup
+  apply_app_configs
+  fix_ENOSPC
+  fix_locale
+}
+
+prepare_debian_env_cli()
+{
+  prepare_debian_env_core
+
+  pkgs=(
+    # Build tools
+    apt-transport-https
+    ca-certificates
+    dstat
     libbz2-dev
     libncurses5-dev
     libreadline-dev
@@ -43,10 +80,8 @@ prepare_ubuntu_env_cli()
     wget
     xz-utils
     zlib1g-dev
-  )
-  ubuntu_install_pkgs
 
-  pkgs=(
+    # Apps
     fortune-mod
     gnupg2
     polipo
@@ -55,26 +90,21 @@ prepare_ubuntu_env_cli()
     python3-pip
     rxvt-unicode-256color
   )
-  ubuntu_install_pkgs
+  debian_install_pkgs
 
-  install_linuxbrew
-  install_linux_brew_packages
-
-  env_setup
-  apply_app_configs
-  fix_ENOSPC
-  fix_locale
+  install_linux_brew_extra_packages
+  extra_env_setup
 }
 
-prepare_ubuntu_env_gui()
+prepare_debian_env_gui()
 {
   ppas=(
     ppa:jtaylor/keepass     # KeyPass2
     ppa:zeal-developers/ppa # Zeal
   )
-  ubuntu_add_PPAs
+  debian_add_PPAs
 
-  # Sublime Text 3 (Stable)
+  # Sublime Text 3 & Sublime Merge (Stable)
   wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
   echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
 
@@ -84,8 +114,9 @@ prepare_ubuntu_env_gui()
     kdiff3
     keepass2
     oneko
+    sublime-merge
     sublime-text
     zeal
   )
-  ubuntu_install_pkgs
+  debian_install_pkgs
 }

@@ -124,31 +124,30 @@ util_setup()
   echo 'Done.'
 }
 
-env_setup()
+basic_env_setup()
 {
-  git_setup
-  rbenv_setup
-  pyenv_setup
-  nodenv_setup
-  jenv_setup
-  tmux_setup
-  tig_setup
-  vim_setup
   ssh_setup
   bashit_setup
   zgen_setup
+  tmux_setup
+  vim_setup
+  git_setup
+  tig_setup
+  nodenv_setup
+  pyenv_setup
+  rbenv_setup
+}
+
+extra_env_setup()
+{
+  jenv_setup
   util_setup
 
   install_common_packages
 }
 
-basic_setup()
+env_setup()
 {
-  git_setup
-  tmux_setup
-  tig_setup
-  vim_setup
-  ssh_setup
-  bashit_setup
-  zgen_setup
+  basic_env_setup
+  extra_env_setup
 }

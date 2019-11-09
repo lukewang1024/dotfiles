@@ -2,6 +2,28 @@ source "$partial_dir/env.sh"
 source "$partial_dir/nix.sh"
 source "$partial_dir/macos-defaults.sh"
 
+prepare_macos_env()
+{
+  case $1 in
+    'cli')
+      prepare_macos_env_cli
+      ;;
+    'gui')
+      prepare_macos_env_gui
+      ;;
+    'game')
+      setup_macos_gaming
+      ;;
+    'all')
+      prepare_macos_env_cli
+      prepare_macos_env_gui
+      ;;
+    *)
+      prepare_macos_env_cli
+      ;;
+  esac
+}
+
 prepare_macos_env_cli()
 {
   exists brew || ( \

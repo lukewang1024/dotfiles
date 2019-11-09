@@ -22,94 +22,67 @@ if [ $# -lt 1 ]; then
   print_usage
 fi
 
-subroutines=()
-
-add_subroutine()
-{
-  local arg=$1
-  local funcCLI=$2
-  local funcGUI=$3
-  local funcGaming=$4
-
-  if [[ $arg == 'game' ]]; then
-    subroutines+=("$funcGaming")
-  else
-    if [[ $arg != 'gui' ]]; then
-      subroutines+=("$funcCLI")
-    fi
-
-    if [[ $arg == 'all' || $arg == 'gui' ]]; then
-      subroutines+=("$funcGUI")
-    fi
-  fi
-}
-
 case $1 in
   'basic')
     source "$partial_dir/env.sh"
-    subroutines+=('basic_setup')
-    ;;
-
-  'ubuntu')
-    source "$partial_dir/ubuntu.sh"
-    add_subroutine "$2" 'prepare_ubuntu_env_cli' 'prepare_ubuntu_env_gui'
-    ;;
-
-  'arch')
-    source "$partial_dir/arch.sh"
-    subroutines+=('config_pacman')
-    add_subroutine "$2" 'prepare_arch_env_cli' 'prepare_arch_env_gui' 'setup_arch_gaming'
+    basic_env_setup
     ;;
 
   'macos' | 'osx')
     source "$partial_dir/macos.sh"
-    add_subroutine "$2" 'prepare_macos_env_cli' 'prepare_macos_env_gui' 'setup_macos_gaming'
+    prepare_macos_env "$2"
+    ;;
+
+  'debian')
+    source "$partial_dir/debian.sh"
+    prepare_debian_env "$2"
+    ;;
+
+  'arch')
+    source "$partial_dir/arch.sh"
+    config_pacman
+    prepare_arch_env "$2"
     ;;
 
   'chromeos')
     source "$partial_dir/chromeos.sh"
-    subroutines+=('prepare_chromeos')
+    prepare_chromeos
     ;;
 
   'cygwin')
     source "$partial_dir/cygwin.sh"
-    subroutines+=('check_admin')
-    subroutines+=('setup_cygwin_env')
-    subroutines+=('install_sage')
-    subroutines+=('install_cygwin_packages')
+    check_admin
+    setup_cygwin_env
+    install_sage
+    install_cygwin_packages
     ;;
 
   'npmg')
     source "$partial_dir/pkg.sh"
-    subroutines+=('install_npm_packages')
+    install_npm_packages
     ;;
 
   'zgen')
     source "$partial_dir/shell.sh"
-    subroutines+=('zgen_setup')
+    zgen_setup
     ;;
 
   'zplug')
     source "$partial_dir/shell.sh"
-    subroutines+=('zplug_setup')
+    zplug_setup
     ;;
 
   'run')
     echo "Run '$3' in '$partial_dir/$2.sh'..."
     echo
     source "$partial_dir/$2.sh"
-    subroutines+=("$3")
+    eval "$3"
     ;;
 
   *)
     print_usage
     ;;
 esac
-
-# Run the pushed subroutines one by one
-for i in "${subroutines[@]}"; do
-  eval "$i"
-done
 
 echo 'All jobs done. Have a nice day...'
 exit 0

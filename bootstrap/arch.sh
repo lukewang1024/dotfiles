@@ -19,6 +19,28 @@ aur_install_pkgs()
   unset pkgs
 }
 
+prepare_arch_env()
+{
+  case $1 in
+    'cli')
+      prepare_arch_env_cli
+      ;;
+    'gui')
+      prepare_arch_env_gui
+      ;;
+    'game')
+      setup_arch_gaming
+      ;;
+    'all')
+      prepare_arch_env_cli
+      prepare_arch_env_gui
+      ;;
+    *)
+      prepare_arch_env_cli
+      ;;
+  esac
+}
+
 prepare_arch_env_cli()
 {
   pkgs=(
