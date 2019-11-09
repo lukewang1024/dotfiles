@@ -12,18 +12,34 @@ $ ~/.dotfiles/init macos # Bootstrap MacOS CLI environment
 
 ```
 ./init [platform] [option]
+
 List of platforms:
-  macos | osx - MacOS
-  cygwin      - Cygwin
-  ubuntu      - Ubuntu
+
+  macos | osx - macOS
+  debian      - Debian
   arch        - Arch Linux
+  chromeos    - ChromeOS (requires developer mode)
+  cygwin      - Cygwin
+
 List of options:
-  cli  - Prepare CLI environment only (default)
+
+  core - Prepare core environment only (default)
+  cli  - Prepare CLI environment only
   gui  - Prepare GUI environment only
   all  - Prepare both environments
   game - Setup some games
+
 Other tasks:
-  npmg - Install global npm packages (in case of version switch in nvm)
+
+  basic - Only link rc files to $HOME
+  npmg  - Install global npm packages (in case of version switch in nvm)
+  zgen  - Use zgen as preferred zsh plugin manager
+  zplug - Use zplug as preferred zsh plugin manager
+  run   - Run arbitrary function in any bootstrap scripts
+    `./init run [module] [task]`, below are tasks available:
+    `macos backup_automator_stuff`: Backup Automator stuff to Dropbox
+    `macos install_mac_wechat_plugin`: Tweak WeChat to save login session
+
 ```
 
 - Create a file in `~/.rc.local` to override configs from `~/.dotfiles/config/shared/rc.sh`.

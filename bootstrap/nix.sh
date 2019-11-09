@@ -1,18 +1,58 @@
 install_nix_brew_runtimes()
 {
   local pkgs=(
+    go
     node
     python
     python@2
     ruby
+    rust
   )
   brew install `join ' ' "${pkgs[@]}"`
 }
 
-install_nix_brew_packages()
+install_nix_brew_core_packages()
 {
-  brew tap wtfutil/wtfutil
+  local pkgs=(
+    bash
+    diff-so-fancy
+    fasd
+    fd
+    fzf
+    git
+    git-extras
+    git-flow-avh
+    htop
+    httpie
+    icdiff
+    imagemagick
+    jq
+    less
+    lsd
+    nano
+    openssh
+    peco
+    percol
+    prettyping
+    ranger
+    rsync
+    the_silver_searcher
+    tig
+    tldr
+    tmux
+    urlview
+    vim
+    wdiff
+    wget
+    xsv
+    yarn
+    zsh
+  )
+  brew install `join ' ' "${pkgs[@]}"`
+}
 
+install_nix_brew_extra_packages()
+{
   local pkgs=(
     ansifilter
     apache-spark
@@ -20,7 +60,6 @@ install_nix_brew_packages()
     awscli
     axel
     azure-cli
-    bash
     bash-completion
     bat
     binutils
@@ -33,14 +72,11 @@ install_nix_brew_packages()
     cpanminus
     cpulimit
     ddgr
-    diff-so-fancy
     diffutils
     dive
     ed
     exiftool
     extract_url
-    fasd
-    fd
     ffmpeg
     figlet
     file-formula
@@ -48,15 +84,11 @@ install_nix_brew_packages()
     fish
     fpp
     fswatch
-    fzf
     gawk
     ghi
     gifsicle
     gist
-    git
     git-appraise
-    git-extras
-    git-flow-avh
     git-lfs
     git-quick-stats
     glances
@@ -65,28 +97,20 @@ install_nix_brew_packages()
     gnu-tar
     gnu-which
     gnutls
-    go
     googler
     graphviz
     grep
     gzip
     haproxy
     hashcat
-    htop
-    httpie
     httpstat
     hub
     hyperfine
-    icdiff
-    imagemagick
     inetutils
     irssi
     jpegoptim
-    jq
     kubernetes-cli
-    less
     lolcat
-    lsd
     make
     media-info
     midnight-commander
@@ -98,7 +122,6 @@ install_nix_brew_packages()
     multitail
     mutt
     mycli
-    nano
     ncdu
     ncmpcpp
     neofetch
@@ -108,51 +131,39 @@ install_nix_brew_packages()
     nyancat
     offlineimap
     open-mpi
-    openssh
     p7zip
     pandoc
-    peco
-    percol
     pgcli
-    prettyping
     progress
     proxychains-ng
     qpdf
-    ranger
     redis
     ripgrep
-    rsync
     rtv
     sachaos/todoist/todoist
     shadowsocks-libev
     shellcheck
     spark
     testdisk
-    the_silver_searcher
     thefuck
-    tig
-    tldr
-    tldr
     tmate
-    tmux
     tpp
     translate-shell
     tree
     unzip
-    urlview
-    vim
     w3m
     watch
-    wdiff
-    wget
     wtf
     wtfutil
-    xsv
-    yarn
     you-get
     youtube-dl
-    zsh
     zsh-completions
   )
   brew install `join ' ' "${pkgs[@]}"`
+}
+
+install_nix_brew_packages()
+{
+  install_nix_brew_core_packages
+  install_nix_brew_extra_packages
 }
