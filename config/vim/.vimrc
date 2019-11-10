@@ -7,26 +7,29 @@ filetype off                  " required
 call plug#begin('~/.vim/plugged')
 
 " Plugins
-Plug 'bling/vim-airline'
-Plug 'christoomey/vim-tmux-navigator'
+Plug 'w0rp/ale'
+Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
 Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
-Plug 'junegunn/vim-easy-align'
-Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
-Plug 'prettier/vim-prettier', { 'do': 'yarn install', 'for': ['javascript', 'typescript', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
+"Plug 'itchyny/lightline.vim'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-Plug 'sheerun/vim-polyglot'
-Plug 'Shougo/unite.vim'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'wellle/targets.vim'
 Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
-Plug 'terryma/vim-multiple-cursors'
-Plug 'tmux-plugins/vim-tmux-focus-events'
+Plug 'bling/vim-airline'
+"Plug 'bagrat/vim-buffet'
+Plug 'tpope/vim-commentary'
+Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-fugitive'
+Plug 'terryma/vim-multiple-cursors'
+Plug 'sheerun/vim-polyglot'
+Plug 'prettier/vim-prettier', { 'do': 'yarn install', 'for': ['javascript', 'typescript', 'css', 'less', 'scss', 'json', 'graphql', 'markdown', 'vue', 'yaml', 'html'] }
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
-Plug 'wellle/targets.vim'
-Plug 'w0rp/ale'
+Plug 'tmux-plugins/vim-tmux-focus-events'
+Plug 'christoomey/vim-tmux-navigator'
 
 " load vim-devicons last so plugins are patched
 Plug 'ryanoasis/vim-devicons'
@@ -38,16 +41,110 @@ call plug#end()
 set number         " show line numbers in vim
 set relativenumber " show relative line numbers
 set hlsearch       " highlight all matches
+set noshowmode     " hide '-- INSERT --'
+set exrc           " allow project specific vimrc
+set secure         " be more secure against project specific vimrc
+set mouse=a        " enable mouse support
 
-""""""""""""""""""
-" vim-easy-align "
-""""""""""""""""""
+let mapleader = ","
 
-" Start interactive EasyAlign in visual mode (e.g. vipga)
-xmap ga <Plug>(EasyAlign)
+nnoremap <CR> :noh<CR><CR>
 
-" Start interactive EasyAlign for a motion/text object (e.g. gaip)
-nmap ga <Plug>(EasyAlign)
+"""""""
+" ALE "
+"""""""
+
+let g:ale_sign_error = '❌'
+let g:ale_sign_warning = '⚠️'
+let g:ale_linters = {
+\  'typescript': ['tslint']
+\}
+let g:ale_fixers = {
+\  '*': ['remove_trailing_lines', 'trim_whitespace'],
+\  'javascript': ['prettier', 'eslint'],
+\  'typescript': ['prettier', 'tslint']
+\}
+let g:ale_completion_enabled = 1
+let g:ale_completion_tsserver_autoimport = 1
+
+nmap <silent> [c <Plug>(ale_previous_wrap)
+nmap <silent> ]c <Plug>(ale_next_wrap)
+nmap <F6> <Plug>(ale_fix)
+
+"""""""
+" COC "
+"""""""
+
+set updatetime=300
+
+""""""""""""""""
+" EditorConfig "
+""""""""""""""""
+
+let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
+
+"""""""
+" fzf "
+"""""""
+
+nnoremap <C-p> :Files<CR>
+nnoremap <Leader>b :Buffers<CR>
+nnoremap <Leader>h :History<CR>
+nnoremap <Leader>t :BTags<CR>
+nnoremap <Leader>T :Tags<CR>
+
+"""""""""""""""""
+" lightline.vim "
+"""""""""""""""""
+
+let g:lightline = {
+\  'component': {
+\    'lineinfo': ' %3l:%-2v',
+\  },
+\  'component_function': {
+\    'readonly': 'LightlineReadonly',
+\    'fugitive': 'LightlineFugitive'
+\  },
+\  'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+\  'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" },
+\  'enable': {
+\    'tabline': 0
+\  }
+\}
+
+function! LightlineReadonly()
+  return &readonly ? '' : ''
+endfunction
+
+function! LightlineFugitive()
+  if exists('*fugitive#head')
+    let branch = fugitive#head()
+    return branch !=# '' ? ''.branch : ''
+  endif
+  return ''
+endfunction
+
+""""""""""""
+" NerdTree "
+""""""""""""
+
+let NERDTreeShowHidden=1
+
+map <Leader>n :NERDTreeToggle<CR>
+map <Leader>m :NERDTreeFind<CR>
+
+" Open NERDTree automatically when vim starts up on opening a directory
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
+
+" Close vim if the only window left open is a NERDTree
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+""""""""""""
+" Prettier "
+""""""""""""
+
+let g:prettier#autoformat = 0
 
 """""""""""""
 " UltraSnip "
@@ -61,32 +158,53 @@ let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
 
-"""""""
-" ALE "
-"""""""
+"""""""""""""""
+" vim-airline "
+"""""""""""""""
 
-let g:ale_sign_error = '❌'
-let g:ale_sign_warning = '⚠️'
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 
-nmap <silent> [c <Plug>(ale_previous_wrap)
-nmap <silent> ]c <Plug>(ale_next_wrap)
+""""""""""""""
+" vim-buffet "
+""""""""""""""
 
-nmap <F6> <Plug>(ale_fix)
+"let g:buffet_always_show_tabline = 0
+"let g:buffet_show_index = 1
+"let g:buffet_powerline_separators = 1
+"let g:buffet_tab_icon = "\uf00a"
+"let g:buffet_left_trunc_icon = "\uf0a8"
+"let g:buffet_right_trunc_icon = "\uf0a9"
 
-"""""""
-" fzf "
-"""""""
+" Tab shortcuts
+"nmap <leader>1 <Plug>BuffetSwitch(1)
+"nmap <leader>2 <Plug>BuffetSwitch(2)
+"nmap <leader>3 <Plug>BuffetSwitch(3)
+"nmap <leader>4 <Plug>BuffetSwitch(4)
+"nmap <leader>5 <Plug>BuffetSwitch(5)
+"nmap <leader>6 <Plug>BuffetSwitch(6)
+"nmap <leader>7 <Plug>BuffetSwitch(7)
+"nmap <leader>8 <Plug>BuffetSwitch(8)
+"nmap <leader>9 <Plug>BuffetSwitch(9)
+"nmap <leader>0 <Plug>BuffetSwitch(10)
 
-nnoremap <C-p> :Files<CR>
-nnoremap <Leader>b :Buffers<CR>
-nnoremap <Leader>h :History<CR>
-nnoremap <Leader>t :BTags<CR>
-nnoremap <Leader>T :Tags<CR>
+" Navigation shortcuts
+noremap <Tab> :bn<CR>
+noremap <S-Tab> :bp<CR>
+"noremap <Leader><Tab> :Bw<CR>
+"noremap <Leader><S-Tab> :Bw!<CR>
+"noremap <C-t> :tabnew split<CR>
 
-" prettier
-let g:prettier#autoformat = 0
+""""""""""""""""""
+" vim-easy-align "
+""""""""""""""""""
 
-" editorconfig
-let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
+
 
 " syntax:ssDquote
