@@ -101,4 +101,8 @@ zplug load
 
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
-source ~/.dotfiles/config/shared/ssh-agent-connect.zsh
+# Config ssh-agent on local machine
+[ -z "$SSH_CLIENT" ] && source ~/.dotfiles/config/shared/ssh-agent-connect.zsh
+
+# Launch tmux on remote session
+[ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux

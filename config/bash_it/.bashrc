@@ -26,4 +26,8 @@ source "$BASH_IT"/bash_it.sh
 
 source ~/.dotfiles/config/shared/rc.bash
 
-source ~/.dotfiles/config/shared/ssh-agent-connect.bash
+# Config ssh-agent on local machine
+[ -z "$SSH_CLIENT" ] && source ~/.dotfiles/config/shared/ssh-agent-connect.bash
+
+# Launch tmux on remote session
+[ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux
