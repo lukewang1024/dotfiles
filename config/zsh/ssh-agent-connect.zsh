@@ -1,4 +1,4 @@
-source ~/.dotfiles/config/shared/ssh-agent-connect.sh
+source "$config_dir/sh/ssh-agent-connect.sh"
 
 setKillSSHAgentHook()
 {
