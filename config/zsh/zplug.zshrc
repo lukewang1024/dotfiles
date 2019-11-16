@@ -1,6 +1,8 @@
+config_dir="$HOME/.dotfiles/config"
+
 source ~/.zplug/init.zsh
 
-source ~/.dotfiles/config/shared/rc.sh
+source "$config_dir/sh/rc.sh"
 
 # oh-my-zsh plugins
 zplug 'robbyrussell/oh-my-zsh', use:'lib/*.zsh'
@@ -91,7 +93,7 @@ fi
 
 zplug 'zsh-users/zsh-syntax-highlighting', defer:2
 zplug 'zsh-users/zsh-history-substring-search', defer:3, \
-  hook-load:'source ~/.dotfiles/config/shared/rc.zsh; source ~/.dotfiles/config/todoist/todoist_functions.sh'
+  hook-load:"source $config_dir/zsh/rc.zsh; source $config_dir/todoist/todoist_functions.sh"
 
 # Tip: Use `--verbose` upon `check` and `load` to debug issues
 if ! zplug check; then
@@ -102,7 +104,7 @@ zplug load
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source ~/.dotfiles/config/shared/ssh-agent-connect.zsh
+[ -z "$SSH_CLIENT" ] && source "$config_dir/zsh/ssh-agent-connect.zsh"
 
 # Launch tmux on remote session
 [ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux

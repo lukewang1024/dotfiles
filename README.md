@@ -42,7 +42,7 @@ Other tasks:
 
 ```
 
-- Create a file in `~/.rc.local` to override configs from `~/.dotfiles/config/shared/rc.sh`.
+- Create a file in `~/.rc.local` to override configs from `~/.dotfiles/config/sh/rc.sh`.
 - Create a file in `~/.zshrc.local` to override configs from `~/.zshrc`.
 
 ## What it does

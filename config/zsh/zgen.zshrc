@@ -1,9 +1,11 @@
+config_dir="$HOME/.dotfiles/config"
+
 source ~/.zgen/zgen.zsh
 
 if ! zgen saved; then
   echo 'Creating a zgen save'
 
-  zgen load ~/.dotfiles/config/shared/rc.sh
+  zgen load "$config_dir/sh/rc.sh"
 
   zgen oh-my-zsh
 
@@ -99,15 +101,15 @@ EOPLUGINS
   # These plugin needs to be loaded last and THE ORDER MATTERS
   zgen load zsh-users/zsh-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
-  zgen load ~/.dotfiles/config/shared/rc.zsh
-  zgen load ~/.dotfiles/config/todoist/todoist_functions.sh
+  zgen load "$config_dir/zsh/rc.zsh"
+  zgen load "$config_dir/todoist/todoist_functions.sh"
   [ -f ~/.zshrc.local ] && zgen load ~/.zshrc.local
 
   zgen save
 fi
 
 # Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source ~/.dotfiles/config/shared/ssh-agent-connect.zsh
+[ -z "$SSH_CLIENT" ] && source "$config_dir/zsh/ssh-agent-connect.zsh"
 
 # Launch tmux on remote session
 [ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux

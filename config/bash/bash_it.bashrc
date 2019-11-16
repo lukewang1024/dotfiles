@@ -1,13 +1,12 @@
-source ~/.dotfiles/config/shared/rc.sh
+config_dir="$HOME/.dotfiles/config"
 
-# Only set paths & aliases for non-login shell
-shopt -q login_shell || return
+source "$config_dir/sh/rc.sh"
 
 # Path to the bash it configuration
 export BASH_IT="$HOME/.bash_it"
 
 # Lock and Load a custom theme file
-export BASH_IT_THEME="$HOME/.dotfiles/config/bash_it/pure_prompt.bash"
+export BASH_IT_THEME="$config_dir/bash/pure_prompt.bash"
 
 # Don't check mail when opening terminal.
 unset MAILCHECK
@@ -22,12 +21,12 @@ export TODO="t"
 export SCM_CHECK=true
 
 # Load Bash It
-source "$BASH_IT"/bash_it.sh
+source "$BASH_IT/bash_it.sh"
 
-source ~/.dotfiles/config/shared/rc.bash
+source "$config_dir/bash/rc.bash"
 
 # Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source ~/.dotfiles/config/shared/ssh-agent-connect.bash
+[ -z "$SSH_CLIENT" ] && source "$config_dir/bash/ssh-agent-connect.bash"
 
 # Launch tmux on remote session
 [ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux

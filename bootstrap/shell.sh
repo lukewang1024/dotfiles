@@ -46,8 +46,8 @@ zgen_setup()
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/shared/.zprofile" ~/.zprofile
-  backup_then_symlink "$config_dir/zgen/.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/.zprofile" ~/.zprofile
+  backup_then_symlink "$config_dir/zsh/zgen.zshrc" ~/.zshrc
   echo 'Done.'
 
   pure_prompt_setup
@@ -65,8 +65,8 @@ zplug_setup()
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/shared/.zprofile" ~/.zprofile
-  backup_then_symlink "$config_dir/zplug/.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/.zprofile" ~/.zprofile
+  backup_then_symlink "$config_dir/zsh/zplug.zshrc" ~/.zshrc
   echo 'Done.'
 
   pure_prompt_setup
@@ -81,8 +81,8 @@ bashit_setup()
   echo 'Done.'
 
   printf 'Symlinking .bash_profile and .bashrc... '
-  backup_then_symlink "$config_dir/bash_it/.bash_profile" ~/.bash_profile
-  backup_then_symlink "$config_dir/bash_it/.bashrc" ~/.bashrc
+  backup_then_symlink "$config_dir/bash/bash_it.bash_profile" ~/.bash_profile
+  backup_then_symlink "$config_dir/bash/bash_it.bashrc" ~/.bashrc
   echo 'Done.'
 
   # Enable common plugins
