@@ -28,6 +28,7 @@ install_nix_brew_core_packages()
     imagemagick
     jq
     less
+    lf
     lsd
     nano
     openssh
@@ -141,6 +142,7 @@ install_nix_brew_extra_packages()
     ripgrep
     rtv
     sachaos/todoist/todoist
+    sc-im
     shadowsocks-libev
     shellcheck
     spark

@@ -204,6 +204,7 @@ prepare_macos_env_gui()
     switchhosts
     toau
     ubersicht
+    v2rayu
     vnc-viewer
     wkhtmltopdf
     xld

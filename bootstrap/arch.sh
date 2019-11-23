@@ -122,6 +122,9 @@ prepare_arch_env_cli()
     tree
     unrar
     unzip
+    v2ray
+    v2ray-domain-list-community
+    v2ray-geoip
     vagrant
     vim
     w3m
@@ -151,10 +154,12 @@ prepare_arch_env_cli()
     google-cloud-sdk
     hyperfine
     icdiff
+    lf-bin
     mons
     mycli
     peco
     pgcli
+    sc-im
     sparklines-git
     touchpad-state-git
     translate-shell
@@ -213,6 +218,7 @@ prepare_arch_env_gui()
     pa-applet
     polybar
     qutebrowser
+    qv2ray
     redshift
     rofi
     rofi-scripts

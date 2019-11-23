@@ -16,11 +16,10 @@ function install_scoop_packages
   scoop bucket add `
     extras `
     java `
+    versions `
     nerd-fonts `
-    nightlies `
     nirsoft `
     nonportable `
-    versions `
 
   scoop bucket add customize https://github.com/ChinLong/scoop-customize.git
 
@@ -69,6 +68,7 @@ function install_scoop_packages
     keepass `
     kitematic `
     kubectl `
+    lf `
     licecap `
     ln `
     losslesscut `
@@ -112,6 +112,7 @@ function install_scoop_packages
     touch `
     translucent-tb `
     unlocker `
+    v2rayn `
     vagrant `
     vcxsrv `
     vim `
