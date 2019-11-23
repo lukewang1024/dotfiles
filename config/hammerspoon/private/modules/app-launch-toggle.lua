@@ -103,7 +103,7 @@ setAppToggles(hyperAlt, {
   ['\''] = 'VNC Viewer',
   ['\\'] = 'Maipo',
   -- ['`'] = '',
-  ['0'] = 'ShadowsocksX-NG',
+  ['0'] = 'V2rayU',
   -- ['1'] = '',
   -- ['2'] = '',
   ['3'] = 'Fantastical',
