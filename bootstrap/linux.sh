@@ -30,6 +30,12 @@ install_i3ass()
   echo 'Done.'
 }
 
+install_st()
+{
+  sync_config_repo /tmp/st https://github.com/lukewang1024/st
+  (cd /tmp/st && sudo make install)
+}
+
 apply_app_configs()
 {
   backup_then_symlink "$config_dir/aria2" ~/.aria2
