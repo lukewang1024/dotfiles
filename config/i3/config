@@ -106,7 +106,7 @@ bindsym $hyper+y       $grun -i skype
 bindsym $hyper+z       $srun -i zeal -e 'zeal'
 
 bindsym $hyper+1       $srun -i gsimplecal -e 'gsimplecal'
-bindsym $hyper+0       $srun -i ss-qt5 -e 'ss-qt5'
+bindsym $hyper+0       $srun -i Qv2ray -e 'Qv2ray'
 
 bindsym $hyper+backslash  $srun -i keepassxc -e 'keepassxc'
 bindsym $hyper+semicolon  $grun -i termite -e 'termite'

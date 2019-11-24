@@ -119,4 +119,6 @@ prepare_debian_env_gui()
     zeal
   )
   debian_install_pkgs
+
+  install_st
 }

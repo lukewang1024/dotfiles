@@ -283,7 +283,6 @@ prepare_arch_env_gui()
     skypeforlinux-stable-bin
     slack-desktop
     spotify
-    st-luke-git
     sublime-text-dev
     sublime-merge
     ttf-ms-fonts
@@ -296,6 +295,7 @@ prepare_arch_env_gui()
   )
   aur_install_pkgs
 
+  install_st
   set_default_apps
 }
 
