@@ -46,8 +46,8 @@ zgen_setup()
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/.zprofile" ~/.zprofile
   backup_then_symlink "$config_dir/zsh/zgen.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
   echo 'Done.'
 
   pure_prompt_setup
@@ -65,8 +65,8 @@ zplug_setup()
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/.zprofile" ~/.zprofile
   backup_then_symlink "$config_dir/zsh/zplug.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
   echo 'Done.'
 
   pure_prompt_setup
