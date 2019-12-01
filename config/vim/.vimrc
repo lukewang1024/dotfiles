@@ -1,6 +1,3 @@
-set nocompatible              " be iMproved, required
-filetype off                  " required
-
 " Specify a directory for plugins
 " - For Neovim: ~/.local/share/nvim/plugged
 " - Avoid using standard Vim directory names like 'plugin'
@@ -16,6 +13,7 @@ Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
 "Plug 'itchyny/lightline.vim'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'Xuyuanp/nerdtree-git-plugin'
+Plug 'joshdick/onedark.vim'
 Plug 'wellle/targets.vim'
 Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 Plug 'bling/vim-airline'
@@ -51,22 +49,56 @@ Plug 'christoomey/vim-tmux-navigator'
 Plug 'ryanoasis/vim-devicons'
 
 " Initialize plugin system
+" Automatically executes `filetype plugin indent on` and `syntax enable`
 call plug#end()
 
-" Put your non-Plugin stuff after this line
+""""""""""""""""""""
+" non-Plugin stuff "
+""""""""""""""""""""
 
-set number         " show line numbers in vim
-set relativenumber " show relative line numbers
-set hlsearch       " highlight all matches
-set noshowmode     " hide '-- INSERT --'
-set exrc           " allow project specific vimrc
-set secure         " be more secure against project specific vimrc
-set mouse=a        " enable mouse support
-set pastetoggle=<F4>
+" be iMproved, enter the current millenium
+set nocompatible
 
+" one-dark for the win
+colorscheme onedark
+
+" show line numbers in vim
+set number
+
+" show relative line numbers
+set relativenumber
+
+" highlight all matches
+set hlsearch
+
+" hide '-- INSERT --'
+set noshowmode
+
+" search down into subfolders, provides tab-completion for all file-related tasks
+set path+=**
+
+" display all matching files when we tab complete
+set wildmenu
+
+" allow project specific vimrc
+set exrc
+
+" be more secure against project specific vimrc
+set secure
+
+" enable mouse support
+set mouse=a
+
+" use Comma as Leader key
 let mapleader = ","
 
+" <F11> - toggle paste option
+set pastetoggle=<F11>
+
+" <CR> - clear previous search highlight
 nnoremap <CR> :noh<CR><CR>
+
+" <Leader>q - close buffer without killing window
 map <Leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
 
 """""""
@@ -309,6 +341,7 @@ let g:UltiSnipsEditSplit="vertical"
 " vim-airline "
 """""""""""""""
 
+let g:airline_theme='onedark'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
