@@ -18,6 +18,7 @@ vim_setup()
 {
   printf 'Symlinking .vimrc... '
   backup_then_symlink "$config_dir/vim/.vimrc" ~/.vimrc
+  backup_then_symlink "$config_dir/nvim/coc-settings.json" ~/.vim/coc-settings.json
   backup_then_symlink "$config_dir/nvim" ~/.config/nvim
   echo 'Done.'
 

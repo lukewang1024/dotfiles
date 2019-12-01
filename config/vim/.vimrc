@@ -126,6 +126,16 @@ nmap <F6> <Plug>(ale_fix)
 " COC "
 """""""
 
+let g:coc_global_extensions = [
+\  'coc-eslint',
+\  'coc-json',
+\  'coc-pairs',
+\  'coc-prettier',
+\  'coc-snippets',
+\  'coc-tslint-plugin',
+\  'coc-tsserver',
+\  ]
+
 " if hidden is not set, TextEdit might fail.
 set hidden
 
@@ -255,6 +265,10 @@ nnoremap <silent> <space>j  :<C-u>CocNext<CR>
 nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list
 nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
+
+" Other commands
+command! -nargs=0 Prettier :CocCommand prettier.formatFile
+command! -nargs=0 ESLint   :CocCommand eslint.executeAutofix
 
 """"""""""""""""
 " EditorConfig "
