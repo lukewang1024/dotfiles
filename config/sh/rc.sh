@@ -32,6 +32,7 @@ exists()
 
 # Aliases
 alias cb=clipboard
+alias n=nvim
 alias sap='source ~/.agent-profile'
 alias ap='all_proxy=socks5://localhost:1080'
 alias ape='export all_proxy=socks5://localhost:1080'

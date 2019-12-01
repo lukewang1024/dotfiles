@@ -1,0 +1,7 @@
+{
+  "diagnostic.displayByAle": true,
+  "prettier.eslintIntegration": true,
+  "prettier.stylelintIntegration": true,
+  "prettier.tslintIntegration": true,
+  "suggest.noselect": false,
+}
