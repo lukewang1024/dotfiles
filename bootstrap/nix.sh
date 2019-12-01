@@ -13,6 +13,8 @@ install_nix_brew_runtimes()
 
 install_nix_brew_core_packages()
 {
+  brew tap beeftornado/rmtree
+
   local pkgs=(
     bash
     diff-so-fancy
@@ -131,6 +133,7 @@ install_nix_brew_extra_packages()
     nmap
     nyancat
     offlineimap
+    onefetch
     open-mpi
     p7zip
     pandoc

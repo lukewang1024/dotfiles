@@ -98,6 +98,7 @@ prepare_arch_env_cli()
     nghttp2
     nyancat
     offlineimap
+    onefetch
     openssh
     p7zip
     pamixer
