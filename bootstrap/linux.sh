@@ -49,6 +49,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/polybar" ~/.config/polybar
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
+  backup_then_symlink "$config_dir/tilda" ~/.config/tilda
   backup_then_symlink "$config_dir/vnc/.vncrc" ~/.vncrc
   backup_then_symlink "$config_dir/x/.xbindkeysrc" ~/.xbindkeysrc
   backup_then_symlink "$config_dir/x/.xinitrc" ~/.xinitrc
