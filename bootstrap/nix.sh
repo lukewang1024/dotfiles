@@ -33,6 +33,7 @@ install_nix_brew_core_packages()
     lf
     lsd
     nano
+    neovim
     openssh
     peco
     percol
@@ -128,7 +129,6 @@ install_nix_brew_extra_packages()
     ncdu
     ncmpcpp
     neofetch
-    neovim
     netcat
     nmap
     nyancat

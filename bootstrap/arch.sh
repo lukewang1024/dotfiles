@@ -95,6 +95,7 @@ prepare_arch_env_cli()
     multitail
     mutt
     ncmpcpp
+    neovim
     nghttp2
     nyancat
     offlineimap
@@ -111,6 +112,7 @@ prepare_arch_env_cli()
     progress
     proxychains-ng
     ranger
+    ripgrep
     rsync
     shadowsocks-libev
     shellcheck
