@@ -47,6 +47,7 @@ apply_app_configs()
   backup_then_symlink "$config_dir/mpv" ~/.config/mpv
   backup_then_symlink "$config_dir/polipo" ~/.config/polipo
   backup_then_symlink "$config_dir/polybar" ~/.config/polybar
+  backup_then_symlink "$config_dir/ranger" ~/.config/ranger
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
   backup_then_symlink "$config_dir/tilda" ~/.config/tilda

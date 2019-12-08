@@ -89,6 +89,7 @@ prepare_debian_env_cli()
     python-pip
     python3-pip
     rxvt-unicode-256color
+    w3m-img
   )
   debian_install_pkgs
 
