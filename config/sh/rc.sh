@@ -46,6 +46,7 @@ alias pping='prettyping --nolegend'
 alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 alias gitc='git --no-pager'
+alias gmtf='git mergetool --no-prompt --tool=fugitive'
 
 if [[ $OSTYPE == 'linux-gnu' ]]; then
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'
