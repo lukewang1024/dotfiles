@@ -15,7 +15,6 @@ Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'joshdick/onedark.vim'
 Plug 'wellle/targets.vim'
-Plug 'SirVer/ultisnips' | Plug 'honza/vim-snippets'
 Plug 'bling/vim-airline'
 "Plug 'bagrat/vim-buffet'
 Plug 'tpope/vim-commentary'
@@ -23,23 +22,6 @@ Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-fugitive'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'sheerun/vim-polyglot'
-Plug 'prettier/vim-prettier', {
-\  'do': 'yarn install',
-\  'branch': 'release/1.x',
-\  'for': [
-\    'javascript',
-\    'typescript',
-\    'css',
-\    'less',
-\    'scss',
-\    'json',
-\    'graphql',
-\    'markdown',
-\    'vue',
-\    'yaml',
-\    'html'
-\  ]
-\}
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tmux-plugins/vim-tmux-focus-events'
@@ -80,6 +62,9 @@ set path+=**
 " display all matching files when we tab complete
 set wildmenu
 
+" fold functions by syntax
+set foldmethod=syntax
+
 " allow project specific vimrc
 set exrc
 
@@ -108,15 +93,15 @@ map <Leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
 let g:ale_linters = {
-\  'typescript': ['tslint']
+\  'javascript': [],
+\  'typescript': [],
 \}
+let g:ale_linters_ignore = {}
 let g:ale_fixers = {
 \  '*': ['remove_trailing_lines', 'trim_whitespace'],
 \  'javascript': ['prettier', 'eslint'],
-\  'typescript': ['prettier', 'tslint']
+\  'typescript': ['prettier', 'tslint'],
 \}
-let g:ale_completion_enabled = 1
-let g:ale_completion_tsserver_autoimport = 1
 
 nmap <silent> [c <Plug>(ale_previous_wrap)
 nmap <silent> ]c <Plug>(ale_next_wrap)

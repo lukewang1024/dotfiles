@@ -40,6 +40,8 @@
   tool = "Sublime Merge"
 [mergetool]
   prompt = false
+[mergetool "fugitive"]
+  cmd = vim -f -c \"Gdiff\" \"$MERGED\"
 [mergetool "Sublime Merge"]
   cmd = smerge mergetool \"$BASE\" \"$REMOTE\" \"$LOCAL\" -o \"$MERGED\"
 [push]
