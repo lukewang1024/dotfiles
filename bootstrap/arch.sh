@@ -286,8 +286,8 @@ prepare_arch_env_gui()
     skypeforlinux-stable-bin
     slack-desktop
     spotify
-    sublime-text-dev
     sublime-merge
+    sublime-text-dev
     ttf-ms-fonts
     typora
     urxvt-fullscreen
