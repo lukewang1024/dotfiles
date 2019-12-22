@@ -326,6 +326,13 @@ bindsym $super+Control+F2 $exe dmenu-display secondary
 bindsym $super+Control+F3 $exe dmenu-display extend-right
 bindsym $super+Control+F4 $exe dmenu-display
 
+set $lightup xbacklight -inc 10
+set $lightdown xbacklight -dec 10
+
+# brightness
+bindsym $super+F1 $exe $lightdown
+bindsym $super+F2 $exe $lightup
+
 # >> Screenshots and recording
 
 set $maimArg --hidecursor | tee ~/Pictures/$(date +%s).png | xclip -selection clipboard -target image/png
@@ -408,12 +415,12 @@ bindsym $super+bracketleft $exe $lilbak
 bindsym $super+bracketright $exe $lilfor
 bindsym $super+Shift+bracketleft $exe $bigbak
 bindsym $super+Shift+bracketright $exe $bigfor
-bindsym $super+F5 $exe $prev
-bindsym $super+F6 $exe $next
-bindsym $super+F7 $exe $toggle
-bindsym $super+F9 $exe $mute
-bindsym $super+F10 $exe $dec
-bindsym $super+F11 $exe $inc
+bindsym $super+F7 $exe $prev
+bindsym $super+F8 $exe $toggle
+bindsym $super+F9 $exe $next
+bindsym $super+F10 $exe $mute
+bindsym $super+F11 $exe $dec
+bindsym $super+F12 $exe $inc
 
 # >> Bar
 
@@ -508,8 +515,8 @@ bindsym XF86Mail              $exe $xf86_default
 bindsym XF86MailForward       $exe $xf86_default
 bindsym XF86MenuKB            $exe $xf86_default
 bindsym XF86Messenger         $exe $xf86_default
-bindsym XF86MonBrightnessDown $exe xbacklight -dec 10
-bindsym XF86MonBrightnessUp   $exe xbacklight -inc 10
+bindsym XF86MonBrightnessDown $exe $lightdown
+bindsym XF86MonBrightnessUp   $exe $lightup
 bindsym XF86MyComputer        $exe $xf86_default
 bindsym XF86New               $exe $xf86_default
 bindsym XF86Open              $exe $xf86_default
