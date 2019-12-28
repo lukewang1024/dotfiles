@@ -40,7 +40,6 @@ case $1 in
 
   'arch')
     source "$partial_dir/arch.sh"
-    config_pacman
     prepare_arch_env "$2"
     ;;
 

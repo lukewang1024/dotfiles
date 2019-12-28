@@ -15,12 +15,15 @@ pacman_install_pkgs()
 
 aur_install_pkgs()
 {
-  yay -Sy --needed `join ' ' "aur/${pkgs[@]}"`
+  pkgs=( "${pkgs[@]/#/aur/}" )
+  yay -Sy --needed `join ' ' "${pkgs[@]}"`
   unset pkgs
 }
 
 prepare_arch_env()
 {
+  config_pacman
+
   case $1 in
     'cli')
       prepare_arch_env_cli
@@ -52,7 +55,6 @@ prepare_arch_env_cli()
     cloc
     cmatrix
     cmus
-    command-not-found
     cowsay
     cpanminus
     cpulimit
@@ -79,8 +81,7 @@ prepare_arch_env_cli()
     hub
     imagemagick
     irssi
-    jdk8-openjdk
-    jdk9-openjdk
+    jdk-openjdk
     jpegoptim
     jq
     kubectl
@@ -99,13 +100,13 @@ prepare_arch_env_cli()
     nghttp2
     nyancat
     offlineimap
-    onefetch
     openssh
     p7zip
     pamixer
     pandoc
     percol
     perl-image-exiftool
+    pkgfile
     playerctl
     polipo
     prettyping
@@ -151,6 +152,7 @@ prepare_arch_env_cli()
     downgrader
     fpp
     fswatch
+    git-bug-bin
     git-lfs
     git-quick-stats
     gitflow-avh
@@ -160,6 +162,7 @@ prepare_arch_env_cli()
     lf-bin
     mons
     mycli
+    onefetch
     peco
     pgcli
     sc-im

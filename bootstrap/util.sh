@@ -1,5 +1,6 @@
 # Util join function
 function join { local IFS="$1"; shift; echo "$*"; }
+function join_by_multi { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
 
 exists()
 {

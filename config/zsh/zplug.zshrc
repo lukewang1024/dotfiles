@@ -82,6 +82,7 @@ fi
 if [[ $OSTYPE == 'linux-gnu' ]]; then
   if [ -f /etc/arch-release ]; then
     zplug 'plugins/archlinux', from:oh-my-zsh
+    zplug "/usr/share/doc/pkgfile/command-not-found.zsh", from:local
   elif [ -f /etc/debian_version ]; then
     if [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
       zplug 'plugins/ubuntu', from:oh-my-zsh
@@ -89,6 +90,10 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   elif [ -f /etc/fedora-release ]; then
     zplug 'plugins/dnf', from:oh-my-zsh
   fi
+fi
+
+if [ -f ~/.zshrc.local ]; then
+  zplug '~/.zshrc.local', from:local
 fi
 
 zplug 'zsh-users/zsh-syntax-highlighting', defer:2
@@ -100,8 +105,6 @@ if ! zplug check; then
   zplug install
 fi
 zplug load
-
-[ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # Config ssh-agent on local machine
 [ -z "$SSH_CLIENT" ] && source "$config_dir/zsh/ssh-agent-connect.zsh"

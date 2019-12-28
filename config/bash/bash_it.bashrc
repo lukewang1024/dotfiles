@@ -2,6 +2,12 @@ config_dir="$HOME/.dotfiles/config"
 
 source "$config_dir/sh/rc.sh"
 
+if [[ $OSTYPE == 'linux-gnu' ]]; then
+  if [ -f /etc/arch-release ]; then
+    source /usr/share/doc/pkgfile/command-not-found.bash
+  fi
+fi
+
 # Path to the bash it configuration
 export BASH_IT="$HOME/.bash_it"
 
