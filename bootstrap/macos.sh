@@ -161,8 +161,10 @@ prepare_macos_env_gui()
     soundflowerbed
     squirrel
 
-    # Editor
+    # Editor & IDE
+    android-studio
     atom
+    electron-fiddle
     mweb2
     notable
     nvalt
@@ -175,7 +177,6 @@ prepare_macos_env_gui()
     android-file-transfer
     android-platform-tools
     android-sdk
-    android-studio
     androidtool
     appcleaner
     balenaetcher
@@ -284,6 +285,7 @@ set_macos_configs()
   sync_config_repo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
   backup_then_symlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
+  backup_then_symlink "$config_dir/ranger/macos" ~/.config/ranger
 
   # Handy scripts
   backup_then_symlink "$util_dir/macos/virtualbox-kext" ~/bin/virtualbox-kext
@@ -291,7 +293,6 @@ set_macos_configs()
   better_macos_defaults
   brew_multi_user_permission
   fix_battery_drain_over_sleep
-  install_mac_wechat_plugin
 }
 
 brew_multi_user_permission()

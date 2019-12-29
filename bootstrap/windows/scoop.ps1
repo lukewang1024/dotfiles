@@ -82,6 +82,7 @@ function install_scoop_packages
     nodejs-lts `
     notable `
     now-cli `
+    nvm `
     openhardwaremonitor `
     openssh `
     oraclejdk `

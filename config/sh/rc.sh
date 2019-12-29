@@ -21,6 +21,7 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   export PATH="$LINUXBREW/sbin:$PATH"
   export PATH="$LINUXBREW/bin:$PATH"
 fi
+export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
@@ -47,6 +48,11 @@ alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 alias gitc='git --no-pager'
 alias gmtf='git mergetool --no-prompt --tool=fugitive'
+
+alias create-react-app='npx create-react-app'
+alias react-native='npx react-native'
+alias sb='npx -p @storybook/cli sb'
+alias semantic-release-cli='npx semantic-release-cli'
 
 if [[ $OSTYPE == 'linux-gnu' ]]; then
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'

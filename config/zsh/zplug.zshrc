@@ -71,6 +71,7 @@ else # *nix
   zplug 'plugins/pyenv', from:oh-my-zsh
   zplug 'plugins/jenv', from:oh-my-zsh
   zplug 'jsahlen/nodenv.plugin.zsh'
+  zplug 'lukewang1024/zsh-goenv'
 fi
 
 if [[ $OSTYPE == 'darwin'* ]]; then

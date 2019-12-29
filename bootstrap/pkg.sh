@@ -14,7 +14,7 @@ install_gem_packages()
   local pkgs=(
     boom
     gas
-    tmuxinator
+    iStats
   )
 
   gem install `join ' ' "${pkgs[@]}"`
@@ -31,7 +31,6 @@ install_npm_packages()
 
   local pkgs=(
     @angular/cli
-    @storybook/cli
     asar
     azure-functions-core-tools@core
     bower
@@ -40,11 +39,9 @@ install_npm_packages()
     coinmon
     commitizen
     create-dmg
-    create-react-app
-    create-react-native-app
     depcheck
     english-dictionary-cli
-    exp
+    expo-cli
     express-generator
     gatsby-cli
     git-file-history
@@ -58,6 +55,7 @@ install_npm_packages()
     loopback-cli
     madge
     majestic
+    mermaid.cli
     nativefier
     nativescript
     nls
@@ -70,8 +68,6 @@ install_npm_packages()
     pangu
     pm2
     react-devtools
-    react-native-cli
-    semantic-release-cli
     serve
     serverless
     source-map-explorer

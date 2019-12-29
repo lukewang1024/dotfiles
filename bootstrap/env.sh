@@ -105,6 +105,25 @@ nodenv_setup()
   echo 'Done.'
 }
 
+goenv_setup()
+{
+  blank_lines
+  echo 'Installing goenv...'
+  local GH='https://github.com'
+  local ROOT="$HOME/.goenv"
+  local PLUGINS="$ROOT/plugins"
+  sync_config_repo "$ROOT" "$GH/syndbg/goenv"
+  echo 'Done.'
+}
+
+rustup_setup()
+{
+  blank_lines
+  echo 'Installing rustup...'
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  echo 'Done.'
+}
+
 jenv_setup()
 {
   blank_lines
@@ -136,6 +155,8 @@ basic_env_setup()
   nodenv_setup
   pyenv_setup
   rbenv_setup
+  goenv_setup
+  rustup_setup
 }
 
 extra_env_setup()
