@@ -11,10 +11,10 @@ better_macos_defaults()
   #################
 
   # Disable transparency in the menu bar and elsewhere on Yosemite
-  defaults write com.apple.universalaccess reduceTransparency -bool true
+  sudo defaults write com.apple.universalaccess reduceTransparency -bool true
 
   # Disable motion during workspace switching
-  defaults write com.apple.universalaccess reduceMotion -bool true
+  sudo defaults write com.apple.universalaccess reduceMotion -bool true
 
   # Set highlight color to green
   defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.568600"

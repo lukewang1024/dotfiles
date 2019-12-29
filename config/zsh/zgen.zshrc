@@ -78,6 +78,7 @@ EOPLUGINS
     zgen oh-my-zsh plugins/pyenv
     zgen oh-my-zsh plugins/jenv
     zgen load jsahlen/nodenv.plugin.zsh
+    zgen load lukewang1024/zsh-goenv
   fi
 
   if [[ $OSTYPE == 'darwin'* ]]; then

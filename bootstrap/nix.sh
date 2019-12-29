@@ -6,7 +6,6 @@ install_nix_brew_runtimes()
     python
     python@2
     ruby
-    rust
   )
   brew install `join ' ' "${pkgs[@]}"`
 }
@@ -44,6 +43,7 @@ install_nix_brew_core_packages()
     tig
     tldr
     tmux
+    tmuxinator
     urlview
     vim
     wdiff

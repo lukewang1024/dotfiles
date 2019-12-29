@@ -85,7 +85,7 @@ setAppToggles(hyperAlt, {
   o = 'Microsoft OneNote',
   p = 'Postman',
   -- q = '',
-  -- r = '',
+  r = 'Microsoft Remote Desktop',
   -- s = '',
   -- t = '',
   -- u = '',

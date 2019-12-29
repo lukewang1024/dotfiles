@@ -116,6 +116,7 @@ let g:coc_global_extensions = [
 \  'coc-json',
 \  'coc-pairs',
 \  'coc-prettier',
+\  'coc-rust-analyzer',
 \  'coc-snippets',
 \  'coc-tslint-plugin',
 \  'coc-tsserver',
