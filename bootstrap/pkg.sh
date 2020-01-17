@@ -15,6 +15,7 @@ install_gem_packages()
     boom
     gas
     iStats
+    mdless
   )
 
   gem install `join ' ' "${pkgs[@]}"`
@@ -60,6 +61,7 @@ install_npm_packages()
     nativescript
     nls
     now
+    npkill
     npm-check
     npm-check-updates
     npm-quick-run

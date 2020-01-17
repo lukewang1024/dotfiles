@@ -86,7 +86,6 @@ prepare_macos_env_gui()
     880001334  # Reeder 3
     937984704  # Amphetamine
     998804308  # Blinks
-    1012930195 # HandShaker
     1025306797 # Resize Master
     1147396723 # WhatsApp
     1176895641 # Spark
@@ -174,7 +173,6 @@ prepare_macos_env_gui()
 
     # Utility
     airdroid
-    android-file-transfer
     android-platform-tools
     android-sdk
     androidtool
@@ -194,6 +192,7 @@ prepare_macos_env_gui()
     lepton
     losslesscut
     onyx
+    openmtp
     pdf-expert
     pdfsam-basic
     proxifier
@@ -244,6 +243,7 @@ prepare_macos_env_gui()
     chromium
     firefox
     google-chrome
+    microsoft-edge
     qutebrowser
 
     # Storage
@@ -265,7 +265,6 @@ prepare_macos_env_gui()
     folx
 
     # Entertainment
-    bilibili
     qqmusic
     spotifree
     spotify
