@@ -1,4 +1,7 @@
 config_dir="$HOME/.dotfiles/config"
+zsh_config_dir="$config_dir/zsh"
+
+source "$zsh_config_dir/prepare.zsh"
 
 source ~/.zplug/init.zsh
 
@@ -38,7 +41,6 @@ zplug 'plugins/sudo', from:oh-my-zsh
 zplug 'plugins/systemadmin', from:oh-my-zsh
 zplug 'plugins/taskwarrior', from:oh-my-zsh
 zplug 'plugins/tig', from:oh-my-zsh
-zplug 'plugins/timer', from:oh-my-zsh
 zplug 'plugins/tmux', from:oh-my-zsh
 zplug 'plugins/tmuxinator', from:oh-my-zsh, lazy:yes
 zplug 'plugins/urltools', from:oh-my-zsh
@@ -53,9 +55,8 @@ zplug 'zsh-users/zsh-autosuggestions'
 zplug 'zsh-users/zsh-completions'
 zplug 'esc/conda-zsh-completion'
 
-# theme - pure
-zplug 'mafredri/zsh-async'
-zplug 'sindresorhus/pure', use:pure.zsh, as:theme
+# theme - powerlevel10k
+zplug 'romkatv/powerlevel10k', as:theme, depth:1
 
 # OS specific plugins
 
@@ -107,8 +108,4 @@ if ! zplug check; then
 fi
 zplug load
 
-# Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source "$config_dir/zsh/ssh-agent-connect.zsh"
-
-# Launch tmux on remote session
-[ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux
+source "$zsh_config_dir/finish.zsh"

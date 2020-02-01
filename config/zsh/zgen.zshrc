@@ -1,4 +1,7 @@
 config_dir="$HOME/.dotfiles/config"
+zsh_config_dir="$config_dir/zsh"
+
+source "$zsh_config_dir/prepare.zsh"
 
 source ~/.zgen/zgen.zsh
 
@@ -43,7 +46,6 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/systemadmin
     robbyrussell/oh-my-zsh plugins/taskwarrior
     robbyrussell/oh-my-zsh plugins/tig
-    robbyrussell/oh-my-zsh plugins/timer
     robbyrussell/oh-my-zsh plugins/tmux
     robbyrussell/oh-my-zsh plugins/tmuxinator
     robbyrussell/oh-my-zsh plugins/urltools
@@ -57,12 +59,11 @@ if ! zgen saved; then
     zsh-users/zsh-autosuggestions
     zsh-users/zsh-completions src
     esc/conda-zsh-completion
-
-    # theme - pure
-    mafredri/zsh-async
-    sindresorhus/pure
 EOPLUGINS
   # ^ can't indent this EOPLUGINS
+
+  # theme - powerlevel10k
+  zgen load romkatv/powerlevel10k powerlevel10k
 
   # OS specific plugins
 
@@ -103,15 +104,11 @@ EOPLUGINS
   # These plugin needs to be loaded last and THE ORDER MATTERS
   zgen load zsh-users/zsh-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
-  zgen load "$config_dir/zsh/rc.zsh"
+  zgen load "$zsh_config_dir/rc.zsh"
   zgen load "$config_dir/todoist/todoist_functions.sh"
   [ -f ~/.zshrc.local ] && zgen load ~/.zshrc.local
 
   zgen save
 fi
 
-# Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source "$config_dir/zsh/ssh-agent-connect.zsh"
-
-# Launch tmux on remote session
-[ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux
+source "$zsh_config_dir/finish.zsh"
