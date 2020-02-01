@@ -112,6 +112,7 @@ prepare_macos_env_gui()
     font-dejavusansmono-nerd-font
     font-firacode-nerd-font
     font-hack-nerd-font
+    font-meslo-nerd-font
     font-sourcecodepro-nerd-font
     font-ubuntumono-nerd-font
 

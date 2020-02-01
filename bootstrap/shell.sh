@@ -50,9 +50,8 @@ zgen_setup()
   printf 'Symlinking .zprofile and .zshrc... '
   backup_then_symlink "$config_dir/zsh/zgen.zshrc" ~/.zshrc
   backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
+  backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
   echo 'Done.'
-
-  pure_prompt_setup
 }
 
 zplug_setup()
@@ -69,9 +68,8 @@ zplug_setup()
   printf 'Symlinking .zprofile and .zshrc... '
   backup_then_symlink "$config_dir/zsh/zplug.zshrc" ~/.zshrc
   backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
+  backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
   echo 'Done.'
-
-  pure_prompt_setup
 }
 
 bashit_setup()
@@ -93,12 +91,4 @@ bashit_setup()
     bash-it enable plugin     alias-completion base extract fasd git jenv less-pretty-cat nodenv pyenv rbenv tmux; \
     bash-it enable completion bash-it brew conda git git_flow_avh npm ssh system tmux; \
     exit'
-}
-
-pure_prompt_setup()
-{
-  blank_lines
-  echo 'Installing pure prompt...'
-  npm install -g pure-prompt
-  echo 'Done.'
 }
