@@ -172,3 +172,13 @@ install_nix_brew_packages()
   install_nix_brew_core_packages
   install_nix_brew_extra_packages
 }
+
+brew_cleanup()
+{
+  brew cleanup
+}
+
+brew_bundle_cleanup()
+{
+  brew bundle dump && brew bundle --force cleanup
+}

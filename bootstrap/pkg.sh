@@ -66,7 +66,7 @@ install_npm_packages()
     npm-check-updates
     npm-quick-run
     nrm
-    opn-cli
+    open-cli
     pangu
     pm2
     react-devtools
