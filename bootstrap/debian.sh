@@ -41,6 +41,25 @@ prepare_debian_env()
 
 prepare_debian_env_core()
 {
+  prepare_debian_env_cli_core
+  brew_cleanup
+}
+
+prepare_debian_env_cli()
+{
+  prepare_debian_env_cli_core
+  prepare_debian_env_cli_extra
+  brew_cleanup
+}
+
+prepare_debian_env_gui()
+{
+  prepare_debian_env_gui_extra
+  brew_cleanup
+}
+
+prepare_debian_env_cli_core()
+{
   pkgs=(
     build-essential
     curl
@@ -57,10 +76,8 @@ prepare_debian_env_core()
   fix_locale
 }
 
-prepare_debian_env_cli()
+prepare_debian_env_cli_extra()
 {
-  prepare_debian_env_core
-
   pkgs=(
     # Build tools
     apt-transport-https
@@ -97,7 +114,7 @@ prepare_debian_env_cli()
   extra_env_setup
 }
 
-prepare_debian_env_gui()
+prepare_debian_env_gui_extra()
 {
   ppas=(
     ppa:jtaylor/keepass     # KeyPass2

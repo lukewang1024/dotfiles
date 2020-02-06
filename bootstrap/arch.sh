@@ -25,6 +25,9 @@ prepare_arch_env()
   config_pacman
 
   case $1 in
+    'core')
+      prepare_arch_env_core
+      ;;
     'cli')
       prepare_arch_env_cli
       ;;
@@ -39,12 +42,84 @@ prepare_arch_env()
       prepare_arch_env_gui
       ;;
     *)
-      prepare_arch_env_cli
+      prepare_arch_env_core
       ;;
   esac
 }
 
+prepare_arch_env_core()
+{
+  prepare_arch_env_cli_core
+  prepare_arch_env_gui_core
+  brew_cleanup
+}
+
 prepare_arch_env_cli()
+{
+  prepare_arch_env_cli_core
+  prepare_arch_env_cli_extra
+  brew_cleanup
+}
+
+prepare_arch_env_gui()
+{
+  prepare_arch_env_gui_core
+  prepare_arch_env_gui_extra
+}
+
+prepare_arch_env_cli_core()
+{
+  pkgs=(
+    diff-so-fancy
+    fasd
+    fd
+    fzf
+    git
+    htop
+    httpie
+    imagemagick
+    jq
+    lsd
+    neovim
+    openssh
+    percol
+    prettyping
+    ranger
+    rsync
+    the_silver_searcher
+    tig
+    tldr
+    tmux
+    vim
+    wget
+    yarn
+    yay
+    zsh
+  )
+  pacman_install_pkgs
+
+  # Set some configs for yay
+  yay --save --nocleanmenu --nodiffmenu --noupgrademenu --noremovemake
+
+  pkgs=(
+    gitflow-avh
+    icdiff
+    lf-bin
+    peco
+    urlview
+    xsv
+  )
+  aur_install_pkgs
+
+  install_linuxbrew
+  install_nix_brew_runtimes
+
+  basic_env_setup
+  apply_app_configs
+  fix_ENOSPC
+}
+
+prepare_arch_env_cli_extra()
 {
   pkgs=(
     android-tools
@@ -58,35 +133,25 @@ prepare_arch_env_cli()
     cowsay
     cpanminus
     cpulimit
-    diff-so-fancy
     docker
     docker-compose
     docker-machine
     dstat
-    fasd
-    fd
     figlet
     fish
     flatpak
     fortune-mod
-    fzf
     gifsicle
-    git
     go
     graphviz
     haproxy
     hashcat
-    htop
-    httpie
     hub
-    imagemagick
     irssi
     jdk-openjdk
     jpegoptim
-    jq
     kubectl
     lolcat
-    lsd
     mc
     mediainfo
     mpc
@@ -96,32 +161,22 @@ prepare_arch_env_cli()
     multitail
     mutt
     ncmpcpp
-    neovim
     nghttp2
     nyancat
     offlineimap
-    openssh
     p7zip
     pamixer
     pandoc
-    percol
     perl-image-exiftool
     pkgfile
     playerctl
     polipo
-    prettyping
     progress
     proxychains-ng
-    ranger
     ripgrep
-    rsync
     shadowsocks-libev
     shellcheck
     snapd
-    the_silver_searcher
-    tig
-    tldr
-    tmux
     transmission-cli
     tree
     unrar
@@ -130,15 +185,10 @@ prepare_arch_env_cli()
     v2ray-domain-list-community
     v2ray-geoip
     vagrant
-    vim
     w3m
-    wget
     wtf
-    yarn
-    yay
     you-get
     zip
-    zsh
   )
   pacman_install_pkgs
 
@@ -155,45 +205,32 @@ prepare_arch_env_cli()
     git-bug-bin
     git-lfs
     git-quick-stats
-    gitflow-avh
     google-cloud-sdk
     hyperfine
-    icdiff
-    lf-bin
     mons
     mycli
     onefetch
-    peco
     pgcli
     sc-im
     sparklines-git
     touchpad-state-git
     translate-shell
     ttf-weather-icons
-    urlview
     wsta
-    xsv
   )
   aur_install_pkgs
 
-  install_linuxbrew
-  install_nix_brew_runtimes
-
-  env_setup
-  apply_app_configs
-  fix_ENOSPC
+  extra_env_setup
 
   sudo systemctl enable --now snapd.socket # enable snapd
 }
 
-prepare_arch_env_gui()
+prepare_arch_env_gui_core()
 {
   pkgs=(
-    android-file-transfer
     arandr
     arc-gtk-theme
     arc-icon-theme
-    atom
     blueman
     chromium
     compton
@@ -202,36 +239,23 @@ prepare_arch_env_gui()
     fcitx-im
     fcitx-rime
     feh
-    file-roller
     firefox
     galculator
     gsimplecal
-    handbrake
-    hardinfo
     i3-gaps
     i3blocks
     i3status
-    kdiff3
-    keepassxc
     lxappearance
     lxsession
     lxtask
     maim
-    moka-icon-theme
-    neofetch
     network-manager-applet
     noto-fonts-emoji
     pa-applet
     polybar
-    qutebrowser
-    qv2ray
     redshift
     rofi
     rofi-scripts
-    rxvt-unicode
-    shadowsocks-qt5
-    syncthing-gtk
-    telegram-desktop
     termite
     thunar
     thunar-archive-plugin
@@ -242,8 +266,6 @@ prepare_arch_env_gui()
     ttf-font-awesome
     tumbler
     udiskie
-    winetricks
-    wkhtmltopdf
     wqy-zenhei
     xautomation
     xbindkeys
@@ -257,6 +279,48 @@ prepare_arch_env_gui()
     zathura-djvu
     zathura-pdf-mupdf
     zathura-ps
+  )
+  pacman_install_pkgs
+
+  pkgs=(
+    betterlockscreen
+    gluqlo-git
+    i3ass
+    i3lock-color
+    nerd-fonts-complete
+    python-pywal
+    sublime-merge
+    sublime-text-dev
+    visual-studio-code-bin
+    xinit-xsession
+  )
+  aur_install_pkgs
+
+  install_st
+  set_default_apps
+}
+
+prepare_arch_env_gui_extra()
+{
+  pkgs=(
+    android-file-transfer
+    atom
+    chromium
+    file-roller
+    handbrake
+    hardinfo
+    kdiff3
+    keepassxc
+    moka-icon-theme
+    neofetch
+    qutebrowser
+    qv2ray
+    rxvt-unicode
+    shadowsocks-qt5
+    syncthing-gtk
+    telegram-desktop
+    winetricks
+    wkhtmltopdf
     zeal
   )
   pacman_install_pkgs
@@ -265,7 +329,6 @@ prepare_arch_env_gui()
     android-sdk
     android-sdk-platform-tools
     android-studio
-    betterlockscreen
     deepin-wechat
     deepin-wine-tim
     dropbox
@@ -273,36 +336,24 @@ prepare_arch_env_gui()
     feedreader
     genymotion
     git-cola
-    gluqlo-git
     google-chrome-stable
-    i3ass
-    i3lock-color
     kitematic
     losslesscut
     mailspring
     musixmatch-bin
-    nerd-fonts-complete
     notable-bin
-    python-pywal
     rslsync
     screenkey
     skypeforlinux-stable-bin
     slack-desktop
     spotify
-    sublime-merge
-    sublime-text-dev
     ttf-ms-fonts
     typora
     urxvt-fullscreen
     urxvt-resize-font-git
-    visual-studio-code-bin
     whatsapp-web-desktop
-    xinit-xsession
   )
   aur_install_pkgs
-
-  install_st
-  set_default_apps
 }
 
 setup_arch_gaming()

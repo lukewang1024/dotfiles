@@ -5,6 +5,9 @@ source "$partial_dir/macos-defaults.sh"
 prepare_macos_env()
 {
   case $1 in
+    'core')
+      prepare_macos_env_core
+      ;;
     'cli')
       prepare_macos_env_cli
       ;;
@@ -19,12 +22,33 @@ prepare_macos_env()
       prepare_macos_env_gui
       ;;
     *)
-      prepare_macos_env_cli
+      prepare_macos_env_core
       ;;
   esac
 }
 
+prepare_macos_env_core()
+{
+  prepare_macos_env_cli_core
+  prepare_macos_env_gui_core
+  brew_cleanup
+}
+
 prepare_macos_env_cli()
+{
+  prepare_macos_env_cli_core
+  prepare_macos_env_cli_extra
+  brew_cleanup
+}
+
+prepare_macos_env_gui()
+{
+  prepare_macos_env_gui_core
+  prepare_macos_env_gui_extra
+  brew_cleanup
+}
+
+prepare_macos_env_cli_core()
 {
   exists brew || ( \
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
@@ -32,12 +56,17 @@ prepare_macos_env_cli()
   )
 
   brew tap homebrew/command-not-found
-  brew tap esphen/wsta https://github.com/esphen/wsta.git
-
-  brew upgrade
 
   install_nix_brew_runtimes
-  install_nix_brew_packages
+  install_nix_brew_core_packages
+  basic_env_setup
+}
+
+prepare_macos_env_cli_extra()
+{
+  brew tap esphen/wsta https://github.com/esphen/wsta.git
+
+  install_nix_brew_extra_packages
 
   local pkgs=(
     brightness
@@ -59,12 +88,35 @@ prepare_macos_env_cli()
   )
   brew cask install `join ' ' "${casks[@]}"`
 
-  brew cleanup; brew prune
-
-  env_setup
+  extra_env_setup
 }
 
-prepare_macos_env_gui()
+prepare_macos_env_gui_core()
+{
+  brew tap homebrew/cask-fonts
+
+  local casks=(
+    alfred
+    appcleaner
+    ezip
+    fliqlo
+    font-sourcecodepro-nerd-font
+    hammerspoon
+    hyperswitch
+    iina
+    iterm2
+    karabiner-elements
+    mos
+    sublime-merge
+    sublime-text
+    visual-studio-code
+  )
+  brew cask install `join ' ' "${casks[@]}"`
+
+  set_macos_configs
+}
+
+prepare_macos_env_gui_extra()
 {
   # MAS apps
 
@@ -101,183 +153,134 @@ prepare_macos_env_gui()
 
   # Cask packages
 
-  brew tap homebrew/cask-fonts
   brew tap homebrew/cask-versions
   brew tap lukewang1024/homebrew-legacy
   brew tap dteoh/sqa
 
   local casks=(
-    # Fonts
+    aerial
+    android-platform-tools
+    android-sdk
+    android-studio
+    androidtool
+    aria2gui
+    atom
+    background-music
+    balenaetcher
+    bartender
+    bitbar
+    browserosaurus
+    cakebrew
+    calibre
+    caprine
+    charles
+    chromium
+    commander-one
+    dropbox
+    duet
+    electron-fiddle
+    fantastical
+    figma
+    firefox
+    flume
+    flux
+    folx
     font-anonymouspro-nerd-font
     font-dejavusansmono-nerd-font
     font-firacode-nerd-font
     font-hack-nerd-font
     font-meslo-nerd-font
-    font-sourcecodepro-nerd-font
     font-ubuntumono-nerd-font
-
-    # Quicklook plugin
+    forklift
+    go2shell
+    google-backup-and-sync
+    google-chrome
+    handbrake
+    haptickey
+    hocus-focus
+    horndis
+    imagealpha
+    imageoptim
+    istat-menus
+    itsycal
+    java
+    kap
+    kdiff3
+    keka
+    keycastr
+    kitematic
+    lepton
+    losslesscut
+    macpass
+    microsoft-edge
+    mongodb-compass
+    mweb2
+    notable
+    nvalt
+    onedrive
+    onyx
+    openmtp
+    pdf-expert
+    pdfsam-basic
+    phantomjs
+    postman
     provisionql
+    proxifier
     qlcolorcode
     qlimagesize
     qlmarkdown
     qlprettypatch
     qlstephen
     qlvideo
+    qqmusic
     quicklook-csv
     quicklook-json
     quicklook-pat
     quicklookapk
     quicklookase
-    suspicious-package
-    webpquicklook
-
-    # Screen saver
-    aerial
-    fliqlo
-
-    # OS enhancement
-    alfred
-    background-music
-    bartender
-    browserosaurus
-    commander-one
-    ezip
-    flux
-    forklift
-    go2shell
-    hammerspoon
-    haptickey
-    hyperswitch
-    iina
-    iterm2
-    karabiner-elements
-    keka
-    macpass
-    mos
+    qutebrowser
+    resilio-sync
+    robo-3t
+    rowanj-gitx
+    sequel-pro
+    shadowsocksx-ng
+    shifty
+    skim
+    skype
     slowquitapps
     snipaste
     soundflower
     soundflowerbed
-    squirrel
-
-    # Editor & IDE
-    android-studio
-    atom
-    electron-fiddle
-    mweb2
-    notable
-    nvalt
-    sublime-text
-    typora
-    visual-studio-code
-
-    # Utility
-    airdroid
-    android-platform-tools
-    android-sdk
-    androidtool
-    appcleaner
-    balenaetcher
-    bitbar
-    cakebrew
-    calibre
-    duet
-    fantastical
-    handbrake
-    hocus-focus
-    istat-menus
-    itsycal
-    kap
-    keycastr
-    lepton
-    losslesscut
-    onyx
-    openmtp
-    pdf-expert
-    pdfsam-basic
-    proxifier
-    shadowsocksx-ng
-    shifty
-    skim
-    stretchly
-    suspicious-package
-    switchhosts
-    toau
-    ubersicht
-    v2rayu
-    vnc-viewer
-    wkhtmltopdf
-    xld
-
-    # DevTool
-    imagealpha
-    imageoptim
-    java
-    java8
-    kitematic
-    phantomjs
-    vagrant-manager
-    virtualbox
-    virtualbox-extension-pack
-    zeplin
-
-    # Network diagnostic tools
-    charles
-    horndis
-    postman
-    wireshark
-
-    # VCS tools
-    kdiff3
-    rowanj-gitx
     sourcetree
-    sublime-merge
-
-    # DB tools
-    mongodb-compass
-    robo-3t
-    sequel-pro
-    sqlpro-for-postgres
-
-    # Browser
-    chromium
-    firefox
-    google-chrome
-    microsoft-edge
-    qutebrowser
-
-    # Storage
-    dropbox
-    google-backup-and-sync
-    onedrive
-    resilio-sync
-    syncthing
-
-    # Social
-    caprine
-    flume
-    skype
-    tweeten
-    zoomus
-
-    # Download
-    aria2gui
-    folx
-
-    # Entertainment
-    qqmusic
     spotifree
     spotify
     spotify-notifications
+    sqlpro-for-postgres
+    squirrel
+    stretchly
+    suspicious-package
+    switchhosts
+    syncthing
+    toau
+    tweeten
+    typora
+    ubersicht
+    v2rayu
+    vagrant-manager
+    virtualbox
+    virtualbox-extension-pack
+    vnc-viewer
+    webpquicklook
+    wireshark
+    wkhtmltopdf
+    xld
+    xquartz
+    zeplin
+    zoomus
   )
   brew cask install `join ' ' "${casks[@]}"`
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
-
-  brew cleanup; brew prune
-
-  set_macos_configs
 }
 
 set_macos_configs()
@@ -330,4 +333,5 @@ setup_macos_gaming()
     steam
   )
   brew cask install `join ' ' "${casks[@]}"`
+  brew_cleanup
 }
