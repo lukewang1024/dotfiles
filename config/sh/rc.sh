@@ -59,4 +59,6 @@ if [[ $OSTYPE == 'linux-gnu' ]]; then
   alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
 fi
 
+[ -f ~/.config/lf/lf-icons.sh ] && source ~/.config/lf/lf-icons.sh
+
 [ -f ~/.rc.local ] && source ~/.rc.local

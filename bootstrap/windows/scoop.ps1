@@ -32,6 +32,7 @@ function install_scoop_packages
     atom `
     autohotkey `
     azure-cli `
+    broot `
     calibre `
     ccleaner `
     chromium `
@@ -39,6 +40,7 @@ function install_scoop_packages
     cmder `
     concfg `
     conemu `
+    cowsay `
     cpu-z `
     ditto `
     doublecmd `

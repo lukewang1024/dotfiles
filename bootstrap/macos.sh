@@ -288,6 +288,7 @@ set_macos_configs()
   sync_config_repo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
   backup_then_symlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
+  backup_then_symlink "$config_dir/lf" ~/.config/lf
   backup_then_symlink "$config_dir/ranger/macos" ~/.config/ranger
 
   # Handy scripts
