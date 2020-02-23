@@ -16,6 +16,7 @@ install_nix_brew_core_packages()
 
   local pkgs=(
     bash
+    broot
     diff-so-fancy
     fasd
     fd
@@ -44,6 +45,7 @@ install_nix_brew_core_packages()
     tldr
     tmux
     tmuxinator
+    trash-cli
     urlview
     vim
     wdiff
@@ -73,6 +75,7 @@ install_nix_brew_extra_packages()
     cmatrix
     cmus
     coreutils
+    cowsay
     cpanminus
     cpulimit
     ddgr
@@ -82,6 +85,7 @@ install_nix_brew_extra_packages()
     exiftool
     extract_url
     ffmpeg
+    ffmpegthumbnailer
     figlet
     file-formula
     findutils
@@ -96,6 +100,7 @@ install_nix_brew_extra_packages()
     git-lfs
     git-quick-stats
     glances
+    glow
     gnu-indent
     gnu-sed
     gnu-tar
@@ -148,6 +153,7 @@ install_nix_brew_extra_packages()
     sc-im
     shadowsocks-libev
     shellcheck
+    sl
     spark
     testdisk
     thefuck

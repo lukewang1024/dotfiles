@@ -70,6 +70,7 @@ prepare_arch_env_gui()
 prepare_arch_env_cli_core()
 {
   pkgs=(
+    broot
     diff-so-fancy
     fasd
     fd
@@ -90,6 +91,7 @@ prepare_arch_env_cli_core()
     tig
     tldr
     tmux
+    trash-cli
     vim
     wget
     yarn
@@ -137,11 +139,14 @@ prepare_arch_env_cli_extra()
     docker-compose
     docker-machine
     dstat
+    ffmpeg
+    ffmpegthumbnailer
     figlet
     fish
     flatpak
     fortune-mod
     gifsicle
+    glow-bin
     go
     graphviz
     haproxy
@@ -176,6 +181,7 @@ prepare_arch_env_cli_extra()
     ripgrep
     shadowsocks-libev
     shellcheck
+    sl
     snapd
     transmission-cli
     tree

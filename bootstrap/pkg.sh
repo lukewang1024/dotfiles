@@ -75,7 +75,6 @@ install_npm_packages()
     source-map-explorer
     svgexport
     textlint
-    trash-cli
     ts-node
     typescript
     updtr

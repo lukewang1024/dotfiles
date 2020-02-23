@@ -89,6 +89,12 @@
   rsth = reset --hard
   rsth1 = reset HEAD^ --hard
   rsth2 = reset HEAD^^ --hard
+  rv = "!f() { git push origin HEAD:refs/for/${1:-master}%${2}; }; f"
+  rvcin = commit --amend --no-edit
+  rvdbr = "!f() {git branch | grep sandbox | xargs git branch -D; }; f"
+  rvfp = "!f() { git fetch origin refs/changes/$(printf "%02d" $(expr ${1} % 100))/${1}/${2:-1} && git checkout FETCH_HEAD;}; f"
+  rvm = "!f() { git push origin HEAD:refs/for/master%${1}; }; f"
+  rvnew = "!f() { git fetch && git checkout -b sandbox/`whoami`/`date +%m-%d`/${2:-`date +%H-%M`} origin/${1:-master}; }; f"
   sa = !sh -c \"git stash apply stash@{${1:-0}}\" -
   sba = "!f() { git subtree add --prefix $2 $1 master --squash; }; f"
   sd = !sh -c \"git stash drop stash@{${1:-0}}\" -
