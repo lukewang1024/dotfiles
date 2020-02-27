@@ -3,11 +3,13 @@ export LANG=en_US.UTF-8
 export EDITOR='vim'
 
 # Use xterm-256color when not in tmux
-[[ $TMUX == '' ]] && export TERM='xterm-256color'
+! is_tmux && export TERM='xterm-256color'
 
 # Set ANDROID_HOME per platform
-[[ $OSTYPE == 'darwin'* ]] && export ANDROID_HOME=$HOME/Library/Android/sdk
-[[ $OSTYPE == 'linux-gnu' ]] && export ANDROID_HOME=$HOME/android-sdk && export I3FYRA_WS=1
+is_macos && export ANDROID_HOME=$HOME/Library/Android/sdk
+is_linux && export ANDROID_HOME=$HOME/android-sdk
+
+is_linux && export I3FYRA_WS=1
 
 # Use ripgrep with fzf
 export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
@@ -16,7 +18,7 @@ export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
 export PATH="/usr/bin/core_perl:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
-if [[ $OSTYPE == 'linux-gnu' ]]; then
+if is_linux; then
   LINUXBREW='/home/linuxbrew/.linuxbrew'
   export PATH="$LINUXBREW/sbin:$PATH"
   export PATH="$LINUXBREW/bin:$PATH"
@@ -24,12 +26,6 @@ fi
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
-
-# Functions
-exists()
-{
-  command -v "$1" >/dev/null 2>&1
-}
 
 # Aliases
 alias cb=clipboard
@@ -54,11 +50,21 @@ alias react-native='npx react-native'
 alias sb='npx -p @storybook/cli sb'
 alias semantic-release-cli='npx semantic-release-cli'
 
-if [[ $OSTYPE == 'linux-gnu' ]]; then
+if is_linux; then
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'
   alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
 fi
 
+# attempt to connect to existing ssh-agent instance on remote sessions
+is_ssh && [ -f ~/.agent-profile ] && source ~/.agent-profile
+
+# broot
+broot_config=$(is_macos && echo "$HOME/Library/Preferences/org.dystroy.broot" || echo "$HOME/.config/broot")
+if [ -f "$broot_config/launcher/bash/br" ]; then
+  source "$broot_config/launcher/bash/br"
+fi
+
+# lf icons
 [ -f ~/.config/lf/lf-icons.sh ] && source ~/.config/lf/lf-icons.sh
 
 [ -f ~/.rc.local ] && source ~/.rc.local

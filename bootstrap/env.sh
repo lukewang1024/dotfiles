@@ -20,13 +20,13 @@ git_setup()
   cat "$config_dir/git/common" >> ~/.gitconfig
 
   # MacOS
-  if [[ $OSTYPE == 'darwin'* ]]; then
+  if is_macos; then
     git config --global credential.helper osxkeychain
   fi
 
   # WSL & Cygwin
   uname -r | grep Microsoft &> /dev/null # returns 0 on WSL
-  if [[ $? == 0 || $OSTYPE == 'cygwin' ]]; then
+  if [[ $? == 0 ]] || is_cygwin; then
     git config --global core.autocrlf input
     git config --global core.fileMode false
   fi

@@ -1,5 +1,5 @@
 # Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source "$zsh_config_dir/ssh-agent-connect.zsh"
+! is_ssh && source "$zsh_config_dir/ssh-agent-connect.zsh"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]

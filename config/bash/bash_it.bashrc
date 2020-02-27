@@ -1,8 +1,9 @@
 config_dir="$HOME/.dotfiles/config"
 
+source "$config_dir/utils.sh";
 source "$config_dir/sh/rc.sh"
 
-if [[ $OSTYPE == 'linux-gnu' ]]; then
+if is_linux; then
   if [ -f /etc/arch-release ]; then
     source /usr/share/doc/pkgfile/command-not-found.bash
   fi
@@ -32,7 +33,7 @@ source "$BASH_IT/bash_it.sh"
 source "$config_dir/bash/rc.bash"
 
 # Config ssh-agent on local machine
-[ -z "$SSH_CLIENT" ] && source "$config_dir/bash/ssh-agent-connect.bash"
+! is_ssh && source "$config_dir/bash/ssh-agent-connect.bash"
 
 # Launch tmux on remote session
-[ -n "$SSH_CLIENT" ] && [ -z "$TMUX" ] && tmux
+is_ssh && ! is_tmux && tmux
