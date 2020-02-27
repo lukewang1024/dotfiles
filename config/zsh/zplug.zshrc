@@ -1,6 +1,7 @@
 config_dir="$HOME/.dotfiles/config"
 zsh_config_dir="$config_dir/zsh"
 
+source "$config_dir/utils.sh";
 source "$zsh_config_dir/prepare.zsh"
 
 source ~/.zplug/init.zsh
@@ -60,7 +61,7 @@ zplug 'romkatv/powerlevel10k', as:theme, depth:1
 
 # OS specific plugins
 
-if [[ $OSTYPE == 'cygwin' ]]; then
+if is_cygwin; then
   zplug 'plugins/cygwin', from:oh-my-zsh
 else # *nix
   zplug 'plugins/colorize', from:oh-my-zsh
@@ -75,13 +76,13 @@ else # *nix
   zplug 'lukewang1024/zsh-goenv'
 fi
 
-if [[ $OSTYPE == 'darwin'* ]]; then
+if is_macos; then
   zplug 'plugins/osx', from:oh-my-zsh
   zplug 'plugins/brew', from:oh-my-zsh
   zplug 'plugins/forklift', from:oh-my-zsh
 fi
 
-if [[ $OSTYPE == 'linux-gnu' ]]; then
+if is_linux; then
   if [ -f /etc/arch-release ]; then
     zplug 'plugins/archlinux', from:oh-my-zsh
     zplug "/usr/share/doc/pkgfile/command-not-found.zsh", from:local

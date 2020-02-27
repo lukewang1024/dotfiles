@@ -1,6 +1,7 @@
 config_dir="$HOME/.dotfiles/config"
 zsh_config_dir="$config_dir/zsh"
 
+source "$config_dir/utils.sh";
 source "$zsh_config_dir/prepare.zsh"
 
 source ~/.zgen/zgen.zsh
@@ -67,7 +68,7 @@ EOPLUGINS
 
   # OS specific plugins
 
-  if [[ $OSTYPE == 'cygwin' ]]; then
+  if is_cygwin; then
     zgen oh-my-zsh plugins/cygwin
   else # *nix
     zgen oh-my-zsh plugins/colorize
@@ -82,13 +83,13 @@ EOPLUGINS
     zgen load lukewang1024/zsh-goenv
   fi
 
-  if [[ $OSTYPE == 'darwin'* ]]; then
+  if is_macos; then
     zgen oh-my-zsh plugins/osx
     zgen oh-my-zsh plugins/brew
     zgen oh-my-zsh plugins/forklift
   fi
 
-  if [[ $OSTYPE == 'linux-gnu' ]]; then
+  if is_linux; then
     if [ -f /etc/arch-release ]; then
       zgen oh-my-zsh plugins/archlinux
       zgen load /usr/share/doc/pkgfile/command-not-found.zsh

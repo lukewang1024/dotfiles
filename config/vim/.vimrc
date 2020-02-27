@@ -23,6 +23,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-sensible'
+Plug 'ruanyl/vim-sort-imports'
 Plug 'tpope/vim-surround'
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'christoomey/vim-tmux-navigator'
@@ -85,6 +86,10 @@ nnoremap <CR> :noh<CR><CR>
 
 " <Leader>q - close buffer without killing window
 map <Leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
+
+nnoremap <leader>d "_d
+xnoremap <leader>d "_d
+xnoremap <leader>p "_dP
 
 """""""
 " ALE "

@@ -1,11 +1,4 @@
-# Util join function
-function join { local IFS="$1"; shift; echo "$*"; }
-function join_by_multi { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
-
-exists()
-{
-  command -v "$1" >/dev/null 2>&1
-}
+source "$config_dir/utils.sh"
 
 # Back up target file with appending ~
 backup()
@@ -34,9 +27,9 @@ symlink()
   dir=$(dirname ${2:-.})
   mkdir -p "$dir"
 
-  if [[ -d $1 || "$OSTYPE" == 'darwin'* ]]; then
+  if [ -d $1 ] || is_macos; then
     args="-s"
-  elif [[ "$OSTYPE" == 'linux-gnu' || "$OSTYPE" == 'cygwin' ]]; then
+  elif is_linux || is_cygwin; then
     args="-sb"
   fi
   eval "ln -v $args $1 ${2:-.}"
@@ -70,11 +63,7 @@ sync_config_repo()
   git clone --depth 1 $repoUrl $configPath
 }
 
-blank_lines()
-{
-  echo
-  echo
-}
+blank_lines() { echo; echo; }
 
 # Print the usage of the script and exit
 print_usage()
