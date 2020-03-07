@@ -130,6 +130,7 @@ prepare_arch_env_cli_extra()
     axel
     bat
     cloc
+    cmake
     cmatrix
     cmus
     cowsay
