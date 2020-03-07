@@ -1,7 +1,7 @@
 tilda_config_version="1.4.1"
 # command=""
 font="SauceCodePro Nerd Font 11"
-key="<Alt>grave"
+key="<Alt>F1"
 addtab_key="<Shift><Control>t"
 fullscreen_key="F11"
 toggle_transparency_key="F12"

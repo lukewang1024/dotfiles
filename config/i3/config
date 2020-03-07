@@ -79,7 +79,7 @@ for_window [instance="dropdown"] border pixel 5
 
 bindsym $super+$alt+space $exe $rofi run
 bindsym $alt+space        $exe $rofi drun
-bindsym $alt+Tab          $exe $rofi window
+bindsym $hyper+Tab        $exe $rofi window
 bindsym Control+$alt+c    $exe $rofi clipboard -modi "clipboard:greenclip print" -run-command '{cmd}'
 
 bindsym $super+r         $exe dmenu_run
@@ -117,7 +117,7 @@ bindsym $hyper+space      $grun -i $lark_web -e 'gtk-launch lark'
 bindsym $hyper+Shift+a       $grun -c jetbrains-studio -e 'android-studio'
 bindsym $hyper+Shift+c       $grun -i google-chrome -e 'chrome-launcher chrome'
 bindsym $hyper+Shift+$alt+c  $grun -i google-chrome -e 'chrome-launcher chrome nosecurity'
-bindsym $hyper+Shift+s       $srun -i spotify -e 'spotify'
+bindsym $hyper+Shift+m       $srun -i spotify -e 'spotify'
 bindsym $hyper+Shift+u       $grun -i slack -e 'slack'
 bindsym $hyper+Shift+v       $grun -i code -e 'code'
 bindsym $hyper+Shift+w       $srun -i whats-app-nativefier* -e 'whatsapp-web-desktop'
@@ -144,6 +144,7 @@ for_window [instance="ncmpcpp"]                                 focus; $fyra -m 
 for_window [instance="qutebrowser"]                             focus; $fyra -m B
 for_window [instance="skype"]                                   focus; $fyra -m D
 for_window [instance="slack" title="Slack -"]                   focus; $fyra -m A
+for_window [instance="Steam" title="^Steam$"]                   focus; $fyra -m A
 for_window [instance="sublime_text" window_type="normal"]       focus; $fyra -m A
 for_window [instance="telegram-desktop" window_type="normal"]   focus; $fyra -m D
 for_window [instance="termite"]                                 focus; $fyra -m A
@@ -450,6 +451,8 @@ $exe greenclip daemon
 $exe compton --fading
 # set wallpaper and lockscreen image
 $exe wallpaper
+# redshift
+$exe redshift
 # unclutter makes the mouse invisible after a brief period
 $exe unclutter
 # polipo for HTTP proxy
