@@ -63,7 +63,7 @@ setAppToggles(hyper, {
   ['7'] = 'Medis',
   -- ['8'] = '',
   ['9'] = 'Charles',
-  ['space'] = 'Lark',
+  ['space'] = 'Feishu',
 })
 
 -- hyperAlt application shortcuts
@@ -113,7 +113,7 @@ setAppToggles(hyperAlt, {
   -- ['7'] = '',
   -- ['8'] = '',
   ['9'] = 'WireShark',
-  ['space'] = 'Feishu',
+  ['space'] = 'Lark',
 })
 
 -- reload

@@ -107,6 +107,7 @@ prepare_macos_env_gui_core()
     iterm2
     karabiner-elements
     mos
+    rectangle
     sublime-merge
     sublime-text
     visual-studio-code
@@ -145,7 +146,9 @@ prepare_macos_env_gui_extra()
     1278508951 # Trello
     1295203466 # Microsoft Remote Desktop
     1314842898 # miniQpicview (Kantu)
+    1452453066 # Hidden Bar
     1477089520 # Backtrack
+    1497527363 # Blurred
   )
 
   mas install $masApps
@@ -217,6 +220,7 @@ prepare_macos_env_gui_extra()
     mweb2
     notable
     nvalt
+    omnidisksweeper
     onedrive
     onyx
     openmtp
