@@ -70,7 +70,6 @@ install_nix_brew_extra_packages()
     bat
     binutils
     cheat
-    cloc
     cmake
     cmatrix
     cmus
@@ -151,6 +150,7 @@ install_nix_brew_extra_packages()
     rtv
     sachaos/todoist/todoist
     sc-im
+    scc
     shadowsocks-libev
     shellcheck
     sl
