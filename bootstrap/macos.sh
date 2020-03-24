@@ -251,6 +251,7 @@ prepare_macos_env_gui_extra()
     shifty
     skim
     skype
+    sloth
     slowquitapps
     snipaste
     soundflower
