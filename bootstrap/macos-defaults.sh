@@ -10,6 +10,9 @@ better_macos_defaults()
   # General UI/UX #
   #################
 
+  # Enable the startup chime
+  sudo nvram StartupMute=%00
+
   # Disable transparency in the menu bar and elsewhere on Yosemite
   sudo defaults write com.apple.universalaccess reduceTransparency -bool true
 
@@ -187,7 +190,7 @@ better_macos_defaults()
   defaults write com.apple.screencapture location -string "${HOME}/Desktop"
 
   # Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)
-  defaults write com.apple.screencapture type -string "png"
+  defaults write com.apple.screencapture type -string "JPG"
 
   # Disable shadow in screenshots
   defaults write com.apple.screencapture disable-shadow -bool true
@@ -372,15 +375,20 @@ better_macos_defaults()
   # 10: Put display to sleep
   # 11: Launchpad
   # 12: Notification Center
-  # Top left screen corner → Mission Control
-  defaults write com.apple.dock wvous-tl-corner -int 2
-  defaults write com.apple.dock wvous-tl-modifier -int 0
-  # Top right screen corner → Desktop
-  defaults write com.apple.dock wvous-tr-corner -int 4
-  defaults write com.apple.dock wvous-tr-modifier -int 0
+  # Modifier values:
+  # ⌘ -> 1048576
+  # Top left screen corner → Show application windows
+  defaults write com.apple.dock wvous-tl-corner -int 3
+  defaults write com.apple.dock wvous-tl-modifier -int 1048576
+  # Top right screen corner → Mission Control
+  defaults write com.apple.dock wvous-tr-corner -int 2
+  defaults write com.apple.dock wvous-tr-modifier -int 1048576
   # Bottom left screen corner → Start screen saver
   defaults write com.apple.dock wvous-bl-corner -int 5
-  defaults write com.apple.dock wvous-bl-modifier -int 0
+  defaults write com.apple.dock wvous-bl-modifier -int 1048576
+  # Bottom right screen corner → Desktop
+  defaults write com.apple.dock wvous-br-corner -int 4
+  defaults write com.apple.dock wvous-br-modifier -int 1048576
 
   ###################
   # Safari & WebKit #
