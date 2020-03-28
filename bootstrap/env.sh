@@ -9,8 +9,7 @@ git_setup()
   # Back up the current config file
   if [ -f ~/.gitconfig ]; then
     printf 'Backing up current .gitconfig... '
-    git_user_name=`git config --global user.name`
-    git_user_email=`git config --global user.email`
+    local git_user_identities="$(git config --global --list | grep -E '^user\.\w+\.\w+=.+$')"
     mv ~/.gitconfig ~/.gitconfig~
     echo 'Done.'
   fi
@@ -18,6 +17,8 @@ git_setup()
   echo 'Applying new git configs...'
   cat "$config_dir/git/alias" > ~/.gitconfig
   cat "$config_dir/git/common" >> ~/.gitconfig
+
+  backup_then_symlink "$util_dir/shell/git-set-identity" ~/bin/git-set-identity
 
   # MacOS
   if is_macos; then
@@ -31,27 +32,47 @@ git_setup()
     git config --global core.fileMode false
   fi
 
-  # Git user
-  if [[ -n "$git_user_name" && -n "$git_user_email" ]]; then
-    echo "Global user was configured as $git_user_name ($git_user_email) previously."
-    read -p 'Press Y/y to configure it differently: ' -n 1 -r; echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo 'Configuring git user...'
-      read -p "username: " git_user_name
-      read -p "email: " git_user_email
-    else
-      echo "$git_user_name ($git_user_email) will be kept as the global user."
+  # Git user identities
+  if [ -n "$git_user_identities" ]; then
+    echo 'Git user identities were configured as below previously.'
+    echo "$git_user_identities"
+    read -p 'Do you want to re-apply them? [Y/n]' -n 1 -r; echo
+    if [ -z $REPLY ] || [ $REPLY = 'y' ] || [ $REPLY = 'Y' ]; then
+      sedCmd=$(is_macos && echo gsed || echo sed)
+      eval "$(echo "$git_user_identities" | $sedCmd -E 's/^(user\.\w+\.\w+)=(.+)$/git config --global \1 "\2"/g')"
+      echo 'Previous identities re-applied.'
     fi
-  else
-    echo 'Configuring git user...'
-    read -p "username: " git_user_name
-    read -p "email: " git_user_email
   fi
 
-  git config --global user.name "$git_user_name"
-  git config --global user.email "$git_user_email"
+  while : ; do
+    read -p 'Add a new identity (Leave blank to skip):' -r git_user_identity; echo
+    if [ -z "$git_user_identity" ]; then echo 'Skipped.'; break; fi
+
+    while : ; do
+      read -p 'Name:' git_user_name
+      [ -n "$git_user_name" ] && break
+      echo 'Name cannot be empty!'
+    done
+
+    while : ; do
+      read -p 'Email:' git_user_email
+      [ -n "$git_user_email" ] && break
+      echo 'Email cannot be empty!'
+    done
+
+    read -p 'SigningKey:' git_user_signingKey
+
+    git config --global "user.$git_user_identity.name" "$git_user_name"
+    git config --global "user.$git_user_identity.email" "$git_user_email"
+    if [ -n "$git_user_signingKey" ]; then
+      git config --global "user.$git_user_identity.signingKey" "$git_user_signingKey"
+    fi
+  done
+
+  unset git_user_identity
   unset git_user_name
   unset git_user_email
+  unset git_user_signingKey
 
   echo 'Done.'
 }

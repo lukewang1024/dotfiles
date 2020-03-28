@@ -56,6 +56,7 @@
     git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && \
     cd $A; \
   }; f"
+  identity = "!git-set-identity"
   la = !git config -l | grep alias | cut -c 7- | less
   last = !sh -c \"git log -${1:-1} HEAD\" -
   lc = "!f() { git ll \"$1\"^..\"$1\"; }; f"
