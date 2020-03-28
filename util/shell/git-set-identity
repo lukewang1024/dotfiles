@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+if [ $# -lt 1 ]; then
+	echo 'Usage: git-set-identity [identity]'
+	exit 1
+fi
+
+result="$(git config --global --list | grep -E "^user\.$1\.\w+=.+$")"
+
+if [ -z "$result" ]; then
+  echo "Cannot find identity $1"
+	exit 1
+fi
+
+git config user.name "$(git config user.$1.name)"
+git config user.email "$(git config user.$1.email)"
+git config user.signingkey "$(git config user.$1.signingkey)"
+echo "Local git config set to identity $1"
