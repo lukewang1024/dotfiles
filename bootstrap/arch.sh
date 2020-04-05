@@ -140,6 +140,7 @@ prepare_arch_env_cli_extra()
     docker-compose
     docker-machine
     dstat
+    ebtables
     ffmpeg
     ffmpegthumbnailer
     figlet
@@ -179,6 +180,7 @@ prepare_arch_env_cli_extra()
     polipo
     progress
     proxychains-ng
+    qemu
     ripgrep
     shadowsocks-libev
     shellcheck
@@ -240,6 +242,7 @@ prepare_arch_env_gui_core()
     arc-icon-theme
     blueman
     chromium
+    code
     compton
     fcitx
     fcitx-configtool
@@ -298,7 +301,6 @@ prepare_arch_env_gui_core()
     python-pywal
     sublime-merge
     sublime-text-dev
-    visual-studio-code-bin
     xinit-xsession
   )
   aur_install_pkgs
@@ -326,6 +328,8 @@ prepare_arch_env_gui_extra()
     shadowsocks-qt5
     syncthing-gtk
     telegram-desktop
+    virt-manager
+    virtualbox
     winetricks
     wkhtmltopdf
     zeal

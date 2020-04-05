@@ -23,3 +23,4 @@ is_cygwin() { is_os cygwin; }
 
 is_ssh() { [ -n "$SSH_CLIENT" ]; }
 is_tmux() { [ -n "$TMUX" ]; }
+is_tty() { [[ "$(tty)" == /dev/tty* ]]; }
