@@ -106,7 +106,7 @@ date-alt = "%a,%b%d,%Y"
 time-alt = "%I:%M:%S%p"
 
 [module/volume]
-type = internal/volume
+type = internal/alsa
 format-volume = <ramp-volume> <label-volume>
 format-volume-underline = ${colors.underline}
 label-muted =  muted
