@@ -429,38 +429,8 @@ bindsym $super+F12 $exe $inc
 
 # >> Autostart
 
-# session management
-$exe lxsession
-# automatic display management
-$exe mons -a
-# synaptic daemon
-$exe syndaemon -k
-# xscreensaver daemon
-$exe xscreensaver
 # i3fyra layout
 $fyra $fyra_l0
-# music player daemon
-$exe mpd
-# downloader
-$exe aria2c
-# torrent daemon
-$exe transmission-daemon
-# greenclip daemon
-$exe greenclip daemon
-# composite manager
-$exe compton --fading
-# set wallpaper and lockscreen image
-$exe wallpaper
-# redshift
-$exe redshift
-# unclutter makes the mouse invisible after a brief period
-$exe unclutter
-# polipo for HTTP proxy
-$exe polipo -c ~/.config/polipo/config
-# rslsync for P2P file sync
-$exe rslsync
-# udiskie mount helper
-exec_always $reload udiskie --tray
 # launch polybar where appropriate
 exec_always --no-startup-id ~/.config/polybar/launch-bars
 
