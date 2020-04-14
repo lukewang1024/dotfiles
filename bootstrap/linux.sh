@@ -36,15 +36,16 @@ install_st()
   (cd /tmp/st && sudo make install)
 }
 
-apply_app_configs()
+apply_linux_app_configs()
 {
+  apply_nix_app_configs
+
   backup_then_symlink "$config_dir/aria2" ~/.aria2
   backup_then_symlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
   backup_then_symlink "$config_dir/dunst" ~/.config/dunst
   backup_then_symlink "$config_dir/fontconfig" ~/.config/fontconfig
   backup_then_symlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backup_then_symlink "$config_dir/i3" ~/.config/i3
-  backup_then_symlink "$config_dir/lf" ~/.config/lf
   backup_then_symlink "$config_dir/mpv" ~/.config/mpv
   backup_then_symlink "$config_dir/polipo" ~/.config/polipo
   backup_then_symlink "$config_dir/polybar" ~/.config/polybar

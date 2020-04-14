@@ -26,7 +26,7 @@ setAppToggles(hyper, {
   f = 'Firefox',
   -- g = '',
   -- h: for arrows
-  -- i = '',
+  i = 'iTerm',
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
@@ -45,7 +45,7 @@ setAppToggles(hyper, {
   -- y = '',
   z = 'ForkLift',
   [','] = 'System Preferences',
-  [';'] = 'iTerm',
+  [';'] = 'Alacritty',
   ['.'] = 'SourceTree',
   ['['] = 'Skype',
   [']'] = 'Slack',

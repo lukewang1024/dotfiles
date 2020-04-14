@@ -69,6 +69,7 @@ install_nix_brew_extra_packages()
     bash-completion
     bat
     binutils
+    calcurse
     cheat
     cmake
     cmatrix
@@ -177,6 +178,12 @@ install_nix_brew_packages()
 {
   install_nix_brew_core_packages
   install_nix_brew_extra_packages
+}
+
+apply_nix_app_configs()
+{
+  backup_then_symlink "$config_dir/alacritty" ~/.config/alacritty
+  backup_then_symlink "$config_dir/lf" ~/.config/lf
 }
 
 brew_cleanup()

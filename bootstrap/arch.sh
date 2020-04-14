@@ -117,7 +117,7 @@ prepare_arch_env_cli_core()
   install_nix_brew_runtimes
 
   basic_env_setup
-  apply_app_configs
+  apply_linux_app_configs
   fix_ENOSPC
 }
 
@@ -129,6 +129,7 @@ prepare_arch_env_cli_extra()
     aws-cli
     axel
     bat
+    calcurse
     cloc
     cmake
     cmatrix
@@ -237,6 +238,7 @@ prepare_arch_env_cli_extra()
 prepare_arch_env_gui_core()
 {
   pkgs=(
+    alacritty
     arandr
     arc-gtk-theme
     arc-icon-theme
