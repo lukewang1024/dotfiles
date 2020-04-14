@@ -27,6 +27,7 @@ function install_scoop_packages
     7zip `
     adb `
     ag `
+    alacritty `
     android-sdk `
     android-studio `
     atom `
@@ -105,6 +106,7 @@ function install_scoop_packages
     slack `
     snipaste `
     sourcetree `
+    steam `
     sublime-merge `
     sublime-text `
     sudo `
@@ -122,7 +124,9 @@ function install_scoop_packages
     vimtutor `
     vscode `
     whatsapp `
+    win-dynamic-desktop `
     windirstat `
+    windows-terminal `
     winscp `
     wireshark `
     wox `

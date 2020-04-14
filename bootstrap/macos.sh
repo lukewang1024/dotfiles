@@ -162,6 +162,7 @@ prepare_macos_env_gui_extra()
 
   local casks=(
     aerial
+    alacritty
     android-platform-tools
     android-sdk
     android-studio
@@ -290,10 +291,11 @@ prepare_macos_env_gui_extra()
 
 set_macos_configs()
 {
+  apply_nix_app_configs
+
   sync_config_repo ~/.hammerspoon https://github.com/ashfinal/awesome-hammerspoon
   backup_then_symlink "$config_dir/hammerspoon/private" ~/.hammerspoon/private
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
-  backup_then_symlink "$config_dir/lf" ~/.config/lf
   backup_then_symlink "$config_dir/ranger/macos" ~/.config/ranger
 
   # Handy scripts

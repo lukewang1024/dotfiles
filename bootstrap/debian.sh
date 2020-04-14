@@ -71,7 +71,7 @@ prepare_debian_env_cli_core()
   install_linuxbrew
   install_linux_brew_core_packages
   basic_env_setup
-  apply_app_configs
+  apply_linux_app_configs
   fix_ENOSPC
   fix_locale
 }
@@ -117,6 +117,7 @@ prepare_debian_env_cli_extra()
 prepare_debian_env_gui_extra()
 {
   ppas=(
+    ppa:mmstick76/alacritty # Alacritty
     ppa:jtaylor/keepass     # KeyPass2
     ppa:zeal-developers/ppa # Zeal
   )
@@ -127,6 +128,7 @@ prepare_debian_env_gui_extra()
   echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
 
   pkgs=(
+    alacritty
     chromium-browser
     doublecmd-gtk
     kdiff3
