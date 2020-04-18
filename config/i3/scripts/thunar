@@ -4,7 +4,7 @@
 # $2: Thunar view types
 #     ThunarIconView, ThunarCompactView, ThunarDetailsView
 
-cmd="i3run -i $1 -e \
+cmd="i3run -g -i $1 -e \
   'xfconf-query --channel thunar --property /last-view --create --type string --set $2 \
    && thunar & xdotool set_window --classname $1 \`i3get -i thunar -r d -y\`'"
 

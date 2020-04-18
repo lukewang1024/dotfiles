@@ -20,7 +20,7 @@ set $fyra_l9     -l 'AB=-480 BD=300 AC=-160'
 set $fyra_l8     -l 'AB=-640 BD=390 AC=-160'
 set $fyra_l7     -l 'AB=-920 BD=540 AC=-160'
 set $rofi        rofi -show
-set $term        st
+set $term        alacritty
 set $browser     chromium
 
 set $lock        ~/.config/i3/scripts/lock
@@ -65,10 +65,12 @@ bindsym $super+Control+$alt+t $exe touchpad-toggle
 
 # >> Terminal
 
-bindsym $super+grave          $srun -i dropdown -e '$term -n dropdown'
-bindsym $super+Return         $exe $term
-bindsym $super+Shift+Return   $grun -i cterm -e '$term -n cterm'
-bindsym $super+Control+Return $exe $term -n tiledterm
+bindsym $super+grave            $srun -i dropdown -e '$term --class dropdown'
+bindsym $hyper+semicolon        $grun -i aterm -e '$term --class aterm'
+bindsym $super+Shift+Return     $grun -i cterm -e '$term --class cterm'
+bindsym $hyper+Shift+semicolon  $grun -i termite -e 'termite'
+bindsym $super+Return           $exe $term
+bindsym $super+Control+Return   $exe $term --class tiledterm
 
 # dropdown terminal
 for_window [instance="dropdown"] resize set 900 600
@@ -109,7 +111,6 @@ bindsym $hyper+1       $srun -i gsimplecal -e 'gsimplecal'
 bindsym $hyper+0       $srun -i Qv2ray -e 'gtk-launch Qv2ray'
 
 bindsym $hyper+backslash  $srun -i keepassxc -e 'keepassxc'
-bindsym $hyper+semicolon  $grun -i alacritty -e 'alacritty'
 bindsym $hyper+space      $grun -i $lark_web -e 'gtk-launch lark'
 
 # >> Hyper+Shift shortcuts
@@ -123,8 +124,6 @@ bindsym $hyper+Shift+v       $grun -i code -e 'code'
 bindsym $hyper+Shift+w       $srun -i whats-app-nativefier* -e 'whatsapp-web-desktop'
 bindsym $hyper+Shift+y       $grun -i skype -e 'skypeforlinux'
 
-bindsym $hyper+Shift+semicolon  $grun -i termite -e 'termite'
-
 # >> Window rules
 
 for_window [class="^.*"]                                        floating enable
@@ -132,7 +131,7 @@ for_window [class="Chromium" instance="$lark_web"]              focus; $fyra -m 
 for_window [class="Firefox" instance="Navigator"]               focus; $fyra -m A
 for_window [class="jetbrains-studio"]                           focus; $fyra -m A
 for_window [class="mpv"]                                        focus; $fyra -m B
-for_window [instance="alacritty"]                               focus; $fyra -m A
+for_window [instance="aterm"]                                   focus; $fyra -m A
 for_window [instance="chromium" window_role="browser"]          focus; $fyra -m A
 for_window [instance="chromium" window_role="pop-up"]           focus; $fyra -m D
 for_window [instance="code" window_type="normal"]               focus; $fyra -m A
