@@ -20,6 +20,7 @@ Plug 'bling/vim-airline'
 Plug 'tpope/vim-commentary'
 Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-fugitive'
+Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
 Plug 'terryma/vim-multiple-cursors'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-sensible'
