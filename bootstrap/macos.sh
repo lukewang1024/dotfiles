@@ -96,6 +96,7 @@ prepare_macos_env_gui_core()
   brew tap homebrew/cask-fonts
 
   local casks=(
+    alacritty
     alfred
     appcleaner
     ezip
@@ -162,7 +163,6 @@ prepare_macos_env_gui_extra()
 
   local casks=(
     aerial
-    alacritty
     android-platform-tools
     android-sdk
     android-studio
@@ -196,7 +196,6 @@ prepare_macos_env_gui_extra()
     font-meslo-nerd-font
     font-ubuntumono-nerd-font
     forklift
-    go2shell
     google-backup-and-sync
     google-chrome
     handbrake
@@ -224,6 +223,7 @@ prepare_macos_env_gui_extra()
     omnidisksweeper
     onedrive
     onyx
+    openinterminal
     openmtp
     pdf-expert
     pdfsam-basic
