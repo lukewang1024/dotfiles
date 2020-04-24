@@ -117,8 +117,12 @@ install_nix_brew_extra_packages()
     hyperfine
     inetutils
     irssi
+    joplin
     jpegoptim
     kubernetes-cli
+    lazydocker
+    lazygit
+    lazynpm
     lolcat
     make
     media-info
