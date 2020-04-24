@@ -217,6 +217,9 @@ prepare_arch_env_cli_extra()
     git-quick-stats
     google-cloud-sdk
     hyperfine
+    lazydocker
+    lazygit
+    lazynpm
     mons
     mycli
     onefetch
@@ -350,6 +353,7 @@ prepare_arch_env_gui_extra()
     genymotion
     git-cola
     google-chrome-stable
+    joplin
     kitematic
     losslesscut
     mailspring

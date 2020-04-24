@@ -66,11 +66,15 @@ function install_scoop_packages
     hwmonitor `
     hyper `
     irfanview `
+    joplin `
     jq `
     kdiff3 `
     keepass `
     kitematic `
     kubectl `
+    lazydocker `
+    lazygit `
+    lazynpm `
     lf `
     licecap `
     ln `

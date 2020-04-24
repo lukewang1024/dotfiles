@@ -150,6 +150,7 @@ prepare_macos_env_gui_extra()
     1452453066 # Hidden Bar
     1477089520 # Backtrack
     1497527363 # Blurred
+    1507782672 # Pixea
   )
 
   mas install $masApps
@@ -207,6 +208,7 @@ prepare_macos_env_gui_extra()
     istat-menus
     itsycal
     java
+    joplin
     kap
     kdiff3
     keka
