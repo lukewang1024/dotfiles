@@ -43,7 +43,6 @@ zplug 'plugins/systemadmin', from:oh-my-zsh
 zplug 'plugins/taskwarrior', from:oh-my-zsh
 zplug 'plugins/tig', from:oh-my-zsh
 zplug 'plugins/tmux', from:oh-my-zsh
-zplug 'plugins/tmuxinator', from:oh-my-zsh, lazy:yes
 zplug 'plugins/urltools', from:oh-my-zsh
 zplug 'plugins/vscode', from:oh-my-zsh
 zplug 'plugins/web-search', from:oh-my-zsh
@@ -55,6 +54,7 @@ zplug 'supercrabtree/k'
 zplug 'zsh-users/zsh-autosuggestions'
 zplug 'zsh-users/zsh-completions'
 zplug 'esc/conda-zsh-completion'
+zplug 'lukewang1024/zsh-tmuxinator'
 
 # theme - powerlevel10k
 zplug 'romkatv/powerlevel10k', as:theme, depth:1

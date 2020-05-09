@@ -48,7 +48,6 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/taskwarrior
     robbyrussell/oh-my-zsh plugins/tig
     robbyrussell/oh-my-zsh plugins/tmux
-    robbyrussell/oh-my-zsh plugins/tmuxinator
     robbyrussell/oh-my-zsh plugins/urltools
     robbyrussell/oh-my-zsh plugins/vscode
     robbyrussell/oh-my-zsh plugins/web-search
@@ -60,6 +59,7 @@ if ! zgen saved; then
     zsh-users/zsh-autosuggestions
     zsh-users/zsh-completions src
     esc/conda-zsh-completion
+    lukewang1024/zsh-tmuxinator
 EOPLUGINS
   # ^ can't indent this EOPLUGINS
 

@@ -10,7 +10,7 @@ tig_setup()
 {
   blank_lines
   printf 'Symlinking .tigrc... '
-  backup_then_symlink "$config_dir/tig/.tigrc" ~/.tigrc
+  backup_then_symlink "$config_dir/tig" ~/.config/tig
   echo 'Done.'
 }
 

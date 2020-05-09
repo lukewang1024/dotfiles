@@ -28,23 +28,33 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
 # Aliases
+
+## Utils
 alias cb=clipboard
 alias n=nvim
-alias sap='source ~/.agent-profile'
-alias ap='all_proxy=socks5://localhost:1080'
-alias ape='export all_proxy=socks5://localhost:1080'
-alias apd='unset all_proxy'
-alias hp='http_proxy=localhost:8123 https_proxy=localhost:8123'
-alias hpe='export http_proxy=localhost:8123 https_proxy=localhost:8123'
-alias hpd='unset http_proxy https_proxy'
-alias px='proxychains4 -f ~/.config/proxychains.conf'
-alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
 alias pping='prettyping --nolegend'
+
+## SSH related
+alias sap='source ~/.agent-profile'
 alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
+
+## Proxy related
+alias ap='all_proxy=socks5://localhost:1080'
+alias apd='unset all_proxy'
+alias ape='export all_proxy=socks5://localhost:1080'
+alias hp='http_proxy=localhost:8123 https_proxy=localhost:8123'
+alias hpd='unset http_proxy https_proxy'
+alias hpe='export http_proxy=localhost:8123 https_proxy=localhost:8123'
+alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
+alias px='proxychains4 -f ~/.config/proxychains.conf'
+
+## Git related
 alias gitc='git --no-pager'
 alias gmtf='git mergetool --no-prompt --tool=fugitive'
+alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 
+## Npx tools
 alias create-react-app='npx create-react-app'
 alias react-native='npx react-native'
 alias sb='npx -p @storybook/cli sb'
