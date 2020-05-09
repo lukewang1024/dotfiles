@@ -205,7 +205,8 @@ prepare_macos_env_gui_extra()
     horndis
     imagealpha
     imageoptim
-    istat-menus
+    inkscape
+    istat-menus5
     itsycal
     java
     joplin
@@ -282,7 +283,6 @@ prepare_macos_env_gui_extra()
     wireshark
     wkhtmltopdf
     xld
-    xquartz
     zeplin
     zoomus
   )
