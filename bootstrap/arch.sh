@@ -208,6 +208,7 @@ prepare_arch_env_cli_extra()
   pkgs=(
     apache-spark
     cheat-git
+    deno-bin
     dive
     downgrader
     fpp
@@ -302,7 +303,9 @@ prepare_arch_env_gui_core()
     gluqlo-git
     i3ass
     i3lock-color
-    nerd-fonts-complete
+    nerd-fonts-fira-code
+    nerd-fonts-meslo
+    nerd-fonts-source-code-pro
     python-pywal
     sublime-merge
     sublime-text-dev

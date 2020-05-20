@@ -101,6 +101,8 @@ prepare_macos_env_gui_core()
     appcleaner
     ezip
     fliqlo
+    font-firacode-nerd-font
+    font-meslo-nerd-font
     font-sourcecodepro-nerd-font
     hammerspoon
     hyperswitch
@@ -190,12 +192,6 @@ prepare_macos_env_gui_extra()
     flume
     flux
     folx
-    font-anonymouspro-nerd-font
-    font-dejavusansmono-nerd-font
-    font-firacode-nerd-font
-    font-hack-nerd-font
-    font-meslo-nerd-font
-    font-ubuntumono-nerd-font
     forklift
     google-backup-and-sync
     google-chrome

@@ -22,7 +22,7 @@ border-size = 0
 border-color = {$colors.transparent}
 module-margin = 2
 font-0 = Noto Sans:size=10;1
-font-1 = Ubuntu Nerd Font:size=10;0
+font-1 = MesloLGS Nerd Font:size=10;1
 modules-left = i3 cpu memory temperature battery wlan lan
 modules-center = xwindow
 modules-right = volume xbacklight date
@@ -34,7 +34,7 @@ enable-ipc = true
 
 [module/xwindow]
 type = internal/xwindow
-label = %title:0:50:...%
+label = %title:0:100:...%
 
 [module/xkeyboard]
 type = internal/xkeyboard
@@ -64,28 +64,28 @@ label-urgent-padding = 2
 [module/xbacklight]
 type = internal/xbacklight
 format-underline = ${colors.underline}
-label = : %percentage%%
+label = "  %percentage%%"
 
 [module/backlight]
 type = internal/backlight
 card = intel_backlight
-label = : %percentage%%
+label = "  %percentage%%"
 
 [module/cpu]
 type = internal/cpu
 interval = 5
-format-prefix = " "
+format-prefix = "  "
 
 [module/memory]
 type = internal/memory
 interval = 5
-format-prefix = " "
+format-prefix = "  "
 
 [module/network]
 type = internal/network
 accumulate-stats = true
 interval = 1
-label-connected =  U:%upspeed%|D:%downspeed%
+label-connected = "  U: %upspeed% | D: %downspeed%"
 
 [module/wlan]
 inherit = module/network
@@ -99,17 +99,17 @@ interface = eno1
 type = internal/date
 interval = 1
 format-underline = ${colors.underline}
-label =  %date%  %time%
-date = "%b%d"
-time = "%I:%M%p"
-date-alt = "%a,%b%d,%Y"
-time-alt = "%I:%M:%S%p"
+label = "  %date%    %time%"
+date = "%b %d"
+time = "%I:%M %p"
+date-alt = "%a, %b %d, %Y"
+time-alt = "%I:%M:%S %p"
 
 [module/volume]
 type = internal/alsa
-format-volume = <ramp-volume> <label-volume>
+format-volume = "<ramp-volume>  <label-volume>"
 format-volume-underline = ${colors.underline}
-label-muted =  muted
+label-muted = "  muted"
 ramp-volume-0 = 
 ramp-volume-1 = 
 ramp-volume-2 = 
@@ -121,11 +121,11 @@ battery = BAT0
 adapter = ADP1
 poll-interval = 5
 time-format = %H:%M
-format-charging =  <label-charging>
+format-charging = "  <label-charging>"
 label-charging = %percentage%%
-format-discharging = <ramp-capacity> <label-discharging>
+format-discharging = "<ramp-capacity>  <label-discharging>"
 label-discharging = %time% (%percentage%%)
-label-full =  Charged
+label-full = "  Charged"
 ramp-capacity-0 = 
 ramp-capacity-1 = 
 ramp-capacity-2 = 
@@ -135,8 +135,8 @@ ramp-capacity-4 = 
 [module/temperature]
 type = internal/temperature
 warn-temperature = 80
-format = <ramp> <label>
-format-warn = <ramp> <label-warn>
+format = "<ramp>  <label>"
+format-warn = "<ramp>  <label-warn>"
 format-warn-foreground = ${colors.alert}
 ramp-0 = 
 ramp-1 = 

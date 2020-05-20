@@ -43,6 +43,7 @@ function install_scoop_packages
     conemu `
     cowsay `
     cpu-z `
+    deno `
     ditto `
     doublecmd `
     etcher `
