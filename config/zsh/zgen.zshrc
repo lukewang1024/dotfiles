@@ -103,7 +103,7 @@ EOPLUGINS
   fi
 
   # These plugin needs to be loaded last and THE ORDER MATTERS
-  zgen load zsh-users/zsh-syntax-highlighting
+  zgen load zdharma/fast-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
   zgen load "$zsh_config_dir/rc.zsh"
   zgen load "$config_dir/todoist/todoist_functions.sh"

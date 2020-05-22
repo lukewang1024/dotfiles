@@ -34,7 +34,7 @@ Other tasks:
   basic - Only link rc files to $HOME
   npmg  - Install global npm packages (in case of version switch in nvm)
   zgen  - Use zgen as preferred zsh plugin manager
-  zplug - Use zplug as preferred zsh plugin manager
+  zinit - Use zinit as preferred zsh plugin manager
   run   - Run arbitrary function in any bootstrap scripts
     `./init run [module] [task]`, below are tasks available:
     `macos backup_automator_stuff`: Backup Automator stuff to Dropbox

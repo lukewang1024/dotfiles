@@ -76,6 +76,7 @@ function install_scoop_packages
     licecap `
     ln `
     losslesscut `
+    lxrunoffline `
     mc `
     miniconda3 `
     mobaxterm `

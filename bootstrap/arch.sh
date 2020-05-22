@@ -256,6 +256,7 @@ prepare_arch_env_gui_core()
     fcitx-rime
     feh
     firefox
+    foliate
     galculator
     gsimplecal
     i3-gaps
@@ -323,6 +324,7 @@ prepare_arch_env_gui_extra()
     android-file-transfer
     atom
     chromium
+    drawing
     file-roller
     handbrake
     hardinfo

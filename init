@@ -66,9 +66,9 @@ case $1 in
     zgen_setup
     ;;
 
-  'zplug')
+  'zinit')
     source "$partial_dir/shell.sh"
-    zplug_setup
+    zinit_setup
     ;;
 
   'run')
