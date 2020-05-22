@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+if [ $# -lt 3 ]; then
+  echo 'Usage: find-and-replace [search-pattern] [replace-pattern] [path1] [path2] ...'
+  exit 1
+fi
+
+search_pattern="$1"
+replace_pattern="$2"
+
+shift
+shift
+
+if [ "$(uname -s)" = 'Darwin' ]; then
+  xargs_cmd='gxargs'
+  sed_cmd='gsed'
+else
+  xargs_cmd='xargs'
+  sed_cmd='sed'
+fi
+
+grep -RiIl "$search_pattern" $@ | $xargs_cmd $sed_cmd -i "s/$search_pattern/$replace_pattern/g"

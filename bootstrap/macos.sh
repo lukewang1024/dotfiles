@@ -187,6 +187,7 @@ prepare_macos_env_gui_extra()
     duet
     electron-fiddle
     fantastical
+    feishu
     figma
     firefox
     flume
@@ -211,6 +212,7 @@ prepare_macos_env_gui_extra()
     keka
     keycastr
     kitematic
+    lark
     lepton
     losslesscut
     macpass

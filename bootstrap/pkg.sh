@@ -126,6 +126,7 @@ install_cpan_packages()
 
 install_other_packages()
 {
+  backup_then_symlink "$util_dir/shell/find-and-replace" ~/bin/find-and-replace
   backup_then_symlink "$util_dir/shell/killbp" ~/bin/killbp
   backup_then_symlink "$util_dir/shell/mann" ~/bin/mann
   backup_then_symlink "$util_dir/shell/md2resume" ~/bin/md2resume
