@@ -91,7 +91,7 @@ print_usage()
   echo '  basic - Only link rc files to $HOME'
   echo '  npmg  - Install global npm packages (in case of version switch in nvm)'
   echo '  zgen  - Use zgen as preferred zsh plugin manager'
-  echo '  zplug - Use zplug as preferred zsh plugin manager'
+  echo '  zinit - Use zinit as preferred zsh plugin manager'
   echo '  run   - Run arbitrary function in any bootstrap scripts'
   echo '    `./init run [module] [task]`, below are tasks available:'
   echo '    `macos backup_automator_stuff`: Backup Automator stuff to Dropbox'

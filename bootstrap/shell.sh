@@ -54,19 +54,19 @@ zgen_setup()
   echo 'Done.'
 }
 
-zplug_setup()
+zinit_setup()
 {
   blank_lines
-  echo 'Setup zplug...'
-  if [ -d ~/.zplug ]; then
-    sync_config_repo ~/.zplug https://github.com/zplug/zplug
+  echo 'Setup zinit...'
+  if [ -d ~/.zinit ]; then
+    sync_config_repo ~/.zinit/bin https://github.com/zdharma/zinit
   else
-    curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)"
   fi
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/zplug.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/zinit.zshrc" ~/.zshrc
   backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
   backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
   echo 'Done.'
