@@ -38,9 +38,7 @@ function install_scoop_packages
     ccleaner `
     chromium `
     cloc `
-    cmder `
     concfg `
-    conemu `
     cowsay `
     cpu-z `
     deno `
@@ -65,7 +63,6 @@ function install_scoop_packages
     hexchat `
     hub `
     hwmonitor `
-    hyper `
     irfanview `
     joplin `
     jq `
@@ -75,7 +72,6 @@ function install_scoop_packages
     kubectl `
     lazydocker `
     lazygit `
-    lazynpm `
     lf `
     licecap `
     ln `
