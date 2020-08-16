@@ -341,7 +341,7 @@ bindsym $super+F2 $exe $lightup
 set $maimArg --hidecursor | tee ~/Pictures/$(date +%s).png | xclip -selection clipboard -target image/png
 bindsym Print              $exe maim $maimArg
 bindsym Shift+Print        $exe maim --window=$(xdotool getactivewindow) $maimArg
-bindsym F1                 $exe maim --select $maimArg
+bindsym F1                 $exe flameshot gui
 bindsym $super+Print       $exe dmenu-record
 bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
 bindsym $super+Pause       $exe killall ffmpeg
