@@ -42,7 +42,10 @@ zinit light-mode compile'handler' for \
   # OMZP::emoji/emoji.plugin.zsh \
 
 zinit wait lucid for \
+  OMZL::directories.zsh \
   OMZL::git.zsh \
+  OMZL::key-bindings.zsh \
+  OMZL::theme-and-appearance.zsh \
   OMZP::colored-man-pages/colored-man-pages.plugin.zsh \
   OMZP::command-not-found/command-not-found.plugin.zsh \
   OMZP::common-aliases/common-aliases.plugin.zsh \
@@ -80,6 +83,7 @@ zinit wait lucid for \
   OMZP::web-search/web-search.plugin.zsh \
   OMZP::yarn/yarn.plugin.zsh \
   zsh-users/zsh-history-substring-search \
+  lukewang1024/zsh-tmuxinator \
   atload'_zsh_autosuggest_start' zsh-users/zsh-autosuggestions \
   atpull'zinit creinstall -q .' blockf zsh-users/zsh-completions
 

@@ -100,6 +100,7 @@ install_nix_brew_extra_packages()
     git-appraise
     git-lfs
     git-quick-stats
+    gitui
     glances
     glow
     gnu-indent

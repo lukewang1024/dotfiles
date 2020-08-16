@@ -43,6 +43,7 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/aria2" ~/.aria2
   backup_then_symlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
   backup_then_symlink "$config_dir/dunst" ~/.config/dunst
+  backup_then_symlink "$config_dir/flameshot" ~/.config/Dharkael
   backup_then_symlink "$config_dir/fontconfig" ~/.config/fontconfig
   backup_then_symlink "$config_dir/gsimplecal" ~/.config/gsimplecal
   backup_then_symlink "$config_dir/i3" ~/.config/i3

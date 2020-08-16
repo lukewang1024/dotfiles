@@ -216,6 +216,7 @@ prepare_arch_env_cli_extra()
     git-bug-bin
     git-lfs
     git-quick-stats
+    gitui
     google-cloud-sdk
     hyperfine
     lazydocker
@@ -256,6 +257,7 @@ prepare_arch_env_gui_core()
     fcitx-rime
     feh
     firefox
+    flameshot
     foliate
     galculator
     gsimplecal
