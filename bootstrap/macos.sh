@@ -143,6 +143,7 @@ prepare_macos_env_gui_extra()
     937984704  # Amphetamine
     998804308  # Blinks
     1025306797 # Resize Master
+    1044484672 # ApolloOne - Photo Video Viewer
     1147396723 # WhatsApp
     1176895641 # Spark
     1254743014 # LyricsX
