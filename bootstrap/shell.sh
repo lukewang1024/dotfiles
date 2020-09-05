@@ -92,3 +92,11 @@ bashit_setup()
     bash-it enable completion bash-it brew conda git git_flow_avh npm ssh system tmux; \
     exit'
 }
+
+profile_setup()
+{
+  blank_lines
+  printf 'Symlinking .profile... '
+  backup_then_symlink "$config_dir/sh/.profile" ~/.profile
+  echo 'Done.'
+}

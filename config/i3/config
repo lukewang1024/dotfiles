@@ -23,7 +23,6 @@ set $rofi        rofi -show
 set $term        alacritty
 set $browser     chromium
 
-set $lock        ~/.config/i3/scripts/lock
 set $reload      ~/.config/i3/scripts/reload
 set $thunar      ~/.config/i3/scripts/thunar
 
@@ -57,9 +56,9 @@ bindsym $super+Shift+e exec --no-startup-id \
 
 # >> Power & peripheral
 
-bindsym $super+Control+$alt+l $exe $lock
-bindsym $super+Control+$alt+s $exe $lock suspend
-bindsym $super+Control+$alt+h $exe $lock hibernate
+bindsym $super+Control+$alt+l $exe lock
+bindsym $super+Control+$alt+s $exe lock suspend
+bindsym $super+Control+$alt+h $exe lock hibernate
 bindsym $super+Control+$alt+p $exe dmenu-power
 bindsym $super+Control+$alt+t $exe touchpad-toggle
 

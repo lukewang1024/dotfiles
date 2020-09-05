@@ -14,6 +14,9 @@ export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
 
+export GTK2_RC_FILES="$HOME/.gtkrc-2.0"
+export QT_QPA_PLATFORMTHEME="qt5ct"
+
 # start some nice programs
 
 if [ -d /etc/X11/xinit/xinitrc.d ] ; then
@@ -60,6 +63,7 @@ to_launch dropbox && dropbox &
 # a set of key tweaks
 exists kbmod && kbmod
 # set wallpaper and lockscreen image
-exists wallpaper && wallpaper
+# exists wallpaper && wallpaper
 
-exec i3
+# exec i3
+exec startxfce4
