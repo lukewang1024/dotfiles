@@ -1,13 +1,78 @@
 # syntax:ssHash
 
+# Vim cursor move: Hyper + hjkl
+
 "xte 'key Up'"
-  mod3+k+release
+  Mod3 + k + release
 
 "xte 'key Down'"
-  mod3+j+release
+  Mod3 + j + release
 
 "xte 'key Left'"
-  mod3+h+release
+  Mod3 + h + release
 
 "xte 'key Right'"
-  mod3+l+release
+  Mod3 + l + release
+
+# Active window control
+
+"window-move toggle_maximize"
+  Mod3 + Return
+
+"window-move toggle_maximize"
+  Mod4 + Return
+
+"window-move top_half"
+  Mod4 + Up
+
+"window-move bottom_half"
+  Mod4 + Down
+
+"window-move left_half"
+  Mod4 + Left
+
+"window-move right_half"
+  Mod4 + Right
+
+"window-move left_two_third"
+  Shift+Mod4 + Up
+
+"window-move right_one_third"
+  Shift+Mod4 + Down
+
+"window-move prev_display"
+  Shift+Mod4 + Left
+
+"window-move next_display"
+  Shift+Mod4 + Right
+
+# Launch apps
+
+"lock"
+  Control+Alt + q
+
+"kbmod"
+  Shift+Mod4 + r
+
+"rofi -show drun"
+  Mod4 + space
+
+"xfce4-popup-whiskermenu"
+  Control + Menu
+
+"thunar"
+  XF86Explorer
+
+"galculator"
+  XF86Calculator
+
+"flameshot gui"
+  F1
+
+"flameshot gui"
+  Print
+
+# Toggle apps show / hide, launch if not open
+
+"alacritty"
+  Mod3 + semicolon

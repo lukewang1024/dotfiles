@@ -76,11 +76,13 @@ apply_linux_app_configs()
   backup_then_symlink "$util_dir/linux/dmenu-umount" ~/bin/dmenu-umount
   backup_then_symlink "$util_dir/linux/enable-exec" ~/bin/enable-exec
   backup_then_symlink "$util_dir/linux/kbmod" ~/bin/kbmod
+  backup_then_symlink "$util_dir/linux/lock" ~/bin/lock
   backup_then_symlink "$util_dir/linux/record-audio" ~/bin/record-audio
   backup_then_symlink "$util_dir/linux/record-screencast" ~/bin/record-screencast
   backup_then_symlink "$util_dir/linux/record-video" ~/bin/record-video
   backup_then_symlink "$util_dir/linux/touchpad-toggle" ~/bin/touchpad-toggle
   backup_then_symlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
+  backup_then_symlink "$util_dir/linux/window-move" ~/bin/window-move
 
   # Misc settings
   mkdir -p ~/.polipo-cache

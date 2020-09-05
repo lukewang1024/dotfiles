@@ -167,6 +167,7 @@ util_setup()
 basic_env_setup()
 {
   ssh_setup
+  profile_setup
   bashit_setup
   zgen_setup
   tmux_setup
