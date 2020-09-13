@@ -4,6 +4,7 @@ join_by_multi() { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}
 
 # command check
 exists() { command -v "$1" >/dev/null 2>&1; }
+string_contain() { [ -z "$1" ] || { [ -z "${2##*$1*}" ] && [ -n "$2" ]; }; }
 
 # env check
 is_os() { [[ $OSTYPE == *$1* ]]; }

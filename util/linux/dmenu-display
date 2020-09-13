@@ -4,7 +4,7 @@
 script_path=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 source "$script_path/helper.sh"
 
-if [[ $# -ge 1 ]]; then
+if [ $# -ge 1 ]; then
   chosen="$1"
 else
   choices="primary\\nsecondary\\nextend-top\\nextend-left\\nextend-right\\nextend-bottom\\nmanual-config"
@@ -23,7 +23,7 @@ case "$chosen" in
 esac
 
 # Reset i3 and wallpaper if there was a selection
-if [[ -n $chosen ]]; then
+if [ -n "$chosen" ]; then
   exists wallpaper && wallpaper
   exists polybar-launch && polybar-launch
 fi

@@ -306,12 +306,14 @@ prepare_arch_env_gui_core()
     gluqlo-git
     i3ass
     i3lock-color
+    jumpapp
     nerd-fonts-fira-code
     nerd-fonts-meslo
     nerd-fonts-source-code-pro
     python-pywal
     sublime-merge
     sublime-text-dev
+    xgetres
     xinit-xsession
   )
   aur_install_pkgs
