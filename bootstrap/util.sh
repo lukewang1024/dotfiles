@@ -68,34 +68,40 @@ blank_lines() { echo; echo; }
 # Print the usage of the script and exit
 print_usage()
 {
-  echo './init [platform] [option]'
-  echo
-  echo 'List of platforms:'
-  echo
-  echo '  macos | osx - macOS'
-  echo '  debian      - Debian'
-  echo '  arch        - Arch Linux'
-  echo '  chromeos    - ChromeOS (requires developer mode)'
-  echo '  cygwin      - Cygwin'
-  echo
-  echo 'List of options:'
-  echo
-  echo '  core - Prepare core environment only (default)'
-  echo '  cli  - Prepare CLI environment only'
-  echo '  gui  - Prepare GUI environment only'
-  echo '  all  - Prepare both environments'
-  echo '  game - Setup some games'
-  echo
-  echo 'Other tasks:'
-  echo
-  echo '  basic - Only link rc files to $HOME'
-  echo '  npmg  - Install global npm packages (in case of version switch in nvm)'
-  echo '  zgen  - Use zgen as preferred zsh plugin manager'
-  echo '  zinit - Use zinit as preferred zsh plugin manager'
-  echo '  run   - Run arbitrary function in any bootstrap scripts'
-  echo '    `./init run [module] [task]`, below are tasks available:'
-  echo '    `macos backup_automator_stuff`: Backup Automator stuff to Dropbox'
-  echo '    `macos install_mac_wechat_plugin`: Tweak WeChat to save login session'
-  echo
-  exit 1
+  cat << 'EOB' >&2
+Luke's config bootstrap script
+
+[Synopsis]
+
+./init [platform] [option]
+./init [task]
+
+[Platforms]
+
+  macos | osx - macOS
+  debian      - Debian
+  arch        - Arch Linux
+  chromeos    - ChromeOS (requires developer mode)
+  cygwin      - Cygwin
+
+[Options]
+
+  core - Prepare core environment only (default)
+  cli  - Prepare CLI environment only
+  gui  - Prepare GUI environment only
+  all  - Prepare both environments
+  game - Setup some games
+
+[Tasks]
+
+  basic - Only link rc files to $HOME
+  npmg  - Install global npm packages (in case of version switch in nvm)
+  zgen  - Use zgen as preferred zsh plugin manager
+  zinit - Use zinit as preferred zsh plugin manager
+  run   - Run arbitrary function in any bootstrap scripts
+    `./init run [module] [task]`, below are tasks available:
+    `macos backup_automator_stuff`: Backup Automator stuff to Dropbox
+    `macos install_mac_wechat_plugin`: Tweak WeChat to save login session
+EOB
+  exit 0
 }

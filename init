@@ -18,7 +18,7 @@ util_dir="$repo_path/util"
 
 source "$partial_dir/util.sh"
 
-if [ $# -lt 1 ]; then
+if [ $# = 0 ]; then
   print_usage
 fi
 

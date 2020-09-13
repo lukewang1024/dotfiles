@@ -2,20 +2,26 @@
 
 print_usage()
 {
-  echo 'window-move [action]'
-  echo
-  echo 'Possible actions:'
-  echo '  toggle_maximize'
-  echo '  left_half'
-  echo '  right_half'
-  echo '  top_half'
-  echo '  bottom_half'
-  echo '  prev_display'
-  echo '  next_display'
-  echo '  left_two_third'
-  echo '  right_one_third'
-  echo
-  exit 1
+  cat << 'EOB' >&2
+window-move - move active window around in X
+
+[Synopsis]
+
+window-move [option]
+
+[Options]
+
+toggle_maximize
+left_half
+right_half
+top_half
+bottom_half
+prev_display
+next_display
+left_two_third
+right_one_third
+EOB
+  exit 0
 }
 
 # read workarea size of the active display into wa_x, wa_y, wa_w & wa_h
@@ -121,7 +127,7 @@ right_one_third()
 
 main()
 {
-  if [ $# -lt 1 ]; then
+  if [ $# = 0 ]; then
     print_usage
   fi
 

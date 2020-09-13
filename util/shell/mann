@@ -2,19 +2,25 @@
 
 print_usage()
 {
-  echo "Locate the position of an option in command's man page."
-  echo 'Usage:'
-  echo '  mann [command] [option]'
-  echo 'Example:'
-  echo '  mann wget -O'
-  exit 1
+  cat << 'EOB' >&2
+mann - Locate the position of an option in command's man page
+
+[Synopsis]
+
+  mann [command] [option]
+
+[Example]
+
+  mann wget -O
+EOB
+  exit 0
 }
 
 main()
 {
-  if [ $# -lt 1 ]; then
+  if [ $# = 0 ]; then
     print_usage
-  elif [ $# -eq 1 ]; then
+  elif [ $# = 1 ]; then
     man "$1"
   else
     man "$1" | less -p "^( |\\t){0,8}$2 "
