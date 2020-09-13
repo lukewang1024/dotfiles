@@ -2,17 +2,23 @@
 
 print_usage()
 {
-  echo "Kill the process that occupies a certain port."
-  echo 'Usage:'
-  echo '  killbp [port_number]'
-  echo 'Example:'
-  echo '  killbp 3001'
-  exit 1
+  cat << 'EOB' >&2
+killbp - Kill the process that occupies a certain port
+
+[Synopsis]
+
+  killbp [port_number]
+
+[Examples]
+
+  killbp 3001
+EOB
+  exit 0
 }
 
 main()
 {
-  if [ $# -lt 1 ]; then
+  if [ $# = 0 ]; then
     print_usage
   fi
 

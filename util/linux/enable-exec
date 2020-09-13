@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 
+print_usage()
+{
+  cat << 'EOB' >&2
+enable-exec: Remount a path to remove noexec constraint
+
+[Synopsis]
+
+enable-exec [path]
+
+[Examples]
+
+enable-exec /tmp
+enable-exec ~
+EOB
+  exit 0
+}
+
 if [ $# = 0 ]; then
-  echo 'Remount a path to remove noexec constraint.'
-  echo 'Usage:'
-  echo 'enable-exec [path]'
-  echo 'Example:'
-  echo 'enable-exec /tmp'
-  echo 'enable-exec ~'
-  exit 1
+  print_usage
 fi
 
 if [ -d "$1" ]; then

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-if [ $# -lt 1 ]; then
+if [ $# = 0 ]; then
 	echo 'Usage: git-set-identity [identity]'
 	exit 1
 fi
