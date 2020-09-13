@@ -1,6 +1,6 @@
 # syntax:ssHash
 
-# Vim cursor move: Hyper + hjkl
+# >> Vim cursor move: Hyper + hjkl
 
 "xte 'key Up'"
   Mod3 + k + release
@@ -14,42 +14,153 @@
 "xte 'key Right'"
   Mod3 + l + release
 
-# Active window control
+# >> Display management
 
-"window-move toggle_maximize"
+"dmenu-display primary"
+  Control+Mod4 + F1
+
+"dmenu-display secondary"
+  Control+Mod4 + F2
+
+"dmenu-display extend-right"
+  Control+Mod4 + F3
+
+"dmenu-display"
+  Control+Mod4 + F4
+
+"xbacklight -dec 10"
+  Mod4 + F1
+
+"xbacklight -inc 10"
+  Mod4 + F2
+
+"xbacklight -dec 10"
+  XF86MonBrightnessDown
+
+"xbacklight -inc 10"
+  XF86MonBrightnessUp
+
+# >> Active window resize
+
+"window-resize toggle_maximize"
   Mod3 + Return
 
-"window-move toggle_maximize"
+"window-resize toggle_maximize"
   Mod4 + Return
 
-"window-move top_half"
+"window-resize top_half"
   Mod4 + Up
 
-"window-move bottom_half"
+"window-resize bottom_half"
   Mod4 + Down
 
-"window-move left_half"
+"window-resize left_half"
   Mod4 + Left
 
-"window-move right_half"
+"window-resize right_half"
   Mod4 + Right
 
-"window-move left_two_third"
+"window-resize left_two_third"
   Shift+Mod4 + Up
 
-"window-move right_one_third"
+"window-resize right_one_third"
   Shift+Mod4 + Down
 
-"window-move prev_display"
+# >> Active window move
+
+"window-move move_to_prev_display"
   Shift+Mod4 + Left
 
-"window-move next_display"
+"window-move move_to_next_display"
   Shift+Mod4 + Right
 
-# Launch apps
+"window-move move_to_display 0"
+  Shift+Mod4 + 1
+
+"window-move move_to_display 1"
+  Shift+Mod4 + 2
+
+"window-move move_to_display 2"
+  Shift+Mod4 + 3
+
+"window-move move_to_display 3"
+  Shift+Mod4 + 4
+
+"window-move move_to_display 4"
+  Shift+Mod4 + 5
+
+"window-move move_to_display 5"
+  Shift+Mod4 + 6
+
+"window-move move_to_display 6"
+  Shift+Mod4 + 7
+
+"window-move move_to_display 7"
+  Shift+Mod4 + 8
+
+"window-move move_to_display 8"
+  Shift+Mod4 + 9
+
+"window-move move_to_display 9"
+  Shift+Mod4 + 0
+
+"window-move show_prev_display"
+  Control+Mod4 + Left
+
+"window-move show_next_display"
+  Control+Mod4 + Right
+
+"window-move show_display 0"
+  Mod4 + 1
+
+"window-move show_display 1"
+  Mod4 + 2
+
+"window-move show_display 2"
+  Mod4 + 3
+
+"window-move show_display 3"
+  Mod4 + 4
+
+"window-move show_display 4"
+  Mod4 + 5
+
+"window-move show_display 5"
+  Mod4 + 6
+
+"window-move show_display 6"
+  Mod4 + 7
+
+"window-move show_display 7"
+  Mod4 + 8
+
+"window-move show_display 8"
+  Mod4 + 9
+
+"window-move show_display 9"
+  Mod4 + 0
+
+# >> Power & peripheral
 
 "lock"
   Control+Alt + q
+
+"lock suspend"
+  Control+Alt+Mod4 + s
+
+"lock hibernate"
+  Control+Alt+Mod4 + h
+
+"dmenu-power"
+  Control+Alt+Mod4 + p
+
+"touchpad-toggle"
+  Control+Alt+Mod4 + t
+
+# >> System control
+
+"xdotool getactivewindow windowclose"
+  Shift+Mod4 + q
 
 "kbmod"
   Shift+Mod4 + r
@@ -57,14 +168,20 @@
 "rofi -show drun"
   Mod4 + space
 
+"rofi -show run"
+  Alt+Mod4 + space
+
+"rofi -show window"
+  Control+Mod4 + space
+
+"rofi -show clipboard -modi 'clipboard:greenclip print' -run-command '{cmd}'"
+  Control+Alt + c
+
 "xfce4-popup-whiskermenu"
   Control + Menu
 
 "thunar"
   XF86Explorer
-
-"galculator"
-  XF86Calculator
 
 "flameshot gui"
   F1
@@ -72,7 +189,72 @@
 "flameshot gui"
   Print
 
-# Toggle apps show / hide, launch if not open
+# >> Hyper shortcuts
 
-"alacritty"
+"jumpapp -m lxtask"
+  Mod3 + a
+
+"jumpapp -m chromium"
+  Mod3 + c
+
+"jumpapp -m firefox"
+  Mod3 + f
+
+"jumpapp -m foxitreader"
+  Mod3 + p
+
+"jumpapp -m qutebrowser"
+  Mod3 + q
+
+"jumpapp -m zathura"
+  Mod3 + r
+
+"jumpapp -m subl3"
+  Mod3 + s
+
+"jumpapp -m telegram-desktop"
+  Mod3 + t
+
+"jumpapp -m code"
+  Mod3 + v
+
+"xrun -i wechat.exe -e 'gtk-launch deepin.com.wechat'"
+  Mod3 + w
+
+"jumpapp -mR gtk-launch seal"
+  Mod3 + x
+
+"jumpapp -mR zeal"
+  Mod3 + z
+
+"jumpapp -mR gsimplecal"
+  Mod3 + 1
+
+"jumpapp -m alacritty"
   Mod3 + semicolon
+
+"jumpapp -m skype"
+  Mod3 + bracketleft
+
+"jumpapp -m slack"
+  Mod3 + bracketright
+
+"jumpapp -mR keepassxc"
+  Mod3 + backslash
+
+"xrun -i $(xgetres web_app.lark) -e 'gtk-launch lark'"
+  Mod3 + space
+
+# >> Hyper+Shift shortcuts
+
+"jumpapp -m google-chrome"
+  Shift+Mod3 + c
+
+"xrun -i Qv2ray -e 'qv2ray'"
+  Shift+Mod3 + 0
+
+# >> Extra XF86 keys
+# these are the extra media keys that some keyboards have
+
+"jumpapp -m galculator"
+  XF86Calculator

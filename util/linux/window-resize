@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+
+print_usage()
+{
+  cat << 'EOB' >&2
+window-resize - resize active window in X
+
+[Synopsis]
+
+window-resize [option]
+
+[Options]
+
+toggle_maximize
+left_half
+right_half
+top_half
+bottom_half
+left_two_third
+right_one_third
+EOB
+  exit 0
+}
+
+# read workarea size of the active display into wa_x, wa_y, wa_w & wa_h
+get_workarea_dimensions()
+{
+  eval "$(wmctrl -d | grep '*' | sed -n -E -e 's/^.*WA: ([0-9]+),([0-9]+) ([0-9]+)x([0-9]+).*$/wa_x=\1;wa_y=\2;wa_w=\3;wa_h=\4/p')"
+}
+
+get_active_window_borders()
+{
+  aw=$(xdotool getactivewindow)
+
+  local extents=$(xprop _NET_FRAME_EXTENTS -id $aw | grep "NET_FRAME_EXTENTS" | cut -d '=' -f 2 | tr -d ' ')
+  local bl=$(echo $extents | cut -d ',' -f 1) # width of left border
+  local br=$(echo $extents | cut -d ',' -f 2) # width of right border
+  local bt=$(echo $extents | cut -d ',' -f 3)  # height of title bar
+  local bb=$(echo $extents | cut -d ',' -f 4) # height of bottom border
+
+  fw_horz=$(( bl + br ))
+  fw_vert=$(( bt + bb ))
+}
+
+move_and_resize_active_window()
+{
+  local x=$1
+  local y=$2
+  local w=$3
+  local h=$4
+  remove_maximize
+  xdotool windowmove $aw $(( x + wa_x )) $(( y + wa_y ))
+  xdotool windowsize $aw $(( w - fw_horz )) $(( h - fw_vert ))
+}
+
+toggle_maximize()
+{
+  wmctrl -i -r $aw -b toggle,maximized_horz,maximized_vert
+}
+
+remove_maximize()
+{
+  wmctrl -i -r $aw -b remove,maximized_horz,maximized_vert
+}
+
+left_half()
+{
+  local w=$(( wa_w / 2 ))
+  move_and_resize_active_window 0 0 $w $wa_h
+}
+
+right_half()
+{
+  local w=$(( wa_w / 2 ))
+  move_and_resize_active_window $w 0 $w $wa_h
+}
+
+top_half()
+{
+  local h=$(( wa_h / 2 ))
+  move_and_resize_active_window 0 0 $wa_w $h
+}
+
+bottom_half()
+{
+  local h=$(( wa_h / 2 ))
+  move_and_resize_active_window 0 $h $wa_w $h
+}
+
+left_two_third()
+{
+  if [[ wa_w > wa_h ]]; then
+    local w=$(( wa_w / 3 * 2 ))
+    local h=$wa_h
+  else
+    local w=$wa_w
+    local h=$(( wa_h / 3 * 2 ))
+  fi
+  move_and_resize_active_window 0 0 $w $h
+}
+
+right_one_third()
+{
+  if [[ wa_w > wa_h ]]; then
+    local w=$(( wa_w / 3 ))
+    local h=$wa_h
+  else
+    local w=$wa_w
+    local h=$(( wa_h / 3 ))
+  fi
+  local x=$(( wa_w - w ))
+  local y=$(( wa_h - h ))
+  move_and_resize_active_window $x $y $w $h
+}
+
+main()
+{
+  if [ $# = 0 ]; then
+    print_usage
+  fi
+
+  get_workarea_dimensions
+  get_active_window_borders
+
+  case $1 in
+    toggle_maximize)
+      toggle_maximize
+      ;;
+    left_half)
+      left_half
+      ;;
+    right_half)
+      right_half
+      ;;
+    top_half)
+      top_half
+      ;;
+    bottom_half)
+      bottom_half
+      ;;
+    left_two_third)
+      left_two_third
+      ;;
+    right_one_third)
+      right_one_third
+      ;;
+    *)
+      print_usage
+      ;;
+  esac
+}
+
+main "$@"
