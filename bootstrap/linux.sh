@@ -83,6 +83,7 @@ apply_linux_app_configs()
   backup_then_symlink "$util_dir/linux/touchpad-toggle" ~/bin/touchpad-toggle
   backup_then_symlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
   backup_then_symlink "$util_dir/linux/window-move" ~/bin/window-move
+  backup_then_symlink "$util_dir/linux/xrun" ~/bin/xrun
 
   # Misc settings
   mkdir -p ~/.polipo-cache
