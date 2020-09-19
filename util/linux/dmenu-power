@@ -12,8 +12,8 @@ else
 fi
 
 case "$chosen" in
-  sleep) ~/.config/i3/scripts/lock suspend ;;
-  hibernate) ~/.config/i3/scripts/lock hibernate ;;
+  sleep) lock suspend ;;
+  hibernate) lock hibernate ;;
   poweroff) systemctl poweroff ;;
   reboot) systemctl reboot ;;
 esac

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-print_usage()
-{
+print_usage() {
   cat << 'EOB' >&2
 xrun - Run, raise, or hide windows in X
 
@@ -36,8 +35,7 @@ EOB
 
 string_contain() { [ -z "$1" ] || { [ -z "${2##*$1*}" ] && [ -n "$2" ]; }; }
 
-parse_args()
-{
+parse_args() {
   OPTIND=1 # Reset in case getopts has been used previously in the shell.
 
   # Initialize our own variables:
@@ -70,8 +68,13 @@ parse_args()
   [ "${1:-}" = "--" ] && shift
 }
 
-main()
-{
+get_active_windowid() {
+  local name windowid
+  read name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
+  printf '%s\n' "$windowid"
+}
+
+main() {
   if [ $# = 0 ]; then
     print_usage
   fi
@@ -85,7 +88,11 @@ main()
       # _NET_WM_DESKTOP value exists
       local probe="$(xprop -id "$wid" _NET_WM_DESKTOP)"
       if string_contain '=' "$probe"; then
-        xdotool windowactivate "$wid"
+        if [[ $wid -eq $(get_active_windowid) ]]; then
+          xdotool windowminimize "$wid"
+        else
+          xdotool windowactivate "$wid"
+        fi
         break
       fi
     done < <(echo "$wid_list")
