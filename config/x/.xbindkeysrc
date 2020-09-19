@@ -221,7 +221,7 @@
 "xrun -i wechat.exe -e 'gtk-launch deepin.com.wechat'"
   Mod3 + w
 
-"jumpapp -mR gtk-launch seal"
+"xrun -i seal -e 'gtk-launch seal'"
   Mod3 + x
 
 "jumpapp -mR zeal"
