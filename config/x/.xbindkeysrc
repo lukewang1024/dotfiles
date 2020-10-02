@@ -183,6 +183,9 @@
 "thunar"
   XF86Explorer
 
+"thunar"
+  Mod4 + e
+
 "flameshot gui"
   F1
 
