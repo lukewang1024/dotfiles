@@ -53,6 +53,7 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/ranger/linux" ~/.config/ranger
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
+  backup_then_symlink "$config_dir/thunar" ~/.config/Thunar
   backup_then_symlink "$config_dir/tilda" ~/.config/tilda
   backup_then_symlink "$config_dir/vnc/.vncrc" ~/.vncrc
   backup_then_symlink "$config_dir/x/.xbindkeysrc" ~/.xbindkeysrc
@@ -61,6 +62,7 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/x/.Xresources" ~/.Xresources
   backup_then_symlink "$config_dir/x/.Xresources.d" ~/.Xresources.d
   backup_then_symlink "$config_dir/x/.xscreensaver" ~/.xscreensaver
+  backup_then_symlink "$config_dir/xfce4" ~/.config/xfce4
   backup_then_symlink "$config_dir/zathura" ~/.config/zathura
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 
