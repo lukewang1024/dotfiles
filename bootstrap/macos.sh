@@ -139,7 +139,7 @@ prepare_macos_env_gui_extra()
     789066512  # Maipo for Weibo
     803453959  # Slack
     836500024  # WeChat
-    880001334  # Reeder 3
+    # 880001334  # Reeder 3
     937984704  # Amphetamine
     998804308  # Blinks
     1025306797 # Resize Master
@@ -150,8 +150,10 @@ prepare_macos_env_gui_extra()
     1278508951 # Trello
     1295203466 # Microsoft Remote Desktop
     1314842898 # miniQpicview (Kantu)
+    1449412482 # Reeder 4
     1452453066 # Hidden Bar
     1477089520 # Backtrack
+    1485844094 # iShot
     1497527363 # Blurred
     1507782672 # Pixea
   )
@@ -177,6 +179,7 @@ prepare_macos_env_gui_extra()
     balenaetcher
     bartender
     bitbar
+    bob
     browserosaurus
     cakebrew
     calibre
@@ -219,8 +222,10 @@ prepare_macos_env_gui_extra()
     macpass
     microsoft-edge
     mongodb-compass
+    monitorcontrol
     mweb2
     notable
+    ntfstool
     nvalt
     omnidisksweeper
     onedrive
@@ -269,6 +274,7 @@ prepare_macos_env_gui_extra()
     suspicious-package
     switchhosts
     syncthing
+    tencent-lemon
     toau
     tweeten
     typora
