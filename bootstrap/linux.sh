@@ -46,6 +46,9 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/flameshot" ~/.config/Dharkael
   backup_then_symlink "$config_dir/fontconfig" ~/.config/fontconfig
   backup_then_symlink "$config_dir/gsimplecal" ~/.config/gsimplecal
+  backup_then_symlink "$config_dir/gtk-2.0" ~/.config/gtk-2.0
+  backup_then_symlink "$config_dir/gtk-2.0/.gtkrc-2.0" ~/.gtkrc-2.0
+  backup_then_symlink "$config_dir/gtk-3.0" ~/.config/gtk-3.0
   backup_then_symlink "$config_dir/i3" ~/.config/i3
   backup_then_symlink "$config_dir/mpv" ~/.config/mpv
   backup_then_symlink "$config_dir/polipo" ~/.config/polipo
