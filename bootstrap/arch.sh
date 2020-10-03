@@ -245,8 +245,6 @@ prepare_arch_env_gui_core()
   pkgs=(
     alacritty
     arandr
-    arc-gtk-theme
-    arc-icon-theme
     blueman
     chromium
     code
@@ -269,6 +267,8 @@ prepare_arch_env_gui_core()
     lxtask
     maim
     network-manager-applet
+    noto-fonts
+    noto-fonts-cjk
     noto-fonts-emoji
     pa-applet
     polybar
@@ -283,6 +283,7 @@ prepare_arch_env_gui_core()
     thunar-volman
     tilda
     ttf-font-awesome
+    ttf-sarasa-gothic
     tumbler
     udiskie
     wqy-zenhei
@@ -326,6 +327,8 @@ prepare_arch_env_gui_extra()
 {
   pkgs=(
     android-file-transfer
+    arc-gtk-theme
+    arc-icon-theme
     atom
     chromium
     drawing
@@ -334,7 +337,7 @@ prepare_arch_env_gui_extra()
     hardinfo
     kdiff3
     keepassxc
-    moka-icon-theme
+    materia-gtk-theme
     neofetch
     qutebrowser
     qv2ray
@@ -346,6 +349,7 @@ prepare_arch_env_gui_extra()
     virtualbox
     winetricks
     wkhtmltopdf
+    xcursor-simpleandsoft
     zeal
   )
   pacman_install_pkgs
