@@ -14,13 +14,15 @@ export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
 export XMODIFIERS=@im=fcitx
 
+export XDG_SESSION_TYPE=x11
+
 export GTK2_RC_FILES="$HOME/.gtkrc-2.0"
 export QT_QPA_PLATFORMTHEME="qt5ct"
 
 # start some nice programs
 
 if [ -d /etc/X11/xinit/xinitrc.d ] ; then
-  for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+  for f in /etc/X11/xinit/xinitrc.d/* ; do
     [ -x "$f" ] && . "$f"
   done
   unset f
@@ -53,8 +55,9 @@ to_launch nm-applet && nm-applet &
 to_launch blueman-applet && blueman-applet &
 # disk management tray applet
 to_launch udiskie && udiskie --tray &
-# redshift with tray applet
-to_launch redshift-gtk && redshift-gtk &
+# redshift with tray applet (specify path to avoid using python3 from linuxbrew)
+to_launch redshift-gtk && PATH=/usr/bin redshift-gtk &
+
 # v2ray client
 to_launch qv2ray && qv2ray &
 # dropbox
@@ -62,8 +65,24 @@ to_launch dropbox && dropbox &
 
 # a set of key tweaks
 exists kbmod && kbmod
-# set wallpaper and lockscreen image
-# exists wallpaper && wallpaper
 
-# exec i3
-exec startxfce4
+session=${1:-xfce}
+
+case $session in
+  i3|i3wm)
+    # set wallpaper and lockscreen image
+    exists wallpaper && wallpaper
+    # start i3
+    exec i3
+    ;;
+  xfce|xfce4)
+    # dock
+    to_launch plank && plank &
+    # start xfce
+    exec startxfce4
+    ;;
+  *)
+    # No known session, try to run it as command
+    exec $1
+    ;;
+esac

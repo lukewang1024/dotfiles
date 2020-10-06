@@ -22,3 +22,4 @@ config/gtk-3.0/bookmarks
 config/karabiner/automatic_backups
 config/x/.Xresources.d/custom
 config/xfce4/desktop/
+config/xfce4/panel/weather-*.rc

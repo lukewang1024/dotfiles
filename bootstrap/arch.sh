@@ -244,10 +244,10 @@ prepare_arch_env_gui_core()
 {
   pkgs=(
     alacritty
+    appmenu-gtk-module
     arandr
     blueman
     chromium
-    code
     compton
     fcitx
     fcitx-configtool
@@ -262,6 +262,9 @@ prepare_arch_env_gui_core()
     i3-gaps
     i3blocks
     i3status
+    libdbusmenu-glib
+    libdbusmenu-gtk2
+    libdbusmenu-gtk3
     lxappearance
     lxsession
     lxtask
@@ -286,6 +289,7 @@ prepare_arch_env_gui_core()
     ttf-sarasa-gothic
     tumbler
     udiskie
+    vala-panel-appmenu-xfce
     wqy-zenhei
     xautomation
     xbindkeys
@@ -314,6 +318,7 @@ prepare_arch_env_gui_core()
     python-pywal
     sublime-merge
     sublime-text-dev
+    visual-studio-code-bin
     xgetres
     xinit-xsession
   )
@@ -389,17 +394,16 @@ prepare_arch_env_gui_extra()
 setup_arch_gaming()
 {
   pkgs=(
-    retroarch
-    retroarch-assets-xmb
+    desmume
+    dosbox
+    higan
+    mame
+    pcsx2
+    ppsspp
+    snes9x-gtk
+    vbam-wx
   )
   pacman_install_pkgs
-
-  pkgs=(
-    emulationstation
-    libretro-mame-git
-    retroarch-autoconfig-udev-git
-  )
-  aur_install_pkgs
 }
 
 set_default_apps()
