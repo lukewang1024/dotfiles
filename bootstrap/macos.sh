@@ -86,7 +86,7 @@ prepare_macos_env_cli_extra()
     google-cloud-sdk
     vagrant
   )
-  brew cask install `join ' ' "${casks[@]}"`
+  brew install --cask `join ' ' "${casks[@]}"`
 
   extra_env_setup
 }
@@ -115,7 +115,7 @@ prepare_macos_env_gui_core()
     sublime-text
     visual-studio-code
   )
-  brew cask install `join ' ' "${casks[@]}"`
+  brew install --cask `join ' ' "${casks[@]}"`
 
   set_macos_configs
 }
@@ -125,7 +125,6 @@ prepare_macos_env_gui_extra()
   # MAS apps
 
   local masApps=(
-    406056744  # Evernote
     425424353  # The Unarchiver
     441258766  # Magnet
     451108668  # QQ
@@ -176,7 +175,6 @@ prepare_macos_env_gui_extra()
     aria2gui
     atom
     background-music
-    balenaetcher
     bartender
     bitbar
     bob
@@ -224,7 +222,6 @@ prepare_macos_env_gui_extra()
     mongodb-compass
     monitorcontrol
     mweb2
-    notable
     ntfstool
     nvalt
     omnidisksweeper
@@ -235,7 +232,6 @@ prepare_macos_env_gui_extra()
     pdf-expert
     pdfsam-basic
     phantomjs
-    postman
     provisionql
     proxifier
     qlcolorcode
@@ -291,7 +287,7 @@ prepare_macos_env_gui_extra()
     zeplin
     zoomus
   )
-  brew cask install `join ' ' "${casks[@]}"`
+  brew install --cask `join ' ' "${casks[@]}"`
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 }
@@ -347,6 +343,6 @@ setup_macos_gaming()
     origin
     steam
   )
-  brew cask install `join ' ' "${casks[@]}"`
+  brew install --cask `join ' ' "${casks[@]}"`
   brew_cleanup
 }

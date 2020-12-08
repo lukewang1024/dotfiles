@@ -72,6 +72,7 @@ prepare_arch_env_cli_core()
   pkgs=(
     broot
     diff-so-fancy
+    dog
     fasd
     fd
     fzf
@@ -366,7 +367,6 @@ prepare_arch_env_gui_extra()
     deepin-wechat
     deepin-wine-tim
     dropbox
-    etcher-bin
     feedreader
     genymotion
     git-cola
@@ -376,7 +376,6 @@ prepare_arch_env_gui_extra()
     losslesscut
     mailspring
     musixmatch-bin
-    notable-bin
     rslsync
     screenkey
     skypeforlinux-stable-bin
