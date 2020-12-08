@@ -35,6 +35,7 @@ function install_scoop_packages
     azure-cli `
     broot `
     calibre `
+    carnac `
     ccleaner `
     chromium `
     cloc `
@@ -44,7 +45,6 @@ function install_scoop_packages
     deno `
     ditto `
     doublecmd `
-    etcher `
     everything `
     far `
     fd `
@@ -85,7 +85,6 @@ function install_scoop_packages
     nmap `
     nodejs `
     nodejs-lts `
-    notable `
     now-cli `
     nvm `
     openhardwaremonitor `
@@ -93,7 +92,6 @@ function install_scoop_packages
     oraclejdk `
     pandoc `
     phantomjs `
-    postman `
     pshazz `
     putty `
     qutebrowser `

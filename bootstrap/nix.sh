@@ -19,6 +19,7 @@ install_nix_brew_core_packages()
     bash
     broot
     diff-so-fancy
+    dog
     fasd
     fd
     fzf
