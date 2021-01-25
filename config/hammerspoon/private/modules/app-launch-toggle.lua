@@ -71,7 +71,7 @@ setAppToggles(hyperAlt, {
   a = 'Atom',
   -- b = '',
   c = 'Chromium',
-  -- d = '',
+  d = 'DevDocs',
   -- e = '',
   f = 'Figma',
   g = 'Lepton',
