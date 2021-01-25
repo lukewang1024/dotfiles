@@ -113,6 +113,7 @@ prepare_macos_env_gui_core()
     rectangle
     sublime-merge
     sublime-text
+    switchkey
     visual-studio-code
   )
   brew install --cask `join ' ' "${casks[@]}"`
@@ -175,7 +176,6 @@ prepare_macos_env_gui_extra()
     aria2gui
     atom
     background-music
-    bartender
     bitbar
     bob
     browserosaurus
