@@ -194,3 +194,12 @@ env_setup()
   basic_env_setup
   extra_env_setup
 }
+
+rime_setup()
+{
+  ( \
+    mkdir -p "$HOME/tmp" && \
+    cd "$HOME/tmp" && \
+    curl -fsSL https://git.io/rime-install | bash -s -- jyutping emoji \
+  )
+}
