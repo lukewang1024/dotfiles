@@ -22,6 +22,7 @@ install_nix_brew_core_packages()
     dog
     fasd
     fd
+    findutils
     fzf
     git
     git-extras
@@ -41,6 +42,7 @@ install_nix_brew_core_packages()
     percol
     prettyping
     ranger
+    ripgrep
     rsync
     the_silver_searcher
     tig
@@ -90,7 +92,6 @@ install_nix_brew_extra_packages()
     ffmpegthumbnailer
     figlet
     file-formula
-    findutils
     fish
     fpp
     fswatch
@@ -154,7 +155,6 @@ install_nix_brew_extra_packages()
     proxychains-ng
     qpdf
     redis
-    ripgrep
     rtv
     sachaos/todoist/todoist
     sc-im

@@ -59,6 +59,12 @@ prepare_macos_env_cli_core()
 
   install_nix_brew_runtimes
   install_nix_brew_core_packages
+
+  local pkgs=(
+    mas
+  )
+  brew install `join ' ' "${pkgs[@]}"`
+
   basic_env_setup
 }
 
@@ -74,7 +80,6 @@ prepare_macos_env_cli_extra()
     fortune
     m-cli
     mackup
-    mas
     reattach-to-user-namespace
     wsta
   )
@@ -99,18 +104,22 @@ prepare_macos_env_gui_core()
     alacritty
     alfred
     appcleaner
-    ezip
+    browserosaurus
     fliqlo
-    font-firacode-nerd-font
-    font-meslo-nerd-font
-    font-sourcecodepro-nerd-font
+    font-fira-code-nerd-font
+    font-meslo-lg-nerd-font
+    font-sauce-code-pro-nerd-font
     hammerspoon
     hyperswitch
     iina
     iterm2
     karabiner-elements
+    macpass
+    maczip
     mos
     rectangle
+    snipaste
+    squirrel
     sublime-merge
     sublime-text
     switchkey
@@ -118,6 +127,7 @@ prepare_macos_env_gui_core()
   )
   brew install --cask `join ' ' "${casks[@]}"`
 
+  rime_setup
   set_macos_configs
 }
 
@@ -178,12 +188,10 @@ prepare_macos_env_gui_extra()
     background-music
     bitbar
     bob
-    browserosaurus
     cakebrew
     calibre
     caprine
     charles
-    chromium
     commander-one
     dropbox
     duet
@@ -192,12 +200,14 @@ prepare_macos_env_gui_extra()
     feishu
     figma
     firefox
+    firefox-nightly
     flume
     flux
     folx
     forklift
     google-backup-and-sync
     google-chrome
+    google-chrome-canary
     handbrake
     haptickey
     hocus-focus
@@ -217,7 +227,6 @@ prepare_macos_env_gui_extra()
     lark
     lepton
     losslesscut
-    macpass
     microsoft-edge
     mongodb-compass
     monitorcontrol
@@ -250,6 +259,7 @@ prepare_macos_env_gui_extra()
     resilio-sync
     robo-3t
     rowanj-gitx
+    safari-technology-preview
     sequel-pro
     shadowsocksx-ng
     shifty
@@ -257,7 +267,6 @@ prepare_macos_env_gui_extra()
     skype
     sloth
     slowquitapps
-    snipaste
     soundflower
     soundflowerbed
     sourcetree
@@ -265,7 +274,6 @@ prepare_macos_env_gui_extra()
     spotify
     spotify-notifications
     sqlpro-for-postgres
-    squirrel
     stretchly
     suspicious-package
     switchhosts
@@ -304,9 +312,9 @@ set_macos_configs()
   # Handy scripts
   backup_then_symlink "$util_dir/macos/virtualbox-kext" ~/bin/virtualbox-kext
 
-  better_macos_defaults
   brew_multi_user_permission
   fix_battery_drain_over_sleep
+  better_macos_defaults # This needs to be the last one, as Terminal will be killed when finish.
 }
 
 brew_multi_user_permission()
@@ -338,8 +346,8 @@ setup_macos_gaming()
 {
   local casks=(
     battle-net
-    caskroom/versions/openemu-experimental
     gog-downloader
+    homebrew/cask-versions/openemu-experimental
     origin
     steam
   )
