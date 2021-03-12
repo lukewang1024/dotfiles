@@ -154,6 +154,7 @@ prepare_macos_env_gui_extra()
     998804308  # Blinks
     1025306797 # Resize Master
     1044484672 # ApolloOne - Photo Video Viewer
+    1142151959 # Just Focus
     1147396723 # WhatsApp
     1176895641 # Spark
     1254743014 # LyricsX
@@ -179,6 +180,7 @@ prepare_macos_env_gui_extra()
 
   local casks=(
     aerial
+    aldente
     android-platform-tools
     android-sdk
     android-studio
@@ -227,6 +229,7 @@ prepare_macos_env_gui_extra()
     lark
     lepton
     losslesscut
+    lx-music
     microsoft-edge
     mongodb-compass
     monitorcontrol
@@ -283,6 +286,7 @@ prepare_macos_env_gui_extra()
     tweeten
     typora
     ubersicht
+    utm
     v2rayu
     vagrant-manager
     virtualbox
@@ -346,6 +350,7 @@ setup_macos_gaming()
 {
   local casks=(
     battle-net
+    epic-games
     gog-downloader
     homebrew/cask-versions/openemu-experimental
     origin
