@@ -131,6 +131,7 @@ install_nix_brew_extra_packages()
     make
     media-info
     midnight-commander
+    mkcert
     mosh
     mpc
     mpd
@@ -163,6 +164,8 @@ install_nix_brew_extra_packages()
     shellcheck
     sl
     spark
+    tesseract
+    tesseract-lang
     testdisk
     thefuck
     tmate

@@ -29,9 +29,11 @@ install_npm_packages()
   echo 'Installing global npm packages...'
 
   npm config set python python2.7
+  npm install -g pnpm
 
   local pkgs=(
     @angular/cli
+    @vue/cli
     asar
     azure-functions-core-tools@core
     bower
@@ -60,7 +62,6 @@ install_npm_packages()
     nativefier
     nativescript
     nls
-    now
     npkill
     npm-check
     npm-check-updates
@@ -78,13 +79,13 @@ install_npm_packages()
     ts-node
     typescript
     updtr
-    vue-cli
+    vercel
     weinre
     workbox-cli
     yo
   )
 
-  npm install -g `join ' ' "${pkgs[@]}"`
+  pnpm install -g `join ' ' "${pkgs[@]}"`
 
   echo 'Done.'
 }
