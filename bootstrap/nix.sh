@@ -163,6 +163,8 @@ install_nix_brew_extra_packages()
     shellcheck
     sl
     spark
+    tesseract
+    tesseract-lang
     testdisk
     thefuck
     tmate

@@ -227,6 +227,7 @@ prepare_macos_env_gui_extra()
     lark
     lepton
     losslesscut
+    lx-music
     microsoft-edge
     mongodb-compass
     monitorcontrol
@@ -283,6 +284,7 @@ prepare_macos_env_gui_extra()
     tweeten
     typora
     ubersicht
+    utm
     v2rayu
     vagrant-manager
     virtualbox
