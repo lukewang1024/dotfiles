@@ -177,6 +177,7 @@ install_nix_brew_extra_packages()
     watch
     wtf
     wtfutil
+    xpdf
     you-get
     youtube-dl
     zsh-completions

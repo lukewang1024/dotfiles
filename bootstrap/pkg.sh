@@ -33,6 +33,7 @@ install_npm_packages()
 
   local pkgs=(
     @angular/cli
+    @squoosh/cli
     @vue/cli
     asar
     azure-functions-core-tools@core
