@@ -109,6 +109,7 @@
   svnd = svn dcommit
   svnl = svn log --oneline --show-commit
   svnr = svn rebase
+  td = tag -l --sort=-creatordate --format='%(creatordate:short):  %(refname:short)'
   theirs = "!f() { git co --theirs $@ && git add $@; }; f"
   tig-compare-commits = "!f() { \
     echo Checking branch existence; \
