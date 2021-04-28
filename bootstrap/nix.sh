@@ -86,6 +86,7 @@ install_nix_brew_extra_packages()
     diffutils
     dive
     ed
+    emscripten
     exiftool
     extract_url
     ffmpeg

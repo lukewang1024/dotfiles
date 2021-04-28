@@ -33,6 +33,7 @@ export PATH="$HOME/bin:$PATH"
 alias cb=clipboard
 alias n=nvim
 alias pping='prettyping --nolegend'
+alias ports='lsof -iTCP -sTCP:LISTEN -P'
 
 ## SSH related
 alias sap='source ~/.agent-profile'
