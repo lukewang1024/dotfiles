@@ -84,6 +84,7 @@ install_npm_packages()
     weinre
     workbox-cli
     yo
+    zx
   )
 
   pnpm install -g `join ' ' "${pkgs[@]}"`
