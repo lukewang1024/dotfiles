@@ -135,6 +135,8 @@ function install_scoop_packages
     yarn `
     zeal `
 
+  scoop install 'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json'
+
   # Make git work with openssh
   [environment]::setenvironmentvariable('GIT_SSH', (resolve-path (scoop which ssh)), 'USER')
 
