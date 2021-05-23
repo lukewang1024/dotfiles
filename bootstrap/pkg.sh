@@ -29,7 +29,6 @@ install_npm_packages()
   echo 'Installing global npm packages...'
 
   npm config set python python2.7
-  npm install -g pnpm
 
   local pkgs=(
     @angular/cli
@@ -62,6 +61,7 @@ install_npm_packages()
     mermaid.cli
     nativefier
     nativescript
+    neovim
     nls
     npkill
     npm-check
@@ -71,6 +71,7 @@ install_npm_packages()
     open-cli
     pangu
     pm2
+    pnpm
     react-devtools
     serve
     serverless
@@ -87,7 +88,7 @@ install_npm_packages()
     zx
   )
 
-  pnpm install -g `join ' ' "${pkgs[@]}"`
+  npm install -g `join ' ' "${pkgs[@]}"`
 
   echo 'Done.'
 }

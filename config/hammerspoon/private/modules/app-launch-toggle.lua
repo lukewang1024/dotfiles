@@ -46,7 +46,7 @@ setAppToggles(hyper, {
   z = 'ForkLift',
   [','] = 'System Preferences',
   [';'] = 'Alacritty',
-  ['.'] = 'SourceTree',
+  ['.'] = 'Sublime Merge',
   ['['] = 'Skype',
   [']'] = 'Slack',
   ['/'] = 'Finder',

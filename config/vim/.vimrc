@@ -5,18 +5,15 @@ call plug#begin('~/.vim/plugged')
 
 " Plugins
 Plug 'w0rp/ale'
-Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
+Plug 'neoclide/coc.nvim', {'tag': '*'}
 Plug 'editorconfig/editorconfig-vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
-"Plug 'itchyny/lightline.vim'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'joshdick/onedark.vim'
 Plug 'wellle/targets.vim'
-Plug 'bling/vim-airline'
-"Plug 'bagrat/vim-buffet'
 Plug 'tpope/vim-commentary'
 Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-fugitive'
@@ -29,6 +26,11 @@ Plug 'ruanyl/vim-sort-imports'
 Plug 'tpope/vim-surround'
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'christoomey/vim-tmux-navigator'
+
+" tabline
+"Plug 'itchyny/lightline.vim'
+Plug 'bling/vim-airline'
+"Plug 'bagrat/vim-buffet'
 
 " load vim-devicons last so plugins are patched
 Plug 'ryanoasis/vim-devicons'
@@ -93,15 +95,26 @@ nnoremap <leader>d "_d
 xnoremap <leader>d "_d
 xnoremap <leader>p "_dP
 
+"""""""""""""""""
+" nvim provider "
+"""""""""""""""""
+
+let g:python_host_prog = '~/.pyenv/versions/2.7.18/bin/python'
+let g:python3_host_prog = '~/.pyenv/versions/neovim/bin/python'
+let g:ruby_host_prog = '~/.rbenv/gems/2.6.0/bin/neovim-ruby-host'
+
 """""""
 " ALE "
 """""""
 
+let g:ale_disable_lsp = 1
 let g:ale_sign_error = '❌'
 let g:ale_sign_warning = '⚠️'
 let g:ale_linters = {
 \  'javascript': [],
+\  'javascriptreact': [],
 \  'typescript': [],
+\  'typescriptreact': [],
 \}
 let g:ale_linters_ignore = {}
 let g:ale_fixers = {
