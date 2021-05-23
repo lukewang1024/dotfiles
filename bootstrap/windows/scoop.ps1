@@ -105,7 +105,6 @@ function install_scoop_packages
     shasum `
     slack `
     snipaste `
-    sourcetree `
     steam `
     sublime-merge `
     sublime-text `

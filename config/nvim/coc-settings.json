@@ -1,6 +1,5 @@
 {
   "diagnostic.displayByAle": true,
-  "eslint.filetypes": ["javascriptreact", "javascript"],
   "prettier.eslintIntegration": true,
   "prettier.stylelintIntegration": true,
   "prettier.tslintIntegration": true,

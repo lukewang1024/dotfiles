@@ -272,7 +272,6 @@ prepare_macos_env_gui_extra()
     slowquitapps
     soundflower
     soundflowerbed
-    sourcetree
     spotifree
     spotify
     spotify-notifications

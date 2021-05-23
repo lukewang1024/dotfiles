@@ -101,6 +101,7 @@ install_nix_brew_extra_packages()
     gifsicle
     gist
     git-appraise
+    git-filter-repo
     git-lfs
     git-quick-stats
     gitui
