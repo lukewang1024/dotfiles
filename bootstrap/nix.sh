@@ -97,6 +97,7 @@ install_nix_brew_extra_packages()
     fpp
     fswatch
     gawk
+    gdu
     ghi
     gifsicle
     gist
@@ -151,6 +152,7 @@ install_nix_brew_extra_packages()
     offlineimap
     onefetch
     open-mpi
+    optipng
     p7zip
     pandoc
     pgcli

@@ -19,13 +19,13 @@ Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
-Plug 'terryma/vim-multiple-cursors'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-sensible'
 Plug 'ruanyl/vim-sort-imports'
 Plug 'tpope/vim-surround'
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'christoomey/vim-tmux-navigator'
+Plug 'mg979/vim-visual-multi'
 
 " tabline
 "Plug 'itchyny/lightline.vim'
@@ -89,7 +89,19 @@ set pastetoggle=<F11>
 nnoremap <CR> :noh<CR><CR>
 
 " <Leader>q - close buffer without killing window
-map <Leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
+nnoremap <Leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
+
+" <Leader>s - search selected text in current buffer
+nnoremap <Leader>s /<C-r>"<CR>
+vnoremap <Leader>s y/<C-r>"<CR>
+
+" <Leader>S - search selected text in all files
+nnoremap <Leader>S :Ag <C-r>"<CR>
+vnoremap <Leader>S y:Ag <C-r>"<CR>
+
+" Quickly edit / reload .vimrc file
+nnoremap <leader>ev :split $MYVIMRC<CR>
+nnoremap <leader>sv :source $MYVIMRC<CR>
 
 nnoremap <leader>d "_d
 xnoremap <leader>d "_d

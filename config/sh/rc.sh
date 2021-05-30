@@ -39,6 +39,7 @@ alias cb=clipboard
 alias n=nvim
 alias pping='prettyping --nolegend'
 alias ports='lsof -iTCP -sTCP:LISTEN -P'
+alias upenv='nodenv update && pyenv update && rbenv update && vim +PlugUpgrade +PlugUpdate +qa'
 
 ## SSH related
 alias sap='source ~/.agent-profile'
@@ -61,10 +62,10 @@ alias gmtf='git mergetool --no-prompt --tool=fugitive'
 alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 
 ## Tools from npm
-alias create-react-app='pnpx create-react-app'
-alias react-native='pnpx react-native'
-alias sb='pnpx -p @storybook/cli sb'
-alias semantic-release-cli='pnpx semantic-release-cli'
+alias create-react-app='npx create-react-app'
+alias react-native='npx react-native'
+alias sb='npx -p @storybook/cli sb'
+alias semantic-release-cli='npx semantic-release-cli'
 
 if is_linux; then
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'

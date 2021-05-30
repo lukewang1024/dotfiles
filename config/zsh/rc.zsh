@@ -14,7 +14,6 @@ bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 
 alias rrc='source ~/.zshrc && rehash'
-alias upenv='zgen update && nodenv update && pyenv update && rbenv update'
 alias ssh-agent-connect="source $config_dir/zsh/ssh-agent-connect.zsh"
 
 # aliases to overwrite the ones defined in plugins
