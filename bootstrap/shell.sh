@@ -25,7 +25,7 @@ vim_setup()
   echo 'Installing vim-plug...'
   curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  vim +PlugInstall +qall
+  vim +PlugInstall +qa
   echo 'Done.'
 }
 

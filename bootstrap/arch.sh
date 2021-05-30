@@ -150,6 +150,7 @@ prepare_arch_env_cli_extra()
     flatpak
     fortune-mod
     gifsicle
+    glances
     glow-bin
     go
     graphviz
@@ -169,10 +170,12 @@ prepare_arch_env_cli_extra()
     mpv
     multitail
     mutt
+    ncdu
     ncmpcpp
     nghttp2
     nyancat
     offlineimap
+    optipng
     p7zip
     pamixer
     pandoc
@@ -214,6 +217,7 @@ prepare_arch_env_cli_extra()
     downgrader
     fpp
     fswatch
+    gdu-bin
     git-bug-bin
     git-lfs
     git-quick-stats
