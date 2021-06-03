@@ -89,7 +89,7 @@ set pastetoggle=<F11>
 nnoremap <CR> :noh<CR><CR>
 
 " <Leader>q - close buffer without killing window
-nnoremap <Leader>q :bp<bar>sp<bar>bn<bar>bd<CR>
+nnoremap <Leader>q :bd<CR>
 
 " <Leader>s - search selected text in current buffer
 nnoremap <Leader>s /<C-r>"<CR>
@@ -99,13 +99,68 @@ vnoremap <Leader>s y/<C-r>"<CR>
 nnoremap <Leader>S :Ag <C-r>"<CR>
 vnoremap <Leader>S y:Ag <C-r>"<CR>
 
-" Quickly edit / reload .vimrc file
-nnoremap <leader>ev :split $MYVIMRC<CR>
-nnoremap <leader>sv :source $MYVIMRC<CR>
+" Check change history of file in current buffer
+function! s:GitLogP(fil)
+  if (a:fil == '')
+    echo 'Current buffer is not a file.'
+    return
+  endif
+  abo new
+  exe '0read ! git log -p ' . a:fil
+  setlocal noma ro ts=8 tw=0 nowrap syn=diff ft=diff
+  setlocal buftype=nofile noswapfile bufhidden=delete
+  go
+endfunction
+command! GitLogP call s:GitLogP(expand("%"))
 
-nnoremap <leader>d "_d
-xnoremap <leader>d "_d
-xnoremap <leader>p "_dP
+" More logical binding for 'Y' and using system clipboard with <Leader>
+noremap Y y$
+noremap <Leader>y "*y
+noremap <Leader>yy "*yy
+noremap <Leader>Y "*y$
+noremap <Leader>x "*x
+noremap <Leader>dd "*dd
+noremap <Leader>D "*D
+
+" Resize window with Ctrl-Arrows / Ctrl-Shift-Arrows
+noremap <silent> <C-Right> :vertical resize +5<CR>
+noremap <silent> <C-Left> :vertical resize -5<CR>
+noremap <silent> <C-Up> :resize +5<CR>
+noremap <silent> <C-Down> :resize -5<CR>
+noremap <silent> <C-S-Right> :vertical resize +1<CR>
+noremap <silent> <C-S-Left> :vertical resize -1<CR>
+noremap <silent> <C-S-Up> :resize +1<CR>
+noremap <silent> <C-S-Down> :resize -1<CR>
+
+" Zoom / Restore window
+function! s:ZoomToggle() abort
+  if exists('t:zoomed') && t:zoomed
+    execute t:zoom_winrestcmd
+    let t:zoomed = 0
+  else
+    let t:zoom_winrestcmd = winrestcmd()
+    resize
+    vertical resize
+    let t:zoomed = 1
+  endif
+endfunction
+command! ZoomToggle call s:ZoomToggle()
+nnoremap <silent> <C-a> :ZoomToggle<CR>
+
+" Quickly edit / reload .vimrc file
+noremap <Leader>,e :split $MYVIMRC<CR>
+noremap <Leader>,s :source $MYVIMRC<CR>
+function! s:ShowVimCmdOutputInBuf(cmd)
+  redir! >/tmp/vim_temp_stash
+  exe a:cmd
+  redir END
+  abo new
+  0read ! cat /tmp/vim_temp_stash
+  setlocal buftype=nofile noswapfile bufhidden=delete
+  go
+endfunction
+command! ShowLetInBuf call s:ShowVimCmdOutputInBuf('silent let')
+command! ShowMapInBuf call s:ShowVimCmdOutputInBuf('silent map')
 
 """""""""""""""""
 " nvim provider "
@@ -187,14 +242,14 @@ function! s:check_back_space() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-" Use <c-space> to trigger completion.
-inoremap <silent><expr> <c-space> coc#refresh()
+" Use <C-space> to trigger completion.
+inoremap <silent><expr> <C-space> coc#refresh()
 
-" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
+" Use <CR> to confirm completion, `<C-g>u` means break undo chain at current position.
 " Coc only does snippet and additional edit on confirm.
-inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 " Or use `complete_info` if your vim support it, like:
-" inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+" inoremap <expr> <CR> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
 
 " Use `[g` and `]g` to navigate diagnostics
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
@@ -268,15 +323,15 @@ set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
 " Using CocList
 " Show all diagnostics
-nnoremap <silent> <space>a  :<C-u>CocList diagnostics<cr>
+nnoremap <silent> <space>a  :<C-u>CocList diagnostics<CR>
 " Manage extensions
-nnoremap <silent> <space>e  :<C-u>CocList extensions<cr>
+nnoremap <silent> <space>e  :<C-u>CocList extensions<CR>
 " Show commands
-nnoremap <silent> <space>c  :<C-u>CocList commands<cr>
+nnoremap <silent> <space>c  :<C-u>CocList commands<CR>
 " Find symbol of current document
-nnoremap <silent> <space>o  :<C-u>CocList outline<cr>
+nnoremap <silent> <space>o  :<C-u>CocList outline<CR>
 " Search workspace symbols
-nnoremap <silent> <space>s  :<C-u>CocList -I symbols<cr>
+nnoremap <silent> <space>s  :<C-u>CocList -I symbols<CR>
 " Do default action for next item.
 nnoremap <silent> <space>j  :<C-u>CocNext<CR>
 " Do default action for previous item.
@@ -341,8 +396,8 @@ endfunction
 
 let NERDTreeShowHidden=1
 
-map <Leader>n :NERDTreeToggle<CR>
-map <Leader>m :NERDTreeFind<CR>
+noremap <Leader>n :NERDTreeToggle<CR>
+noremap <Leader>f :NERDTreeFind<CR>
 
 " Open NERDTree automatically when vim starts up on opening a directory
 autocmd StdinReadPre * let s:std_in=1
@@ -363,8 +418,8 @@ let g:prettier#autoformat = 0
 
 " Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+let g:UltiSnipsJumpForwardTrigger="<C-b>"
+let g:UltiSnipsJumpBackwardTrigger="<C-z>"
 
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
