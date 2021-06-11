@@ -136,9 +136,7 @@ prepare_macos_env_gui_extra()
   # MAS apps
 
   local masApps=(
-    425424353  # The Unarchiver
     441258766  # Magnet
-    451108668  # QQ
     497799835  # Xcode
     539883307  # LINE
     568494494  # Pocket
@@ -147,19 +145,15 @@ prepare_macos_env_gui_extra()
     747648890  # Telegram
     784801555  # OneNote
     789066512  # Maipo for Weibo
-    803453959  # Slack
-    836500024  # WeChat
     # 880001334  # Reeder 3
     937984704  # Amphetamine
     998804308  # Blinks
     1025306797 # Resize Master
     1044484672 # ApolloOne - Photo Video Viewer
     1142151959 # Just Focus
-    1147396723 # WhatsApp
     1176895641 # Spark
     1254743014 # LyricsX
     1278508951 # Trello
-    1295203466 # Microsoft Remote Desktop
     1314842898 # miniQpicview (Kantu)
     1449412482 # Reeder 4
     1452453066 # Hidden Bar
@@ -198,6 +192,7 @@ prepare_macos_env_gui_extra()
     dropbox
     duet
     electron-fiddle
+    eul
     fantastical
     feishu
     figma
@@ -231,6 +226,7 @@ prepare_macos_env_gui_extra()
     losslesscut
     lx-music
     microsoft-edge
+    microsoft-remote-desktop
     mongodb-compass
     monitorcontrol
     mweb2
@@ -252,6 +248,7 @@ prepare_macos_env_gui_extra()
     qlprettypatch
     qlstephen
     qlvideo
+    qq
     qqmusic
     quicklook-csv
     quicklook-json
@@ -268,6 +265,7 @@ prepare_macos_env_gui_extra()
     shifty
     skim
     skype
+    slack
     sloth
     slowquitapps
     soundflower
@@ -281,6 +279,7 @@ prepare_macos_env_gui_extra()
     switchhosts
     syncthing
     tencent-lemon
+    the-unarchiver
     toau
     tweeten
     typora
@@ -292,6 +291,8 @@ prepare_macos_env_gui_extra()
     virtualbox-extension-pack
     vnc-viewer
     webpquicklook
+    wechat
+    whatsapp
     wireshark
     wkhtmltopdf
     xld
