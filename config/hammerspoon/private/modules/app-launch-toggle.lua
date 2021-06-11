@@ -70,7 +70,7 @@ setAppToggles(hyper, {
 setAppToggles(hyperAlt, {
   a = 'Atom',
   -- b = '',
-  c = 'Chromium',
+  c = 'Google Chrome Canary',
   d = 'DevDocs',
   -- e = '',
   f = 'Figma',

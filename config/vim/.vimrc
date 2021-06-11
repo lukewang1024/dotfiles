@@ -86,10 +86,13 @@ let mapleader = ","
 set pastetoggle=<F11>
 
 " <CR> - clear previous search highlight
-nnoremap <CR> :noh<CR><CR>
+nnoremap <silent> <CR> :noh<CR><CR>
 
-" <Leader>q - close buffer without killing window
-nnoremap <Leader>q :bd<CR>
+" <Leader>q - close all buffers
+nnoremap <Leader>q :%bd<CR>
+
+" <Leader>Q - close all buffers but the current one
+nnoremap <Leader>Q :%bd \| e#<CR>
 
 " <Leader>s - search selected text in current buffer
 nnoremap <Leader>s /<C-r>"<CR>
