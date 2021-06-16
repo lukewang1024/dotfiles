@@ -19,6 +19,7 @@ Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-fugitive'
 Plug 'airblade/vim-gitgutter'
 Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
+Plug 'ojroques/vim-oscyank'
 Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-sensible'
 Plug 'ruanyl/vim-sort-imports'
@@ -475,6 +476,13 @@ xmap ga <Plug>(EasyAlign)
 
 " Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
+
+"""""""""""""""
+" vim-oscyank "
+"""""""""""""""
+
+" Yank to host clipboard with OSC52 sequence
+vnoremap <Leader>c :OSCYank<CR>
 
 
 " syntax:ssDquote
