@@ -1,10 +1,24 @@
 install_common_packages()
 {
+  install_cargo_packages
   install_npm_packages
   install_gem_packages
   install_pip_packages
   install_cpan_packages
   install_other_packages
+}
+
+install_cargo_packages()
+{
+  echo 'Installing crates...'
+
+  local pkgs=(
+    wurl
+  )
+
+  cargo install `join ' ' "${pkgs[@]}"`
+
+  echo 'Done.'
 }
 
 install_gem_packages()
@@ -52,6 +66,7 @@ install_npm_packages()
     hexo-cli
     hiper
     http-server
+    import-sort-cli
     is-website-vulnerable
     leetcode-cli
     localtunnel

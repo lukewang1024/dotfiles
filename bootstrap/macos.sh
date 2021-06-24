@@ -70,8 +70,6 @@ prepare_macos_env_cli_core()
 
 prepare_macos_env_cli_extra()
 {
-  brew tap esphen/wsta https://github.com/esphen/wsta.git
-
   install_nix_brew_extra_packages
 
   local pkgs=(
@@ -81,7 +79,6 @@ prepare_macos_env_cli_extra()
     m-cli
     mackup
     reattach-to-user-namespace
-    wsta
   )
   brew install `join ' ' "${pkgs[@]}"`
 
