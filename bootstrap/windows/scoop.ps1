@@ -45,6 +45,7 @@ function install_scoop_packages
     deno `
     ditto `
     doublecmd `
+    duf `
     everything `
     far `
     fd `
@@ -57,6 +58,7 @@ function install_scoop_packages
     git `
     git-lfs `
     gow `
+    gping `
     hain `
     handbrake `
     heidisql `

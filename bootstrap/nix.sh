@@ -63,6 +63,8 @@ install_nix_brew_core_packages()
 
 install_nix_brew_extra_packages()
 {
+  brew tap xwmx/taps
+
   local pkgs=(
     ansifilter
     apache-spark
@@ -85,6 +87,7 @@ install_nix_brew_extra_packages()
     ddgr
     diffutils
     dive
+    duf
     ed
     emscripten
     exiftool
@@ -114,6 +117,7 @@ install_nix_brew_extra_packages()
     gnu-which
     gnutls
     googler
+    gping
     graphviz
     grep
     gzip
@@ -122,6 +126,7 @@ install_nix_brew_extra_packages()
     httpstat
     hub
     hyperfine
+    iftop
     inetutils
     irssi
     joplin
@@ -143,6 +148,7 @@ install_nix_brew_extra_packages()
     multitail
     mutt
     mycli
+    nb
     ncdu
     ncmpcpp
     neofetch

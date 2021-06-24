@@ -84,6 +84,7 @@ prepare_arch_env_cli_core()
     lsd
     neovim
     openssh
+    pamac-cli
     percol
     prettyping
     ranger
@@ -153,10 +154,12 @@ prepare_arch_env_cli_extra()
     glances
     glow-bin
     go
+    gping
     graphviz
     haproxy
     hashcat
     hub
+    iftop
     irssi
     jdk-openjdk
     jpegoptim
@@ -170,6 +173,7 @@ prepare_arch_env_cli_extra()
     mpv
     multitail
     mutt
+    nb
     ncdu
     ncmpcpp
     nghttp2
@@ -215,6 +219,7 @@ prepare_arch_env_cli_extra()
     deno-bin
     dive
     downgrader
+    duf
     fpp
     fswatch
     gdu-bin
@@ -236,7 +241,6 @@ prepare_arch_env_cli_extra()
     touchpad-state-git
     translate-shell
     ttf-weather-icons
-    wsta
   )
   aur_install_pkgs
 
