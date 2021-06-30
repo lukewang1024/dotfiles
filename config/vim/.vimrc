@@ -4,34 +4,37 @@
 call plug#begin('~/.vim/plugged')
 
 " Plugins
-Plug 'w0rp/ale'
-Plug 'neoclide/coc.nvim', {'tag': '*'}
+Plug 'airblade/vim-gitgutter'
+Plug 'christoomey/vim-tmux-navigator'
 Plug 'editorconfig/editorconfig-vim'
+Plug 'joshdick/onedark.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
-Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-Plug 'Xuyuanp/nerdtree-git-plugin'
-Plug 'joshdick/onedark.vim'
-Plug 'wellle/targets.vim'
-Plug 'tpope/vim-commentary'
 Plug 'junegunn/vim-easy-align'
-Plug 'tpope/vim-fugitive'
-Plug 'airblade/vim-gitgutter'
-Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
-Plug 'ojroques/vim-oscyank'
-Plug 'sheerun/vim-polyglot'
-Plug 'tpope/vim-sensible'
-Plug 'ruanyl/vim-sort-imports'
-Plug 'tpope/vim-surround'
-Plug 'tmux-plugins/vim-tmux-focus-events'
-Plug 'christoomey/vim-tmux-navigator'
+Plug 'lambdalisue/fern-git-status.vim'
+Plug 'lambdalisue/fern-renderer-nerdfont.vim'
+Plug 'lambdalisue/fern.vim'
+Plug 'lambdalisue/glyph-palette.vim'
+Plug 'lambdalisue/nerdfont.vim'
+Plug 'LumaKernel/fern-mapping-fzf.vim'
 Plug 'mg979/vim-visual-multi'
+Plug 'neoclide/coc.nvim', {'tag': '*'}
+Plug 'ojroques/vim-oscyank'
+Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
+Plug 'sheerun/vim-polyglot'
+Plug 'tmux-plugins/vim-tmux-focus-events'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-surround'
+Plug 'w0rp/ale'
+Plug 'wellle/targets.vim'
 
 " tabline
-"Plug 'itchyny/lightline.vim'
-Plug 'bling/vim-airline'
 "Plug 'bagrat/vim-buffet'
+Plug 'bling/vim-airline'
+"Plug 'itchyny/lightline.vim'
 
 " load vim-devicons last so plugins are patched
 Plug 'ryanoasis/vim-devicons'
@@ -89,8 +92,8 @@ set pastetoggle=<F11>
 " <CR> - clear previous search highlight
 nnoremap <silent> <CR> :noh<CR><CR>
 
-" <Leader>q - close all buffers
-nnoremap <Leader>q :%bd<CR>
+" <Leader>q - close the current buffer
+nnoremap <Leader>q :bd<CR>
 
 " <Leader>Q - close all buffers but the current one
 nnoremap <Leader>Q :%bd \| e#<CR>
@@ -280,11 +283,11 @@ endfunction
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " Remap for rename current word
-nmap <leader>rn <Plug>(coc-rename)
+nmap <Leader>rn <Plug>(coc-rename)
 
 " Remap for format selected region
-xmap <leader>f  <Plug>(coc-format-selected)
-nmap <leader>f  <Plug>(coc-format-selected)
+xmap <Leader>f  <Plug>(coc-format-selected)
+nmap <Leader>f  <Plug>(coc-format-selected)
 
 augroup mygroup
   autocmd!
@@ -294,14 +297,14 @@ augroup mygroup
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup end
 
-" Remap for do codeAction of selected region, ex: `<leader>aap` for current paragraph
-xmap <leader>a  <Plug>(coc-codeaction-selected)
-nmap <leader>a  <Plug>(coc-codeaction-selected)
+" Remap for do codeAction of selected region, ex: `<Leader>aap` for current paragraph
+xmap <Leader>a  <Plug>(coc-codeaction-selected)
+nmap <Leader>a  <Plug>(coc-codeaction-selected)
 
 " Remap for do codeAction of current line
-nmap <leader>ac  <Plug>(coc-codeaction)
+nmap <Leader>ac  <Plug>(coc-codeaction)
 " Fix autofix problem of current line
-nmap <leader>qf  <Plug>(coc-fix-current)
+nmap <Leader>qf  <Plug>(coc-fix-current)
 
 " Create mappings for function text object, requires document symbols feature of languageserver.
 xmap if <Plug>(coc-funcobj-i)
@@ -353,6 +356,47 @@ command! -nargs=0 ESLint   :CocCommand eslint.executeAutofix
 
 let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
+""""""""
+" Fern "
+""""""""
+
+let g:fern#renderer = "nerdfont"
+
+nnoremap <Leader>n :Fern .           -drawer -keep -toggle<CR>
+nnoremap <Leader>N :Fern %:h         -drawer -keep<CR>
+nnoremap <Leader>m :Fern . -reveal=% -drawer -keep<CR>
+
+augroup my-glyph-palette
+  autocmd! *
+  autocmd FileType fern call glyph_palette#apply()
+  autocmd FileType nerdtree,startify call glyph_palette#apply()
+augroup END
+
+function! Fern_mapping_fzf_customize_option(spec)
+  let a:spec.options .= ' --multi'
+  " Note that fzf#vim#with_preview comes from fzf.vim
+  if exists('*fzf#vim#with_preview')
+    return fzf#vim#with_preview(a:spec)
+  else
+    return a:spec
+  endif
+endfunction
+
+function! Fern_mapping_fzf_before_all(dict)
+  if !len(a:dict.lines)
+    return
+  endif
+  return a:dict.fern_helper.async.update_marks([])
+endfunction
+
+function! s:reveal(dict)
+  execute "FernReveal -wait" a:dict.relative_path
+  execute "normal \<Plug>(fern-action-mark:set)"
+endfunction
+
+let g:Fern_mapping_fzf_file_sink = function('s:reveal')
+let g:Fern_mapping_fzf_dir_sink = function('s:reveal')
+
 """""""
 " fzf "
 """""""
@@ -395,22 +439,6 @@ function! LightlineFugitive()
 endfunction
 
 """"""""""""
-" NerdTree "
-""""""""""""
-
-let NERDTreeShowHidden=1
-
-noremap <Leader>n :NERDTreeToggle<CR>
-noremap <Leader>f :NERDTreeFind<CR>
-
-" Open NERDTree automatically when vim starts up on opening a directory
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | exe 'cd '.argv()[0] | endif
-
-" Close vim if the only window left open is a NERDTree
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-""""""""""""
 " Prettier "
 """"""""""""
 
@@ -449,16 +477,16 @@ let g:airline#extensions#tabline#formatter = 'unique_tail_improved'
 "let g:buffet_right_trunc_icon = "\uf0a9"
 
 " Tab shortcuts
-"nmap <leader>1 <Plug>BuffetSwitch(1)
-"nmap <leader>2 <Plug>BuffetSwitch(2)
-"nmap <leader>3 <Plug>BuffetSwitch(3)
-"nmap <leader>4 <Plug>BuffetSwitch(4)
-"nmap <leader>5 <Plug>BuffetSwitch(5)
-"nmap <leader>6 <Plug>BuffetSwitch(6)
-"nmap <leader>7 <Plug>BuffetSwitch(7)
-"nmap <leader>8 <Plug>BuffetSwitch(8)
-"nmap <leader>9 <Plug>BuffetSwitch(9)
-"nmap <leader>0 <Plug>BuffetSwitch(10)
+"nmap <Leader>1 <Plug>BuffetSwitch(1)
+"nmap <Leader>2 <Plug>BuffetSwitch(2)
+"nmap <Leader>3 <Plug>BuffetSwitch(3)
+"nmap <Leader>4 <Plug>BuffetSwitch(4)
+"nmap <Leader>5 <Plug>BuffetSwitch(5)
+"nmap <Leader>6 <Plug>BuffetSwitch(6)
+"nmap <Leader>7 <Plug>BuffetSwitch(7)
+"nmap <Leader>8 <Plug>BuffetSwitch(8)
+"nmap <Leader>9 <Plug>BuffetSwitch(9)
+"nmap <Leader>0 <Plug>BuffetSwitch(10)
 
 " Navigation shortcuts
 noremap <Tab> :bn<CR>
