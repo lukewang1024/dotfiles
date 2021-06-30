@@ -176,6 +176,7 @@ prepare_macos_env_gui_extra()
     android-sdk
     android-studio
     androidtool
+    apppolice
     aria2gui
     atom
     background-music
