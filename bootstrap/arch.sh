@@ -186,6 +186,7 @@ prepare_arch_env_cli_extra()
     perl-image-exiftool
     pkgfile
     playerctl
+    pngquant
     polipo
     progress
     proxychains-ng

@@ -149,7 +149,6 @@ prepare_macos_env_gui_extra()
     1044484672 # ApolloOne - Photo Video Viewer
     1142151959 # Just Focus
     1176895641 # Spark
-    1254743014 # LyricsX
     1278508951 # Trello
     1314842898 # miniQpicview (Kantu)
     1449412482 # Reeder 4
@@ -223,6 +222,7 @@ prepare_macos_env_gui_extra()
     lepton
     losslesscut
     lx-music
+    lyricsx
     microsoft-edge
     microsoft-remote-desktop
     mongodb-compass
