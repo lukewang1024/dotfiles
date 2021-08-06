@@ -63,6 +63,7 @@ install_nix_brew_core_packages()
 
 install_nix_brew_extra_packages()
 {
+  brew tap jesseduffield/lazynpm
   brew tap xwmx/taps
 
   local pkgs=(
@@ -162,6 +163,7 @@ install_nix_brew_extra_packages()
     p7zip
     pandoc
     pgcli
+    pngquant
     progress
     proxychains-ng
     qpdf

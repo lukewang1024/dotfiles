@@ -30,7 +30,7 @@ setAppToggles(hyper, {
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
-  m = 'QQ音乐',
+  m = 'Music',
   n = 'nvALT',
   -- o = '',
   p = 'PDF Expert',
