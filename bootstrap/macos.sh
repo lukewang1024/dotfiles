@@ -186,6 +186,7 @@ prepare_macos_env_gui_extra()
     caprine
     charles
     commander-one
+    copyq
     dropbox
     duet
     electron-fiddle
