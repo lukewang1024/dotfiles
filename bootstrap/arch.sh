@@ -346,6 +346,7 @@ prepare_arch_env_gui_extra()
     arc-icon-theme
     atom
     chromium
+    copyq
     drawing
     file-roller
     handbrake

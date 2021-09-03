@@ -88,6 +88,7 @@ install_npm_packages()
     pm2
     pnpm
     react-devtools
+    readability-cli
     serve
     serverless
     source-map-explorer

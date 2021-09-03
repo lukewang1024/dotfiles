@@ -40,6 +40,7 @@ function install_scoop_packages
     chromium `
     cloc `
     concfg `
+    copyq `
     cowsay `
     cpu-z `
     deno `

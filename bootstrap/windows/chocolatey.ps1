@@ -36,6 +36,7 @@ function install_choco_packages
     docker-toolbox `
     dropbox `
     dropit.install `
+    eartrumpet `
     f.lux `
     fiddler4 `
     googlechrome `
