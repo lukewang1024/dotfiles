@@ -156,6 +156,7 @@ prepare_macos_env_gui_extra()
     1477089520 # Backtrack
     1485844094 # iShot
     1497527363 # Blurred
+    1499181666 # OwlOCR - Screenshot to Text
     1507782672 # Pixea
   )
 
@@ -219,6 +220,7 @@ prepare_macos_env_gui_extra()
     keka
     keycastr
     kitematic
+    kitty
     lark
     lepton
     losslesscut
@@ -350,6 +352,8 @@ setup_macos_gaming()
 {
   local casks=(
     battle-net
+    dosbox
+    dosbox-x
     epic-games
     gog-downloader
     homebrew/cask-versions/openemu-experimental

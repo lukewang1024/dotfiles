@@ -45,6 +45,8 @@ function install_scoop_packages
     cpu-z `
     deno `
     ditto `
+    dosbox `
+    dosbox-x `
     doublecmd `
     duf `
     everything `
@@ -72,6 +74,7 @@ function install_scoop_packages
     kdiff3 `
     keepass `
     kitematic `
+    kitty `
     kubectl `
     lazydocker `
     lazygit `
