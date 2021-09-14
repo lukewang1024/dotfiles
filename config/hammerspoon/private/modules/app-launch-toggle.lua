@@ -50,7 +50,7 @@ setAppToggles(hyper, {
   ['['] = 'Skype',
   [']'] = 'Slack',
   ['/'] = 'Finder',
-  -- ['\''] = '',
+  ['\''] = 'kitty',
   ['\\'] = 'MacPass',
   ['`'] = 'iTerm',
   ['0'] = 'Proxifier',

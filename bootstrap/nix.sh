@@ -206,6 +206,7 @@ install_nix_brew_packages()
 apply_nix_app_configs()
 {
   backup_then_symlink "$config_dir/alacritty" ~/.config/alacritty
+  backup_then_symlink "$config_dir/kitty" ~/.config/kitty
   backup_then_symlink "$config_dir/lf" ~/.config/lf
 }
 

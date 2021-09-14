@@ -288,13 +288,11 @@ prepare_arch_env_gui_core()
     redshift
     rofi
     rofi-scripts
-    termite
     thunar
     thunar-archive-plugin
     thunar-media-tags-plugin
     thunar-shares-plugin
     thunar-volman
-    tilda
     ttf-font-awesome
     ttf-sarasa-gothic
     tumbler
@@ -353,6 +351,7 @@ prepare_arch_env_gui_extra()
     hardinfo
     kdiff3
     keepassxc
+    kitty
     materia-gtk-theme
     neofetch
     qutebrowser
@@ -361,6 +360,8 @@ prepare_arch_env_gui_extra()
     shadowsocks-qt5
     syncthing-gtk
     telegram-desktop
+    termite
+    tilda
     virt-manager
     virtualbox
     winetricks
@@ -413,6 +414,11 @@ setup_arch_gaming()
     vbam-wx
   )
   pacman_install_pkgs
+
+  pkgs=(
+    dosbox-x
+  )
+  aur_install_pkgs
 }
 
 set_default_apps()
