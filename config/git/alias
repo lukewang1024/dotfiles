@@ -102,6 +102,7 @@
   sh = !sh -c \"git stash show -p stash@{${1:-0}}\" -
   sl = stash list
   sm = !sh -c \"git log --all --grep=$1\" -
+  so = "!f() { [ $# = 0 ] && git pull origin || git fetch origin $1:$1; }; f"
   sortdiff = !sh -c \"git diff \"$@\" | grep \"^[+-]\" | sort --key=1.2 | uniq -u -s1\"
   sp = stash pop
   ss = stash save
@@ -111,17 +112,6 @@
   svnr = svn rebase
   td = tag -l --sort=-creatordate --format='%(creatordate:short):  %(refname:short)'
   theirs = "!f() { git co --theirs $@ && git add $@; }; f"
-  tig-compare-commits = "!f() { \
-    echo Checking branch existence; \
-    if [[ $(git branch --list temp-compare-base) != \"\" ]]; then\
-      echo Branch exists, comparing with $1; \
-      git difftool -d temp-compare-base..$1; \
-      git branch --delete temp-compare-base; \
-    else \
-      echo Creating initial branch at $1; \
-      git branch temp-compare-base $1; \
-    fi;\
-  };"
   tree = forest --pretty=format:\"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s\" --style=15 --reverse
   trf = !sh -c \"git reflog --pretty=raw | tig --pretty=raw | cat\"
   unassume = update-index --no-assume-unchanged
