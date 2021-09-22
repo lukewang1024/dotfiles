@@ -82,6 +82,7 @@ prepare_arch_env_cli_core()
     imagemagick
     jq
     lsd
+    micro
     neovim
     openssh
     pamac-cli
@@ -139,6 +140,7 @@ prepare_arch_env_cli_extra()
     cowsay
     cpanminus
     cpulimit
+    dnsmasq
     docker
     docker-compose
     docker-machine
@@ -160,13 +162,16 @@ prepare_arch_env_cli_extra()
     hashcat
     hub
     iftop
+    iptables-nft
     irssi
     jdk-openjdk
     jpegoptim
     kubectl
+    libvirt
     lolcat
     mc
     mediainfo
+    minikube
     mpc
     mpd
     mps-youtube

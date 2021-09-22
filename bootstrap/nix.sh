@@ -35,7 +35,7 @@ install_nix_brew_core_packages()
     less
     lf
     lsd
-    nano
+    micro
     neovim
     openssh
     peco
@@ -140,6 +140,7 @@ install_nix_brew_extra_packages()
     make
     media-info
     midnight-commander
+    minikube
     mkcert
     mosh
     mpc
