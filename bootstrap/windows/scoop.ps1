@@ -84,7 +84,9 @@ function install_scoop_packages
     losslesscut `
     lxrunoffline `
     mc `
+    micro `
     miniconda3 `
+    minikube `
     mobaxterm `
     nimbleset `
     nimbletext `

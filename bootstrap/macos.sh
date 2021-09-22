@@ -76,6 +76,7 @@ prepare_macos_env_cli_extra()
     brightness
     csshx
     fortune
+    hyperkit
     m-cli
     mackup
     reattach-to-user-namespace
@@ -187,7 +188,6 @@ prepare_macos_env_gui_extra()
     caprine
     charles
     commander-one
-    copyq
     dropbox
     duet
     electron-fiddle
@@ -290,6 +290,7 @@ prepare_macos_env_gui_extra()
     vagrant-manager
     virtualbox
     virtualbox-extension-pack
+    vitalsigns
     vnc-viewer
     webpquicklook
     wechat
