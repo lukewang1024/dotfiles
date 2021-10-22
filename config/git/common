@@ -36,15 +36,12 @@
   options = --highlight --line-numbers
 [merge]
   conflictStyle = diff3
-  # tool = kdiff3
-  tool = smerge
+  tool = fugitive
+  guitool = smerge
 [mergetool]
   prompt = false
 [mergetool "fugitive"]
   cmd = vim -f -c \"Gdiff\" \"$MERGED\"
-[mergetool "smerge"]
-  cmd = smerge mergetool \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
-  trustExitCode = true
 [pull]
   ff = only
 [push]

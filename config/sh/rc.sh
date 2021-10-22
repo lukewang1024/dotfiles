@@ -58,7 +58,7 @@ alias px='proxychains4 -f ~/.config/proxychains.conf'
 
 ## Git related
 alias gitc='git --no-pager'
-alias gmtf='git mergetool --no-prompt --tool=fugitive'
+alias gmtlg='git mergetool --no-prompt --gui'
 alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 
 ## Tools from npm
