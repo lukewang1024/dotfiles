@@ -358,6 +358,7 @@ setup_macos_gaming()
     epic-games
     gog-downloader
     homebrew/cask-versions/openemu-experimental
+    openra
     origin
     steam
   )

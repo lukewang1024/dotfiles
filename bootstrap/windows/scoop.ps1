@@ -20,6 +20,7 @@ function install_scoop_packages
     nerd-fonts `
     nirsoft `
     nonportable `
+    games `
 
   scoop bucket add customize https://github.com/ChinLong/scoop-customize.git
 
@@ -96,9 +97,11 @@ function install_scoop_packages
     now-cli `
     nvm `
     openhardwaremonitor `
+    openra `
     openssh `
     oraclejdk `
     pandoc `
+    pdfarranger `
     phantomjs `
     pshazz `
     putty `
