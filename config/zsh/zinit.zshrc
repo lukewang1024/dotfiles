@@ -88,7 +88,7 @@ zinit wait lucid for \
   atpull'zinit creinstall -q .' blockf zsh-users/zsh-completions
 
 zinit wait'1' lucid for \
-  atinit'zicompinit; zicdreplay' zdharma/fast-syntax-highlighting
+  atinit'zicompinit; zicdreplay' zdharma-continuum/fast-syntax-highlighting
 
 # OS specific plugins
 

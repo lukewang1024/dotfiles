@@ -19,7 +19,7 @@ Plug 'lambdalisue/glyph-palette.vim'
 Plug 'lambdalisue/nerdfont.vim'
 Plug 'LumaKernel/fern-mapping-fzf.vim'
 Plug 'mg979/vim-visual-multi'
-Plug 'neoclide/coc.nvim', {'tag': '*'}
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'ojroques/vim-oscyank'
 Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
 Plug 'sheerun/vim-polyglot'

@@ -359,6 +359,7 @@ prepare_arch_env_gui_extra()
     kitty
     materia-gtk-theme
     neofetch
+    pdfarranger
     qutebrowser
     qv2ray
     rxvt-unicode
@@ -413,6 +414,7 @@ setup_arch_gaming()
     dosbox
     higan
     mame
+    openra
     pcsx2
     ppsspp
     snes9x-gtk
