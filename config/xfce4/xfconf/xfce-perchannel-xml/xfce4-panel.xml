@@ -125,6 +125,28 @@
       <property name="square-icons" type="bool" value="true"/>
       <property name="show-frame" type="bool" value="true"/>
       <property name="size-max" type="uint" value="20"/>
+      <property name="known-legacy-items" type="array">
+        <value type="string" value="msm notifier"/>
+        <value type="string" value="pa-applet"/>
+        <value type="string" value="bluetooth enabled"/>
+        <value type="string" value="udiskie"/>
+        <value type="string" value="redshift-gtk"/>
+        <value type="string" value="networkmanager applet"/>
+        <value type="string" value="pamac-tray"/>
+      </property>
+      <property name="known-items" type="array">
+        <value type="string" value="lark_status_icon_1"/>
+        <value type="string" value="dropbox-client-4182"/>
+        <value type="string" value="dropbox-client-571791"/>
+        <value type="string" value="flameshot"/>
+        <value type="string" value="chrome_status_icon_1"/>
+        <value type="string" value="dropbox-client-8720"/>
+        <value type="string" value="steam"/>
+        <value type="string" value="dropbox-client-8640"/>
+        <value type="string" value="blueman"/>
+        <value type="string" value="redshift"/>
+        <value type="string" value="Fcitx"/>
+      </property>
     </property>
     <property name="plugin-1011" type="string" value="separator">
       <property name="style" type="uint" value="0"/>
@@ -140,7 +162,36 @@
       <property name="style" type="uint" value="0"/>
       <property name="expand" type="bool" value="false"/>
     </property>
-    <property name="plugin-1016" type="string" value="weather"/>
+    <property name="plugin-1016" type="string" value="weather">
+      <property name="msl" type="int" value="0"/>
+      <property name="timezone" type="string" value=""/>
+      <property name="offset" type="string" value="+08:00"/>
+      <property name="cache-max-age" type="int" value="172800"/>
+      <property name="power-saving" type="bool" value="true"/>
+      <property name="units" type="empty">
+        <property name="temperature" type="int" value="0"/>
+        <property name="pressure" type="int" value="0"/>
+        <property name="windspeed" type="int" value="0"/>
+        <property name="precipitation" type="int" value="0"/>
+        <property name="altitude" type="int" value="0"/>
+        <property name="apparent-temperature" type="int" value="2"/>
+      </property>
+      <property name="round" type="bool" value="true"/>
+      <property name="single-row" type="bool" value="true"/>
+      <property name="tooltip-style" type="int" value="1"/>
+      <property name="forecast" type="empty">
+        <property name="layout" type="int" value="1"/>
+        <property name="days" type="int" value="5"/>
+      </property>
+      <property name="theme-dir" type="string" value="/usr/share/xfce4/weather/icons/liquid"/>
+      <property name="scrollbox" type="empty">
+        <property name="show" type="bool" value="true"/>
+        <property name="animate" type="bool" value="true"/>
+        <property name="lines" type="int" value="1"/>
+        <property name="color" type="string" value="rgba(0,0,0,0)"/>
+        <property name="use-color" type="bool" value="false"/>
+      </property>
+    </property>
     <property name="plugin-1017" type="string" value="clock">
       <property name="tooltip-format" type="string" value="%x"/>
       <property name="mode" type="uint" value="2"/>

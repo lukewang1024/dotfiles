@@ -4,7 +4,6 @@ ShowLegend=TRUE
 MorePrecision=FALSE
 FullCommandLine=TRUE
 ShowStatusIcon=FALSE
-ShowMemoryInXBytes=TRUE
 MonitorPaintBox=TRUE
 ShowApplicationIcons=TRUE
 ToolbarStyle=DEFAULT
