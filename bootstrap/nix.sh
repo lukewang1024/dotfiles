@@ -4,6 +4,7 @@ install_nix_brew_runtimes()
     deno
     go
     node
+    php
     python
     python@2
     ruby
@@ -36,6 +37,7 @@ install_nix_brew_core_packages()
     lf
     lsd
     micro
+    navi
     neovim
     openssh
     peco
@@ -102,6 +104,7 @@ install_nix_brew_extra_packages()
     fswatch
     gawk
     gdu
+    gh
     ghi
     gifsicle
     gist
