@@ -93,6 +93,8 @@ install_npm_packages()
     serverless
     source-map-explorer
     svgexport
+    taskbook
+    terminalizer
     textlint
     ts-node
     typescript
@@ -119,6 +121,7 @@ install_pip_packages()
     ici
     myqr
     powerline-status
+    present
     pygments
     pywal
     rainbowstream

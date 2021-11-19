@@ -110,6 +110,7 @@ prepare_arch_env_cli_core()
     gitflow-avh
     icdiff
     lf-bin
+    navi
     peco
     urlview
     xsv
@@ -153,6 +154,7 @@ prepare_arch_env_cli_extra()
     flatpak
     fortune-mod
     gifsicle
+    github-cli
     glances
     glow-bin
     go

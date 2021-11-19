@@ -84,7 +84,7 @@ EOPLUGINS
   fi
 
   if is_macos; then
-    zgen oh-my-zsh plugins/osx
+    zgen oh-my-zsh plugins/macos
     zgen oh-my-zsh plugins/brew
     zgen oh-my-zsh plugins/forklift
   fi

@@ -107,7 +107,7 @@ else # *nix
 
   if is_macos; then
     zinit wait lucid for \
-      plugins/osx/osx.plugin.zsh \
+      plugins/macos/macos.plugin.zsh \
       plugins/brew/brew.plugin.zsh \
       plugins/forklift/forklift.plugin.zsh
 
