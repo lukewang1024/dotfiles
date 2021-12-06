@@ -101,6 +101,7 @@ prepare_macos_env_gui_core()
   local casks=(
     alacritty
     alfred
+    alt-tab
     appcleaner
     browserosaurus
     fliqlo
@@ -108,10 +109,10 @@ prepare_macos_env_gui_core()
     font-meslo-lg-nerd-font
     font-sauce-code-pro-nerd-font
     hammerspoon
-    hyperswitch
     iina
     iterm2
     karabiner-elements
+    keyboardholder
     macpass
     maczip
     mos
@@ -120,7 +121,6 @@ prepare_macos_env_gui_core()
     squirrel
     sublime-merge
     sublime-text
-    switchkey
     visual-studio-code
   )
   brew install --cask `join ' ' "${casks[@]}"`
@@ -211,7 +211,7 @@ prepare_macos_env_gui_extra()
     imagealpha
     imageoptim
     inkscape
-    istat-menus5
+    istat-menus
     itsycal
     java
     joplin
@@ -226,6 +226,7 @@ prepare_macos_env_gui_extra()
     losslesscut
     lx-music
     lyricsx
+    mark-text
     microsoft-edge
     microsoft-remote-desktop
     mongodb-compass
@@ -283,7 +284,6 @@ prepare_macos_env_gui_extra()
     the-unarchiver
     toau
     tweeten
-    typora
     ubersicht
     utm
     v2rayu
