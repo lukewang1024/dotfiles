@@ -242,6 +242,7 @@ prepare_arch_env_cli_extra()
     lazynpm
     mons
     mycli
+    ocrmypdf
     onefetch
     pgcli
     sc-im
@@ -394,6 +395,7 @@ prepare_arch_env_gui_extra()
     kitematic
     losslesscut
     mailspring
+    marktext-bin
     musixmatch-bin
     rslsync
     screenkey
@@ -401,7 +403,6 @@ prepare_arch_env_gui_extra()
     slack-desktop
     spotify
     ttf-ms-fonts
-    typora
     urxvt-fullscreen
     urxvt-resize-font-git
     whatsapp-web-desktop

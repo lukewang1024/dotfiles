@@ -133,7 +133,6 @@ install_nix_brew_extra_packages()
     iftop
     inetutils
     irssi
-    joplin
     jpegoptim
     kubernetes-cli
     lazydocker
@@ -160,6 +159,7 @@ install_nix_brew_extra_packages()
     netcat
     nmap
     nyancat
+    ocrmypdf
     offlineimap
     onefetch
     open-mpi

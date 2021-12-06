@@ -84,6 +84,7 @@ function install_scoop_packages
     ln `
     losslesscut `
     lxrunoffline `
+    marktext `
     mc `
     micro `
     miniconda3 `

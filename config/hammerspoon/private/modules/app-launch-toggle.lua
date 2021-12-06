@@ -81,7 +81,7 @@ setAppToggles(hyperAlt, {
   k = 'Personal Kanban',
   -- l = '',
   m = 'Spotify',
-  n = 'Typora',
+  n = 'Mark Text',
   o = 'Microsoft OneNote',
   -- p = '',
   -- q = '',
