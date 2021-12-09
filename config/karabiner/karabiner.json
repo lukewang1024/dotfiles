@@ -27,6 +27,14 @@
                                             }
                                         ],
                                         "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
+                                            }
+                                        ],
+                                        "type": "device_unless"
                                     }
                                 ],
                                 "from": {
@@ -50,6 +58,14 @@
                                         "identifiers": [
                                             {
                                                 "vendor_id": 1452
+                                            }
+                                        ],
+                                        "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
                                             }
                                         ],
                                         "type": "device_unless"
@@ -79,6 +95,14 @@
                                             }
                                         ],
                                         "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
+                                            }
+                                        ],
+                                        "type": "device_unless"
                                     }
                                 ],
                                 "from": {
@@ -102,6 +126,14 @@
                                         "identifiers": [
                                             {
                                                 "vendor_id": 1452
+                                            }
+                                        ],
+                                        "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
                                             }
                                         ],
                                         "type": "device_unless"
@@ -1069,6 +1101,14 @@
                                             }
                                         ],
                                         "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
+                                            }
+                                        ],
+                                        "type": "device_unless"
                                     }
                                 ],
                                 "from": {
@@ -1092,6 +1132,14 @@
                                         "identifiers": [
                                             {
                                                 "vendor_id": 1452
+                                            }
+                                        ],
+                                        "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
                                             }
                                         ],
                                         "type": "device_unless"
@@ -1121,6 +1169,14 @@
                                             }
                                         ],
                                         "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
+                                            }
+                                        ],
+                                        "type": "device_unless"
                                     }
                                 ],
                                 "from": {
@@ -1144,6 +1200,14 @@
                                         "identifiers": [
                                             {
                                                 "vendor_id": 1452
+                                            }
+                                        ],
+                                        "type": "device_unless"
+                                    },
+                                    {
+                                        "identifiers": [
+                                            {
+                                                "vendor_id": 1133
                                             }
                                         ],
                                         "type": "device_unless"
