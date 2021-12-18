@@ -86,6 +86,7 @@ prepare_arch_env_cli_core()
     neovim
     openssh
     pamac-cli
+    peco
     percol
     prettyping
     ranger
@@ -111,7 +112,6 @@ prepare_arch_env_cli_core()
     icdiff
     lf-bin
     navi
-    peco
     urlview
     xsv
   )
@@ -130,7 +130,6 @@ prepare_arch_env_cli_extra()
   pkgs=(
     android-tools
     aria2
-    aws-cli
     axel
     bat
     calcurse
@@ -144,8 +143,8 @@ prepare_arch_env_cli_extra()
     dnsmasq
     docker
     docker-compose
-    docker-machine
     dstat
+    duf
     ebtables
     ffmpeg
     ffmpegthumbnailer
@@ -153,8 +152,11 @@ prepare_arch_env_cli_extra()
     fish
     flatpak
     fortune-mod
+    gdu
     gifsicle
+    git-lfs
     github-cli
+    gitui
     glances
     glow-bin
     go
@@ -163,12 +165,14 @@ prepare_arch_env_cli_extra()
     haproxy
     hashcat
     hub
+    hyperfine
     iftop
     iptables-nft
     irssi
     jdk-openjdk
     jpegoptim
     kubectl
+    lazygit
     libvirt
     lolcat
     mc
@@ -180,12 +184,12 @@ prepare_arch_env_cli_extra()
     mpv
     multitail
     mutt
-    nb
     ncdu
     ncmpcpp
     nghttp2
     nyancat
     offlineimap
+    onefetch
     optipng
     p7zip
     pamixer
@@ -194,7 +198,6 @@ prepare_arch_env_cli_extra()
     pkgfile
     playerctl
     pngquant
-    polipo
     progress
     proxychains-ng
     qemu
@@ -203,6 +206,7 @@ prepare_arch_env_cli_extra()
     shellcheck
     sl
     snapd
+    translate-shell
     transmission-cli
     tree
     unrar
@@ -222,33 +226,24 @@ prepare_arch_env_cli_extra()
   yay --save --nocleanmenu --nodiffmenu --noupgrademenu --noremovemake
 
   pkgs=(
-    apache-spark
-    cheat-git
-    deno-bin
+    cheat-bin
     dive
     downgrader
-    duf
     fpp
     fswatch
-    gdu-bin
     git-bug-bin
-    git-lfs
     git-quick-stats
-    gitui
-    google-cloud-sdk
-    hyperfine
-    lazydocker
-    lazygit
+    lazydocker-bin
     lazynpm
     mons
     mycli
+    nb
     ocrmypdf
-    onefetch
     pgcli
+    polipo
     sc-im
     sparklines-git
     touchpad-state-git
-    translate-shell
     ttf-weather-icons
   )
   aur_install_pkgs
@@ -293,6 +288,7 @@ prepare_arch_env_gui_core()
     noto-fonts-emoji
     pa-applet
     polybar
+    python-pywal
     redshift
     rofi
     rofi-scripts
@@ -331,9 +327,8 @@ prepare_arch_env_gui_core()
     nerd-fonts-fira-code
     nerd-fonts-meslo
     nerd-fonts-source-code-pro
-    python-pywal
     sublime-merge
-    sublime-text-dev
+    sublime-text-4
     visual-studio-code-bin
     xgetres
     xinit-xsession
@@ -364,7 +359,6 @@ prepare_arch_env_gui_extra()
     neofetch
     pdfarranger
     qutebrowser
-    qv2ray
     rxvt-unicode
     shadowsocks-qt5
     syncthing-gtk
@@ -397,6 +391,7 @@ prepare_arch_env_gui_extra()
     mailspring
     marktext-bin
     musixmatch-bin
+    qv2ray-static-bin-nightly
     rslsync
     screenkey
     skypeforlinux-stable-bin

@@ -33,7 +33,6 @@ function install_scoop_packages
     android-studio `
     atom `
     autohotkey `
-    azure-cli `
     broot `
     calibre `
     carnac `
@@ -58,7 +57,6 @@ function install_scoop_packages
     foobar2000 `
     foxit-reader `
     fzf `
-    gcloud `
     git `
     git-lfs `
     gow `
@@ -158,6 +156,8 @@ function install_scoop_packages
   conda install -n root -c pscondaenvs pscondaenvs
 
   sudo scoop install `
+    FiraCode-NF `
+    Meslo-NF `
     SourceCodePro-NF `
 
   # Keep a blank line

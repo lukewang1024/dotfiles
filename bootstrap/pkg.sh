@@ -49,7 +49,6 @@ install_npm_packages()
     @squoosh/cli
     @vue/cli
     asar
-    azure-functions-core-tools@core
     bower
     brightness-cli
     clipboard-cli
