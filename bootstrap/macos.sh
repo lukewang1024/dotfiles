@@ -86,7 +86,6 @@ prepare_macos_env_cli_extra()
   local casks=(
     docker
     dotnet-sdk
-    google-cloud-sdk
     vagrant
   )
   brew install --cask `join ' ' "${casks[@]}"`
@@ -274,7 +273,6 @@ prepare_macos_env_gui_extra()
     soundflowerbed
     spotifree
     spotify
-    spotify-notifications
     sqlpro-for-postgres
     stretchly
     suspicious-package
@@ -285,6 +283,7 @@ prepare_macos_env_gui_extra()
     toau
     tweeten
     ubersicht
+    uninstallpkg
     utm
     v2rayu
     vagrant-manager

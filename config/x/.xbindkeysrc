@@ -209,7 +209,7 @@
 "jumpapp -m zathura"
   Mod3 + r
 
-"jumpapp -m subl3"
+"jumpapp -m subl"
   Mod3 + s
 
 "jumpapp -m telegram-desktop"

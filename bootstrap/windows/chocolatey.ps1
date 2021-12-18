@@ -25,7 +25,6 @@ function install_choco_packages
   cinst -y `
     7zip.install `
     altdrag `
-    awscli `
     caesium.install `
     camstudio `
     charles `

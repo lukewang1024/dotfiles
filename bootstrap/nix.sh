@@ -70,11 +70,8 @@ install_nix_brew_extra_packages()
 
   local pkgs=(
     ansifilter
-    apache-spark
     aria2
-    awscli
     axel
-    azure-cli
     bash-completion
     bat
     binutils
