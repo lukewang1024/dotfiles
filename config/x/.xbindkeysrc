@@ -233,6 +233,9 @@
 "jumpapp -m alacritty"
   Mod3 + semicolon
 
+"jumpapp -m kitty"
+  Mod3 + apostrophe
+
 "jumpapp -m skype"
   Mod3 + bracketleft
 
@@ -243,7 +246,7 @@
   Mod3 + backslash
 
 # "xrun -i $(xgetres web_app.lark) -e 'gtk-launch lark'"
-"jumpapp -c bytedance-feishu -m gtk-launch bytedance-feishu"
+"jumpapp -c bytedance-feishu -m gtk-launch feishu"
   Mod3 + space
 
 # >> Hyper+Shift shortcuts

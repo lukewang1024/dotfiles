@@ -382,6 +382,7 @@ prepare_arch_env_gui_extra()
     deepin-wine-tim
     dropbox
     feedreader
+    feishu-bin
     genymotion
     git-cola
     google-chrome-stable
