@@ -120,3 +120,5 @@
   untrack = rm --cache --
   up = pull --rebase --autostash
   who = shortlog -s --
+
+# syntax:ssHash

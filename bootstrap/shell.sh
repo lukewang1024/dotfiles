@@ -88,7 +88,7 @@ bashit_setup()
   # Enable common plugins
   bash -i -c ' \
     bash-it enable alias      ag general git tmux; \
-    bash-it enable plugin     alias-completion base extract fasd git jenv less-pretty-cat nodenv pyenv rbenv tmux; \
+    bash-it enable plugin     alias-completion base extract git jenv less-pretty-cat nodenv pyenv rbenv tmux; \
     bash-it enable completion bash-it brew conda git git_flow_avh npm ssh system tmux; \
     exit'
 }

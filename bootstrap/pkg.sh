@@ -59,6 +59,7 @@ install_npm_packages()
     english-dictionary-cli
     expo-cli
     express-generator
+    fx
     gatsby-cli
     git-file-history
     gulp-cli

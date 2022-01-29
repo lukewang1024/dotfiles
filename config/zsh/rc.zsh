@@ -16,5 +16,8 @@ bindkey -M vicmd 'j' history-substring-search-down
 alias rrc='source ~/.zshrc && rehash'
 alias ssh-agent-connect="source $config_dir/zsh/ssh-agent-connect.zsh"
 
+exists zoxide && eval "$(zoxide init zsh)"
+
 # aliases to overwrite the ones defined in plugins
 exists lsd && alias ls='lsd'
+exists lsd && alias tree='lsd --tree'

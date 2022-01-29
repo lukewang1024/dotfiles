@@ -57,7 +57,6 @@ zinit wait lucid for \
   OMZP::encode64/encode64.plugin.zsh \
   OMZP::extract/extract.plugin.zsh \
   OMZP::fancy-ctrl-z/fancy-ctrl-z.plugin.zsh \
-  OMZP::fasd/fasd.plugin.zsh \
   as'completion' OMZP::fd/_fd \
   OMZP::fzf/fzf.plugin.zsh \
   OMZP::git/git.plugin.zsh \

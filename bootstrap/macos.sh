@@ -231,6 +231,7 @@ prepare_macos_env_gui_extra()
     mongodb-compass
     monitorcontrol
     mweb2
+    netspot
     ntfstool
     nvalt
     omnidisksweeper
@@ -257,6 +258,7 @@ prepare_macos_env_gui_extra()
     quicklookapk
     quicklookase
     qutebrowser
+    redisinsight
     resilio-sync
     robo-3t
     rowanj-gitx
