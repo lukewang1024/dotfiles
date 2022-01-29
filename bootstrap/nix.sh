@@ -21,11 +21,11 @@ install_nix_brew_core_packages()
     broot
     diff-so-fancy
     dog
-    fasd
     fd
     findutils
     fzf
     git
+    git-delta
     git-extras
     git-flow-avh
     htop
@@ -43,6 +43,7 @@ install_nix_brew_core_packages()
     peco
     percol
     prettyping
+    procs
     ranger
     ripgrep
     rsync
@@ -58,6 +59,7 @@ install_nix_brew_core_packages()
     wget
     xsv
     yarn
+    zoxide
     zsh
   )
   brew install `join ' ' "${pkgs[@]}"`
@@ -124,6 +126,7 @@ install_nix_brew_extra_packages()
     gzip
     haproxy
     hashcat
+    hexyl
     httpstat
     hub
     hyperfine
@@ -176,6 +179,7 @@ install_nix_brew_extra_packages()
     shadowsocks-libev
     shellcheck
     sl
+    smartmontools
     spark
     tesseract
     tesseract-lang

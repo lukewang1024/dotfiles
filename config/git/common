@@ -19,21 +19,27 @@
   editor = nano
   fileMode = true
   fscache = true
-  pager = diff-so-fancy | less --tabs=4 -RFX
+  # pager = diff-so-fancy | less --tabs=4 -RFX
+  pager = delta
+[delta]
+  navigate = true  # use n and N to move between diff sections
 [diff]
+  colorMoved = default
   mnemonicPrefix = true
   renames = copies
   tool = kdiff3
-[difftool]
-  prompt = false
 [diff-so-fancy]
   first-run = false
+[difftool]
+  prompt = false
 [fetch]
   prune = true
 [gc]
   auto = 256
 [icdiff]
   options = --highlight --line-numbers
+[interactive]
+  diffFilter = delta --color-only
 [merge]
   conflictStyle = diff3
   tool = fugitive
@@ -50,3 +56,5 @@
   enabled = true
 [user]
   useConfigOnly = true
+
+# syntax:ssHash

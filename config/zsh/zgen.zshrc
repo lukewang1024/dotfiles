@@ -27,7 +27,6 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/encode64
     robbyrussell/oh-my-zsh plugins/extract
     robbyrussell/oh-my-zsh plugins/fancy-ctrl-z
-    robbyrussell/oh-my-zsh plugins/fasd
     robbyrussell/oh-my-zsh plugins/fd
     robbyrussell/oh-my-zsh plugins/fzf
     robbyrussell/oh-my-zsh plugins/git

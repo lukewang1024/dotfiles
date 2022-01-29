@@ -43,6 +43,7 @@ function install_scoop_packages
     copyq `
     cowsay `
     cpu-z `
+    delta `
     deno `
     ditto `
     dosbox `
@@ -90,11 +91,13 @@ function install_scoop_packages
     mobaxterm `
     nimbleset `
     nimbletext `
+    nirlauncher `
     nmap `
     nodejs `
     nodejs-lts `
     now-cli `
     nvm `
+    openark `
     openhardwaremonitor `
     openra `
     openssh `
@@ -102,6 +105,8 @@ function install_scoop_packages
     pandoc `
     pdfarranger `
     phantomjs `
+    processhacker `
+    procs `
     pshazz `
     putty `
     qutebrowser `
@@ -114,6 +119,7 @@ function install_scoop_packages
     shadowsocks `
     shasum `
     slack `
+    smartmontools `
     snipaste `
     steam `
     sublime-merge `

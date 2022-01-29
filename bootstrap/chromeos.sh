@@ -14,7 +14,6 @@ prepare_chromeos()
 
   pkgs=(
     ag
-    fasd
     figlet
     fzf
     git

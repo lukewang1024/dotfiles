@@ -73,10 +73,10 @@ prepare_arch_env_cli_core()
     broot
     diff-so-fancy
     dog
-    fasd
     fd
     fzf
     git
+    git-delta
     htop
     httpie
     imagemagick
@@ -89,6 +89,7 @@ prepare_arch_env_cli_core()
     peco
     percol
     prettyping
+    procs
     ranger
     rsync
     the_silver_searcher
@@ -100,6 +101,7 @@ prepare_arch_env_cli_core()
     wget
     yarn
     yay
+    zoxide
     zsh
   )
   pacman_install_pkgs
@@ -164,6 +166,7 @@ prepare_arch_env_cli_extra()
     graphviz
     haproxy
     hashcat
+    hexyl
     hub
     hyperfine
     iftop
