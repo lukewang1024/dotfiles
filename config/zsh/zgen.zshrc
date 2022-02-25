@@ -19,8 +19,8 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/command-not-found
     robbyrussell/oh-my-zsh plugins/common-aliases
     robbyrussell/oh-my-zsh plugins/copybuffer
-    robbyrussell/oh-my-zsh plugins/copydir
     robbyrussell/oh-my-zsh plugins/copyfile
+    robbyrussell/oh-my-zsh plugins/copypath
     robbyrussell/oh-my-zsh plugins/cp
     robbyrussell/oh-my-zsh plugins/dircycle
     robbyrussell/oh-my-zsh plugins/emoji

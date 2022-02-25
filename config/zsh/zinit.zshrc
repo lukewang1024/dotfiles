@@ -50,8 +50,8 @@ zinit wait lucid for \
   OMZP::command-not-found/command-not-found.plugin.zsh \
   OMZP::common-aliases/common-aliases.plugin.zsh \
   OMZP::copybuffer/copybuffer.plugin.zsh \
-  OMZP::copydir/copydir.plugin.zsh \
   OMZP::copyfile/copyfile.plugin.zsh \
+  OMZP::copypath/copypath.plugin.zsh \
   OMZP::cp/cp.plugin.zsh \
   OMZP::dircycle/dircycle.plugin.zsh \
   OMZP::encode64/encode64.plugin.zsh \
