@@ -1,0 +1,1 @@
+Ahk2Exe.exe /in "kbmod.ahk" /icon "res\kbmod.ico"

@@ -29,6 +29,7 @@ function install_scoop_packages
     adb `
     ag `
     alacritty `
+    aria2 `
     android-sdk `
     android-studio `
     atom `
@@ -48,6 +49,9 @@ function install_scoop_packages
     ditto `
     dosbox `
     dosbox-x `
+    dotnet3-sdk `
+    dotnet5-sdk `
+    dotnet6-sdk `
     doublecmd `
     duf `
     everything `
@@ -56,6 +60,7 @@ function install_scoop_packages
     filezilla `
     firefox `
     foobar2000 `
+    foobar2000-encoders `
     foxit-reader `
     fzf `
     git `
@@ -105,10 +110,12 @@ function install_scoop_packages
     pandoc `
     pdfarranger `
     phantomjs `
+    powertoys `
     processhacker `
     procs `
     pshazz `
     putty `
+    quicklook `
     qutebrowser `
     robo3t `
     rufus `
@@ -130,10 +137,15 @@ function install_scoop_packages
     sysinternals `
     telegram `
     touch `
+    trafficmonitor `
     translucent-tb `
     unlocker `
     v2rayn `
     vagrant `
+    vcredist2015 `
+    vcredist2017 `
+    vcredist2019 `
+    vcredist2022 `
     vcxsrv `
     vim `
     vimtutor `
