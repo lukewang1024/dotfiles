@@ -12,6 +12,7 @@ SetCapsLockState, AlwaysOff
 Menu, Tray, Icon, %A_ScriptDir%\res\kbmod.ico
 
 #include %A_ScriptDir%\lib
+#include appskey-mod.ahk
 #include capslock-mod.ahk
 #include conemu-hack.ahk
 

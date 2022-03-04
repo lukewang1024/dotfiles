@@ -19,6 +19,7 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
+config/alacritty/local.yml
 config/gtk-3.0/bookmarks
 config/karabiner/automatic_backups
 config/x/.Xresources.d/custom
