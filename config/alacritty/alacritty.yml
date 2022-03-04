@@ -866,15 +866,12 @@
 
 import:
   - ~/.dotfiles/config/alacritty/theme.yml
+  - ~/.dotfiles/config/alacritty/local.yml
 
 window:
   padding:
     x: 2
     y: 2
-
-font:
-  normal:
-    family: MesloLGS Nerd Font
 
 key_bindings:
   - { key: Key0, mods: Alt, chars: "\x1b0" }
