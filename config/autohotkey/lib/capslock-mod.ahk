@@ -1,3 +1,6 @@
+#include utils\app-toggle.ahk
+#include utils\window-snap.ahk
+
 ; Press Capslock -> Esc
 Capslock Up::handleCapslockUp()
 
@@ -29,6 +32,55 @@ triggerCapslockFunc()
     case "h": Send {Left}
     case "l": Send {Right}
 
+    ;;;
+    ;;; snap window
+    ;;;
+    ; left half
+    case "Left"       : snapActiveWindow(  0,   0,  .5,   1)
+    ; right half
+    case "Right"      : snapActiveWindow( .5,   0,  .5,   1)
+    ; top half
+    case "Up"         : snapActiveWindow(  0,   0,   1,  .5)
+    ; bottom half
+    case "Down"       : snapActiveWindow(  0,  .5,   1,  .5)
+    ; fullscreen
+    case "Enter"      : snapActiveWindow(  0,   0,   1,   1)
+    case "NumpadEnter": snapActiveWindow(  0,   0,   1,   1)
+    ; center
+    case "Numpad5"    : snapActiveWindow( .2,  .2,  .6,  .6)
+    ; left 2/3
+    case "+Up"        : snapActiveWindow(  0,   0, .67,   1)
+    case "Numpad4"    : snapActiveWindow(  0,   0, .67,   1)
+    case "NumpadLeft" : snapActiveWindow(  0,   0, .67,   1)    
+    ; right 1/3
+    case "+Down"      : snapActiveWindow(.67,   0, .33,   1)
+    case "Numpad6"    : snapActiveWindow(.67,   0, .33,   1)
+    case "NumpadRight": snapActiveWindow(.67,   0, .33,   1)
+    ; top 2/3
+    case "Numpad8"    : snapActiveWindow(  0,   0,   1, .67)
+    case "NumpadUp"   : snapActiveWindow(  0,   0,   1, .67)
+    ; bottom 1/3
+    case "Numpad2"    : snapActiveWindow(  0, .67,   1, .33)
+    case "NumpadDown" : snapActiveWindow(  0, .67,   1, .33)
+    ; top left
+    case "Numpad7"    : snapActiveWindow(  0,   0,  .5,  .5)
+    case "NumpadHome" : snapActiveWindow(  0,   0,  .5,  .5)
+    ; top right
+    case "Numpad9"    : snapActiveWindow( .5,   0,  .5,  .5)
+    case "NumpadPgUp" : snapActiveWindow( .5,   0,  .5,  .5)
+    ; bottom left
+    case "Numpad1"    : snapActiveWindow(  0,  .5,  .5,  .5)
+    case "NumpadEnd"  : snapActiveWindow(  0,  .5,  .5,  .5)
+    ; bottom right
+    case "Numpad3"    : snapActiveWindow( .5,  .5,  .5,  .5)
+    case "NumpadPgDn" : snapActiveWindow( .5,  .5,  .5,  .5)
+    
+    ;;;
+    ;;; move window across displays
+    ;;;
+    case "+Left"      : Send #+{Left}
+    case "+Right"     : Send #+{Right}
+ 
     ;;;
     ;;; Hyper app toggles
     ;;;
@@ -92,84 +144,6 @@ handleCapslockUp()
   }
 }
 
-;;;;;;;;;;;;;;;;;;;;;;
-;;; Util functions ;;;
-;;;;;;;;;;;;;;;;;;;;;;
-
-isValidWindow(winTitle)
-{
-  WinGetClass, winClass, %winTitle%
-  WinGetTitle, title, %winTitle%
-  return title <> ""
-}
-
-toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "")
-{
-  winTitle := title
-  if (ahk_class != "")
-  {
-    winTitle .= " ahk_class " . ahk_class
-  }
-  if (ahk_exe != "")
-  {
-    winTitle .= " ahk_exe " . ahk_exe . ".exe"
-  }
-
-  if !WinExist(winTitle)
-  {
-    if (bin_target == "")
-    {
-      bin_target := ahk_exe
-    }
-    Run, %bin_target%
-    return
-  }
-
-  if WinActive(winTitle)
-  {
-    ; Hide in reverse order to avoid flickering.
-    WinGet, winList, List, %winTitle%
-    Loop, %winList%
-    {
-      idx := winList + 1 - A_Index
-      idxWinTitle := "ahk_id " . winList%idx%
-      if (isValidWindow(idxWinTitle))
-      {
-        WinMinimize, %idxWinTitle%
-      }
-    }
-  }
-  else
-  {
-    ; Show in reverse order to get all windows back.
-    WinGet, winList, List, %winTitle%
-    Loop, %winList%
-    {
-      idx := winList + 1 - A_Index
-      idxWinTitle := "ahk_id " . winList%idx%
-      if (isValidWindow(idxWinTitle))
-      {
-        WinActivate, %idxWinTitle%
-      }
-    }
-  }
-}
-
-getCommonAppLink(name)
-{
-  return A_ProgramsCommon . "\" . name . ".lnk"
-}
-
-getUserAppLink(name)
-{
-  return A_Programs . "\" . name . ".lnk"
-}
-
-getScoopAppLink(name)
-{
-  return A_Programs . "\Scoop Apps\" . name . ".lnk"
-}
-
 ;;;;;;;;;;;;;;;;;;;;;
 ;;; Register keys ;;;
 ;;;;;;;;;;;;;;;;;;;;;
@@ -212,12 +186,22 @@ z::triggerCapslockFunc()
 8::triggerCapslockFunc()
 9::triggerCapslockFunc()
 0::triggerCapslockFunc()
+-::triggerCapslockFunc()
+=::triggerCapslockFunc()
+[::triggerCapslockFunc()
+]::triggerCapslockFunc()
+SC027::triggerCapslockFunc() ; SC027 - semicolon
+'::triggerCapslockFunc()
+`::triggerCapslockFunc()
+\::triggerCapslockFunc()
+,::triggerCapslockFunc()
+.::triggerCapslockFunc()
+/::triggerCapslockFunc()
 Space::triggerCapslockFunc()
 Tab::triggerCapslockFunc()
 Enter::triggerCapslockFunc()
 Esc::triggerCapslockFunc()
 Backspace::triggerCapslockFunc()
-ScrollLock::triggerCapslockFunc()
 Delete::triggerCapslockFunc()
 Insert::triggerCapslockFunc()
 Home::triggerCapslockFunc()
@@ -240,17 +224,38 @@ F9::triggerCapslockFunc()
 F10::triggerCapslockFunc()
 F11::triggerCapslockFunc()
 F12::triggerCapslockFunc()
--::triggerCapslockFunc()
-=::triggerCapslockFunc()
-[::triggerCapslockFunc()
-]::triggerCapslockFunc()
-SC027::triggerCapslockFunc() ; SC027 - semicolon
-'::triggerCapslockFunc()
-`::triggerCapslockFunc()
-\::triggerCapslockFunc()
-,::triggerCapslockFunc()
-.::triggerCapslockFunc()
-/::triggerCapslockFunc()
+PrintScreen::triggerCapslockFunc()
+ScrollLock::triggerCapslockFunc()
+Pause::triggerCapslockFunc()
+NumLock::triggerCapslockFunc()
+Numpad0::triggerCapslockFunc()
+Numpad1::triggerCapslockFunc()
+Numpad2::triggerCapslockFunc()
+Numpad3::triggerCapslockFunc()
+Numpad4::triggerCapslockFunc()
+Numpad5::triggerCapslockFunc()
+Numpad6::triggerCapslockFunc()
+Numpad7::triggerCapslockFunc()
+Numpad8::triggerCapslockFunc()
+Numpad9::triggerCapslockFunc()
+NumpadAdd::triggerCapslockFunc()
+NumpadClear::triggerCapslockFunc()
+NumpadDel::triggerCapslockFunc()
+NumpadDiv::triggerCapslockFunc()
+NumpadDot::triggerCapslockFunc()
+NumpadDown::triggerCapslockFunc()
+NumpadEnd::triggerCapslockFunc()
+NumpadEnter::triggerCapslockFunc()
+NumpadHome::triggerCapslockFunc()
+NumpadIns::triggerCapslockFunc()
+NumpadLeft::triggerCapslockFunc()
+NumpadMult::triggerCapslockFunc()
+NumpadPgDn::triggerCapslockFunc()
+NumpadPgUp::triggerCapslockFunc()
+NumpadRight::triggerCapslockFunc()
+NumpadSub::triggerCapslockFunc()
+NumpadUp::triggerCapslockFunc()
+
 
 +a::triggerCapslockFunc()
 +b::triggerCapslockFunc()
@@ -288,12 +293,22 @@ SC027::triggerCapslockFunc() ; SC027 - semicolon
 +8::triggerCapslockFunc()
 +9::triggerCapslockFunc()
 +0::triggerCapslockFunc()
++-::triggerCapslockFunc()
++=::triggerCapslockFunc()
++[::triggerCapslockFunc()
++]::triggerCapslockFunc()
++SC027::triggerCapslockFunc() ; SC027 - semicolon
++'::triggerCapslockFunc()
++`::triggerCapslockFunc()
++\::triggerCapslockFunc()
++,::triggerCapslockFunc()
++.::triggerCapslockFunc()
++/::triggerCapslockFunc()
 +Space::triggerCapslockFunc()
 +Tab::triggerCapslockFunc()
 +Enter::triggerCapslockFunc()
 +Esc::triggerCapslockFunc()
 +Backspace::triggerCapslockFunc()
-+ScrollLock::triggerCapslockFunc()
 +Delete::triggerCapslockFunc()
 +Insert::triggerCapslockFunc()
 +Home::triggerCapslockFunc()
@@ -316,16 +331,36 @@ SC027::triggerCapslockFunc() ; SC027 - semicolon
 +F10::triggerCapslockFunc()
 +F11::triggerCapslockFunc()
 +F12::triggerCapslockFunc()
-+-::triggerCapslockFunc()
-+=::triggerCapslockFunc()
-+[::triggerCapslockFunc()
-+]::triggerCapslockFunc()
-+SC027::triggerCapslockFunc() ; SC027 - semicolon
-+'::triggerCapslockFunc()
-+`::triggerCapslockFunc()
-+\::triggerCapslockFunc()
-+,::triggerCapslockFunc()
-+.::triggerCapslockFunc()
-+/::triggerCapslockFunc()
++PrintScreen::triggerCapslockFunc()
++ScrollLock::triggerCapslockFunc()
++Pause::triggerCapslockFunc()
++NumLock::triggerCapslockFunc()
++Numpad0::triggerCapslockFunc()
++Numpad1::triggerCapslockFunc()
++Numpad2::triggerCapslockFunc()
++Numpad3::triggerCapslockFunc()
++Numpad4::triggerCapslockFunc()
++Numpad5::triggerCapslockFunc()
++Numpad6::triggerCapslockFunc()
++Numpad7::triggerCapslockFunc()
++Numpad8::triggerCapslockFunc()
++Numpad9::triggerCapslockFunc()
++NumpadAdd::triggerCapslockFunc()
++NumpadClear::triggerCapslockFunc()
++NumpadDel::triggerCapslockFunc()
++NumpadDiv::triggerCapslockFunc()
++NumpadDot::triggerCapslockFunc()
++NumpadDown::triggerCapslockFunc()
++NumpadEnd::triggerCapslockFunc()
++NumpadEnter::triggerCapslockFunc()
++NumpadHome::triggerCapslockFunc()
++NumpadIns::triggerCapslockFunc()
++NumpadLeft::triggerCapslockFunc()
++NumpadMult::triggerCapslockFunc()
++NumpadPgDn::triggerCapslockFunc()
++NumpadPgUp::triggerCapslockFunc()
++NumpadRight::triggerCapslockFunc()
++NumpadSub::triggerCapslockFunc()
++NumpadUp::triggerCapslockFunc()
 
 #If

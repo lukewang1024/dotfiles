@@ -67,7 +67,6 @@ function install_scoop_packages
     git-lfs `
     gow `
     gping `
-    hain `
     handbrake `
     heidisql `
     hexchat `
@@ -115,6 +114,7 @@ function install_scoop_packages
     procs `
     pshazz `
     putty `
+    python `
     quicklook `
     qutebrowser `
     robo3t `
