@@ -11,6 +11,12 @@ SetCapsLockState, AlwaysOff
 
 Menu, Tray, Icon, %A_ScriptDir%\res\kbmod.ico
 
+Loop, %A_ScriptDir%\app\*.ahk
+{
+  WinClose, %A_LoopFileName% - AutoHotkey
+  Run, % A_ScriptDir . "\app\" . A_LoopFileName
+}
+
 #include %A_ScriptDir%\lib
 #include appskey-mod.ahk
 #include capslock-mod.ahk
