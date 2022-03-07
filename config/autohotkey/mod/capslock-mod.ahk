@@ -1,5 +1,5 @@
-#Include utils\app-toggle.ahk
-#Include utils\window-snap.ahk
+#Include app-toggle.ahk
+#Include window-snap.ahk
 
 ; Press Capslock -> Esc
 Capslock Up::handleCapslockUp()
@@ -106,7 +106,7 @@ triggerCapslockFunc()
     ;;; HyperAlt app toggles
     ;;;
     case "+a": toggleAppWindow("atom", "Chrome_WidgetWin_1")                                                                    ; a - Atom
-    case "+m": toggleAppWindow("Spotify", "SpotifyMainWindow")                                                                  ; m - Spotify
+    case "+m": toggleAppWindow("Spotify", "Chrome_WidgetWin_0", "", getUserAppLink("Spotify"))                                  ; m - Spotify
     case "+o": toggleAppWindow("ONENOTE", "Framework::CFrame")                                                                  ; o - OneNote
     case "+w": toggleAppWindow("WhatsApp", "Chrome_WidgetWin_1")                                                                ; w - WhatsApp
     case "+z": toggleAppWindow("Zeplin", "Chrome_WidgetWin_1")                                                                  ; z - Zeplin

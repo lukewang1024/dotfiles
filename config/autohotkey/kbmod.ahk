@@ -24,10 +24,10 @@ Loop, %A_ScriptDir%\app\*.ahk
 #Include %A_ScriptDir%\auto\appskey-mod.ahk
 #Include %A_ScriptDir%\auto\capslock-mod.ahk
 
-; Scripts in 'lib' may have any code
-#Include %A_ScriptDir%\lib\appskey-mod.ahk
-#Include %A_ScriptDir%\lib\capslock-mod.ahk
-#Include %A_ScriptDir%\lib\conemu-hack.ahk
+; Scripts in 'mod' may have any code
+#Include %A_ScriptDir%\mod\appskey-mod.ahk
+#Include %A_ScriptDir%\mod\capslock-mod.ahk
+#Include %A_ScriptDir%\mod\conemu-hack.ahk
 
 ; Remap Win-Shift-Q to Alt-F4
 #+q::Send !{F4}
