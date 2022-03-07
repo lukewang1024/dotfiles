@@ -1,4 +1,4 @@
-#Include utils\register-hotkeys.ahk
+#Include register-hotkeys.ahk
 
 ; One of the qwirks of AHK
 #If GetKeyState("Capslock", "P")

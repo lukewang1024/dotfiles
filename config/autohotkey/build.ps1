@@ -1,1 +1,2 @@
-Ahk2Exe.exe /in "kbmod.ahk" /icon "res\kbmod.ico"
+$dir = $PSCommandPath | Split-Path -Parent
+Ahk2Exe.exe /in "$dir\kbmod.ahk" /icon "$dir\res\kbmod.ico"

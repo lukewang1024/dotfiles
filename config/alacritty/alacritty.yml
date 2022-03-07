@@ -873,6 +873,9 @@ window:
     x: 2
     y: 2
 
+# Shell program candidates
+# Windows WSL: `C:\WINDOWS\system32\wsl.exe -d Ubuntu-20.04`
+
 key_bindings:
   - { key: Key0, mods: Alt, chars: "\x1b0" }
   - { key: Key1, mods: Alt, chars: "\x1b1" }

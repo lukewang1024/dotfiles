@@ -133,6 +133,7 @@ function install_scoop_packages
     sublime-text `
     sudo `
     sumatrapdf `
+    switchhosts `
     synctrayzor `
     sysinternals `
     telegram `
