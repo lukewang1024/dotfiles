@@ -60,8 +60,6 @@ install_cygwin_packages()
     nc
     openssh
     perl
-    python
-    python-setuptools
     python3
     python3-setuptools
     rsync

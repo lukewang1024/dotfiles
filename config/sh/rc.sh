@@ -27,6 +27,10 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
+# Use host OS IP as default proxy IP for WSL2
+is_wsl2 && export WSL2_HOST_IP="$(cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }')"
+export LOCAL_PROXY_IP="${WSL2_HOST_IP:-localhost}"
+
 # pyenv
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
@@ -47,12 +51,12 @@ alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 
 ## Proxy related
-alias ap='all_proxy=socks5://localhost:1080'
+alias ap="all_proxy=socks5://${LOCAL_PROXY_IP}:1080"
 alias apd='unset all_proxy'
-alias ape='export all_proxy=socks5://localhost:1080'
-alias hp='http_proxy=localhost:8123 https_proxy=localhost:8123'
+alias ape="export all_proxy=socks5://${LOCAL_PROXY_IP}:1080"
+alias hp="http_proxy=${LOCAL_PROXY_IP}:1081 https_proxy=${LOCAL_PROXY_IP}:1081"
 alias hpd='unset http_proxy https_proxy'
-alias hpe='export http_proxy=localhost:8123 https_proxy=localhost:8123'
+alias hpe="export http_proxy=${LOCAL_PROXY_IP}:1081 https_proxy=${LOCAL_PROXY_IP}:1081"
 alias pq='proxychains4 -f ~/.config/proxychains.conf -q'
 alias px='proxychains4 -f ~/.config/proxychains.conf'
 

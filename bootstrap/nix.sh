@@ -6,7 +6,6 @@ install_nix_brew_runtimes()
     node
     php
     python
-    python@2
     ruby
   )
   brew install `join ' ' "${pkgs[@]}"`

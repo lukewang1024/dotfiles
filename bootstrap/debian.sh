@@ -90,7 +90,7 @@ prepare_debian_env_cli_extra()
     libssl-dev
     llvm
     make
-    python-setuptools
+    python3-setuptools
     ruby
     software-properties-common
     tk-dev
@@ -102,8 +102,7 @@ prepare_debian_env_cli_extra()
     fortune-mod
     gnupg2
     polipo
-    python-dev
-    python-pip
+    python3-dev
     python3-pip
     rxvt-unicode-256color
     w3m-img
