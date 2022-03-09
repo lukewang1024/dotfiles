@@ -42,8 +42,6 @@ install_npm_packages()
 {
   echo 'Installing global npm packages...'
 
-  npm config set python python2.7
-
   local pkgs=(
     @angular/cli
     @squoosh/cli

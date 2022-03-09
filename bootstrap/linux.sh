@@ -4,7 +4,7 @@ source "$partial_dir/nix.sh"
 install_linuxbrew()
 {
   exists brew || \
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install)" && \
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
     # Make sure brew can be found right after installation
     PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 

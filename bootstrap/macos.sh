@@ -51,7 +51,7 @@ prepare_macos_env_gui()
 prepare_macos_env_cli_core()
 {
   exists brew || ( \
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && \
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
     xcode-select --install \
   )
 
