@@ -13,6 +13,7 @@ triggerAppsKeyFunc()
 
   switch (A_ThisHotKey)
   {
+    case "Enter": WinSet, AlwaysOnTop, , A
     case "F5": Send {Media_Stop}
     case "F6": Send {Media_Prev}
     case "F7": Send {Media_Play_Pause}

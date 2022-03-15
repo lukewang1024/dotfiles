@@ -5,7 +5,6 @@
 
 SendMode Input
 SetTitleMatchMode, 3
-DetectHiddenWindows, On
 
 SetCapsLockState, AlwaysOff
 
