@@ -23,39 +23,9 @@ function install_choco_packages
   'Install packages using Chocolatey...'
 
   cinst -y `
-    7zip.install `
-    altdrag `
     caesium.install `
     camstudio `
-    charles `
-    chocolatey `
-    chocolateygui `
-    clover `
-    docker-for-windows `
-    docker-toolbox `
-    dropbox `
-    dropit.install `
-    eartrumpet `
-    f.lux `
-    fiddler4 `
-    googlechrome `
-    googledrive `
-    intellijidea-community `
-    path-copy-copy `
-    pdfsam `
     pngoptimizer `
-    potplayer `
-    resilio-sync-home `
-    skype `
-    spacesniffer `
-    spotify `
-    strokesplus `
-    switcheroo `
-    virtualbox `
-    vnc-connect `
-    vnc-viewer `
-    xnviewmp `
-    you-get `
 
     # Keep a blank line
 }

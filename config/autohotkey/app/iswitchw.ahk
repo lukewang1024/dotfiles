@@ -2,7 +2,7 @@
 #NoTrayIcon
 #SingleInstance force
 
-; Use Alt+Capslock to toggle the routine
+; Use Win+j to toggle the routine
 ;
 ; UP, Ctrl+P Alt+p, Shift+Tab, Alt+Shift+Tab to select previous item
 ; Down, Ctrl+n, Alt+n. Tab, Alt+Tab to select next item
@@ -93,9 +93,9 @@ Gui, Add, ListView, w854 h510 x4 y40 -VScroll -HScroll -Hdr -Multi Count10 AltSu
 
 ;----------------------------------------------------------------------
 ;
-; Alt+Capslock to activate.
+; Win+j to activate.
 ;
-!Capslock::
+#j::
 Gosub, LAUNCH_SWITCHER
 return
 

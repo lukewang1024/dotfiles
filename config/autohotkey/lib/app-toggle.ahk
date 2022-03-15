@@ -1,3 +1,5 @@
+#Include tray-icon.ahk
+
 isValidWindow(winTitle)
 {
   WinGetClass, winClass, %winTitle%
@@ -5,7 +7,7 @@ isValidWindow(winTitle)
   return title <> ""
 }
 
-toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "")
+toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strategy := 0)
 {
   winTitle := title
   if (ahk_class != "")
@@ -27,6 +29,50 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "")
     return
   }
 
+  ; Strategy #1 - activate the matching window by simulating tray icon click
+  if (strategy == 1)
+  {
+    if WinActive(winTitle)
+    {
+      ; 0x112 = WM_SYSCOMMAND, 0xF060 = SC_CLOSE
+      PostMessage, 0x112, 0xF060
+    }
+    else
+    {
+      TrayIcon_Button(ahk_exe . ".exe", "L")
+    }
+    return
+  }
+
+  ; Strategy #2 - minimize / activate the matching window with smallest ahk_id
+  if (strategy == 2) 
+  {
+    WinGet, winList, List, %winTitle%
+    Loop, %winList%
+    {
+      idxWin := winList%A_Index%
+      if (!targetWin)
+      {
+        targetWin := idxWin
+      }
+      else if (targetWin > idxWin)
+      {
+        targetWin := idxWin
+      }
+    }
+    targetWinTitle := "ahk_id " . targetWin
+    if WinActive(targetWinTitle)
+    {
+      WinMinimize, %targetWinTitle%
+    }
+    else
+    {
+      WinActivate, %targetWinTitle%
+    }
+    return
+  }
+
+  ; Default strategy - minimize / activate all matching windows
   if WinActive(winTitle)
   {
     ; Hide in reverse order to avoid flickering.
@@ -47,7 +93,7 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "")
     WinGet, winList, List, %winTitle%
     Loop, %winList%
     {
-      idx := winList + 1 - A_Index
+      idx := A_Index
       idxWinTitle := "ahk_id " . winList%idx%
       if (isValidWindow(idxWinTitle))
       {

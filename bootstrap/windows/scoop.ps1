@@ -29,9 +29,10 @@ function install_scoop_packages
     adb `
     ag `
     alacritty `
-    aria2 `
+    altsnap `
     android-sdk `
     android-studio `
+    aria2 `
     atom `
     autohotkey `
     broot `
@@ -53,18 +54,22 @@ function install_scoop_packages
     dotnet5-sdk `
     dotnet6-sdk `
     doublecmd `
+    dropit `
     duf `
+    eartrumpet `
     everything `
     far `
     fd `
     filezilla `
     firefox `
+    flux `
     foobar2000 `
     foobar2000-encoders `
     foxit-reader `
     fzf `
     git `
     git-lfs `
+    googlechrome `
     gow `
     gping `
     handbrake `
@@ -108,7 +113,9 @@ function install_scoop_packages
     oraclejdk `
     pandoc `
     pdfarranger `
+    pdfsam `
     phantomjs `
+    potplayer `
     powertoys `
     processhacker `
     procs `
@@ -125,14 +132,19 @@ function install_scoop_packages
     screentogif `
     shadowsocks `
     shasum `
+    skype `
     slack `
     smartmontools `
     snipaste `
+    spacesniffer `
+    spotify `
     steam `
+    strokesplus `
     sublime-merge `
     sublime-text `
     sudo `
     sumatrapdf `
+    switcheroo `
     switchhosts `
     synctrayzor `
     sysinternals `
@@ -149,7 +161,7 @@ function install_scoop_packages
     vcredist2022 `
     vcxsrv `
     vim `
-    vimtutor `
+    vncviewer `
     vscode `
     whatsapp `
     win-dynamic-desktop `
@@ -160,8 +172,11 @@ function install_scoop_packages
     wox `
     wsltty `
     xming `
+    xnviewmp `
     yarn `
     zeal `
+
+  # Keep a blank line
 
   scoop install 'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json'
 

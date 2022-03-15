@@ -86,14 +86,14 @@ triggerCapslockFunc()
     ;;;
     case "a": toggleAppWindow("Taskmgr", "TaskManagerWindow")                                                                   ; a - Task Manager
     case "c": toggleAppWindow("chrome", "Chrome_WidgetWin_1")                                                                   ; c - Chrome
-    case "d": toggleAppWindow("Lingoes", "Afx:400000:0", "", getUserAppLink("Lingoes"))                                         ; d - Lingoes
+    case "d": toggleAppWindow("Lingoes", "Afx:400000:0", "", getUserAppLink("Lingoes"), 1)                                      ; d - Lingoes
     case "e": toggleAppWindow("msedge", "Chrome_WidgetWin_1")                                                                   ; e - Edge
     case "f": toggleAppWindow("firefox", "MozillaWindowClass", "", getScoopAppLink("Firefox"))                                  ; f - Firefox
     case "m": toggleAppWindow("foobar2000", "{97E27FAA-C0B3-4b8e-A693-ED7881E99FC1}", "", getScoopAppLink("Foobar2000"))        ; m - Foobar2000
     case "n": toggleAppWindow("Notepad", "Notepad")                                                                             ; n - Notepad
     case "s": toggleAppWindow("sublime_text", "PX_WINDOW_CLASS", "", getScoopAppLink("Sublime Text 4"))                         ; s - Sublime Text
     case "v": toggleAppWindow("Code", "Chrome_WidgetWin_1", "", getScoopAppLink("Visual Studio Code"))                          ; v - VS Code
-    case "w": toggleAppWindow("WeChat", "WeChatMainWndForPC", "WeChat", getCommonAppLink("WeChat\WeChat"))                      ; w - WeChat
+    case "w": toggleAppWindow("WeChat", "WeChatMainWndForPC", "WeChat", getCommonAppLink("WeChat\WeChat"), 1)                   ; w - WeChat
     case "x": toggleAppWindow("Seal", "Chrome_WidgetWin_1", "Seal", getCommonAppLink("Seal"))                                   ; x - Seal
     case "z": toggleAppWindow("Explorer", "CabinetWClass")                                                                      ; z - Explorer
     case "Space": toggleAppWindow("Feishu", "Chrome_WidgetWin_0", "Feishu", getUserAppLink("Feishu"))                           ; Space - Feishu
@@ -111,7 +111,7 @@ triggerCapslockFunc()
     case "+w": toggleAppWindow("WhatsApp", "Chrome_WidgetWin_1")                                                                ; w - WhatsApp
     case "+z": toggleAppWindow("Zeplin", "Chrome_WidgetWin_1")                                                                  ; z - Zeplin
     case "+0": toggleAppWindow("v2rayN", "WindowsForms10.Window.8.app.0.34f5582_r6_ad1", "", getScoopAppLink("v2rayN"))         ; 0 - v2rayN
-    case "+Space": toggleAppWindow("Feishu", "Chrome_WidgetWin_0", "Feishu Meetings")                                           ; Space - Feishu Meeting
+    case "+Space": toggleAppWindow("Feishu", "Chrome_WidgetWin_0", "Feishu Meetings", getUserAppLink("Feishu"))                 ; Space - Feishu Meeting
 
     default: defaultCapslockHandler()
   }
