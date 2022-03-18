@@ -1,0 +1,166 @@
+# >> Variables
+
+set horizontal-scroll = 33%  # Number of columns to scroll as % of width
+set ignore-case       = yes  # Ignore case when searching
+set line-graphics     = yes  # Enum: ascii, default, utf-8
+set mouse             = yes  # Enable mouse support?
+set mouse-scroll      = 10   # Number of lines to scroll via the mouse
+set tab-size          = 4    # Number of spaces to use when expanding tabs
+
+# >> View settings
+
+set blame-view  = date:default author:abbreviated file-name:auto id:yes,color line-number:yes,interval=5 text
+set grep-view   = file-name:yes line-number:yes,interval=1 text
+set main-view   = line-number:no,interval=5 id:yes date:default author:full commit-title:yes,graph,refs,overflow=no
+set refs-view   = date:default author:full ref commit-title
+set stash-view  = line-number:no,interval=5 id:no date:default author:full commit-title
+set status-view = line-number:no,interval=5 status:short file-name
+set tree-view   = line-number:no,interval=5 mode author:abbreviated file-size:units date:default id:no file-name
+set pager-view  = line-number:yes,interval=10 text
+
+# >> Bindings
+
+# >>> generic
+
+# Add/edit notes for the current commit used during a review
+bind generic T !git notes edit %(commit)
+
+# Add verbose flag to git-commit
+bind generic C !git commit -v
+
+# Amend last commit
+bind generic + !git commit --amend
+
+# less-like page scrolling
+bind generic <Ctrl-F> scroll-page-down
+bind generic <Ctrl-B> scroll-page-up
+
+# Open the commit on Github
+bind generic B @sh -c "opn 'https://'$(git remote -v | grep -Eo 'github.com[:/][^.]+' | head -1 | tr : /)'/commit/%(commit)'"
+
+# Copy commit title to clipboard
+bind generic 9 @sh -c "git show -s --format=%s %(commit) | clipboard"
+
+# Copy commit hash to clipboard
+bind generic 8 @sh -c "echo %(commit) | clipboard"
+
+bind generic U !git log -p %(file)
+
+bind generic u move-page-up
+bind generic d move-page-down
+bind generic F !git fetch
+bind generic S :source ~/.tigrc # Reload ~/.tigrc
+
+# >>> main
+
+# Revert
+bind main ! !git revert %(commit)
+
+# Interactive rebase
+bind main B !git rebase -i %(commit)
+
+# Tag the selected commit
+bind main T @git tag "%(prompt Enter tag name: )" %(commit)
+
+# Compare selected commit in log view (main view) with its parent
+bind main <F4> !git difftool -d %(commit)^!
+
+# Compare 2 different commits in log view - Select first commit, press F5,
+# select second commit and press hotkey again:
+bind main <F5> @git tig-compare-commits %(commit)
+
+bind main C !?git checkout %(commit)
+bind main H !?git reset --hard %(commit)
+bind main <Ctrl-R> !git rebase -i --autosquash %(commit)^
+bind main P !?git push origin %(branch)
+bind main <Ctrl-T> @?git tag -d %(tag)
+bind main <Ctrl-P> !git cherry-pick %(commit)
+bind main F @sh -c "git show %(commit) --pretty=format: --name-only | xargs | clipboard"
+bind main E !<sh -c "vim -c 'Gedit %(commit)' $(ls | head -1)"
+bind main V !<sh -c "vim $(git show %(commit) --pretty=format: --name-only | xargs)"
+
+# >>> diff
+
+# Move in diff view with arrow keys
+bind diff <Up> move-up
+bind diff <Down> move-down
+
+# Add current file
+bind diff A !git add %(file)
+
+# Add and commit
+bind diff C !git commit -av
+
+# Partially add current file
+bind diff P !git add -p %(file)
+
+bind diff F @sh -c "git show %(commit) --pretty=format: --name-only | xargs | clipboard"
+bind diff E !<sh -c "vim -c 'Gedit %(commit)' $(ls | head -1)"
+bind diff V !<sh -c "vim $(git show %(commit) --pretty=format: --name-only | xargs)"
+bind diff 4 !git diff %(commit)^ %(commit)
+
+# >>> stash
+
+# Drop the selected stash
+bind stash D !?git stash drop %(stash)
+
+# Apply the selected stash
+bind stash A !?git stash apply %(stash)
+
+# >>> tree
+
+bind tree V !vim %(file)
+
+# >>> branch
+
+bind branch N @git branch "%(prompt Enter branch name: )"
+bind branch C @git checkout %(branch)
+bind branch <Ctrl-R> @git rebase
+bind branch D @?git branch -D %(branch)
+
+# >>> status
+
+# Intent to add
+bind status N @git add -N %(file)
+
+# Stash the unstaged changes
+bind status S !?git stash save --keep-index "%(prompt Enter stash message: )"
+
+# Delete a file
+bind status D @?rm %(file)
+
+# Push local changes to origin
+bind status P !git push origin
+
+# Compare changed file in status view
+bind status <F4> !sh -c "git difftool -y \"$(git rev-parse --show-toplevel)/%(file)\""
+
+# Patch the file under the cursor
+bind status P !git add --patch %(file)
+
+# Add selected file to .gitignore and open vim for additional changes
+bind status <Ctrl-R> !sh -c "echo %(file) >> .gitignore && vi .gitignore"
+
+# View the file under the cursor by less
+bind status L !less %(file)
+
+bind status <Ctrl-D> @git reset HEAD %(file)
+bind status A @git commit --amend
+
+# >>> stage
+
+# Stage a single line
+bind stage 1 stage-update-line
+
+# Commit staging changes
+bind stage C @git commit
+
+# >>> refs
+
+# Create a new branch
+bind refs n @git branch "%(prompt Enter branch name: )"
+
+# Rebase current branch on top of the selected branch
+bind refs 3 !git rebase -i %(branch)
+
+# syntax:ssHash
