@@ -1,3 +1,5 @@
+#Include audio-switcher.ahk
+
 AppsKey Up::handleAppsKeyUp()
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -14,6 +16,10 @@ triggerAppsKeyFunc()
   switch (A_ThisHotKey)
   {
     case "Enter": WinSet, AlwaysOnTop, , A
+    case "F1": switchAudioDevice(1)
+    case "F2": switchAudioDevice(2)
+    case "F3": switchAudioDevice(3)
+    case "F4": switchAudioDevice(4)
     case "F5": Send {Media_Stop}
     case "F6": Send {Media_Prev}
     case "F7": Send {Media_Play_Pause}

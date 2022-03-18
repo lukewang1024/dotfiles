@@ -28,8 +28,11 @@ Loop, %A_ScriptDir%\app\*.ahk
 #Include %A_ScriptDir%\mod\capslock-mod.ahk
 #Include %A_ScriptDir%\mod\conemu-hack.ahk
 
-; Remap Win-Shift-Q to Alt-F4
+; Close active window by Win-Shift-Q
 #+q::Send !{F4}
 
-; Reload by Ctrl-Alt-Shift-R
+; Lock workstation by Ctrl-Alt-Q
+^!q::DllCall("LockWorkStation")
+
+; Reload kbmod by Ctrl-Alt-Shift-R
 ^!+r::Reload

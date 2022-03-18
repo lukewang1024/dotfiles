@@ -100,6 +100,7 @@ function install_scoop_packages
     mobaxterm `
     nimbleset `
     nimbletext `
+    nircmd `
     nirlauncher `
     nmap `
     nodejs `
