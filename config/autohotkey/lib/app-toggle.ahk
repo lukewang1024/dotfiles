@@ -1,10 +1,14 @@
 #Include tray-icon.ahk
 
+; This checks if a window is, in fact a window, as opposed to the desktop or a menu, etc.
+; WS_MINIMIZEBOX: 0x20000
+; WS_CAPTION: 0xC00000
+; WS_POPUP(for tooltips etc): 0x80000000
 isValidWindow(winTitle)
 {
-  WinGetClass, winClass, %winTitle%
-  WinGetTitle, title, %winTitle%
-  return title <> ""
+  WinGet, s, Style, %winTitle%
+  return s & 0x20000 || (s & 0xC00000 && !(s & 0x80000000)) ? 1 : 0
+  ; WS_MINIMIZEBOX OR (WS_CAPTION AND !WS_POPUP)
 }
 
 toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strategy := 0)
@@ -45,7 +49,7 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strateg
   }
 
   ; Strategy #2 - minimize / activate the matching window with smallest ahk_id
-  if (strategy == 2) 
+  if (strategy == 2)
   {
     WinGet, winList, List, %winTitle%
     Loop, %winList%
@@ -116,4 +120,38 @@ getUserAppLink(name)
 getScoopAppLink(name)
 {
   return A_Programs . "\Scoop Apps\" . name . ".lnk"
+}
+
+hideActiveWindow()
+{
+  global hiddenWindows
+
+  activeWindow := WinExist("A")
+  activeWinTitle := "ahk_id " . activeWindow
+  if isValidWindow(activeWinTitle)
+  {
+    hiddenWindows .= (hiddenWindows ? "|" : "") . activeWindow
+    WinHide, %activeWinTitle%
+
+    WinGet, winList, List
+    Loop, %winList%
+    {
+      hwid := winList%A_Index%
+      winTitle := "ahk_id " . hwid
+      if (isValidWindow(winTitle))
+      {
+        break
+      }
+    }
+    WinActivate, %winTitle%
+  }
+}
+
+showHiddenWindows()
+{
+  global hiddenWindows
+
+  Loop, Parse, hiddenWindows, |
+    WinShow ahk_id %A_LoopField%
+  hiddenWindows = ""
 }

@@ -80,6 +80,7 @@ prepare_arch_env_cli_core()
     htop
     httpie
     imagemagick
+    jless
     jq
     lsd
     micro
