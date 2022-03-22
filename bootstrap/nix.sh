@@ -31,6 +31,7 @@ install_nix_brew_core_packages()
     httpie
     icdiff
     imagemagick
+    jless
     jq
     less
     lf

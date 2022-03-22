@@ -41,11 +41,13 @@ switchAudioDevice(audioDeviceIndex := 1)
   ObjRelease(IMMDeviceCollection)
 
   DeviceIDList := {}
-  DeviceNameList := ""
+  DeviceNameList := {}
+  DeviceNameListStr := ""
   For DeviceName, DeviceID in Devices
   {
-    DeviceNameList .= "(" . A_Index . ") " . DeviceName . "`n"
     ObjRawSet(DeviceIDList, A_Index, DeviceID)
+    ObjRawSet(DeviceNameList, A_Index, DeviceName)
+    DeviceNameListStr .= "(" . A_Index . ") " . DeviceName . "`n"
   }
 
   ;IPolicyConfig::SetDefaultEndpoint
@@ -54,6 +56,15 @@ switchAudioDevice(audioDeviceIndex := 1)
   ObjRelease(IPolicyConfig)
   if (R != 0)
   {
-    MsgBox, % "Device #" . audioDeviceIndex . " does not exist. Available list:`n" . DeviceNameList
+    MsgBox, % "Device #" . audioDeviceIndex . " does not exist. Available list:`n" . DeviceNameListStr
+  }
+  else
+  {
+    Tooltip, % "Switched audio device to #" . audioDeviceIndex . " " . DeviceNameList[audioDeviceIndex]
+    SetTimer, RemoveSwitchAudioDeviceTooltip, -1000
   }
 }
+
+RemoveSwitchAudioDeviceTooltip:
+  Tooltip
+return

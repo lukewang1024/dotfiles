@@ -1,4 +1,5 @@
 #Include app-toggle.ahk
+#Include system.ahk
 #Include window-snap.ahk
 
 ; Press Capslock -> Esc
@@ -31,6 +32,12 @@ triggerCapslockFunc()
     case "k": Send {Up}
     case "h": Send {Left}
     case "l": Send {Right}
+    case "+j": moveMouse(10)
+    case "+k": moveMouse(-10)
+    case "+h": moveMouse(-10, true)
+    case "+l": moveMouse(10, true)
+    case "+Enter": Send {LButton}
+    case "+Backspace": Send {RButton}
 
     ;;;
     ;;; snap window
@@ -48,6 +55,8 @@ triggerCapslockFunc()
     case "NumpadEnter": snapActiveWindow(  0,   0,   1,   1)
     ; center
     case "Numpad5"    : snapActiveWindow( .2,  .2,  .6,  .6)
+    case "NumpadClear": snapActiveWindow( .2,  .2,  .6,  .6)
+    case "Backspace"  : snapActiveWindow( .2,  .2,  .6,  .6)
     ; left 2/3
     case "+Up"        : snapActiveWindow(  0,   0, .67,   1)
     case "Numpad4"    : snapActiveWindow(  0,   0, .67,   1)

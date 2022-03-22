@@ -107,6 +107,7 @@ function install_scoop_packages
     nodejs-lts `
     now-cli `
     nvm `
+    obs-studio `
     openark `
     openhardwaremonitor `
     openra `

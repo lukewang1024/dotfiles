@@ -7,5 +7,6 @@
 Hotkey, If, GetKeyState("AppsKey"`, "P") ; Note the last comma needs escape
 registerHotkeys("TriggerAppsKeyFuncLabel")
 registerHotkeys("TriggerAppsKeyFuncLabel", ">!")
+registerHotkeys("TriggerAppsKeyFuncLabel", ">^")
 registerHotkeys("TriggerAppsKeyFuncLabel", ">^>!")
 Hotkey, If
