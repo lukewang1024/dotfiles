@@ -23,6 +23,7 @@ if is_linux; then
   export PATH="$LINUXBREW/sbin:$PATH"
   export PATH="$LINUXBREW/bin:$PATH"
 fi
+[ -f /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
@@ -32,9 +33,11 @@ is_wsl2 && export WSL2_HOST_IP="$(cat /etc/resolv.conf | grep nameserver | awk '
 export LOCAL_PROXY_IP="${WSL2_HOST_IP:-localhost}"
 
 # pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
+if [ -d "$HOME/.pyenv" ]; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init --path)"
+fi
 
 # Aliases
 

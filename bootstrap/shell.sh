@@ -49,8 +49,7 @@ zgen_setup()
 
   printf 'Symlinking .zprofile and .zshrc... '
   backup_then_symlink "$config_dir/zsh/zgen.zshrc" ~/.zshrc
-  backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
-  backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
+  zsh_common_setup
   echo 'Done.'
 }
 
@@ -67,9 +66,16 @@ zinit_setup()
 
   printf 'Symlinking .zprofile and .zshrc... '
   backup_then_symlink "$config_dir/zsh/zinit.zshrc" ~/.zshrc
-  backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
-  backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
+  zsh_common_setup
   echo 'Done.'
+}
+
+zsh_common_setup()
+{
+  backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
+  backup_then_symlink "$config_dir/zsh/.zshenv" ~/.zshenv
+  backup_then_symlink "$config_dir/zsh/.zprofile" ~/.zprofile
+  backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
 }
 
 bashit_setup()

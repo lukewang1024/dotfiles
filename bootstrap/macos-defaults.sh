@@ -152,6 +152,10 @@ better_macos_defaults()
   defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
   defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 
+  # Enable 3-finger drag. (Moving with 3 fingers in any window "chrome" moves the window.)
+  defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
+  defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
+
   # Trackpad: map bottom right corner to right-click
   defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
   defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true

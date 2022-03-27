@@ -171,7 +171,6 @@ basic_env_setup()
   bashit_setup
   zgen_setup
   tmux_setup
-  vim_setup
   git_setup
   tig_setup
   nodenv_setup
@@ -179,6 +178,7 @@ basic_env_setup()
   rbenv_setup
   goenv_setup
   rustup_setup
+  vim_setup
 }
 
 extra_env_setup()
