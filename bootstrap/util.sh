@@ -38,7 +38,7 @@ symlink()
 backup_then_symlink()
 {
   if [[ -z "$1" ]]; then
-    echo '[util.backupAndSymlink] No target file provided, return...'
+    echo '[util.backup_then_symlink] No target file provided, return...'
     return
   fi
 

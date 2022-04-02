@@ -33,7 +33,7 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strateg
     return
   }
 
-  ; Strategy #1 - activate the matching window by simulating tray icon click
+  ; Strategy #1 - activate by simulating tray icon click, minimize by simulating close
   if (strategy == 1)
   {
     if WinActive(winTitle)
@@ -48,8 +48,15 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strateg
     return
   }
 
-  ; Strategy #2 - minimize / activate the matching window with smallest ahk_id
+  ; Strategy #2 - activate & minimize by simulating tray icon click
   if (strategy == 2)
+  {
+    TrayIcon_Button(ahk_exe . ".exe", "L")
+    return
+  }
+
+  ; Strategy #3 - minimize / activate the matching window with smallest ahk_id
+  if (strategy == 3)
   {
     WinGet, winList, List, %winTitle%
     Loop, %winList%
@@ -105,6 +112,24 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strateg
       }
     }
   }
+}
+
+toggleAppWindowWithTitleMatchMode(title_match_mode, ahk_exe, ahk_class := "", title := "", bin_target := "", strategy := 0)
+{
+  m := A_TitleMatchMode
+  SetTitleMatchMode, %title_match_mode%
+  toggleAppWindow(ahk_exe, ahk_class, title, bin_target, strategy)
+  SetTitleMatchMode, %m%
+}
+
+toggleAppWindowPartialMatch(ahk_exe, ahk_class := "", title := "", bin_target := "", strategy := 0)
+{
+  toggleAppWindowWithTitleMatchMode(2, ahk_exe, ahk_class, title, bin_target, strategy)
+}
+
+toggleAppWindowExactMatch(ahk_exe, ahk_class := "", title := "", bin_target := "", strategy := 0)
+{
+  toggleAppWindowWithTitleMatchMode(3, ahk_exe, ahk_class, title, bin_target, strategy)
 }
 
 getCommonAppLink(name)
