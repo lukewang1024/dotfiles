@@ -155,6 +155,7 @@ prepare_arch_env_cli_extra()
     fish
     flatpak
     fortune-mod
+    fq
     gdu
     gifsicle
     git-lfs
@@ -243,6 +244,7 @@ prepare_arch_env_cli_extra()
     mycli
     nb
     ocrmypdf
+    pdfsandwich
     pgcli
     polipo
     sc-im
@@ -393,6 +395,7 @@ prepare_arch_env_gui_extra()
     joplin
     kitematic
     losslesscut
+    lx-music-desktop-bin
     mailspring
     marktext-bin
     musixmatch-bin

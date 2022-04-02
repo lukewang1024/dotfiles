@@ -67,9 +67,6 @@ install_nix_brew_core_packages()
 
 install_nix_brew_extra_packages()
 {
-  brew tap jesseduffield/lazynpm
-  brew tap xwmx/taps
-
   local pkgs=(
     ansifilter
     aria2
@@ -133,11 +130,11 @@ install_nix_brew_extra_packages()
     iftop
     inetutils
     irssi
+    jesseduffield/lazynpm/lazynpm
     jpegoptim
     kubernetes-cli
     lazydocker
     lazygit
-    lazynpm
     lolcat
     make
     media-info
@@ -152,7 +149,6 @@ install_nix_brew_extra_packages()
     multitail
     mutt
     mycli
-    nb
     ncdu
     ncmpcpp
     neofetch
@@ -166,6 +162,7 @@ install_nix_brew_extra_packages()
     optipng
     p7zip
     pandoc
+    pdfsandwich
     pgcli
     pngquant
     progress
@@ -191,10 +188,12 @@ install_nix_brew_extra_packages()
     tree
     unzip
     w3m
+    wader/tap/fq
     watch
     wtf
     wtfutil
     xpdf
+    xwmx/taps/nb
     you-get
     youtube-dl
     zsh-completions

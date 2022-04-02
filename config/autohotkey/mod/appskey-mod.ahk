@@ -71,6 +71,8 @@ triggerAppsKeyFunc()
     case ">^F12": turnOffMonitor()
     case ">^>!F12": systemHibernate()
 
+    case "PrintScreen": Run, ms-screenclip:
+
     default: defaultAppsKeyHandler()
   }
 }

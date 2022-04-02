@@ -3,6 +3,8 @@
 #Persistent
 #usehook ; possibly intercept windows binds
 
+DetectHiddenWindows, On
+
 SendMode Input
 SetTitleMatchMode, 3
 
