@@ -86,6 +86,7 @@ prepare_macos_env_cli_extra()
   local casks=(
     docker
     dotnet-sdk
+    powershell
     vagrant
   )
   brew install --cask `join ' ' "${casks[@]}"`
@@ -144,6 +145,7 @@ prepare_macos_env_gui_extra()
     789066512  # Maipo for Weibo
     # 880001334  # Reeder 3
     937984704  # Amphetamine
+    998361254  # Toothpicks
     998804308  # Blinks
     1025306797 # Resize Master
     1044484672 # ApolloOne - Photo Video Viewer
@@ -266,6 +268,7 @@ prepare_macos_env_gui_extra()
     sequel-pro
     shadowsocksx-ng
     shifty
+    shottr
     skim
     skype
     slack
