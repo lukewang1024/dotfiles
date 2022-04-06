@@ -247,6 +247,7 @@ prepare_arch_env_cli_extra()
     pdfsandwich
     pgcli
     polipo
+    powershell-bin
     sc-im
     sparklines-git
     touchpad-state-git
