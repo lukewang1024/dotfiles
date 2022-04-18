@@ -123,8 +123,9 @@ triggerCapslockFunc()
     ;;;
     case "+a": toggleAppWindowExactMatch("atom", "Chrome_WidgetWin_1")                                                                    ; a - Atom
     case "+e": toggleAppWindowExactMatch("Explorer", "CabinetWClass")                                                                     ; e - Explorer
-    case "+m": toggleAppWindowExactMatch("Spotify", "Chrome_WidgetWin_0", "", getUserAppLink("Spotify"))                                  ; m - Spotify
+    case "+m": toggleAppWindowExactMatch("QQMusic", "TXGuiFoundation", "", getUserAppLink("QQMusic"), 1)                                  ; m - QQ Music
     case "+o": toggleAppWindowExactMatch("ONENOTE", "Framework::CFrame")                                                                  ; o - OneNote
+    case "+s": toggleAppWindowExactMatch("Spotify", "Chrome_WidgetWin_0", "", getUserAppLink("Spotify"))                                  ; s - Spotify
     case "+w": toggleAppWindowExactMatch("WhatsApp", "Chrome_WidgetWin_1")                                                                ; w - WhatsApp
     case "+z": toggleAppWindowExactMatch("Zeplin", "Chrome_WidgetWin_1")                                                                  ; z - Zeplin
     case "+0": toggleAppWindowExactMatch("v2rayN", "WindowsForms10.Window.8.app.0.34f5582_r6_ad1", "", getScoopAppLink("v2rayN"))         ; 0 - v2rayN

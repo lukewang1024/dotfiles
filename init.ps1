@@ -287,6 +287,8 @@ function install_scoop()
     iex (new-object net.webclient).downloadstring('https://get.scoop.sh')
   }
 
+  scoop install git
+
   $buckets =
     'extras',
     'games',
@@ -295,7 +297,7 @@ function install_scoop()
     'nirsoft',
     'nonportable',
     'versions'
-  Invoke-Expression "scoop bucket add $buckets"
+  scoop_bucket_add $buckets
   scoop bucket add customize https://github.com/ChinLong/scoop-customize.git
 }
 
@@ -310,9 +312,13 @@ function install_winget()
 
 function set_windows_configs()
 {
+  $dotPath = "$env:USERPROFILE\.dotfiles"
+  $configPath = "$dotPath\config"
+
   sudo Set-Service ssh-agent -StartupType Automatic
 
-  $configPath = "$env:USERPROFILE\.dotfiles\config"
+  sync_config_repo https://github.com/lukewang1024/dotfiles $dotPath
+
   backup_then_symlink "$configPath\alacritty" "$env:APPDATA\alacritty"
   backup_then_symlink "$configPath\Rime" "$env:APPDATA\Rime"
   backup_then_symlink "$configPath\tig" "$env:USERPROFILE\.config\tig"
@@ -334,6 +340,13 @@ function blank_lines($num = 3, $char = '.')
   }
 }
 
+function scoop_bucket_add($buckets)
+{
+  foreach ($bucket in $buckets) {
+    Invoke-Expression "scoop bucket add $bucket"
+  }
+}
+
 function scoop_install($pkgs)
 {
   Invoke-Expression "scoop install $pkgs"
@@ -348,6 +361,24 @@ function winget_install($pkgs)
 {
   foreach ($pkg in $pkgs) {
     Invoke-Expression "winget install $pkg"
+  }
+}
+
+function sync_config_repo($repoUrl, $configPath, $shallow = false)
+{
+  if (Test-Path "$configPath") {
+    if (Test-Path "$configPath\.git") {
+      Invoke-Expression "pwsh -Command { cd $configPath ; git pull }"
+      return
+    }
+
+    backup $configPath
+  }
+
+  if ($shallow) {
+    git clone --depth 1 $repoUrl $configPath
+  } else {
+    git clone $repoUrl $configPath
   }
 }
 
