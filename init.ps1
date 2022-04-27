@@ -130,10 +130,9 @@ function prepare_windows_env_gui_core()
     'altsnap',
     'autohotkey',
     'ditto',
-    'doublecmd',
     'everything',
-    'irfanview',
     'keepass',
+    'listary',
     'quicklook',
     'snipaste',
     'sublime-merge',
@@ -143,6 +142,7 @@ function prepare_windows_env_gui_core()
     'sysinternals',
     'trafficmonitor',
     'unlocker',
+    'vcredist2019', # for windows-terminal
     'vscode',
     'windows-terminal'
 
@@ -152,12 +152,12 @@ function prepare_windows_env_gui_core()
     'FiraCode-NF',
     'Meslo-NF',
     'SourceCodePro-NF'
-  
+
   scoop_sudo_install $fonts
 
   $wingetPkgs =
     'Rime.Weasel'
-  
+
   winget_install $wingetPkgs
 
   set_windows_configs
@@ -173,11 +173,11 @@ function prepare_windows_env_gui_extra()
     'carnac',
     'ccleaner',
     'chromium',
-    'copyq',
     'cpu-z',
     'dotnet3-sdk',
     'dotnet5-sdk',
     'dotnet6-sdk',
+    'doublecmd',
     'dropit',
     'eartrumpet',
     'filezilla',
@@ -192,6 +192,7 @@ function prepare_windows_env_gui_extra()
     'hexchat',
     'hub',
     'hwmonitor',
+    'irfanview',
     'joplin',
     'kdiff3',
     'kitematic',
@@ -232,7 +233,6 @@ function prepare_windows_env_gui_extra()
     'v2rayn',
     'vcredist2015',
     'vcredist2017',
-    'vcredist2019',
     'vcredist2022',
     'vcxsrv',
     'vncviewer',
@@ -241,16 +241,16 @@ function prepare_windows_env_gui_extra()
     'windirstat',
     'winscp',
     'wireshark',
-    'wox',
     'wsltty',
     'xming',
     'xnviewmp',
     'zeal',
     'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json'
-  
+
   scoop_install $pkgs
 
   $wingetPkgs =
+    '9NW33J738BL0', # Monitorian
     'Bytedance.Feishu',
     'CLechasseur.PathCopyCopy',
     'Dropbox.Dropbox',
@@ -273,7 +273,7 @@ function prepare_windows_gaming()
     'dosbox-x',
     'openra',
     'steam'
-  
+
   scoop_install $pkgs
 }
 
@@ -315,14 +315,19 @@ function set_windows_configs()
   $dotPath = "$env:USERPROFILE\.dotfiles"
   $configPath = "$dotPath\config"
 
+  # enable developer mode
+  sudo reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"
+
+  # enable ssh-agent service
   sudo Set-Service ssh-agent -StartupType Automatic
 
   sync_config_repo https://github.com/lukewang1024/dotfiles $dotPath
 
   backup_then_symlink "$configPath\alacritty" "$env:APPDATA\alacritty"
-  backup_then_symlink "$configPath\Rime" "$env:APPDATA\Rime"
-  backup_then_symlink "$configPath\tig" "$env:USERPROFILE\.config\tig"
   backup_then_symlink "$configPath\powershell" "$env:USERPROFILE\Documents\PowerShell"
+  backup_then_symlink "$configPath\Rime" "$env:APPDATA\Rime"
+  backup_then_symlink "$configPath\ssh\config" "$env:USERPROFILE\.ssh\config"
+  backup_then_symlink "$configPath\tig" "$env:USERPROFILE\.config\tig"
 
   # Make git work with openssh
   [environment]::setenvironmentvariable('GIT_SSH', (resolve-path (scoop which ssh)), 'USER')
@@ -360,7 +365,7 @@ function scoop_sudo_install($pkgs)
 function winget_install($pkgs)
 {
   foreach ($pkg in $pkgs) {
-    Invoke-Expression "winget install $pkg"
+    Invoke-Expression "winget install $pkg --accept-package-agreements"
   }
 }
 
@@ -402,7 +407,13 @@ function symlink($fromPath, $toPath)
     return
   }
 
-  sudo New-Item -ItemType SymbolicLink -Path $toPath -Target $fromPath
+  $parentPath = Split-Path -Path $toPath
+
+  if (!(Test-Path $parentPath)) {
+    New-Item -ItemType Directory -Path $parentPath
+  }
+
+  New-Item -ItemType SymbolicLink -Path $toPath -Target $fromPath
 }
 
 function backup_then_symlink($fromPath, $toPath)
