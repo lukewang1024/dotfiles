@@ -11,6 +11,33 @@ local function pressFn(mods, key)
   return function() hs.eventtap.keyStroke(mods, key, 1000) end
 end
 
+local function mouseMove(distance, direction)
+  return function()
+    local point = hs.mouse.absolutePosition()
+    local x = point.x
+    local y = point.y
+    if direction == 'x' then
+      point.x = point.x + distance
+    else
+      point.y = point.y + distance
+    end
+    hs.mouse.absolutePosition(point)
+  end
+end
+
+local function mouseClick(button)
+  return function()
+    local point = hs.mouse.absolutePosition()
+    if button == 0 then
+      hs.eventtap.leftClick(point)
+    elseif button == 1 then
+      hs.eventtap.middleClick(point)
+    elseif button == 2 then
+      hs.eventtap.rightClick(point)
+    end
+  end
+end
+
 local function setAppToggles(mod, mapping)
   for key, app in pairs(mapping) do
     hotkey.bind(mod, key, function() toggle_application(app) end)
@@ -75,11 +102,11 @@ setAppToggles(hyperAlt, {
   -- e = '',
   f = 'Figma',
   g = 'Lepton',
-  h = 'Hoppscotch',
+  -- h: for mouse move
   i = 'IINA',
-  j = 'Joplin',
-  k = 'Personal Kanban',
-  -- l = '',
+  -- j: for mouse move
+  -- k: for mouse move
+  -- l: for mouse move
   m = 'QQ音乐',
   n = 'Mark Text',
   o = 'Microsoft OneNote',
@@ -120,10 +147,17 @@ setAppToggles(hyperAlt, {
 hotkey.bind(hyper, 'escape', function() hs.reload() end)
 
 -- vim-like j,k,h,l-navigations
-hotkey.bind(hyper, 'j', pressFn('down'))
-hotkey.bind(hyper, 'k', pressFn('up'))
-hotkey.bind(hyper, 'h', pressFn('left'))
-hotkey.bind(hyper, 'l', pressFn('right'))
+hotkey.bind(hyper, 'j', pressFn('down'), nil, pressFn('down'))
+hotkey.bind(hyper, 'k', pressFn('up'), nil, pressFn('up'))
+hotkey.bind(hyper, 'h', pressFn('left'), nil, pressFn('left'))
+hotkey.bind(hyper, 'l', pressFn('right'), nil, pressFn('right'))
+hotkey.bind(hyperAlt, 'j', mouseMove(10, 'y'), nil, mouseMove(10, 'y'))
+hotkey.bind(hyperAlt, 'k', mouseMove(-10, 'y'), nil, mouseMove(-10, 'y'))
+hotkey.bind(hyperAlt, 'h', mouseMove(-10, 'x'), nil, mouseMove(-10, 'x'))
+hotkey.bind(hyperAlt, 'l', mouseMove(10, 'x'), nil, mouseMove(10, 'x'))
+hotkey.bind(hyperAlt, 'return', mouseClick(0), nil, mouseClick(0))
+hotkey.bind(hyperAlt, 'forwarddelete', mouseClick(1), nil, mouseClick(1))
+hotkey.bind(hyperAlt, 'delete', mouseClick(2), nil, mouseClick(2))
 
 -- Toggle an application between being the frontmost app, and being hidden
 function toggle_application(_app)
