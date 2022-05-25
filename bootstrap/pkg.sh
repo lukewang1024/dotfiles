@@ -73,6 +73,7 @@ install_npm_packages()
     madge
     majestic
     mermaid.cli
+    musicn
     nativefier
     nativescript
     neovim
