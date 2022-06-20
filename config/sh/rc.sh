@@ -2,8 +2,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export EDITOR='vim'
 
-# Use xterm-256color when not in tmux
-! is_tmux && export TERM='xterm-256color'
+# Use xterm-256color for non-tmux remote session
+is_ssh && ! is_tmux && export TERM='xterm-256color'
 
 # Set ANDROID_HOME per platform
 is_macos && export ANDROID_HOME=$HOME/Library/Android/sdk
