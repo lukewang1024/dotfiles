@@ -100,7 +100,6 @@ prepare_arch_env_cli_core()
     trash-cli
     vim
     wget
-    yarn
     yay
     zoxide
     zsh
@@ -203,11 +202,11 @@ prepare_arch_env_cli_extra()
     pkgfile
     playerctl
     pngquant
+    pnpm
     progress
     proxychains-ng
     qemu
     ripgrep
-    shadowsocks-libev
     shellcheck
     sl
     snapd
@@ -222,6 +221,7 @@ prepare_arch_env_cli_extra()
     vagrant
     w3m
     wtf
+    yarn
     you-get
     zip
   )
@@ -279,9 +279,6 @@ prepare_arch_env_gui_core()
     foliate
     galculator
     gsimplecal
-    i3-gaps
-    i3blocks
-    i3status
     libdbusmenu-glib
     libdbusmenu-gtk2
     libdbusmenu-gtk3
@@ -308,7 +305,7 @@ prepare_arch_env_gui_core()
     ttf-sarasa-gothic
     tumbler
     udiskie
-    vala-panel-appmenu-xfce
+    vala-panel-appmenu-xfce-git
     wqy-zenhei
     xautomation
     xbindkeys
@@ -328,8 +325,6 @@ prepare_arch_env_gui_core()
   pkgs=(
     betterlockscreen
     gluqlo-git
-    i3ass
-    i3lock-color
     jumpapp
     nerd-fonts-fira-code
     nerd-fonts-meslo
@@ -367,8 +362,6 @@ prepare_arch_env_gui_extra()
     pdfarranger
     qutebrowser
     rxvt-unicode
-    shadowsocks-qt5
-    syncthing-gtk
     telegram-desktop
     termite
     tilda
@@ -400,10 +393,9 @@ prepare_arch_env_gui_extra()
     mailspring
     marktext-bin
     musixmatch-bin
-    qv2ray-static-bin-nightly
+    qv2ray-static-nightly-bin
     rslsync
     screenkey
-    skypeforlinux-stable-bin
     slack-desktop
     spotify
     ttf-ms-fonts

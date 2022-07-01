@@ -105,7 +105,7 @@ EOPLUGINS
   zgen load zdharma-continuum/fast-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
   zgen load "$zsh_config_dir/rc.zsh"
-  zgen load "$config_dir/todoist/todoist_functions.sh"
+
   [ -f ~/.zshrc.local ] && zgen load ~/.zshrc.local
 
   zgen save

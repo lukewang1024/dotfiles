@@ -30,7 +30,6 @@ prepare_chromeos()
     proxychains
     ranger
     rsync
-    syncthing
     tig
     tldr
     tmux
