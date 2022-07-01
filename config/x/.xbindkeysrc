@@ -3,16 +3,16 @@
 # >> Vim cursor move: Hyper + hjkl
 
 "xte 'key Up'"
-  Mod3 + k + release
+  Mod3 + k + Release
 
 "xte 'key Down'"
-  Mod3 + j + release
+  Mod3 + j + Release
 
 "xte 'key Left'"
-  Mod3 + h + release
+  Mod3 + h + Release
 
 "xte 'key Right'"
-  Mod3 + l + release
+  Mod3 + l + Release
 
 # >> Display management
 

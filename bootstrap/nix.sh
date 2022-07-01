@@ -58,7 +58,6 @@ install_nix_brew_core_packages()
     wdiff
     wget
     xsv
-    yarn
     zoxide
     zsh
   )
@@ -165,15 +164,14 @@ install_nix_brew_extra_packages()
     pdfsandwich
     pgcli
     pngquant
+    pnpm
     progress
     proxychains-ng
     qpdf
     redis
     rtv
-    sachaos/todoist/todoist
     sc-im
     scc
-    shadowsocks-libev
     shellcheck
     sl
     smartmontools
@@ -194,6 +192,7 @@ install_nix_brew_extra_packages()
     wtfutil
     xpdf
     xwmx/taps/nb
+    yarn
     you-get
     youtube-dl
     zsh-completions

@@ -131,7 +131,6 @@ else # *nix
 fi
 
 zinit snippet "$zsh_config_dir/rc.zsh"
-zinit snippet "$config_dir/todoist/todoist_functions.sh"
 
 [ -f ~/.zshrc.local ] && zinit snippet ~/.zshrc.local
 

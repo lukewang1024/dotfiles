@@ -216,7 +216,6 @@ prepare_macos_env_gui_extra()
     itsycal
     java
     joplin
-    kap
     kdiff3
     keka
     keycastr
@@ -266,14 +265,11 @@ prepare_macos_env_gui_extra()
     rowanj-gitx
     safari-technology-preview
     sequel-pro
-    shadowsocksx-ng
     shifty
     shottr
     skim
-    skype
     slack
     sloth
-    slowquitapps
     soundflower
     soundflowerbed
     spotifree
@@ -282,8 +278,6 @@ prepare_macos_env_gui_extra()
     stretchly
     suspicious-package
     switchhosts
-    syncthing
-    tencent-lemon
     the-unarchiver
     toau
     tweeten
