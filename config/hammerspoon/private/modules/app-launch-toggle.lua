@@ -53,7 +53,7 @@ setAppToggles(hyper, {
   f = 'Firefox',
   -- g = '',
   -- h: for arrows
-  i = 'iTerm',
+  i = 'ByteIDE',
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
@@ -79,7 +79,7 @@ setAppToggles(hyper, {
   ['/'] = 'ForkLift',
   ['\''] = 'kitty',
   ['\\'] = 'MacPass',
-  ['`'] = 'iTerm',
+  -- ['`'] = '',
   ['0'] = 'Proxifier',
   -- ['1'] = '',
   ['2'] = 'Trello',
@@ -122,12 +122,12 @@ setAppToggles(hyperAlt, {
   -- y = '',
   z = 'Zeplin',
   -- [','] = '',
-  [';'] = 'Terminal',
+  [';'] = 'iTerm',
   -- ['.'] = '',
   -- ['['] = '',
   [']'] = 'WhatsApp',
   ['/'] = 'Commander One',
-  -- ['\''] = '',
+  ['\''] = 'Terminal',
   ['\\'] = '富途牛牛',
   -- ['`'] = '',
   ['0'] = 'V2rayU',

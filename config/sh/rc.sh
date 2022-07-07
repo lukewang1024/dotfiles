@@ -19,11 +19,11 @@ export PATH="/usr/bin/core_perl:$PATH"
 export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 if is_linux; then
-  LINUXBREW='/home/linuxbrew/.linuxbrew'
-  export PATH="$LINUXBREW/sbin:$PATH"
-  export PATH="$LINUXBREW/bin:$PATH"
+  [ -d ~/.linuxbrew ] && eval "$(~/.linuxbrew/bin/brew shellenv)"
+  [ -d /home/linuxbrew/.linuxbrew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif is_macos; then
+  [ -d /opt/homebrew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
-[ -f /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"

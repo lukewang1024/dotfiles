@@ -3,12 +3,12 @@ source "$partial_dir/nix.sh"
 # Use LinuxBrew for latest version of tools
 install_linuxbrew()
 {
-  exists brew || \
-    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+  if ! exists brew; then
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     # Make sure brew can be found right after installation
-    PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-
-  brew update; brew upgrade
+    [ -d ~/.linuxbrew ] && eval "$(~/.linuxbrew/bin/brew shellenv)"
+    [ -d /home/linuxbrew/.linuxbrew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  fi
 }
 
 install_linux_brew_core_packages()
