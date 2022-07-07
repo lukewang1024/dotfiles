@@ -48,15 +48,19 @@ prepare_macos_env_gui()
   brew_cleanup
 }
 
+install_homebrew()
+{
+  if ! exists brew; then
+    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    # Make sure brew can be found right after installation
+    [ -d /opt/homebrew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+  fi
+  brew tap homebrew/command-not-found
+}
+
 prepare_macos_env_cli_core()
 {
-  exists brew || ( \
-    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
-    xcode-select --install \
-  )
-
-  brew tap homebrew/command-not-found
-
+  install_homebrew
   install_nix_brew_runtimes
   install_nix_brew_core_packages
 
