@@ -111,6 +111,7 @@ function prepare_windows_env_cli_extra()
     'pnpm',
     'python',
     'sbt',
+    'scrcpy',
     'shasum',
     'vagrant',
     'yarn'

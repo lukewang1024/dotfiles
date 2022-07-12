@@ -362,6 +362,7 @@ prepare_arch_env_gui_extra()
     pdfarranger
     qutebrowser
     rxvt-unicode
+    scrcpy
     telegram-desktop
     termite
     tilda

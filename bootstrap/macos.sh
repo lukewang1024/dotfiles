@@ -84,10 +84,12 @@ prepare_macos_env_cli_extra()
     m-cli
     mackup
     reattach-to-user-namespace
+    scrcpy
   )
   brew install `join ' ' "${pkgs[@]}"`
 
   local casks=(
+    android-platform-tools
     docker
     dotnet-sdk
     powershell
@@ -178,7 +180,6 @@ prepare_macos_env_gui_extra()
   local casks=(
     aerial
     aldente
-    android-platform-tools
     android-sdk
     android-studio
     androidtool
