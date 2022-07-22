@@ -102,6 +102,7 @@ function prepare_windows_env_cli_extra()
     'mc',
     'miniconda3',
     'minikube',
+    'musikcube',
     'nmap',
     'nodejs',
     'now-cli',

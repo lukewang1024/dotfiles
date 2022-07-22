@@ -166,6 +166,7 @@ prepare_macos_env_gui_extra()
     1497527363 # Blurred
     1499181666 # OwlOCR - Screenshot to Text
     1507782672 # Pixea
+    1607635845 # Velja
   )
 
   mas install $masApps

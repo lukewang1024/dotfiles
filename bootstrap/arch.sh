@@ -187,6 +187,7 @@ prepare_arch_env_cli_extra()
     mps-youtube
     mpv
     multitail
+    musikcube-bin
     mutt
     ncdu
     ncmpcpp
