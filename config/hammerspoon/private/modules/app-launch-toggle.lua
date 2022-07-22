@@ -124,7 +124,7 @@ setAppToggles(hyperAlt, {
   -- [','] = '',
   [';'] = 'iTerm',
   -- ['.'] = '',
-  -- ['['] = '',
+  ['['] = 'QQ',
   [']'] = 'WhatsApp',
   ['/'] = 'Commander One',
   ['\''] = 'Terminal',

@@ -75,6 +75,7 @@ install_nix_brew_extra_packages()
     binutils
     calcurse
     cheat
+    clangen/musikcube/musikcube
     cmake
     cmatrix
     cmus
