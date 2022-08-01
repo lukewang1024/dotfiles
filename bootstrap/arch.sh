@@ -348,7 +348,6 @@ prepare_arch_env_gui_extra()
     android-file-transfer
     arc-gtk-theme
     arc-icon-theme
-    atom
     chromium
     copyq
     drawing

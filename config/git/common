@@ -19,8 +19,8 @@
   editor = nano
   fileMode = true
   fscache = true
-  # pager = diff-so-fancy | less --tabs=4 -RFX
-  pager = delta
+  pager = diff-so-fancy | less --tabs=4 -RFX
+  # pager = delta
 [delta]
   navigate = true  # use n and N to move between diff sections
 [diff]

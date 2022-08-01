@@ -121,7 +121,6 @@ triggerCapslockFunc()
     ;;;
     ;;; HyperAlt app toggles
     ;;;
-    case "+a": toggleAppWindowExactMatch("atom", "Chrome_WidgetWin_1")                                                                    ; a - Atom
     case "+e": toggleAppWindowExactMatch("Explorer", "CabinetWClass")                                                                     ; e - Explorer
     case "+m": toggleAppWindowExactMatch("QQMusic", "TXGuiFoundation", "", getUserAppLink("QQMusic"), 1)                                  ; m - QQ Music
     case "+o": toggleAppWindowExactMatch("ONENOTE", "Framework::CFrame")                                                                  ; o - OneNote

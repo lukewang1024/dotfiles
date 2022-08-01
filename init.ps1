@@ -171,7 +171,6 @@ function prepare_windows_env_gui_extra()
   $pkgs =
     'android-sdk',
     'android-studio',
-    'atom',
     'calibre',
     'carnac',
     'ccleaner',

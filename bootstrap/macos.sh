@@ -186,7 +186,6 @@ prepare_macos_env_gui_extra()
     androidtool
     apppolice
     aria2gui
-    atom
     background-music
     bitbar
     bob
@@ -307,6 +306,11 @@ prepare_macos_env_gui_extra()
     zoomus
   )
   brew install --cask `join ' ' "${casks[@]}"`
+
+  local no_quarantined_casks=(
+    syntax-highlight
+  )
+  brew install --cask `join ' ' "${no_quarantined_casks[@]}"`
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 }
