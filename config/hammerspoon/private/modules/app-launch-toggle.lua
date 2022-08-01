@@ -95,7 +95,7 @@ setAppToggles(hyper, {
 
 -- hyperAlt application shortcuts
 setAppToggles(hyperAlt, {
-  a = 'Atom',
+  -- a = '',
   -- b = '',
   c = 'Google Chrome Canary',
   d = 'DevDocs',
