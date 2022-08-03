@@ -17,6 +17,7 @@ git_setup()
   echo 'Applying new git configs...'
   cat "$config_dir/git/alias" > ~/.gitconfig
   cat "$config_dir/git/common" >> ~/.gitconfig
+  [ -f "$config_dir/git/local" ] && cat "$config_dir/git/local" >> ~/.gitconfig
 
   backup_then_symlink "$util_dir/shell/git-set-identity" ~/bin/git-set-identity
 
