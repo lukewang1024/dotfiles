@@ -194,6 +194,7 @@ prepare_arch_env_cli_extra()
     nghttp2
     nyancat
     offlineimap
+    oha
     onefetch
     optipng
     p7zip
@@ -292,6 +293,7 @@ prepare_arch_env_gui_core()
     noto-fonts-cjk
     noto-fonts-emoji
     pa-applet
+    parcellite
     polybar
     python-pywal
     redshift

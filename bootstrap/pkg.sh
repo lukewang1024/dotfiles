@@ -13,7 +13,6 @@ install_cargo_packages()
   echo 'Installing crates...'
 
   local pkgs=(
-    dum
     wurl
   )
 

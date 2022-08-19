@@ -231,6 +231,7 @@ prepare_macos_env_gui_extra()
     losslesscut
     lx-music
     lyricsx
+    maccy
     mark-text
     microsoft-edge
     microsoft-remote-desktop
