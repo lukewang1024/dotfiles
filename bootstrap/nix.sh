@@ -14,12 +14,14 @@ install_nix_brew_runtimes()
 install_nix_brew_core_packages()
 {
   brew tap beeftornado/rmtree
+  brew tap egoist/tap
 
   local pkgs=(
     bash
     broot
     diff-so-fancy
     dog
+    dum
     fd
     findutils
     fzf
@@ -157,6 +159,7 @@ install_nix_brew_extra_packages()
     nyancat
     ocrmypdf
     offlineimap
+    oha
     onefetch
     open-mpi
     optipng

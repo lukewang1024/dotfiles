@@ -56,6 +56,7 @@ function prepare_windows_env_cli_core()
     'ag',
     'broot',
     'delta',
+    'dum',
     'fd',
     'fzf',
     'git',
@@ -250,6 +251,7 @@ function prepare_windows_env_gui_extra()
   scoop_install $pkgs
 
   $wingetPkgs =
+    '9NGHP3DX8HDX', # Files App
     '9NW33J738BL0', # Monitorian
     'Bytedance.Feishu',
     'CLechasseur.PathCopyCopy',
