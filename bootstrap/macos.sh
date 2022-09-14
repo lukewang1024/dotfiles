@@ -123,6 +123,7 @@ prepare_macos_env_gui_core()
     maczip
     mos
     rectangle
+    shottr
     snipaste
     squirrel
     sublime-merge
@@ -272,7 +273,6 @@ prepare_macos_env_gui_extra()
     safari-technology-preview
     sequel-pro
     shifty
-    shottr
     skim
     slack
     sloth
