@@ -222,6 +222,7 @@ prepare_arch_env_cli_extra()
     v2ray-geoip
     vagrant
     w3m
+    websocat
     wtf
     yarn
     you-get

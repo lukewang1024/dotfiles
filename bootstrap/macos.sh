@@ -148,6 +148,7 @@ prepare_macos_env_gui_extra()
     585829637  # Todoist
     664513913  # 富途牛牛
     747648890  # Telegram
+    768053424  # Gapplin
     784801555  # OneNote
     789066512  # Maipo for Weibo
     # 880001334  # Reeder 3
@@ -168,6 +169,7 @@ prepare_macos_env_gui_extra()
     1499181666 # OwlOCR - Screenshot to Text
     1507782672 # Pixea
     1607635845 # Velja
+    1615988943 # Folder Peek
   )
 
   mas install $masApps
@@ -188,16 +190,20 @@ prepare_macos_env_gui_extra()
     apppolice
     aria2gui
     background-music
+    betterdisplay
     bitbar
     bob
+    boop
     cakebrew
     calibre
     caprine
     charles
     commander-one
+    coteditor
     dropbox
     duet
     electron-fiddle
+    espanso
     eul
     fantastical
     feishu
@@ -207,6 +213,7 @@ prepare_macos_env_gui_extra()
     flume
     flux
     folx
+    font-smoothing-adjuster
     forklift
     google-backup-and-sync
     google-chrome
@@ -222,7 +229,9 @@ prepare_macos_env_gui_extra()
     itsycal
     java
     joplin
+    jupyter-notebook-viewer
     kdiff3
+    keepingyouawake
     keka
     keycastr
     kitematic
@@ -230,6 +239,7 @@ prepare_macos_env_gui_extra()
     lark
     lepton
     losslesscut
+    lulu
     lx-music
     lyricsx
     maccy
@@ -240,6 +250,7 @@ prepare_macos_env_gui_extra()
     monitorcontrol
     mweb2
     netspot
+    nightfall
     ntfstool
     nvalt
     omnidisksweeper
@@ -281,11 +292,13 @@ prepare_macos_env_gui_extra()
     spotifree
     spotify
     sqlpro-for-postgres
+    stats
     stretchly
     suspicious-package
     switchhosts
     the-unarchiver
     toau
+    topnotch
     tweeten
     ubersicht
     uninstallpkg
