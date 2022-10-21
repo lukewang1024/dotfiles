@@ -71,6 +71,7 @@ install_npm_packages()
     loopback-cli
     madge
     majestic
+    memlab
     mermaid.cli
     musicn
     nativefier

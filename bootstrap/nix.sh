@@ -192,6 +192,7 @@ install_nix_brew_extra_packages()
     w3m
     wader/tap/fq
     watch
+    websocat
     wtf
     wtfutil
     xpdf
