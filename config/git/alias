@@ -61,23 +61,27 @@
   last = !sh -c \"git log -${1:-1} HEAD\" -
   lc = "!f() { git ll \"$1\"^..\"$1\"; }; f"
   lcnt = !sh -c \"git ls-files | xargs wc -l\" -
-  ld = log --pretty=format:\"%C(yellow)%h\\\\ %ad%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --date=relative
-  lds = log --pretty=format:\"%C(yellow)%h\\\\ %ad%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --date=short
-  le = log --oneline --decorate
-  lff = log ORIG_HEAD.. --stat --no-merges
-  lg = log --date=local
-  lgt = !git lgt1
-  lgt1 = log --graph --abbrev-commit --decorate --date=relative --format=format:\"%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)\" --all
-  lgt2 = log --graph --abbrev-commit --decorate --format=format:\"%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n\"\"          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)\" --all
-  ll = log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate --numstat
-  lnc = log --pretty=format:\"%h\\\\ %s\\\\ [%cn]\"
-  ls = log --pretty=format:\"%C(yellow)%h%Cred%d\\\\ %Creset%s%Cblue\\\\ [%cn]\" --decorate
+  ll = log --pretty=format:\"%C(red)%h %C(auto)-%d %s %C(green)(%ad) %C(bold blue)<%an>%C(reset)\"
+  lls = ll --date=short
+  llr = ll --date=relative
+  lg = ll --graph
+  lgs = lls --graph
+  lgr = llr --graph
+  ls = ll --stat
+  lss = lls --stat
+  lsr = llr --stat
   lt = describe --tags --abbrev=0
-  merge-commit-find = "!sh -c 'commit=$0 && branch=${1:-HEAD} && (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n |  tail -1 | cut -f2'"
-  merge-commit-show = "!sh -c 'merge=$(git merge-commit-find $0 $1) && [ -n \"$merge\" ] && git show $merge'"
+  merge-commit-find = "!f() { \
+    commit=$1; branch=${2:-HEAD}; \
+    (git rev-list $commit..$branch --ancestry-path | cat -n; git rev-list $commit..$branch --first-parent | cat -n) | sort -k2 -s | uniq -f1 -d | sort -n |  tail -1 | cut -f2; \
+  }; f"
+  merge-commit-show = "!f() { \
+    merge=$(git merge-commit-find $1 $2); \
+    [ -n \"$merge\" ] && git show $merge; \
+  }; f"
   mg = merge
   new = !sh -c \"git log $1@{1}..$1@{0} \"$@\"\"
-  ours = "!f() { git co --ours $@ && git add $@; }; f"
+  ours = "!f() { git checkout --ours $@ && git add $@; }; f"
   pb = push backup --follow-tags
   po = push origin --follow-tags
   ps = push --follow-tags
@@ -92,14 +96,7 @@
   rsth = reset --hard
   rsth1 = reset HEAD^ --hard
   rsth2 = reset HEAD^^ --hard
-  rv = "!f() { git push origin HEAD:refs/for/${1:-master}%${2}; }; f"
-  rvcin = commit --amend --no-edit
-  rvdbr = "!f() { git branch | grep ${1:-sandbox} | xargs git branch -D; }; f"
-  rvfp = "!f() { git fetch origin refs/changes/$(printf "%02d" $(expr ${1} % 100))/${1}/${2:-1} && git checkout FETCH_HEAD;}; f"
-  rvm = "!f() { git push origin HEAD:refs/for/master%${1}; }; f"
-  rvnew = "!f() { git fetch && git checkout -b sandbox/`whoami`/`date +%m-%d`/${2:-`date +%H-%M`} origin/${1:-master}; }; f"
   sa = !sh -c \"git stash apply stash@{${1:-0}}\" -
-  sba = "!f() { git subtree add --prefix $2 $1 master --squash; }; f"
   sd = !sh -c \"git stash drop stash@{${1:-0}}\" -
   sh = !sh -c \"git stash show -p stash@{${1:-0}}\" -
   sl = stash list
@@ -113,7 +110,7 @@
   svnl = svn log --oneline --show-commit
   svnr = svn rebase
   td = tag -l --sort=-creatordate --format='%(creatordate:short):  %(refname:short)'
-  theirs = "!f() { git co --theirs $@ && git add $@; }; f"
+  theirs = "!f() { git checkout --theirs $@ && git add $@; }; f"
   tree = forest --pretty=format:\"%C(red)%h %C(magenta)(%ar) %C(blue)%an %C(reset)%s\" --style=15 --reverse
   trf = !sh -c \"git reflog --pretty=raw | tig --pretty=raw | cat\"
   unassume = update-index --no-assume-unchanged
@@ -121,6 +118,11 @@
   unstage = reset HEAD --
   untrack = rm --cache --
   up = pull --rebase --autostash
+  version-branch-diff = "!f() { \
+    [ $# -le 2 ] && echo 'Usage: git version-branch-diff [branch_1] [branch_2] ([base_branch])' && exit; \
+    branch_1=$1; branch_2=$2; base_branch=${3:-HEAD}; \
+    git lls --merges --ancestry-path $(git merge-base $base_branch $branch_1)~1..$(git merge-base $base_branch $branch_2); \
+  }; f"
   who = shortlog -s --
 
 # syntax:ssHash
