@@ -170,14 +170,6 @@ endfunction
 command! ShowLetInBuf call s:ShowVimCmdOutputInBuf('silent let')
 command! ShowMapInBuf call s:ShowVimCmdOutputInBuf('silent map')
 
-"""""""""""""""""
-" nvim provider "
-"""""""""""""""""
-
-let g:python_host_prog = '~/.pyenv/versions/2.7.18/bin/python'
-let g:python3_host_prog = '~/.pyenv/versions/neovim/bin/python'
-let g:ruby_host_prog = '~/.rbenv/gems/2.6.0/bin/neovim-ruby-host'
-
 """""""
 " ALE "
 """""""

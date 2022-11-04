@@ -43,7 +43,6 @@ install_nix_brew_core_packages()
     neovim
     openssh
     peco
-    percol
     prettyping
     procs
     ranger

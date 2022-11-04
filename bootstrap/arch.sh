@@ -88,7 +88,6 @@ prepare_arch_env_cli_core()
     openssh
     pamac-cli
     peco
-    percol
     prettyping
     procs
     ranger
@@ -307,6 +306,7 @@ prepare_arch_env_gui_core()
     thunar-volman
     ttf-font-awesome
     ttf-sarasa-gothic
+    ttf-sourcecodepro-nerd
     tumbler
     udiskie
     vala-panel-appmenu-xfce-git
@@ -332,7 +332,6 @@ prepare_arch_env_gui_core()
     jumpapp
     nerd-fonts-fira-code
     nerd-fonts-meslo
-    nerd-fonts-source-code-pro
     sublime-merge
     sublime-text-4
     visual-studio-code-bin
@@ -389,15 +388,16 @@ prepare_arch_env_gui_extra()
     feishu-bin
     genymotion
     git-cola
-    google-chrome-stable
+    google-chrome
     joplin
     kitematic
     losslesscut
     lx-music-desktop-bin
     mailspring
     marktext-bin
+    microsoft-edge-stable-bin
     musixmatch-bin
-    qv2ray-static-nightly-bin
+    qv2ray-git
     rslsync
     screenkey
     slack-desktop
@@ -421,6 +421,7 @@ setup_arch_gaming()
     pcsx2
     ppsspp
     snes9x-gtk
+    steam
     vbam-wx
   )
   pacman_install_pkgs
