@@ -397,7 +397,6 @@ prepare_arch_env_gui_extra()
     marktext-bin
     microsoft-edge-stable-bin
     musixmatch-bin
-    qv2ray-git
     rslsync
     screenkey
     slack-desktop

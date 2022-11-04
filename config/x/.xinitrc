@@ -58,8 +58,6 @@ to_launch udiskie && udiskie --tray &
 # redshift with tray applet (specify path to avoid using python3 from linuxbrew)
 to_launch redshift-gtk && PATH=/usr/bin redshift-gtk &
 
-# v2ray client
-to_launch qv2ray && qv2ray &
 # dropbox
 to_launch dropbox && dropbox &
 

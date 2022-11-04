@@ -56,8 +56,10 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/ranger/linux" ~/.config/ranger
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
+  backup_then_symlink "$config_dir/systemd" ~/.config/systemd
   backup_then_symlink "$config_dir/thunar" ~/.config/Thunar
   backup_then_symlink "$config_dir/tilda" ~/.config/tilda
+  backup_then_symlink "$config_dir/v2ray" ~/.config/v2ray
   backup_then_symlink "$config_dir/vnc/.vncrc" ~/.vncrc
   backup_then_symlink "$config_dir/x/.xbindkeysrc" ~/.xbindkeysrc
   backup_then_symlink "$config_dir/x/.xinitrc" ~/.xinitrc
@@ -91,7 +93,7 @@ apply_linux_app_configs()
   backup_then_symlink "$util_dir/linux/xrun" ~/bin/xrun
 
   # Misc settings
-  mkdir -p ~/.polipo-cache
+  mkdir -p ~/.cache/polipo
   mkdir -p ~/Recordings
   touch "$config_dir/x/.Xresources.d/custom"
 
