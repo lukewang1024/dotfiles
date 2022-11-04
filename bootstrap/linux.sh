@@ -65,7 +65,6 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/x/.Xresources" ~/.Xresources
   backup_then_symlink "$config_dir/x/.Xresources.d" ~/.Xresources.d
   backup_then_symlink "$config_dir/x/.xscreensaver" ~/.xscreensaver
-  backup_then_symlink "$config_dir/xfce4" ~/.config/xfce4
   backup_then_symlink "$config_dir/zathura" ~/.config/zathura
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 
