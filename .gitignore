@@ -24,4 +24,6 @@ config/alacritty/local.yml
 config/git/local
 config/gtk-3.0/bookmarks
 config/karabiner/automatic_backups
+config/systemd/user/*.wants/
+config/v2ray/config.json
 config/x/.Xresources.d/custom

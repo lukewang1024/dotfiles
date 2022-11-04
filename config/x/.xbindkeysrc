@@ -254,9 +254,6 @@
 "jumpapp -m google-chrome"
   Shift+Mod3 + c
 
-"xrun -i Qv2ray -e 'qv2ray'"
-  Shift+Mod3 + 0
-
 # >> Extra XF86 keys
 # these are the extra media keys that some keyboards have
 
