@@ -14,14 +14,12 @@ install_nix_brew_runtimes()
 install_nix_brew_core_packages()
 {
   brew tap beeftornado/rmtree
-  brew tap egoist/tap
 
   local pkgs=(
     bash
     broot
     diff-so-fancy
     dog
-    dum
     fd
     findutils
     fzf
@@ -67,6 +65,13 @@ install_nix_brew_core_packages()
 
 install_nix_brew_extra_packages()
 {
+  brew tap abhimanyu003/sttr     # sttr
+  brew tap clangen/musikcube     # musikcube
+  brew tap egoist/tap            # dum
+  brew tap jesseduffield/lazynpm # lazynpm
+  brew tap wader/tap             # fq
+  brew tap xwmx/taps             # nb
+
   local pkgs=(
     ansifilter
     aria2
@@ -76,7 +81,6 @@ install_nix_brew_extra_packages()
     binutils
     calcurse
     cheat
-    clangen/musikcube/musikcube
     cmake
     cmatrix
     cmus
@@ -88,6 +92,7 @@ install_nix_brew_extra_packages()
     diffutils
     dive
     duf
+    dum
     ed
     emscripten
     exiftool
@@ -98,6 +103,7 @@ install_nix_brew_extra_packages()
     file-formula
     fish
     fpp
+    fq
     fswatch
     gawk
     gdu
@@ -131,11 +137,11 @@ install_nix_brew_extra_packages()
     iftop
     inetutils
     irssi
-    jesseduffield/lazynpm/lazynpm
     jpegoptim
     kubernetes-cli
     lazydocker
     lazygit
+    lazynpm
     lolcat
     make
     media-info
@@ -148,8 +154,10 @@ install_nix_brew_extra_packages()
     mps-youtube
     mpv
     multitail
+    musikcube
     mutt
     mycli
+    nb
     ncdu
     ncmpcpp
     neofetch
@@ -179,6 +187,7 @@ install_nix_brew_extra_packages()
     sl
     smartmontools
     spark
+    sttr
     tesseract
     tesseract-lang
     testdisk
@@ -189,13 +198,11 @@ install_nix_brew_extra_packages()
     tree
     unzip
     w3m
-    wader/tap/fq
     watch
     websocat
     wtf
     wtfutil
     xpdf
-    xwmx/taps/nb
     yarn
     you-get
     youtube-dl
