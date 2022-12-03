@@ -1,0 +1,9 @@
+[Unit]
+Description=watch polybar config for changes
+PartOf=graphical-session.target
+
+[Path]
+PathModified=%h/.config/polybar/config.ini
+
+[Install]
+WantedBy=graphical-session.target

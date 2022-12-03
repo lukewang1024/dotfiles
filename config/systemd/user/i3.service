@@ -1,0 +1,11 @@
+[Unit]
+Description=i3
+PartOf=graphical-session.target
+Wants=i3-utils.target
+Wants=autostart.target
+Wants=tmux.service
+
+[Service]
+Type=notify
+ExecStart=i3
+ExecStop=systemctl --user stop --no-block graphical-session.target

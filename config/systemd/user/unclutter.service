@@ -1,0 +1,7 @@
+[Unit]
+Description=unclutter
+Documentation=man:unclutter-xfixes(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=unclutter

@@ -89,6 +89,7 @@ prepare_arch_env_cli_core()
     pamac-cli
     peco
     prettyping
+    privoxy
     procs
     ranger
     rsync
@@ -109,6 +110,7 @@ prepare_arch_env_cli_core()
   yay --save --nocleanmenu --nodiffmenu --noupgrademenu --noremovemake
 
   pkgs=(
+    find-the-command
     gitflow-avh
     icdiff
     lf-bin
@@ -248,7 +250,6 @@ prepare_arch_env_cli_extra()
     ocrmypdf
     pdfsandwich
     pgcli
-    polipo
     powershell-bin
     sc-im
     sparklines-git
@@ -268,9 +269,11 @@ prepare_arch_env_gui_core()
     alacritty
     appmenu-gtk-module
     arandr
+    autorandr
     blueman
     chromium
-    compton
+    dmenu
+    dunst
     fcitx
     fcitx-configtool
     fcitx-im
@@ -281,6 +284,7 @@ prepare_arch_env_gui_core()
     foliate
     galculator
     gsimplecal
+    i3-wm
     libdbusmenu-glib
     libdbusmenu-gtk2
     libdbusmenu-gtk3
@@ -294,6 +298,7 @@ prepare_arch_env_gui_core()
     noto-fonts-emoji
     pa-applet
     parcellite
+    picom
     polybar
     python-pywal
     redshift
@@ -317,7 +322,9 @@ prepare_arch_env_gui_core()
     xclip
     xorg-apps
     xscreensaver
+    xsecurelock
     xsel
+    xss-lock
     zathura
     zathura-cb
     zathura-djvu
@@ -329,6 +336,7 @@ prepare_arch_env_gui_core()
   pkgs=(
     betterlockscreen
     gluqlo-git
+    i3ass
     jumpapp
     nerd-fonts-fira-code
     nerd-fonts-meslo
@@ -350,10 +358,10 @@ prepare_arch_env_gui_extra()
     android-file-transfer
     arc-gtk-theme
     arc-icon-theme
-    chromium
     copyq
     drawing
     file-roller
+    freerdp
     handbrake
     hardinfo
     kdiff3
@@ -363,6 +371,7 @@ prepare_arch_env_gui_extra()
     neofetch
     pdfarranger
     qutebrowser
+    remmina
     rxvt-unicode
     scrcpy
     telegram-desktop
@@ -381,8 +390,8 @@ prepare_arch_env_gui_extra()
     android-sdk
     android-sdk-platform-tools
     android-studio
-    deepin-wechat
     deepin-wine-tim
+    deepin-wine-wechat
     dropbox
     feedreader
     feishu-bin
@@ -404,7 +413,8 @@ prepare_arch_env_gui_extra()
     ttf-ms-fonts
     urxvt-fullscreen
     urxvt-resize-font-git
-    whatsapp-web-desktop
+    wechat-uos
+    whatsapp-for-linux
   )
   aur_install_pkgs
 }

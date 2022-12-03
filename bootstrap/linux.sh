@@ -22,14 +22,6 @@ install_linux_brew_extra_packages()
   install_nix_brew_extra_packages
 }
 
-install_i3ass()
-{
-  echo 'Installing i3ass...'
-  sync_config_repo ~/.config/i3ass https://github.com/budRich/i3ass
-  (cd ~/.config/i3ass && ./install.sh -q ~/bin)
-  echo 'Done.'
-}
-
 install_st()
 {
   sync_config_repo /tmp/st https://github.com/lukewang1024/st
@@ -41,7 +33,6 @@ apply_linux_app_configs()
   apply_nix_app_configs
 
   backup_then_symlink "$config_dir/aria2" ~/.aria2
-  backup_then_symlink "$config_dir/compton/compton.conf" ~/.config/compton.conf
   backup_then_symlink "$config_dir/dunst" ~/.config/dunst
   backup_then_symlink "$config_dir/flameshot" ~/.config/Dharkael
   backup_then_symlink "$config_dir/fontconfig" ~/.config/fontconfig
@@ -51,8 +42,10 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/gtk-3.0" ~/.config/gtk-3.0
   backup_then_symlink "$config_dir/i3" ~/.config/i3
   backup_then_symlink "$config_dir/mpv" ~/.config/mpv
+  backup_then_symlink "$config_dir/picom" ~/.config/picom
   backup_then_symlink "$config_dir/polipo" ~/.config/polipo
   backup_then_symlink "$config_dir/polybar" ~/.config/polybar
+  backup_then_symlink "$config_dir/privoxy" ~/.config/privoxy
   backup_then_symlink "$config_dir/ranger/linux" ~/.config/ranger
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
@@ -71,31 +64,41 @@ apply_linux_app_configs()
   backup_then_symlink ~/Dropbox/Sync/Rime ~/.config/fcitx/rime/sync
 
   # Handy scripts
-  backup_then_symlink "$config_dir/polybar/launch-bars" ~/bin/polybar-launch
-  backup_then_symlink "$util_dir/linux/chrome-launcher" ~/bin/chrome-launcher
-  backup_then_symlink "$util_dir/linux/dmenu-display" ~/bin/dmenu-display
-  backup_then_symlink "$util_dir/linux/dmenu-handler" ~/bin/dmenu-handler
-  backup_then_symlink "$util_dir/linux/dmenu-mount" ~/bin/dmenu-mount
-  backup_then_symlink "$util_dir/linux/dmenu-power" ~/bin/dmenu-power
-  backup_then_symlink "$util_dir/linux/dmenu-prompt" ~/bin/dmenu-prompt
-  backup_then_symlink "$util_dir/linux/dmenu-record" ~/bin/dmenu-record
-  backup_then_symlink "$util_dir/linux/dmenu-umount" ~/bin/dmenu-umount
-  backup_then_symlink "$util_dir/linux/enable-exec" ~/bin/enable-exec
-  backup_then_symlink "$util_dir/linux/kbmod" ~/bin/kbmod
-  backup_then_symlink "$util_dir/linux/lock" ~/bin/lock
-  backup_then_symlink "$util_dir/linux/record-audio" ~/bin/record-audio
-  backup_then_symlink "$util_dir/linux/record-screencast" ~/bin/record-screencast
-  backup_then_symlink "$util_dir/linux/record-video" ~/bin/record-video
-  backup_then_symlink "$util_dir/linux/touchpad-toggle" ~/bin/touchpad-toggle
-  backup_then_symlink "$util_dir/linux/wallpaper" ~/bin/wallpaper
-  backup_then_symlink "$util_dir/linux/window-move" ~/bin/window-move
-  backup_then_symlink "$util_dir/linux/window-resize" ~/bin/window-resize
-  backup_then_symlink "$util_dir/linux/xrun" ~/bin/xrun
+  backup_then_symlink "$config_dir/polybar/launch-bars" "$bin_dir/polybar-launch"
+  backup_then_symlink "$util_dir/linux/chrome-launcher" "$bin_dir/chrome-launcher"
+  backup_then_symlink "$util_dir/linux/dmenu-display" "$bin_dir/dmenu-display"
+  backup_then_symlink "$util_dir/linux/dmenu-handler" "$bin_dir/dmenu-handler"
+  backup_then_symlink "$util_dir/linux/dmenu-i3" "$bin_dir/dmenu-i3"
+  backup_then_symlink "$util_dir/linux/dmenu-mount" "$bin_dir/dmenu-mount"
+  backup_then_symlink "$util_dir/linux/dmenu-power" "$bin_dir/dmenu-power"
+  backup_then_symlink "$util_dir/linux/dmenu-prompt" "$bin_dir/dmenu-prompt"
+  backup_then_symlink "$util_dir/linux/dmenu-record" "$bin_dir/dmenu-record"
+  backup_then_symlink "$util_dir/linux/dmenu-umount" "$bin_dir/dmenu-umount"
+  backup_then_symlink "$util_dir/linux/enable-exec" "$bin_dir/enable-exec"
+  backup_then_symlink "$util_dir/linux/kbmod" "$bin_dir/kbmod"
+  backup_then_symlink "$util_dir/linux/local-http-proxy" "$bin_dir/local-http-proxy"
+  backup_then_symlink "$util_dir/linux/lock" "$bin_dir/lock"
+  backup_then_symlink "$util_dir/linux/record-audio" "$bin_dir/record-audio"
+  backup_then_symlink "$util_dir/linux/record-screencast" "$bin_dir/record-screencast"
+  backup_then_symlink "$util_dir/linux/record-video" "$bin_dir/record-video"
+  backup_then_symlink "$util_dir/linux/ssh-agent-per-user" "$bin_dir/ssh-agent-per-user"
+  backup_then_symlink "$util_dir/linux/thunar-launcher" "$bin_dir/thunar-launcher"
+  backup_then_symlink "$util_dir/linux/touchpad-toggle" "$bin_dir/touchpad-toggle"
+  backup_then_symlink "$util_dir/linux/wallpaper" "$bin_dir/wallpaper"
+  backup_then_symlink "$util_dir/linux/window-move" "$bin_dir/window-move"
+  backup_then_symlink "$util_dir/linux/window-resize" "$bin_dir/window-resize"
+  backup_then_symlink "$util_dir/linux/xrun" "$bin_dir/xrun"
 
   # Misc settings
   mkdir -p ~/.cache/polipo
   mkdir -p ~/Recordings
   touch "$config_dir/x/.Xresources.d/custom"
+
+  # Desktop entries
+  sudo cp -f "$config_dir/xsessions/i3-systemd.desktop" /usr/share/xsessions/i3-systemd.desktop
+  backup_then_symlink "$config_dir/xsessions/i3-systemd-init" "$bin_dir/i3-systemd-init"
+  sudo cp -f "$config_dir/xsessions/xfce-systemd.desktop" /usr/share/xsessions/xfce-systemd.desktop
+  backup_then_symlink "$config_dir/xsessions/xfce-systemd-init" "$bin_dir/xfce-systemd-init"
 
   # Refresh font cache
   fc-cache -f -v

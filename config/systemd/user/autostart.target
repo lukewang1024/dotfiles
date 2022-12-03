@@ -1,0 +1,19 @@
+[Unit]
+Description=autostart applications
+PartOf=graphical-session.target
+Wants=aria2c.service
+Wants=blueman-applet.service
+Wants=dropbox.service
+Wants=greenclip.service
+Wants=http-proxy.service
+Wants=kbmod.service
+Wants=nm-applet.service
+Wants=pa-applet.service
+Wants=redshift.service
+Wants=reload-systemd.path
+Wants=ssh-agent.service
+Wants=syndaemon.service
+Wants=udiskie.service
+Wants=unclutter.service
+Wants=v2ray.service
+Wants=xscreensaver.service

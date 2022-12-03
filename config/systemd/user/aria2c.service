@@ -1,0 +1,7 @@
+[Unit]
+Description=aria2c
+Documentation=man:aria2c(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=aria2c

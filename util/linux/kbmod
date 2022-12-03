@@ -7,5 +7,10 @@ xset r rate 300 30 && echo 'xset loaded.'
 pkill xcape
 xcape -e 'Control_L=Escape;Hyper_L=Escape;Mode_switch=Escape' && echo 'xcape loaded.'
 
-pkill xbindkeys
-xbindkeys && echo 'xbindkeys loaded.'
+# define key bindings by bindsym in i3 config
+if ! pidof i3 > /dev/null; then
+  pkill xbindkeys
+  xbindkeys && echo 'xbindkeys loaded.'
+fi
+
+notify-send "keyboard modified"

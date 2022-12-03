@@ -1,0 +1,6 @@
+[Unit]
+Description=udiskie
+Documentation=man:udiskie(8)
+
+[Service]
+ExecStart=udiskie --tray

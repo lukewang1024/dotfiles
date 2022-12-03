@@ -1,0 +1,7 @@
+[Unit]
+Description=xscreensaver
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=xscreensaver
+Restart=on-failure

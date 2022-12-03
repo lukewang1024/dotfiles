@@ -1,0 +1,14 @@
+[Unit]
+Description=i3 utilities
+PartOf=graphical-session.target
+Wants=autorandr.service
+Wants=dunst.service
+Wants=fcitx.service
+Wants=lxpolkit.service
+Wants=picom.service
+Wants=polybar.service
+Wants=reload-i3.path
+Wants=reload-polybar.path
+Wants=wallpaper.service
+Wants=xfce.target
+Wants=xss-lock.service

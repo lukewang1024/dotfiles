@@ -150,18 +150,18 @@ install_cpan_packages()
 
 install_other_packages()
 {
-  backup_then_symlink "$util_dir/shell/find-and-replace" ~/bin/find-and-replace
-  backup_then_symlink "$util_dir/shell/killbp" ~/bin/killbp
-  backup_then_symlink "$util_dir/shell/mann" ~/bin/mann
-  backup_then_symlink "$util_dir/shell/md2resume" ~/bin/md2resume
-  backup_then_symlink "$util_dir/shell/pretty-csv" ~/bin/pretty-csv
+  backup_then_symlink "$util_dir/shell/find-and-replace" "$bin_dir/find-and-replace"
+  backup_then_symlink "$util_dir/shell/killbp" "$bin_dir/killbp"
+  backup_then_symlink "$util_dir/shell/mann" "$bin_dir/mann"
+  backup_then_symlink "$util_dir/shell/md2resume" "$bin_dir/md2resume"
+  backup_then_symlink "$util_dir/shell/pretty-csv" "$bin_dir/pretty-csv"
   install_any_script hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }
 
 install_any_script()
 {
-  printf "Installing $1 to $HOME/bin... "
-  curl -s "$2" > "$HOME/bin/$1"
-  chmod +x "$HOME/bin/$1"
+  printf "Installing $1 to $bin_dir... "
+  curl -s "$2" > "$bin_dir/$1"
+  chmod +x "$bin_dir/$1"
   echo 'Done.'
 }

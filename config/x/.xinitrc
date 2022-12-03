@@ -39,13 +39,13 @@ to_launch xscreensaver && xscreensaver &
 # greenclip daemon
 to_launch greenclip && greenclip daemon &
 # composite manager
-to_launch compton && compton --fading &
+to_launch picom && picom --fading &
 # unclutter makes the mouse invisible after a brief period
 to_launch unclutter && unclutter &
 # downloader
 to_launch aria2c && aria2c &
-# polipo for HTTP proxy
-to_launch polipo && polipo -c ~/.config/polipo/config &
+# privoxy / polipo for HTTP proxy
+local-http-proxy &
 
 # volume tray applet
 to_launch pa-applet && pa-applet &

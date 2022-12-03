@@ -19,7 +19,7 @@ git_setup()
   cat "$config_dir/git/common" >> ~/.gitconfig
   [ -f "$config_dir/git/local" ] && cat "$config_dir/git/local" >> ~/.gitconfig
 
-  backup_then_symlink "$util_dir/shell/git-set-identity" ~/bin/git-set-identity
+  backup_then_symlink "$util_dir/shell/git-set-identity" "$bin_dir/git-set-identity"
 
   # MacOS
   if is_macos; then
@@ -159,9 +159,9 @@ util_setup()
   blank_lines
   printf 'Installing handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" ~/.config/proxychains.conf
-  backup_then_symlink "$util_dir/shell/pyenv-install" ~/bin/pyenv-install
-  backup_then_symlink "$util_dir/spark/pyspark-jupyter" ~/bin/pyspark-jupyter
-  backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" ~/bin/pyspark-jupyter-public
+  backup_then_symlink "$util_dir/shell/pyenv-install" "$bin_dir/pyenv-install"
+  backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
+  backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   echo 'Done.'
 }
 

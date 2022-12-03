@@ -1,0 +1,7 @@
+[Unit]
+Description=reload systemd daemon
+
+[Service]
+Type=oneshot
+ExecStart=systemctl --user daemon-reload
+ExecStart=notify-send "systemd daemon reloaded"

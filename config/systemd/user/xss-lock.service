@@ -1,0 +1,7 @@
+[Unit]
+Description=xss-lock
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=xss-lock --transfer-sleep-lock --notifier /usr/libexec/xsecurelock/dimmer -- lock
+Restart=always

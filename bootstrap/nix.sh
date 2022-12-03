@@ -176,6 +176,8 @@ install_nix_brew_extra_packages()
     pgcli
     pngquant
     pnpm
+    polipo
+    privoxy
     progress
     proxychains-ng
     qpdf

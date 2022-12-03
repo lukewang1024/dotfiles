@@ -1,0 +1,8 @@
+[Unit]
+Description=redshift-gtk
+Documentation=man:redshift(1)
+PartOf=graphical-session.target
+
+[Service]
+Environment=PATH=/usr/bin
+ExecStart=redshift-gtk -l manual

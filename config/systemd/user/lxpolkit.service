@@ -1,0 +1,7 @@
+[Unit]
+Description=lxpolkit
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=lxpolkit
+Restart=on-failure

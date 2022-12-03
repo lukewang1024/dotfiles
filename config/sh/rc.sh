@@ -26,7 +26,6 @@ elif is_macos; then
 fi
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/bin:$PATH"
 
 # Use host OS IP as default proxy IP for WSL2
 is_wsl2 && export WSL2_HOST_IP="$(cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }')"
