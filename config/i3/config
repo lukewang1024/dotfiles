@@ -24,7 +24,6 @@ set $term        alacritty
 set $browser     chromium
 
 set $reload      ~/.config/i3/scripts/reload
-set $thunar      ~/.config/i3/scripts/thunar
 
 set $dirl  Left
 set $dird  Down
@@ -47,29 +46,25 @@ set_from_resource $lark_web web_app.lark
 
 # >> Panic
 
-bindsym $super+Shift+q kill
-bindsym $super+Shift+c reload
-bindsym $super+Shift+r restart
-bindsym $super+Shift+e exec --no-startup-id \
-  "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? \
-  This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $super+Shift+q                  kill
+bindsym $super+Shift+r                  reload
+bindsym $super+Shift+e                  $exe dmenu-i3
 
 # >> Power & peripheral
 
-bindsym $super+Control+$alt+l $exe lock
-bindsym $super+Control+$alt+s $exe lock suspend
-bindsym $super+Control+$alt+h $exe lock hibernate
-bindsym $super+Control+$alt+p $exe dmenu-power
-bindsym $super+Control+$alt+t $exe touchpad-toggle
+bindsym Control+$alt+q                  $exe lock
+bindsym $super+Control+$alt+s           $exe lock suspend
+bindsym $super+Control+$alt+h           $exe lock hibernate
+bindsym $super+Control+$alt+p           $exe dmenu-power
+bindsym $super+Control+$alt+t           $exe touchpad-toggle
+bindsym $super+Shift+w                  $exe kbmod
 
 # >> Terminal
 
-bindsym $super+grave            $srun -i dropdown -e '$term --class dropdown'
-bindsym $hyper+semicolon        $grun -i aterm -e '$term --class aterm'
-bindsym $super+Shift+Return     $grun -i cterm -e '$term --class cterm'
-bindsym $hyper+Shift+semicolon  $grun -i termite -e 'termite'
-bindsym $super+Return           $exe $term
-bindsym $super+Control+Return   $exe $term --class tiledterm
+bindsym $super+grave                    $srun -i dropdown -e '$term --class dropdown'
+bindsym $super+Shift+Return             $grun -i cterm -e '$term --class cterm'
+bindsym $super+Return                   $exe $term
+bindsym $super+Control+Return           $exe $term --class tiledterm
 
 # dropdown terminal
 for_window [instance="dropdown"] resize set 900 600
@@ -78,56 +73,55 @@ for_window [instance="dropdown"] border pixel 5
 
 # >> Program launch
 
-bindsym $super+$alt+space $exe $rofi run
-bindsym $alt+space        $exe $rofi drun
-bindsym $hyper+Tab        $exe $rofi window
-bindsym Control+$alt+c    $exe $rofi clipboard -modi "clipboard:greenclip print" -run-command '{cmd}'
+bindsym $super+$alt+space               $exe $rofi run
+bindsym $alt+space                      $exe $rofi drun
+bindsym $hyper+Tab                      $exe $rofi window
+bindsym Control+$alt+c                  $exe $rofi clipboard -modi "clipboard:greenclip print" -run-command '{cmd}'
 
-bindsym $super+r         $exe dmenu_run
-
-bindsym $hyper+e         $exe $thunar filemanagerA ThunarDetailsView
-bindsym $super+e         $exe $thunar filemanagerB ThunarIconView
-bindsym $super+Control+e $exe $thunar filemanagerD ThunarDetailsView
+bindsym $super+r                        $exe dmenu_run
+bindsym $super+e                        $exe thunar
 
 # >> Hyper shortcuts
 
-bindsym $hyper+c       $grun -i chromium -e 'chrome-launcher chromium'
-bindsym $hyper+$alt+c  $grun -i chromium -e 'chrome-launcher chromium nosecurity'
-bindsym $hyper+f       $grun -c Firefox -e 'firefox'
-bindsym $hyper+p       $grun -i FoxitReader -e 'foxitreader'
-bindsym $hyper+q       $grun -i qutebrowser -e 'qutebrowser'
-bindsym $hyper+r       $grun -i zathura -e 'zathura'
-bindsym $hyper+s       $grun -i sublime_text -x subl3 -e 'subl3'
-bindsym $hyper+t       $grun -i telegram-desktop -e 'telegram-desktop'
-bindsym $hyper+u       $grun -i slack
-bindsym $hyper+v       $grun -i code
-bindsym $hyper+w       $srun -i wechat.exe -e 'gtk-launch deepin.com.wechat'
-bindsym $hyper+x       $srun -i seal -e 'gtk-launch seal'
-bindsym $hyper+y       $grun -i skype
-bindsym $hyper+z       $srun -i zeal -e 'zeal'
+bindsym $hyper+a                        $grun -i lxtask -e 'lxtask'
+bindsym $hyper+c                        $grun -i chromium -e 'chrome-launcher chromium'
+bindsym $hyper+$alt+c                   $grun -i chromium -e 'chrome-launcher chromium nosecurity'
+bindsym $hyper+e                        $grun -i filemanagerA -e "thunar-launcher filemanagerA ThunarDetailsView"
+bindsym $hyper+f                        $grun -c firefox -e 'firefox'
+bindsym $hyper+p                        $grun -i FoxitReader -e 'foxitreader'
+bindsym $hyper+q                        $grun -i qutebrowser -e 'qutebrowser'
+bindsym $hyper+r                        $grun -c Zathura -e 'zathura'
+bindsym $hyper+s                        $grun -i sublime_text -x subl -e 'subl'
+bindsym $hyper+t                        $grun -i telegram-desktop -e 'telegram-desktop'
+bindsym $hyper+v                        $grun -i code
+bindsym $hyper+w                        $srun -i wechat.exe -e 'gtk-launch com.qq.weixin.deepin'
+bindsym $hyper+x                        $srun -i seal -e 'gtk-launch seal'
+bindsym $hyper+z                        $srun -i zeal -e 'zeal'
 
-bindsym $hyper+1       $srun -i gsimplecal -e 'gsimplecal'
-bindsym $hyper+0       $srun -i Qv2ray -e 'gtk-launch Qv2ray'
+bindsym $hyper+1                        $srun -i gsimplecal -e 'gsimplecal'
 
-bindsym $hyper+backslash  $srun -i keepassxc -e 'keepassxc'
-bindsym $hyper+space      $grun -i $lark_web -e 'gtk-launch lark'
+bindsym $hyper+semicolon                $grun -i aterm -e '$term --class aterm'
+bindsym $hyper+apostrophe               $grun -i kitty -e 'kitty'
+bindsym $hyper+bracketleft              $grun -i skype
+bindsym $hyper+bracketright             $grun -i slack
+bindsym $hyper+backslash                $srun -i keepassxc -e 'keepassxc'
+bindsym $hyper+space                    $grun -i feishu -e 'gtk-launch feishu'
 
 # >> Hyper+Shift shortcuts
 
-bindsym $hyper+Shift+a       $grun -c jetbrains-studio -e 'android-studio'
-bindsym $hyper+Shift+c       $grun -i google-chrome -e 'chrome-launcher chrome'
-bindsym $hyper+Shift+$alt+c  $grun -i google-chrome -e 'chrome-launcher chrome nosecurity'
-bindsym $hyper+Shift+m       $srun -i spotify -e 'spotify'
-bindsym $hyper+Shift+u       $grun -i slack -e 'slack'
-bindsym $hyper+Shift+v       $grun -i code -e 'code'
-bindsym $hyper+Shift+w       $srun -i whats-app-nativefier* -e 'whatsapp-web-desktop'
-bindsym $hyper+Shift+y       $grun -i skype -e 'skypeforlinux'
+bindsym $hyper+Shift+c                  $grun -i google-chrome -e 'chrome-launcher chrome'
+bindsym $hyper+Shift+$alt+c             $grun -i google-chrome -e 'chrome-launcher chrome nosecurity'
+bindsym $hyper+Shift+e                  $grun -i filemanagerB -e "thunar-launcher filemanagerB ThunarIconView"
+bindsym $hyper+Control+e                $grun -i filemanagerD -e "thunar-launcher filemanagerD ThunarDetailsView"
+bindsym $hyper+Shift+w                  $srun -i weixin -e 'gtk-launch wechat-uos'
+
+bindsym $hyper+Shift+bracketright       $srun -i whatsapp-for-linux -e 'gtk-launch com.github.eneshecan.WhatsAppForLinux'
+bindsym $hyper+Shift+semicolon          $grun -i termite -e 'termite'
 
 # >> Window rules
 
 for_window [class="^.*"]                                        floating enable
-for_window [class="Chromium" instance="$lark_web"]              focus; $fyra -m A
-for_window [class="Firefox" instance="Navigator"]               focus; $fyra -m A
+for_window [class="firefox" instance="Navigator"]               focus; $fyra -m A
 for_window [class="jetbrains-studio"]                           focus; $fyra -m A
 for_window [class="mpv"]                                        focus; $fyra -m B
 for_window [instance="aterm"]                                   focus; $fyra -m A
@@ -135,11 +129,14 @@ for_window [instance="chromium" window_role="browser"]          focus; $fyra -m 
 for_window [instance="chromium" window_role="pop-up"]           focus; $fyra -m D
 for_window [instance="code" window_type="normal"]               focus; $fyra -m A
 for_window [instance="cterm"]                                   focus; $fyra -m C
+for_window [instance="feishu"]                                  focus; $fyra -m A
 for_window [instance="filemanagerA"]                            focus; $fyra -m A
 for_window [instance="filemanagerB"]                            focus; $fyra -m B
 for_window [instance="filemanagerD"]                            focus; $fyra -m D
 for_window [instance="FoxitReader" window_type="normal"]        focus; $fyra -m A
 for_window [instance="irssi"]                                   focus; $fyra -m D
+for_window [instance="kitty"]                                   focus; $fyra -m A
+for_window [instance="lxtask" window_type="normal"]             focus; $fyra -m D
 for_window [instance="musixmatch"]                              focus; $fyra -m B
 for_window [instance="ncmpcpp"]                                 focus; $fyra -m B
 for_window [instance="qutebrowser"]                             focus; $fyra -m B
@@ -275,14 +272,14 @@ for_window [class="^.*"] border normal 1
 
 # >> i3-gaps
 
-gaps inner $default_gap
-gaps outer $default_gap
-bindsym $super+Control+0          gaps inner current set $default_gap
-bindsym $super+Control+minus      gaps inner current plus $gap_step
-bindsym $super+Control+equal      gaps inner current minus $gap_step
-bindsym $super+Control+$alt+0     gaps outer current set $default_gap
-bindsym $super+Control+$alt+minus gaps outer current plus $gap_step
-bindsym $super+Control+$alt+equal gaps outer current minus $gap_step
+# gaps inner $default_gap
+# gaps outer $default_gap
+# bindsym $super+Control+0          gaps inner current set $default_gap
+# bindsym $super+Control+minus      gaps inner current plus $gap_step
+# bindsym $super+Control+equal      gaps inner current minus $gap_step
+# bindsym $super+Control+$alt+0     gaps outer current set $default_gap
+# bindsym $super+Control+$alt+minus gaps outer current plus $gap_step
+# bindsym $super+Control+$alt+equal gaps outer current minus $gap_step
 
 # >> Workspace management
 
@@ -321,12 +318,19 @@ bindsym $super+Shift+8 move container to workspace $ws8
 bindsym $super+Shift+9 move container to workspace $ws9
 bindsym $super+Shift+0 move container to workspace $ws10
 
+# >> Vim cursor move: Hyper + hjkl
+
+bindsym --release $hyper+k $exe xte 'key Up'
+bindsym --release $hyper+j $exe xte 'key Down'
+bindsym --release $hyper+h $exe xte 'key Left'
+bindsym --release $hyper+l $exe xte 'key Right'
+
 # >> Display management
 
-bindsym $super+Control+F1 $exe dmenu-display primary
-bindsym $super+Control+F2 $exe dmenu-display secondary
-bindsym $super+Control+F3 $exe dmenu-display extend-right
-bindsym $super+Control+F4 $exe dmenu-display
+bindsym $super+Control+F1  $exe dmenu-display primary
+bindsym $super+Control+F2  $exe dmenu-display secondary
+bindsym $super+Control+F3  $exe dmenu-display extend-right
+bindsym $super+Control+F4  $exe dmenu-display
 
 set $lightup xbacklight -inc 10
 set $lightdown xbacklight -dec 10
@@ -338,9 +342,9 @@ bindsym $super+F2 $exe $lightup
 # >> Screenshots and recording
 
 set $maimArg --hidecursor | tee ~/Pictures/$(date +%s).png | xclip -selection clipboard -target image/png
-bindsym Print              $exe maim $maimArg
-bindsym Shift+Print        $exe maim --window=$(xdotool getactivewindow) $maimArg
-bindsym F1                 $exe flameshot gui
+bindsym Print              $exe flameshot gui
+bindsym Shift+Print        $exe maim $maimArg
+bindsym Control+Print      $exe maim --window=$(xdotool getactivewindow) $maimArg
 bindsym $super+Print       $exe dmenu-record
 bindsym $super+Scroll_Lock $exe "killall screenkey || screenkey"
 bindsym $super+Pause       $exe killall ffmpeg
@@ -433,7 +437,7 @@ bindsym $super+F12 $exe $inc
 # i3fyra layout
 $fyra $fyra_l0
 # launch polybar where appropriate
-exec_always --no-startup-id ~/.config/polybar/launch-bars
+# exec_always --no-startup-id ~/.config/polybar/launch-bars
 
 # >> Extra XF86 keys
 # these are the extra media keys that some keyboards have

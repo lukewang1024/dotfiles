@@ -1,0 +1,8 @@
+[Unit]
+Description=reload i3
+Wants=i3.service
+
+[Service]
+Type=oneshot
+ExecStart=i3-msg reload
+ExecStart=notify-send "i3 reloaded"

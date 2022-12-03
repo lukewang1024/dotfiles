@@ -1,0 +1,9 @@
+[Unit]
+Description=watch i3 config for changes
+PartOf=graphical-session.target
+
+[Path]
+PathModified=%h/.config/i3/config
+
+[Install]
+WantedBy=graphical-session.target

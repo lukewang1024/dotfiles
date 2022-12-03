@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+dbus-update-activation-environment --systemd --all
+systemctl --user start --wait xfce.service

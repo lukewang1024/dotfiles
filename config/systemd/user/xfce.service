@@ -1,0 +1,11 @@
+[Unit]
+Description=xfce4
+PartOf=graphical-session.target
+Wants=autostart.target
+Wants=plank.service
+Wants=tmux.service
+
+[Service]
+Type=notify
+ExecStart=startxfce4
+ExecStop=systemctl --user stop --no-block graphical-session.target

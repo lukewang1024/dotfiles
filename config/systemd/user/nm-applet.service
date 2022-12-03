@@ -1,0 +1,7 @@
+[Unit]
+Description=nm-applet
+Documentation=man:nm-applet(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=nm-applet

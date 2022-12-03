@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+exists() { command -v "$1" >/dev/null 2>&1; }
+
+if exists privoxy; then
+  privoxy --no-daemon ~/.config/privoxy/config
+elif exists polipo; then
+  polipo -c ~/.config/polipo/config
+else
+  echo 'Requires at least one of privoxy, polipo to work.'
+  exit 1
+fi

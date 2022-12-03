@@ -1,0 +1,5 @@
+[Unit]
+Description=watch systemd config for changes
+
+[Path]
+PathModified=%h/.config/systemd/user/

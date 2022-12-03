@@ -1,0 +1,7 @@
+[Unit]
+Description=synaptic daemon
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=syndaemon -k
+Restart=on-failure

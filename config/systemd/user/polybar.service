@@ -1,0 +1,9 @@
+[Unit]
+Description=polybar
+PartOf=graphical-session.target
+Wants=i3.service
+After=i3.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/polybar-launch

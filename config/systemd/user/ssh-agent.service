@@ -1,0 +1,7 @@
+[Unit]
+Description=SSH agent
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/ssh-agent-per-user
+RemainAfterExit=yes

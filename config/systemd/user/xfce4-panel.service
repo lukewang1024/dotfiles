@@ -1,0 +1,11 @@
+[Unit]
+Description=xfce4-panel
+PartOf=graphical-session.target
+PartOf=xfce.target
+
+[Service]
+Type=dbus
+BusName=org.xfce.Panel
+ExecStart=xfce4-panel --sm-client-disable --disable-wm-check
+ExecStop=xfce4-panel --quit
+Restart=on-failure

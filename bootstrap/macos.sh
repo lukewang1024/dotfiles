@@ -340,7 +340,7 @@ set_macos_configs()
   backup_then_symlink "$config_dir/Rime" ~/Library/Rime
 
   # Handy scripts
-  backup_then_symlink "$util_dir/macos/virtualbox-kext" ~/bin/virtualbox-kext
+  backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
 
   brew_multi_user_permission
   fix_battery_drain_over_sleep

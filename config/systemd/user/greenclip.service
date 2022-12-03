@@ -1,0 +1,7 @@
+[Unit]
+Description=greenclip
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=greenclip daemon
+Restart=on-failure

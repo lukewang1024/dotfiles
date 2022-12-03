@@ -1,0 +1,8 @@
+[Unit]
+Description=reload polybar
+Wants=polybar.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/polybar-launch
+ExecStart=notify-send "polybar reloaded"

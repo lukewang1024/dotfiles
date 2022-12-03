@@ -1,0 +1,9 @@
+[Unit]
+Description=autorandr
+Documentation=man:autorandr(1)
+PartOf=graphical-session.target
+ConditionPathIsDirectory=%h/.config/autorandr/default
+
+[Service]
+Type=oneshot
+ExecStart=autorandr --change --default default

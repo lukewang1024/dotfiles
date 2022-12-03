@@ -1,0 +1,7 @@
+[Unit]
+Description=localhost HTTP proxy
+Documentation=man:privoxy(8) man:polipo(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/local-http-proxy

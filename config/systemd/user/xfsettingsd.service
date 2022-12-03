@@ -1,0 +1,8 @@
+[Unit]
+Description=xfsettingsd
+PartOf=graphical-session.target
+PartOf=xfce.target
+
+[Service]
+ExecStart=xfsettingsd --disable-wm-check --sm-client-disable
+Restart=on-failure

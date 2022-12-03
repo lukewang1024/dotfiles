@@ -1,0 +1,8 @@
+[Unit]
+Description=fcitx
+Documentation=man:fcitx(1)
+PartOf=graphical-session.target
+
+[Service]
+Environment=XMODIFIERS="@im=fcitx" GTK_IM_MODULE=fcitx QT_IM_MODULE=fcitx
+ExecStart=fcitx -D

@@ -27,6 +27,10 @@ symlink()
   dir=$(dirname ${2:-.})
   mkdir -p "$dir"
 
+  if [ -h $2 ]; then
+    eval "rm $2"
+  fi
+
   if [ -d $1 ] || is_macos; then
     args="-s"
   elif is_linux || is_cygwin; then

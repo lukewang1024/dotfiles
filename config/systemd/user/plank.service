@@ -1,0 +1,7 @@
+[Unit]
+Description=plank
+Documentation=man:plank(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=plank

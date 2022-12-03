@@ -1,0 +1,7 @@
+[Unit]
+Description=pa-applet
+Documentation=man:pa-applet(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=pa-applet

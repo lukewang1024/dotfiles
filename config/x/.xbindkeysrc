@@ -157,13 +157,15 @@
 "touchpad-toggle"
   Control+Alt+Mod4 + t
 
+"kbmod"
+  Shift+Mod4 + r
+
 # >> System control
 
 "xdotool getactivewindow windowclose"
   Shift+Mod4 + q
 
-"kbmod"
-  Shift+Mod4 + r
+# >> Program launch
 
 "rofi -show drun"
   Mod4 + space
@@ -218,7 +220,7 @@
 "jumpapp -m code"
   Mod3 + v
 
-"xrun -i wechat.exe -e 'gtk-launch deepin.com.wechat'"
+"xrun -i wechat.exe -e 'gtk-launch com.qq.weixin.deepin'"
   Mod3 + w
 
 "xrun -i seal -e 'gtk-launch seal'"
@@ -245,8 +247,7 @@
 "jumpapp -mR keepassxc"
   Mod3 + backslash
 
-# "xrun -i $(xgetres web_app.lark) -e 'gtk-launch lark'"
-"jumpapp -c bytedance-feishu -m gtk-launch feishu"
+"jumpapp -c feishu -m gtk-launch feishu"
   Mod3 + space
 
 # >> Hyper+Shift shortcuts

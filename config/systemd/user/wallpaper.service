@@ -1,0 +1,8 @@
+[Unit]
+Description=wallpaper
+Wants=autorandr.service
+After=autorandr.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/wallpaper

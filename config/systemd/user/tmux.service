@@ -1,0 +1,11 @@
+[Unit]
+Description=tmux default session (detached)
+Documentation=man:tmux(1)
+
+[Service]
+Type=forking
+Environment=DISPLAY=:0
+ExecStop=%h/.tmux/plugins/tmux-resurrect/scripts/save.sh
+ExecStop=tmux kill-server
+ExecStart=/usr/bin/tmux new-session -d
+RestartSec=2

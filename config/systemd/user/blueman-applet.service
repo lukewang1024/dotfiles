@@ -1,0 +1,7 @@
+[Unit]
+Description=blueman-applet
+Documentation=man:blueman-applet(1)
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=blueman-applet

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=i3-systemd
+Comment=Desktop session driven by systemd
+Exec=i3-systemd-init
+Type=Application
+X-LightDM-DesktopName=i3-systemd
+DesktopNames=i3-systemd
