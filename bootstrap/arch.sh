@@ -271,7 +271,6 @@ prepare_arch_env_gui_core()
     arandr
     autorandr
     blueman
-    chromium
     dmenu
     dunst
     fcitx
@@ -358,6 +357,7 @@ prepare_arch_env_gui_extra()
     android-file-transfer
     arc-gtk-theme
     arc-icon-theme
+    chromium
     copyq
     drawing
     file-roller
@@ -406,6 +406,7 @@ prepare_arch_env_gui_extra()
     marktext-bin
     microsoft-edge-stable-bin
     musixmatch-bin
+    qqmusic-bin
     rslsync
     screenkey
     slack-desktop
@@ -443,7 +444,8 @@ setup_arch_gaming()
 
 set_default_apps()
 {
-  xdg-mime default chromium.desktop x-scheme-handler/http
-  xdg-mime default chromium.desktop x-scheme-handler/https
+  xdg-mime default firefox.desktop text/html
+  xdg-mime default firefox.desktop x-scheme-handler/http
+  xdg-mime default firefox.desktop x-scheme-handler/https
   xdg-mime default Thunar.desktop inode/directory
 }
