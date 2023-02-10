@@ -13,7 +13,7 @@ fi
 export BASH_IT="$HOME/.bash_it"
 
 # Lock and Load a custom theme file
-export BASH_IT_THEME="$config_dir/bash/pure_prompt.bash"
+# export BASH_IT_THEME="$config_dir/bash/pure_prompt.bash"
 
 # Don't check mail when opening terminal.
 unset MAILCHECK

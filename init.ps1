@@ -68,6 +68,7 @@ function prepare_windows_env_cli_core()
     'procs',
     'runat',
     'say',
+    'starship',
     'sudo',
     'touch',
     'vim'

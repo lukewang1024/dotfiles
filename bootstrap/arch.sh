@@ -93,6 +93,7 @@ prepare_arch_env_cli_core()
     procs
     ranger
     rsync
+    starship
     the_silver_searcher
     tig
     tldr
@@ -136,6 +137,7 @@ prepare_arch_env_cli_extra()
     axel
     bat
     calcurse
+    checkbashisms
     cloc
     cmake
     cmatrix
