@@ -66,12 +66,12 @@ setAppToggles(hyper, {
   s = 'Sublime Text',
   t = 'Telegram',
   u = 'Pocket',
-  v = 'Code',
+  v = 'com.microsoft.VSCode',                     -- Visual Studio Code
   w = 'WeChat',
   x = 'Seal',
   -- y = '',
   z = 'Finder',
-  [','] = 'System Preferences',
+  [','] = 'com.apple.systempreferences',          -- CFBundleName changed in macOS 13 Ventura, use CFBundleIdentifier for compatibility
   [';'] = 'Alacritty',
   ['.'] = 'Sublime Merge',
   ['['] = 'Skype',
@@ -79,9 +79,9 @@ setAppToggles(hyper, {
   ['/'] = 'ForkLift',
   ['\''] = 'kitty',
   ['\\'] = 'MacPass',
-  -- ['`'] = '',
+  ['`'] = 'Feishu Meetings',
   ['0'] = 'Proxifier',
-  -- ['1'] = '',
+  ['1'] = 'Clock',
   ['2'] = 'Trello',
   ['3'] = 'Spark',
   ['4'] = 'licecap',
@@ -107,7 +107,7 @@ setAppToggles(hyperAlt, {
   -- j: for mouse move
   -- k: for mouse move
   -- l: for mouse move
-  m = 'QQ音乐',
+  m = 'com.tencent.QQMusicMac',                   -- QQ Music
   n = 'Mark Text',
   o = 'Microsoft OneNote',
   -- p = '',

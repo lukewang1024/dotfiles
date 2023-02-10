@@ -46,6 +46,7 @@ install_nix_brew_core_packages()
     ranger
     ripgrep
     rsync
+    starship
     the_silver_searcher
     tig
     tldr
@@ -81,6 +82,7 @@ install_nix_brew_extra_packages()
     binutils
     calcurse
     cheat
+    checkbashisms
     cmake
     cmatrix
     cmus
@@ -224,6 +226,7 @@ apply_nix_app_configs()
   backup_then_symlink "$config_dir/alacritty" ~/.config/alacritty
   backup_then_symlink "$config_dir/kitty" ~/.config/kitty
   backup_then_symlink "$config_dir/lf" ~/.config/lf
+  backup_then_symlink "$config_dir/starship/starship.toml" ~/.config/starship.toml
 }
 
 brew_cleanup()

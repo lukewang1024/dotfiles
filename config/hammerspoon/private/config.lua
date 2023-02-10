@@ -19,11 +19,11 @@ hspoon_list = {
 
 -- appM environment keybindings. Bundle `id` is prefered, but application `name` will be ok.
 hsapp_list = {
-  {key = 'a', id = 'com.apple.ActivityMonitor'},
+  {key = 'a', name = 'Activity Monitor'},
   {key = 'b', name = 'Safari'},
-  {key = 'c', id = 'com.google.Chrome'},
-  {key = 's', id = 'com.sublimetext.4'},
-  {key = 'v', id = 'com.microsoft.VSCode'},
+  {key = 'c', name = 'Google Chrome'},
+  {key = 's', name = 'Sublime Text'},
+  {key = 'v', name = 'Visual Studio Code'},
   {key = ',', id = 'com.apple.systempreferences'},
 }
 

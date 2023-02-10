@@ -62,8 +62,8 @@ if ! zgen saved; then
 EOPLUGINS
   # ^ can't indent this EOPLUGINS
 
-  # theme - powerlevel10k
-  zgen load romkatv/powerlevel10k powerlevel10k
+  # theme
+  # zgen load romkatv/powerlevel10k powerlevel10k
 
   # OS specific plugins
 
