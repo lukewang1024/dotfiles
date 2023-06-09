@@ -63,7 +63,7 @@ EOPLUGINS
   # ^ can't indent this EOPLUGINS
 
   # theme
-  # zgen load romkatv/powerlevel10k powerlevel10k
+  zgen load romkatv/powerlevel10k powerlevel10k
 
   # OS specific plugins
 

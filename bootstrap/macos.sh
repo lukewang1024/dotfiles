@@ -92,6 +92,7 @@ prepare_macos_env_cli_extra()
     android-platform-tools
     docker
     dotnet-sdk
+    orbstack
     powershell
     vagrant
   )
@@ -170,6 +171,7 @@ prepare_macos_env_gui_extra()
     1507782672 # Pixea
     1607635845 # Velja
     1615988943 # Folder Peek
+    1661733229 # LocalSend
   )
 
   mas install $masApps
@@ -277,6 +279,7 @@ prepare_macos_env_gui_extra()
     quicklookapk
     quicklookase
     qutebrowser
+    rapidapi
     redisinsight
     resilio-sync
     robo-3t

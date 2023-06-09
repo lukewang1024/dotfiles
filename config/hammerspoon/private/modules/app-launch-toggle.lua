@@ -88,7 +88,7 @@ setAppToggles(hyper, {
   ['5'] = 'Sequel Pro',
   ['6'] = 'Robo 3T',
   ['7'] = 'Medis',
-  -- ['8'] = '',
+  ['8'] = 'Resilio Sync',
   ['9'] = 'Charles',
   ['space'] = 'Feishu',
 })

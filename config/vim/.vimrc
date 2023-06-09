@@ -526,7 +526,8 @@ nmap ga <Plug>(EasyAlign)
 """""""""""""""
 
 " Yank to host clipboard with OSC52 sequence
-vnoremap <Leader>c :OSCYank<CR>
-
+nmap <leader>c <Plug>OSCYankOperator
+nmap <leader>cc <leader>c_
+vmap <leader>c <Plug>OSCYankVisual
 
 " syntax:ssDquote

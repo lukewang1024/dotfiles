@@ -19,7 +19,7 @@ autoload -Uz _zinit
 # Theme
 # - - - - - - - - - - - - - - - - - - - -
 
-# zinit light romkatv/powerlevel10k
+zinit light romkatv/powerlevel10k
 
 # - - - - - - - - - - - - - - - - - - - -
 # Annexes

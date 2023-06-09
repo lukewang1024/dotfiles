@@ -96,6 +96,7 @@ function prepare_windows_env_cli_extra()
     'fq',
     'git-lfs',
     'gping',
+    'helix',
     'kubectl',
     'lazydocker',
     'lazygit',
