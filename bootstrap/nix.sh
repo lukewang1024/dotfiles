@@ -132,6 +132,7 @@ install_nix_brew_extra_packages()
     gzip
     haproxy
     hashcat
+    helix
     hexyl
     httpstat
     hub

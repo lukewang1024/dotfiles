@@ -170,6 +170,7 @@ prepare_arch_env_cli_extra()
     graphviz
     haproxy
     hashcat
+    helix
     hexyl
     hub
     hyperfine
