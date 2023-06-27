@@ -68,7 +68,7 @@ setAppToggles(hyper, {
   u = 'Pocket',
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
   w = 'WeChat',
-  x = 'Seal',
+  x = 'com.volcengine.corplink',                  -- CorpLink
   -- y = '',
   z = 'Finder',
   [','] = 'com.apple.systempreferences',          -- CFBundleName changed in macOS 13 Ventura, use CFBundleIdentifier for compatibility
@@ -79,7 +79,7 @@ setAppToggles(hyper, {
   ['/'] = 'ForkLift',
   ['\''] = 'kitty',
   ['\\'] = 'MacPass',
-  ['`'] = 'Feishu Meetings',
+  ['`'] = 'Meetings',
   ['0'] = 'Proxifier',
   ['1'] = 'Clock',
   ['2'] = 'Trello',

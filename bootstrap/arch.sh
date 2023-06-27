@@ -203,7 +203,7 @@ prepare_arch_env_cli_extra()
     optipng
     p7zip
     pamixer
-    pandoc
+    pandoc-cli
     perl-image-exiftool
     pkgfile
     playerctl
@@ -312,6 +312,7 @@ prepare_arch_env_gui_core()
     thunar-shares-plugin
     thunar-volman
     ttf-font-awesome
+    ttf-meslo-nerd
     ttf-sarasa-gothic
     ttf-sourcecodepro-nerd
     tumbler
@@ -341,7 +342,6 @@ prepare_arch_env_gui_core()
     i3ass
     jumpapp
     nerd-fonts-fira-code
-    nerd-fonts-meslo
     sublime-merge
     sublime-text-4
     visual-studio-code-bin
@@ -393,6 +393,7 @@ prepare_arch_env_gui_extra()
     android-sdk
     android-sdk-platform-tools
     android-studio
+    corplink-bin
     deepin-wine-tim
     deepin-wine-wechat
     dropbox
@@ -417,6 +418,7 @@ prepare_arch_env_gui_extra()
     ttf-ms-fonts
     urxvt-fullscreen
     urxvt-resize-font-git
+    v2raya-bin
     wechat-uos
     whatsapp-for-linux
   )
