@@ -96,7 +96,7 @@ bindsym $hyper+s                        $grun -i sublime_text -x subl -e 'subl'
 bindsym $hyper+t                        $grun -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+v                        $grun -i code
 bindsym $hyper+w                        $srun -i wechat.exe -e 'gtk-launch com.qq.weixin.deepin'
-bindsym $hyper+x                        $srun -i seal -e 'gtk-launch seal'
+bindsym $hyper+x                        $srun -i corplink -e 'corplink'
 bindsym $hyper+z                        $srun -i zeal -e 'zeal'
 
 bindsym $hyper+1                        $srun -i gsimplecal -e 'gsimplecal'
@@ -127,7 +127,7 @@ for_window [class="firefox" instance="Navigator"]               focus; $fyra -m 
 for_window [class="jetbrains-studio"]                           focus; $fyra -m A
 for_window [class="mpv"]                                        focus; $fyra -m B
 for_window [instance="aterm"]                                   focus; $fyra -m A
-for_window [instance="chromium" window_role="browser"]          focus; $fyra -m D
+for_window [instance="chromium" window_role="browser"]          focus; $fyra -m A
 for_window [instance="chromium" window_role="pop-up"]           focus; $fyra -m D
 for_window [instance="code" window_type="normal"]               focus; $fyra -m A
 for_window [instance="cterm"]                                   focus; $fyra -m C
@@ -138,6 +138,7 @@ for_window [instance="filemanagerD"]                            focus; $fyra -m 
 for_window [instance="FoxitReader" window_type="normal"]        focus; $fyra -m A
 for_window [instance="irssi"]                                   focus; $fyra -m D
 for_window [instance="kitty"]                                   focus; $fyra -m A
+for_window [instance="libreoffice"]                             focus; $fyra -m A
 for_window [instance="lxtask" window_type="normal"]             focus; $fyra -m D
 for_window [instance="musixmatch"]                              focus; $fyra -m B
 for_window [instance="ncmpcpp"]                                 focus; $fyra -m B
