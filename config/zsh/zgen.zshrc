@@ -93,7 +93,7 @@ EOPLUGINS
       zgen oh-my-zsh plugins/archlinux
       zgen load /usr/share/doc/pkgfile/command-not-found.zsh
     elif [ -f /etc/debian_version ]; then
-      if [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
+      if exists lsb_release && [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
         zgen oh-my-zsh plugins/ubuntu
       fi
     elif [ -f /etc/fedora-release ]; then

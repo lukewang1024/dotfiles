@@ -117,7 +117,7 @@ else # *nix
         /usr/share/doc/pkgfile/command-not-found.zsh
 
     elif [ -f /etc/debian_version ]; then
-      if [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
+      if exists lsb_release && [[ $(lsb_release -i | cut -c17-) == 'Ubuntu' ]]; then
         zinit wait lucid for \
           OMZP::ubuntu/ubuntu.plugin.zsh
 

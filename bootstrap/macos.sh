@@ -85,6 +85,7 @@ prepare_macos_env_cli_extra()
     mackup
     reattach-to-user-namespace
     scrcpy
+    terminal-notifier
   )
   brew install `join ' ' "${pkgs[@]}"`
 
