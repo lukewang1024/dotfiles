@@ -53,7 +53,7 @@ setAppToggles(hyper, {
   f = 'Firefox',
   -- g = '',
   -- h: for arrows
-  i = 'ByteIDE',
+  i = 'Cloud IDE',
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
@@ -95,7 +95,7 @@ setAppToggles(hyper, {
 
 -- hyperAlt application shortcuts
 setAppToggles(hyperAlt, {
-  -- a = '',
+  a = 'Arc',
   -- b = '',
   c = 'Google Chrome Canary',
   d = 'DevDocs',

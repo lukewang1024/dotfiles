@@ -205,6 +205,7 @@ install_nix_brew_extra_packages()
     w3m
     watch
     websocat
+    whistle
     wtf
     wtfutil
     xpdf

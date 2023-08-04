@@ -101,7 +101,6 @@ install_npm_packages()
     updtr
     vercel
     weinre
-    whistle
     workbox-cli
     yo
     zx
