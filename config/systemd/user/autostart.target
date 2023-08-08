@@ -15,5 +15,5 @@ Wants=ssh-agent.service
 Wants=syndaemon.service
 Wants=udiskie.service
 Wants=unclutter.service
-Wants=v2ray.service
+Wants=v2raya-lite.service
 Wants=xscreensaver.service
