@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+print_usage() {
+  cat << 'EOB' >&2
+Connect to VNC server securely by SSH tunnel.
+[Synopsis]
+./vnc-connect [host] ([display])
+[host]
+Required, host alias configured in `~/.ssh/config`.
+[display]
+Optional, 1 is used by default.
+EOB
+  exit 0
+}
+
+if [ $# = 0 ]; then
+  print_usage
+fi
+
+config_dir="$HOME/.dotfiles/config"
+source "$config_dir/utils.sh";
+
+HOST=$1
+DISPLAY=${2:-1}
+PORT=$((DISPLAY + 5900))
+
+trap "jobs -p | xargs kill; ssh $HOST 'vncserver -kill :$DISPLAY'" EXIT
+
+ssh $HOST "vncserver :$DISPLAY"
+ssh -L $PORT:localhost:$PORT -N $HOST &
+
+if is_macos; then
+  open vnc://localhost:$PORT
+elif exists vncviewer; then
+  vncviewer localhost:$PORT
+else
+  echo "vncviewer not found in PATH. You might connect to localhost:$PORT manually."
+fi
+
+sleep 1
+
+echo; read -p 'Press any key to exit.' -n 1 -r; echo

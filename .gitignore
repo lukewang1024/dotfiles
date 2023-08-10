@@ -5,19 +5,24 @@
 *.iso
 *.jar
 *.log
+*.pid
 *.rar
 *.stackdump
-*.sublime-*
 *.swp
 *.tar
 *.zip
 *~
+
+# Thumbnail related
 .DS_Store
 .DS_Store?
-.vscode/
 ehthumbs.db
 Icon?
 Thumbs.db
+
+# Text editor related
+*.sublime-*
+.vscode/
 Session.vim
 
 config/alacritty/local.yml
@@ -28,4 +33,5 @@ config/systemd/user/*.wants/
 config/thunar/accels.scm
 config/thunar/uca.xml
 config/v2ray/config.json
+config/vnc/passwd
 config/x/.Xresources.d/custom

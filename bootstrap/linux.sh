@@ -53,7 +53,7 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/thunar" ~/.config/Thunar
   backup_then_symlink "$config_dir/tilda" ~/.config/tilda
   backup_then_symlink "$config_dir/v2ray" ~/.config/v2ray
-  backup_then_symlink "$config_dir/vnc/.vncrc" ~/.vncrc
+  backup_then_symlink "$config_dir/vnc" ~/.vnc
   backup_then_symlink "$config_dir/x/.xbindkeysrc" ~/.xbindkeysrc
   backup_then_symlink "$config_dir/x/.xinitrc" ~/.xinitrc
   backup_then_symlink "$config_dir/x/.Xmodmap" ~/.Xmodmap
