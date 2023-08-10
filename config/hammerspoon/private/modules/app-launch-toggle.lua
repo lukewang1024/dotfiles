@@ -59,7 +59,7 @@ setAppToggles(hyper, {
   -- l: for arrows
   m = 'Music',
   n = 'nvALT',
-  -- o = '',
+  o = 'Screen Sharing',
   p = 'PDF Expert',
   q = 'qutebrowser',
   r = 'Reeder',
@@ -69,7 +69,7 @@ setAppToggles(hyper, {
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
   w = 'WeChat',
   x = 'com.volcengine.corplink',                  -- CorpLink
-  -- y = '',
+  y = 'scrcpy',
   z = 'Finder',
   [','] = 'com.apple.systempreferences',          -- CFBundleName changed in macOS 13 Ventura, use CFBundleIdentifier for compatibility
   [';'] = 'Alacritty',

@@ -154,6 +154,7 @@ install_other_packages()
   backup_then_symlink "$util_dir/shell/mann" "$bin_dir/mann"
   backup_then_symlink "$util_dir/shell/md2resume" "$bin_dir/md2resume"
   backup_then_symlink "$util_dir/shell/pretty-csv" "$bin_dir/pretty-csv"
+  backup_then_symlink "$util_dir/shell/vnc-connect" "$bin_dir/vnc-connect"
   install_any_script hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }
 
