@@ -70,6 +70,7 @@ prepare_arch_env_gui()
 prepare_arch_env_cli_core()
 {
   pkgs=(
+    autossh
     broot
     diff-so-fancy
     dog
@@ -415,6 +416,7 @@ prepare_arch_env_gui_extra()
     screenkey
     slack-desktop
     spotify
+    thorium-bin
     ttf-ms-fonts
     urxvt-fullscreen
     urxvt-resize-font-git
