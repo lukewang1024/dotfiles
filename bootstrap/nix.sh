@@ -16,6 +16,7 @@ install_nix_brew_core_packages()
   brew tap beeftornado/rmtree
 
   local pkgs=(
+    autossh
     bash
     broot
     diff-so-fancy
@@ -226,6 +227,7 @@ install_nix_brew_packages()
 apply_nix_app_configs()
 {
   backup_then_symlink "$config_dir/alacritty" ~/.config/alacritty
+  backup_then_symlink "$config_dir/htop" ~/.config/htop
   backup_then_symlink "$config_dir/kitty" ~/.config/kitty
   backup_then_symlink "$config_dir/lf" ~/.config/lf
   backup_then_symlink "$config_dir/starship/starship.toml" ~/.config/starship.toml

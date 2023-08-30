@@ -233,6 +233,7 @@ prepare_macos_env_gui_extra()
     java
     joplin
     jupyter-notebook-viewer
+    kap
     kdiff3
     keepingyouawake
     keka
@@ -301,6 +302,7 @@ prepare_macos_env_gui_extra()
     suspicious-package
     switchhosts
     the-unarchiver
+    thorium
     toau
     topnotch
     tweeten
