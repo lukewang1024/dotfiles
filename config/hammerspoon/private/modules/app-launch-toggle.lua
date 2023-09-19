@@ -51,7 +51,7 @@ setAppToggles(hyper, {
   d = 'Dictionary',
   e = 'Microsoft Edge',
   f = 'Firefox',
-  -- g = '',
+  g = 'Hoppscotch',
   -- h: for arrows
   i = 'Cloud IDE',
   -- j: for arrows
@@ -60,7 +60,7 @@ setAppToggles(hyper, {
   m = 'Music',
   n = 'nvALT',
   o = 'Screen Sharing',
-  p = 'PDF Expert',
+  p = 'Skim',
   q = 'qutebrowser',
   r = 'Reeder',
   s = 'Sublime Text',

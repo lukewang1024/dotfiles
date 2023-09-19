@@ -57,6 +57,7 @@ function prepare_windows_env_cli_core()
     'broot',
     'delta',
     'fd',
+    'fx',
     'fzf',
     'git',
     'gow',

@@ -4,7 +4,7 @@
 call plug#begin('~/.vim/plugged')
 
 " Plugins
-Plug 'airblade/vim-gitgutter'
+Plug 'airblade/vim-gitgutter', { 'branch': 'main' }
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'joshdick/onedark.vim', { 'branch': 'main' }

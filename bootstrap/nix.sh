@@ -23,6 +23,7 @@ install_nix_brew_core_packages()
     dog
     fd
     findutils
+    fx
     fzf
     git
     git-delta
