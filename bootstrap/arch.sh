@@ -75,6 +75,7 @@ prepare_arch_env_cli_core()
     diff-so-fancy
     dog
     fd
+    fx
     fzf
     git
     git-delta
