@@ -146,7 +146,7 @@ prepare_macos_env_gui_extra()
     441258766  # Magnet
     497799835  # Xcode
     539883307  # LINE
-    568494494  # Pocket
+    # 568494494  # Pocket
     585829637  # Todoist
     664513913  # 富途牛牛
     747648890  # Telegram
@@ -170,6 +170,7 @@ prepare_macos_env_gui_extra()
     1497527363 # Blurred
     1499181666 # OwlOCR - Screenshot to Text
     1507782672 # Pixea
+    1564031042 # Omnivore: Read-it-later
     1607635845 # Velja
     1615988943 # Folder Peek
     1661733229 # LocalSend
