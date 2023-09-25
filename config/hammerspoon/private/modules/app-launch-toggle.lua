@@ -59,13 +59,13 @@ setAppToggles(hyper, {
   -- l: for arrows
   m = 'Music',
   n = 'nvALT',
-  o = 'Screen Sharing',
+  o = 'Omnivore',
   p = 'Skim',
   q = 'qutebrowser',
   r = 'Reeder',
   s = 'Sublime Text',
   t = 'Telegram',
-  u = 'Pocket',
+  u = 'Screen Sharing',
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
   w = 'WeChat',
   x = 'com.volcengine.corplink',                  -- CorpLink

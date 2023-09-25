@@ -14,3 +14,7 @@ if ! is_tty && [[ -r "$p10k_instant_prompt_path" ]]; then
 fi
 
 unset p10k_instant_prompt_path
+
+# The default `pyenv virtualenv-init -` in pyenv plugin could slow down prompt
+# drastically. Disable it.
+ZSH_PYENV_VIRTUALENV=false
