@@ -61,10 +61,21 @@ prepare_debian_env_gui()
 prepare_debian_env_cli_core()
 {
   pkgs=(
+    # Build tools
     build-essential
     curl
     file
+
+    # Apps
+    fzf
     git
+    htop
+    ripgrep
+    silversearcher-ag
+    tig
+    tmux
+    vim
+    zsh
   )
   debian_install_pkgs
 
@@ -101,6 +112,7 @@ prepare_debian_env_cli_extra()
     # Apps
     fortune-mod
     gnupg2
+    neovim
     polipo
     python3-dev
     python3-pip

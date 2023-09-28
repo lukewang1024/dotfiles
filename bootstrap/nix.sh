@@ -16,48 +16,32 @@ install_nix_brew_core_packages()
   brew tap beeftornado/rmtree
 
   local pkgs=(
-    autossh
-    bash
-    broot
     diff-so-fancy
-    dog
     fd
     findutils
     fx
     fzf
     git
-    git-delta
-    git-extras
-    git-flow-avh
     htop
     httpie
-    icdiff
-    imagemagick
-    jless
     jq
     less
     lf
     lsd
-    micro
     navi
-    neovim
     openssh
     peco
     prettyping
     procs
-    ranger
     ripgrep
     rsync
-    starship
     the_silver_searcher
     tig
     tldr
     tmux
-    tmuxinator
     trash-cli
     urlview
     vim
-    wdiff
     wget
     xsv
     zoxide
@@ -78,10 +62,13 @@ install_nix_brew_extra_packages()
   local pkgs=(
     ansifilter
     aria2
+    autossh
     axel
+    bash
     bash-completion
     bat
     binutils
+    broot
     calcurse
     cheat
     checkbashisms
@@ -95,6 +82,7 @@ install_nix_brew_extra_packages()
     ddgr
     diffutils
     dive
+    dog
     duf
     dum
     ed
@@ -116,7 +104,10 @@ install_nix_brew_extra_packages()
     gifsicle
     gist
     git-appraise
+    git-delta
+    git-extras
     git-filter-repo
+    git-flow-avh
     git-lfs
     git-quick-stats
     gitui
@@ -139,9 +130,12 @@ install_nix_brew_extra_packages()
     httpstat
     hub
     hyperfine
+    icdiff
     iftop
+    imagemagick
     inetutils
     irssi
+    jless
     jpegoptim
     kubernetes-cli
     lazydocker
@@ -150,6 +144,7 @@ install_nix_brew_extra_packages()
     lolcat
     make
     media-info
+    micro
     midnight-commander
     minikube
     mkcert
@@ -166,6 +161,7 @@ install_nix_brew_extra_packages()
     ncdu
     ncmpcpp
     neofetch
+    neovim
     netcat
     nmap
     nyancat
@@ -186,6 +182,7 @@ install_nix_brew_extra_packages()
     progress
     proxychains-ng
     qpdf
+    ranger
     redis
     rtv
     sc-im
@@ -194,18 +191,21 @@ install_nix_brew_extra_packages()
     sl
     smartmontools
     spark
+    starship
     sttr
     tesseract
     tesseract-lang
     testdisk
     thefuck
     tmate
+    tmuxinator
     tpp
     translate-shell
     tree
     unzip
     w3m
     watch
+    wdiff
     websocat
     whistle
     wtf
