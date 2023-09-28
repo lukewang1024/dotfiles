@@ -70,32 +70,24 @@ prepare_arch_env_gui()
 prepare_arch_env_cli_core()
 {
   pkgs=(
-    autossh
-    broot
     diff-so-fancy
-    dog
     fd
     fx
     fzf
     git
-    git-delta
     htop
     httpie
-    imagemagick
-    jless
     jq
+    less
     lsd
-    micro
-    neovim
     openssh
     pamac-cli
     peco
     prettyping
     privoxy
     procs
-    ranger
+    ripgrep
     rsync
-    starship
     the_silver_searcher
     tig
     tldr
@@ -114,8 +106,6 @@ prepare_arch_env_cli_core()
 
   pkgs=(
     find-the-command
-    gitflow-avh
-    icdiff
     lf-bin
     navi
     urlview
@@ -136,8 +126,10 @@ prepare_arch_env_cli_extra()
   pkgs=(
     android-tools
     aria2
+    autossh
     axel
     bat
+    broot
     calcurse
     checkbashisms
     cloc
@@ -150,6 +142,7 @@ prepare_arch_env_cli_extra()
     dnsmasq
     docker
     docker-compose
+    dog
     dstat
     duf
     ebtables
@@ -162,6 +155,7 @@ prepare_arch_env_cli_extra()
     fq
     gdu
     gifsicle
+    git-delta
     git-lfs
     github-cli
     gitui
@@ -177,9 +171,11 @@ prepare_arch_env_cli_extra()
     hub
     hyperfine
     iftop
+    imagemagick
     iptables-nft
     irssi
     jdk-openjdk
+    jless
     jpegoptim
     kubectl
     lazygit
@@ -187,6 +183,7 @@ prepare_arch_env_cli_extra()
     lolcat
     mc
     mediainfo
+    micro
     minikube
     mpc
     mpd
@@ -197,6 +194,7 @@ prepare_arch_env_cli_extra()
     mutt
     ncdu
     ncmpcpp
+    neovim
     nghttp2
     nyancat
     offlineimap
@@ -214,10 +212,11 @@ prepare_arch_env_cli_extra()
     progress
     proxychains-ng
     qemu
-    ripgrep
+    ranger
     shellcheck
     sl
     snapd
+    starship
     translate-shell
     transmission-cli
     tree
@@ -247,6 +246,8 @@ prepare_arch_env_cli_extra()
     fswatch
     git-bug-bin
     git-quick-stats
+    gitflow-avh
+    icdiff
     lazydocker-bin
     lazynpm
     mons

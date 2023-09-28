@@ -54,7 +54,6 @@ function prepare_windows_env_cli_core()
 
   $pkgs =
     'ag',
-    'broot',
     'delta',
     'fd',
     'fx',
@@ -64,12 +63,10 @@ function prepare_windows_env_cli_core()
     'jq',
     'lf',
     'ln',
-    'micro',
     'openssh',
     'procs',
     'runat',
     'say',
-    'starship',
     'sudo',
     'touch',
     'vim'
@@ -88,6 +85,7 @@ function prepare_windows_env_cli_extra()
   $pkgs =
     'adb',
     'aria2',
+    'broot',
     'cloc',
     'cowsay',
     'deno',
@@ -104,6 +102,7 @@ function prepare_windows_env_cli_extra()
     'losslesscut',
     'lxrunoffline',
     'mc',
+    'micro',
     'miniconda3',
     'minikube',
     'musikcube',
@@ -118,6 +117,7 @@ function prepare_windows_env_cli_extra()
     'sbt',
     'scrcpy',
     'shasum',
+    'starship',
     'vagrant',
     'yarn'
 
