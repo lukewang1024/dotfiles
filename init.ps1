@@ -94,6 +94,7 @@ function prepare_windows_env_cli_extra()
     'far',
     'fq',
     'git-lfs',
+    'gitui',
     'gping',
     'helix',
     'kubectl',
@@ -109,6 +110,7 @@ function prepare_windows_env_cli_extra()
     'nmap',
     'nodejs',
     'now-cli',
+    'ntfy',
     'nvm',
     'oraclejdk',
     'pandoc',
@@ -149,7 +151,6 @@ function prepare_windows_env_gui_core()
     'sysinternals',
     'trafficmonitor',
     'unlocker',
-    'vcredist2019', # for windows-terminal
     'vscode',
     'windows-terminal'
 
@@ -237,9 +238,7 @@ function prepare_windows_env_gui_extra()
     'telegram',
     'translucenttb',
     'v2rayn',
-    'vcredist2015',
-    'vcredist2017',
-    'vcredist2022',
+    'vcredist',
     'vcxsrv',
     'vncviewer',
     'whatsapp',
@@ -251,7 +250,8 @@ function prepare_windows_env_gui_extra()
     'xming',
     'xnviewmp',
     'zeal',
-    'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json'
+    'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json',
+    'https://raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json'
 
   scoop_install $pkgs
 
@@ -376,7 +376,7 @@ function winget_install($pkgs)
   }
 }
 
-function sync_config_repo($repoUrl, $configPath, $shallow = false)
+function sync_config_repo($repoUrl, $configPath, $shallow = $false)
 {
   if (Test-Path "$configPath") {
     if (Test-Path "$configPath\.git") {

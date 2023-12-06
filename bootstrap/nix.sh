@@ -53,6 +53,7 @@ install_nix_brew_core_packages()
 install_nix_brew_extra_packages()
 {
   brew tap abhimanyu003/sttr     # sttr
+  brew tap anhoder/go-musicfox   # go-musicfox & spotifox
   brew tap clangen/musikcube     # musikcube
   brew tap egoist/tap            # dum
   brew tap jesseduffield/lazynpm # lazynpm
@@ -118,6 +119,7 @@ install_nix_brew_extra_packages()
     gnu-tar
     gnu-which
     gnutls
+    go-musicfox
     googler
     gping
     graphviz
@@ -164,6 +166,7 @@ install_nix_brew_extra_packages()
     neovim
     netcat
     nmap
+    ntfy
     nyancat
     ocrmypdf
     offlineimap
@@ -191,6 +194,7 @@ install_nix_brew_extra_packages()
     sl
     smartmontools
     spark
+    spotifox
     starship
     sttr
     tesseract
@@ -228,6 +232,7 @@ install_nix_brew_packages()
 apply_nix_app_configs()
 {
   backup_then_symlink "$config_dir/alacritty" ~/.config/alacritty
+  backup_then_symlink "$config_dir/gitui" ~/.config/gitui
   backup_then_symlink "$config_dir/htop" ~/.config/htop
   backup_then_symlink "$config_dir/kitty" ~/.config/kitty
   backup_then_symlink "$config_dir/lf" ~/.config/lf
