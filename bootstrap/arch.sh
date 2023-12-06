@@ -196,6 +196,7 @@ prepare_arch_env_cli_extra()
     ncmpcpp
     neovim
     nghttp2
+    ntfysh-bin
     nyancat
     offlineimap
     oha
@@ -247,6 +248,7 @@ prepare_arch_env_cli_extra()
     git-bug-bin
     git-quick-stats
     gitflow-avh
+    go-musicfox-bin
     icdiff
     lazydocker-bin
     lazynpm

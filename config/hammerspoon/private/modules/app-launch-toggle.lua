@@ -51,7 +51,7 @@ setAppToggles(hyper, {
   d = 'Dictionary',
   e = 'Microsoft Edge',
   f = 'Firefox',
-  g = 'Hoppscotch',
+  -- g = '',
   -- h: for arrows
   i = 'Cloud IDE',
   -- j: for arrows
@@ -59,8 +59,8 @@ setAppToggles(hyper, {
   -- l: for arrows
   m = 'Music',
   n = 'nvALT',
-  o = 'Omnivore',
-  p = 'Skim',
+  o = 'Microsoft OneNote',
+  p = 'Preview',
   q = 'qutebrowser',
   r = 'Reeder',
   s = 'Sublime Text',
@@ -80,16 +80,16 @@ setAppToggles(hyper, {
   ['\''] = 'kitty',
   ['\\'] = 'MacPass',
   ['`'] = 'Meetings',
-  ['0'] = 'Proxifier',
-  ['1'] = 'Clock',
-  ['2'] = 'Trello',
+  ['1'] = 'Reminders',
+  ['2'] = 'Calendar',
   ['3'] = 'Spark',
-  ['4'] = 'licecap',
-  ['5'] = 'Sequel Pro',
-  ['6'] = 'Robo 3T',
-  ['7'] = 'Medis',
+  -- ['4'] = '',
+  ['5'] = 'Clock',
+  ['6'] = 'Hoppscotch',
+  -- ['7'] = '',
   ['8'] = 'Resilio Sync',
   ['9'] = 'Charles',
+  ['0'] = 'Proxifier',
   ['space'] = 'Feishu',
 })
 
@@ -109,8 +109,8 @@ setAppToggles(hyperAlt, {
   -- l: for mouse move
   m = 'com.tencent.QQMusicMac',                   -- QQ Music
   n = 'Mark Text',
-  o = 'Microsoft OneNote',
-  -- p = '',
+  o = 'Omnivore',
+  p = 'Pocket',
   -- q = '',
   r = 'Microsoft Remote Desktop',
   s = 'Spotify',
@@ -130,7 +130,6 @@ setAppToggles(hyperAlt, {
   ['\''] = 'Terminal',
   ['\\'] = '富途牛牛',
   -- ['`'] = '',
-  ['0'] = 'V2rayU',
   -- ['1'] = '',
   -- ['2'] = '',
   -- ['3'] = '',
@@ -140,6 +139,7 @@ setAppToggles(hyperAlt, {
   -- ['7'] = '',
   -- ['8'] = '',
   ['9'] = 'WireShark',
+  ['0'] = 'V2rayU',
   ['space'] = 'Lark',
 })
 

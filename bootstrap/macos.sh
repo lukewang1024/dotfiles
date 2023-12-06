@@ -173,6 +173,7 @@ prepare_macos_env_gui_extra()
     1564031042 # Omnivore: Read-it-later
     1607635845 # Velja
     1615988943 # Folder Peek
+    1659622164 # VidHub - Video Library & Player
     1661733229 # LocalSend
   )
 
@@ -267,6 +268,7 @@ prepare_macos_env_gui_extra()
     pdf-expert
     pdfsam-basic
     phantomjs
+    pngyu
     provisionql
     proxifier
     qlcolorcode
