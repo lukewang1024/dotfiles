@@ -45,7 +45,7 @@ local function setAppToggles(mod, mapping)
 end
 
 setAppToggles(hyper, {
-  a = 'Activity Monitor',
+  a = 'Arc',
   b = 'Safari',
   c = 'Google Chrome',
   d = 'Dictionary',
@@ -95,7 +95,7 @@ setAppToggles(hyper, {
 
 -- hyperAlt application shortcuts
 setAppToggles(hyperAlt, {
-  a = 'Arc',
+  a = 'Activity Monitor',
   -- b = '',
   c = 'Google Chrome Canary',
   d = 'DevDocs',
