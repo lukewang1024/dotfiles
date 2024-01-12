@@ -93,6 +93,7 @@ prepare_macos_env_cli_extra()
     android-platform-tools
     docker
     dotnet-sdk
+    miniconda
     orbstack
     powershell
     vagrant
@@ -116,6 +117,7 @@ prepare_macos_env_gui_core()
     font-fira-code-nerd-font
     font-meslo-lg-nerd-font
     font-sauce-code-pro-nerd-font
+    font-symbols-only-nerd-font
     hammerspoon
     iina
     iterm2
@@ -154,6 +156,7 @@ prepare_macos_env_gui_extra()
     784801555  # OneNote
     789066512  # Maipo for Weibo
     # 880001334  # Reeder 3
+    897283731  # Strongbox - Password Manager
     937984704  # Amphetamine
     998361254  # Toothpicks
     998804308  # Blinks

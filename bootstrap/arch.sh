@@ -93,9 +93,11 @@ prepare_arch_env_cli_core()
     tldr
     tmux
     trash-cli
+    unarchiver
     vim
     wget
     yay
+    yazi
     zoxide
     zsh
   )
@@ -210,6 +212,7 @@ prepare_arch_env_cli_extra()
     playerctl
     pngquant
     pnpm
+    poppler
     progress
     proxychains-ng
     qemu
@@ -252,6 +255,7 @@ prepare_arch_env_cli_extra()
     icdiff
     lazydocker-bin
     lazynpm
+    miniconda3
     mons
     mycli
     nb
@@ -263,6 +267,7 @@ prepare_arch_env_cli_extra()
     sparklines-git
     touchpad-state-git
     ttf-weather-icons
+    ueberzugpp
   )
   aur_install_pkgs
 

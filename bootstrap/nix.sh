@@ -40,10 +40,12 @@ install_nix_brew_core_packages()
     tldr
     tmux
     trash-cli
+    unar
     urlview
     vim
     wget
     xsv
+    yazi
     zoxide
     zsh
   )
@@ -59,6 +61,7 @@ install_nix_brew_extra_packages()
   brew tap jesseduffield/lazynpm # lazynpm
   brew tap wader/tap             # fq
   brew tap xwmx/taps             # nb
+  brew tap jstkdng/programs      # ueberzugpp
 
   local pkgs=(
     ansifilter
@@ -181,6 +184,7 @@ install_nix_brew_extra_packages()
     pngquant
     pnpm
     polipo
+    poppler
     privoxy
     progress
     proxychains-ng
@@ -206,6 +210,7 @@ install_nix_brew_extra_packages()
     tpp
     translate-shell
     tree
+    ueberzugpp
     unzip
     w3m
     watch
@@ -232,6 +237,7 @@ install_nix_brew_packages()
 apply_nix_app_configs()
 {
   backup_then_symlink "$config_dir/alacritty" ~/.config/alacritty
+  backup_then_symlink "$config_dir/conda" ~/.config/conda
   backup_then_symlink "$config_dir/gitui" ~/.config/gitui
   backup_then_symlink "$config_dir/htop" ~/.config/htop
   backup_then_symlink "$config_dir/kitty" ~/.config/kitty

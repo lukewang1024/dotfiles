@@ -187,7 +187,7 @@ let g:ale_linters_ignore = {}
 let g:ale_fixers = {
 \  '*': ['remove_trailing_lines', 'trim_whitespace'],
 \  'javascript': ['prettier', 'eslint'],
-\  'typescript': ['prettier', 'tslint'],
+\  'typescript': ['prettier', 'eslint'],
 \}
 
 nmap <silent> [c <Plug>(ale_previous_wrap)
@@ -205,7 +205,6 @@ let g:coc_global_extensions = [
 \  'coc-prettier',
 \  'coc-rust-analyzer',
 \  'coc-snippets',
-\  'coc-tslint-plugin',
 \  'coc-tsserver',
 \  ]
 
