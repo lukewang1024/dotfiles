@@ -25,7 +25,7 @@ Thumbs.db
 .vscode/
 Session.vim
 
-config/alacritty/local.yml
+config/alacritty/local.toml
 config/git/local
 config/gtk-3.0/bookmarks
 config/karabiner/automatic_backups
