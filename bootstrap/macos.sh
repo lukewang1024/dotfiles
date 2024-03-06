@@ -307,6 +307,7 @@ prepare_macos_env_gui_extra()
     stats
     stretchly
     suspicious-package
+    swiftdefaultappsprefpane
     switchhosts
     the-unarchiver
     thorium
