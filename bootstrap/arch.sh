@@ -155,6 +155,7 @@ prepare_arch_env_cli_extra()
     flatpak
     fortune-mod
     fq
+    frogmouth
     gdu
     gifsicle
     git-delta
@@ -221,6 +222,7 @@ prepare_arch_env_cli_extra()
     sl
     snapd
     starship
+    toolong
     translate-shell
     transmission-cli
     tree
@@ -235,6 +237,7 @@ prepare_arch_env_cli_extra()
     wtf
     yarn
     you-get
+    yt-dlp
     zip
   )
   pacman_install_pkgs
