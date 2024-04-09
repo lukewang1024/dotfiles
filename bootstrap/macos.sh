@@ -223,7 +223,7 @@ prepare_macos_env_gui_extra()
     flux
     folx
     font-smoothing-adjuster
-    forklift
+    forklift3
     google-backup-and-sync
     google-chrome
     google-chrome-canary

@@ -59,6 +59,7 @@ install_nix_brew_extra_packages()
   brew tap clangen/musikcube     # musikcube
   brew tap egoist/tap            # dum
   brew tap jesseduffield/lazynpm # lazynpm
+  brew tap textualize/homebrew   # frogmouth
   brew tap wader/tap             # fq
   brew tap xwmx/taps             # nb
   brew tap jstkdng/programs      # ueberzugpp
@@ -66,6 +67,7 @@ install_nix_brew_extra_packages()
   local pkgs=(
     ansifilter
     aria2
+    ata
     autossh
     axel
     bash
@@ -73,6 +75,7 @@ install_nix_brew_extra_packages()
     bat
     binutils
     broot
+    c2048
     calcurse
     cheat
     checkbashisms
@@ -100,6 +103,7 @@ install_nix_brew_extra_packages()
     fish
     fpp
     fq
+    frogmouth
     fswatch
     gawk
     gdu
@@ -147,6 +151,7 @@ install_nix_brew_extra_packages()
     lazygit
     lazynpm
     lolcat
+    mailsy
     make
     media-info
     micro
@@ -198,15 +203,18 @@ install_nix_brew_extra_packages()
     sl
     smartmontools
     spark
+    speedtest-cli
     spotifox
     starship
     sttr
+    taskell
     tesseract
     tesseract-lang
     testdisk
     thefuck
     tmate
     tmuxinator
+    toolong
     tpp
     translate-shell
     tree
@@ -217,12 +225,13 @@ install_nix_brew_extra_packages()
     wdiff
     websocat
     whistle
+    wifi-password
     wtf
     wtfutil
     xpdf
     yarn
     you-get
-    youtube-dl
+    yt-dlp
     zsh-completions
   )
   brew install `join ' ' "${pkgs[@]}"`
