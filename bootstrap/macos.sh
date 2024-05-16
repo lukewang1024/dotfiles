@@ -188,9 +188,11 @@ prepare_macos_env_gui_extra()
   brew tap homebrew/cask-versions
   brew tap lukewang1024/homebrew-legacy
   brew tap dteoh/sqa
+  brew tap lihaoyun6/tap
 
   local casks=(
     aerial
+    airbattery
     aldente
     android-sdk
     android-studio
@@ -218,7 +220,7 @@ prepare_macos_env_gui_extra()
     feishu
     figma
     firefox
-    firefox-nightly
+    firefox@nightly
     flume
     flux
     folx
@@ -226,7 +228,7 @@ prepare_macos_env_gui_extra()
     forklift3
     google-backup-and-sync
     google-chrome
-    google-chrome-canary
+    google-chrome@canary
     handbrake
     haptickey
     hocus-focus
@@ -287,6 +289,7 @@ prepare_macos_env_gui_extra()
     quicklook-pat
     quicklookapk
     quicklookase
+    quickrecorder
     qutebrowser
     rapidapi
     redisinsight
@@ -394,7 +397,7 @@ setup_macos_gaming()
     dosbox-x
     epic-games
     gog-downloader
-    homebrew/cask-versions/openemu-experimental
+    homebrew/cask-versions/openemu@experimental
     openra
     origin
     steam
