@@ -635,6 +635,10 @@ better_macos_defaults()
   defaults write com.google.Chrome PMPrintingExpandedStateForPrint2 -bool true
   defaults write com.google.Chrome.canary PMPrintingExpandedStateForPrint2 -bool true
 
+  # Disable mailto shortcuts
+  defaults write com.google.Chrome NSUserKeyEquivalents -dict-add 'Email Link' '\0'
+  defaults write com.google.Chrome.canary NSUserKeyEquivalents -dict-add 'Email Link' '\0'
+
   ################
   # SlowQuitApps #
   ################

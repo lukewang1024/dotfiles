@@ -211,6 +211,7 @@ prepare_macos_env_gui_extra()
     clashx
     commander-one
     coteditor
+    db-browser-for-sqlite
     dropbox
     duet
     electron-fiddle

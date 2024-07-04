@@ -164,6 +164,7 @@ function prepare_windows_env_gui_core()
   scoop_sudo_install $fonts
 
   $wingetPkgs =
+    'everythingtoolbar',
     'Rime.Weasel'
 
   winget_install $wingetPkgs
@@ -228,14 +229,15 @@ function prepare_windows_env_gui_extra()
     'runcat',
     'screentogif',
     'slack',
-    'thorium-reader',
     'smartmontools',
     'spacesniffer',
     'spotify',
+    'sqlitebrowser',
     'strokesplus',
     'switchhosts',
     'synctrayzor',
     'telegram',
+    'thorium-reader',
     'translucenttb',
     'v2rayn',
     'vcredist',

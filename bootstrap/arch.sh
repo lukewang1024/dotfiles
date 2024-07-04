@@ -390,6 +390,7 @@ prepare_arch_env_gui_extra()
     remmina
     rxvt-unicode
     scrcpy
+    sqlitebrowser
     telegram-desktop
     termite
     tilda
