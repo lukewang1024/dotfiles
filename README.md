@@ -10,8 +10,8 @@ $ git clone https://github.com/lukewang1024/dotfiles .dotfiles # it has to be `.
 $ ~/.dotfiles/init macos # bootstrap macOS core environment
 ```
 
-- Create a file in `~/.rc.local` to override configs from `~/.dotfiles/config/sh/rc.sh`.
-- Create a file in `~/.zshrc.local` to override configs from `~/.zshrc`.
+- Create a file in `$XDG_CONFIG_HOME/.rc.local` to override configs from `~/.dotfiles/config/sh/rc.sh`.
+- Create a file in `$XDG_CONFIG_HOME/.zshrc.local` to override configs from `$XDG_CONFIG_HOME/zsh/.zshrc`.
 
 ### MacOS
 

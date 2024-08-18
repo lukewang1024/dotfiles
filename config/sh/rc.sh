@@ -43,6 +43,7 @@ fi
 ## Utils
 alias cb=clipboard
 alias n=nvim
+alias ttmux='TERM=xterm-256color tmux'
 alias pping='prettyping --nolegend'
 alias ports='lsof -iTCP -sTCP:LISTEN -P'
 alias upenv='nodenv update && pyenv update && rbenv update && vim +PlugUpgrade +PlugUpdate +qa'
@@ -91,4 +92,4 @@ fi
 # lf icons
 [ -f ~/.config/lf/lf-icons.sh ] && source ~/.config/lf/lf-icons.sh
 
-[ -f ~/.rc.local ] && source ~/.rc.local
+[ -f "$XDG_CONFIG_HOME/.rc.local" ] && source "$XDG_CONFIG_HOME/.rc.local"

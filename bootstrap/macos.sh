@@ -79,6 +79,7 @@ prepare_macos_env_cli_extra()
   local pkgs=(
     brightness
     csshx
+    duti
     fortune
     hyperkit
     m-cli
@@ -251,6 +252,7 @@ prepare_macos_env_gui_extra()
     kitty
     lark
     lepton
+    logoer
     losslesscut
     lulu
     lx-music

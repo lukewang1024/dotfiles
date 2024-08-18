@@ -3,9 +3,11 @@ is_ssh && ! is_tmux && tmux
 
 source "$config_dir/sh/profile.sh"
 
+exists anyenv && eval "$(anyenv init -)"
+
 # Load pyenv-virtualenv properly
 # https://github.com/pyenv/pyenv-virtualenv/issues/259#issuecomment-1096144748
-eval "$(pyenv virtualenv-init - | sed s/precmd/chpwd/g)"
+exists pyenv && eval "$(pyenv virtualenv-init - | sed s/precmd/chpwd/g)"
 
 # Load customized p10k prompt
-exists p10k && [ -f "$zsh_config_dir/.p10k.zsh" ] && source "$zsh_config_dir/.p10k.zsh"
+exists p10k && [ -f "${ZDOTDIR:-~}/.p10k.zsh" ] && source "${ZDOTDIR:-~}/.p10k.zsh"
