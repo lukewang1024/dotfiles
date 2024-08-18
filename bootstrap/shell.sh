@@ -2,7 +2,8 @@ tmux_setup()
 {
   blank_lines
   printf 'Symlinking tmux config files... '
-  backup_then_symlink "$config_dir/tmux/.tmux.conf" ~/.tmux.conf
+  backup_then_symlink "$config_dir/tmux" "$XDG_CONFIG_HOME/tmux"
+  backup_then_symlink "$config_dir/tmux/tmux.conf" "$HOME/.tmux.conf" # hardcoded usage exists somewhere, so keep it
   echo 'Done.'
 }
 
@@ -44,11 +45,11 @@ zgen_setup()
 {
   blank_lines
   echo 'Setup zgen...'
-  sync_config_repo ~/.zgen https://github.com/tarjoilija/zgen
+  sync_config_repo "$XDG_DATA_HOME/zgen" https://github.com/tarjoilija/zgen
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/zgen.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/zgen.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
   zsh_common_setup
   echo 'Done.'
 }
@@ -57,25 +58,30 @@ zinit_setup()
 {
   blank_lines
   echo 'Setup zinit...'
-  if [ -d ~/.zinit ]; then
-    sync_config_repo ~/.zinit/bin https://github.com/zdharma/zinit
-  else
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)"
-  fi
+  sync_config_repo "$XDG_DATA_HOME/zinit/zinit.git" https://github.com/zdharma-continuum/zinit.git
   echo 'Done.'
 
   printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/zinit.zshrc" ~/.zshrc
+  backup_then_symlink "$config_dir/zsh/zinit.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
   zsh_common_setup
   echo 'Done.'
 }
 
 zsh_common_setup()
 {
-  backup_then_symlink "$config_dir/zsh/.zlogin" ~/.zlogin
-  backup_then_symlink "$config_dir/zsh/.zshenv" ~/.zshenv
-  backup_then_symlink "$config_dir/zsh/.zprofile" ~/.zprofile
-  backup_then_symlink "$config_dir/zsh/.p10k.zsh" ~/.p10k.zsh
+  # Use $HOME/.config since $XDG_CONFIG_HOME might be undefined at /etc/zshenv.
+  ZDOTENV_EXPORT='export ZDOTDIR="$HOME/.config/zsh"'
+  if [ -f /etc/zshenv ] && grep -wq "$ZDOTENV_EXPORT" /etc/zshenv; then
+    echo 'ZDOTENV exists in /etc/zshenv'
+  else
+    echo "$ZDOTENV_EXPORT" | sudo tee -a /etc/zshenv > /dev/null
+    echo 'ZDOTENV set in /etc/zshenv'
+  fi
+
+  backup_then_symlink "$config_dir/zsh/.zlogin" "$XDG_CONFIG_HOME/zsh/.zlogin"
+  backup_then_symlink "$config_dir/zsh/.zshenv" "$XDG_CONFIG_HOME/zsh/.zshenv"
+  backup_then_symlink "$config_dir/zsh/.zprofile" "$XDG_CONFIG_HOME/zsh/.zprofile"
+  backup_then_symlink "$config_dir/zsh/.p10k.zsh" "$XDG_CONFIG_HOME/zsh/.p10k.zsh"
 }
 
 bashit_setup()

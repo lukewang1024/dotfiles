@@ -1,15 +1,14 @@
 config_dir="$HOME/.dotfiles/config"
-zsh_config_dir="$config_dir/zsh"
 
 source "$config_dir/utils.sh";
-source "$zsh_config_dir/prepare.zsh"
+source "$config_dir/sh/rc.sh"
+source "$config_dir/zsh/xdg-ninja-patch.zsh"
+source "$config_dir/zsh/prepare.zsh"
 
-source ~/.zgen/zgen.zsh
+source $XDG_DATA_HOME/zgen/zgen.zsh
 
 if ! zgen saved; then
   echo 'Creating a zgen save'
-
-  zgen load "$config_dir/sh/rc.sh"
 
   zgen oh-my-zsh
 
@@ -27,7 +26,6 @@ if ! zgen saved; then
     robbyrussell/oh-my-zsh plugins/encode64
     robbyrussell/oh-my-zsh plugins/extract
     robbyrussell/oh-my-zsh plugins/fancy-ctrl-z
-    robbyrussell/oh-my-zsh plugins/fd
     robbyrussell/oh-my-zsh plugins/fzf
     robbyrussell/oh-my-zsh plugins/git
     robbyrussell/oh-my-zsh plugins/git-extras
@@ -57,7 +55,7 @@ if ! zgen saved; then
     # completions
     zsh-users/zsh-autosuggestions
     zsh-users/zsh-completions src
-    esc/conda-zsh-completion
+    conda-incubator/conda-zsh-completion . main
     lukewang1024/zsh-tmuxinator
 EOPLUGINS
   # ^ can't indent this EOPLUGINS
@@ -73,13 +71,6 @@ EOPLUGINS
     zgen oh-my-zsh plugins/colorize
     zgen oh-my-zsh plugins/docker
     zgen oh-my-zsh plugins/vagrant
-
-    # env managers
-    zgen oh-my-zsh plugins/rbenv
-    zgen oh-my-zsh plugins/pyenv
-    zgen oh-my-zsh plugins/jenv
-    zgen load jsahlen/nodenv.plugin.zsh
-    zgen load lukewang1024/zsh-goenv
   fi
 
   if is_macos; then
@@ -104,11 +95,11 @@ EOPLUGINS
   # These plugin needs to be loaded last and THE ORDER MATTERS
   zgen load zdharma-continuum/fast-syntax-highlighting
   zgen load zsh-users/zsh-history-substring-search
-  zgen load "$zsh_config_dir/rc.zsh"
+  zgen load "$config_dir/zsh/rc.zsh"
 
-  [ -f ~/.zshrc.local ] && zgen load ~/.zshrc.local
+  [ -f "$XDG_CONFIG_HOME/.zshrc.local" ] && zgen load "$XDG_CONFIG_HOME/.zshrc.local"
 
   zgen save
 fi
 
-source "$zsh_config_dir/finish.zsh"
+source "$config_dir/zsh/finish.zsh"

@@ -1,6 +1,7 @@
 install_nix_brew_runtimes()
 {
   local pkgs=(
+    anyenv
     deno
     go
     node

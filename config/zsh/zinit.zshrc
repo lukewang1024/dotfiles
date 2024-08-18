@@ -1,37 +1,33 @@
 config_dir="$HOME/.dotfiles/config"
-zsh_config_dir="$config_dir/zsh"
 
 GIT_AUTO_FETCH_INTERVAL=1200 # 20min
 
 source "$config_dir/utils.sh";
 source "$config_dir/sh/rc.sh"
-source "$zsh_config_dir/prepare.zsh"
+source "$config_dir/zsh/xdg-ninja-patch.zsh"
+source "$config_dir/zsh/prepare.zsh"
 
 # - - - - - - - - - - - - - - - - - - - -
 # Zinit Configuration
 # - - - - - - - - - - - - - - - - - - - -
 
-source ~/.zinit/bin/zinit.zsh
+source "$XDG_DATA_HOME/zinit/zinit.git/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Load a few important annexes, without Turbo
+# (this is currently required for annexes)
+zinit light-mode for \
+  zdharma-continuum/zinit-annex-as-monitor \
+  zdharma-continuum/zinit-annex-bin-gem-node \
+  zdharma-continuum/zinit-annex-patch-dl \
+  zdharma-continuum/zinit-annex-rust
 
 # - - - - - - - - - - - - - - - - - - - -
 # Theme
 # - - - - - - - - - - - - - - - - - - - -
 
 zinit light romkatv/powerlevel10k
-
-# - - - - - - - - - - - - - - - - - - - -
-# Annexes
-# - - - - - - - - - - - - - - - - - - - -
-
-# Load a few important annexes, without Turbo (this is currently required for annexes)
-zinit light-mode compile'handler' for \
-  zinit-zsh/z-a-patch-dl \
-  zinit-zsh/z-a-as-monitor \
-  zinit-zsh/z-a-bin-gem-node \
-  zinit-zsh/z-a-submods \
-  zdharma/declare-zsh
 
 # - - - - - - - - - - - - - - - - - - - -
 # Plugins
@@ -57,12 +53,10 @@ zinit wait lucid for \
   OMZP::encode64/encode64.plugin.zsh \
   OMZP::extract/extract.plugin.zsh \
   OMZP::fancy-ctrl-z/fancy-ctrl-z.plugin.zsh \
-  as'completion' OMZP::fd/_fd \
   OMZP::fzf/fzf.plugin.zsh \
   OMZP::git/git.plugin.zsh \
   OMZP::git-auto-fetch/git-auto-fetch.plugin.zsh \
   OMZP::git-extras/git-extras.plugin.zsh \
-  OMZP::git-flow/git-flow.plugin.zsh \
   OMZP::git-flow-avh/git-flow-avh.plugin.zsh \
   OMZP::gitignore/gitignore.plugin.zsh \
   OMZP::globalias/globalias.plugin.zsh \
@@ -96,19 +90,13 @@ if is_cygwin; then
 else # *nix
   zinit wait lucid for \
     OMZP::colorize/colorize.plugin.zsh \
-    as'completion' OMZP::docker/_docker \
-    OMZP::vagrant/vagrant.plugin.zsh \
-    OMZP::rbenv/rbenv.plugin.zsh \
-    OMZP::pyenv/pyenv.plugin.zsh \
-    OMZP::jenv/jenv.plugin.zsh \
-    jsahlen/nodenv.plugin.zsh \
-    lukewang1024/zsh-goenv
+    as'completion' OMZP::docker/completions/_docker \
+    OMZP::vagrant/vagrant.plugin.zsh
 
   if is_macos; then
     zinit wait lucid for \
-      plugins/macos/macos.plugin.zsh \
-      plugins/brew/brew.plugin.zsh \
-      plugins/forklift/forklift.plugin.zsh
+      OMZP::brew/brew.plugin.zsh \
+      OMZP::forklift/forklift.plugin.zsh
 
   elif is_linux; then
     if [ -f /etc/arch-release ]; then
@@ -130,8 +118,8 @@ else # *nix
   fi
 fi
 
-zinit snippet "$zsh_config_dir/rc.zsh"
+zinit snippet "$config_dir/zsh/rc.zsh"
 
-[ -f ~/.zshrc.local ] && zinit snippet ~/.zshrc.local
+[ -f "$XDG_CONFIG_HOME/.zshrc.local" ] && zinit snippet "$XDG_CONFIG_HOME/.zshrc.local"
 
-zinit snippet "$zsh_config_dir/finish.zsh"
+zinit snippet "$config_dir/zsh/finish.zsh"

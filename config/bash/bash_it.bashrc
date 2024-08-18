@@ -2,6 +2,7 @@ config_dir="$HOME/.dotfiles/config"
 
 source "$config_dir/utils.sh";
 source "$config_dir/sh/rc.sh"
+source "$config_dir/bash/xdg-ninja-patch.bash"
 
 if is_linux; then
   if [ -f /etc/arch-release ]; then

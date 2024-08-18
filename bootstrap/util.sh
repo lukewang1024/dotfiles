@@ -1,4 +1,5 @@
 source "$config_dir/utils.sh"
+source "$config_dir/sh/xdg-paths.sh"
 
 # Back up target file with appending ~
 backup()
