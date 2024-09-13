@@ -2,6 +2,7 @@ install_nix_brew_runtimes()
 {
   local pkgs=(
     anyenv
+    corepack
     deno
     go
     node
@@ -230,7 +231,6 @@ install_nix_brew_extra_packages()
     wtf
     wtfutil
     xpdf
-    yarn
     you-get
     yt-dlp
     zsh-completions
@@ -252,6 +252,7 @@ apply_nix_app_configs()
   backup_then_symlink "$config_dir/htop" ~/.config/htop
   backup_then_symlink "$config_dir/kitty" ~/.config/kitty
   backup_then_symlink "$config_dir/lf" ~/.config/lf
+  backup_then_symlink "$config_dir/percol" ~/.config/percol
   backup_then_symlink "$config_dir/starship/starship.toml" ~/.config/starship.toml
 }
 
