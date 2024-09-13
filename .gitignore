@@ -29,6 +29,7 @@ config/alacritty/local.toml
 config/git/local
 config/gtk-3.0/bookmarks
 config/karabiner/automatic_backups
+config/npm/local
 config/systemd/user/*.wants/
 config/thunar/accels.scm
 config/thunar/uca.xml

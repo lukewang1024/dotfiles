@@ -110,10 +110,18 @@ python_setup()
 npm_setup()
 {
   blank_lines
-  printf 'Applying patch to npmrc... '
   local npmrc="$XDG_CONFIG_HOME/npm/npmrc"
-  mkdir -p "$(dirname "$npmrc")"
-  cat "$config_dir/npm/xdg-patch" >> "$npmrc"
+
+  # Back up the current config file
+  if [ -f "$npmrc" ]; then
+    printf "Backing up current ${npmrc}... "
+    mv "$npmrc" "$npmrc~"
+    echo 'Done.'
+  fi
+
+  echo 'Applying new npmrc...'
+  cat "$config_dir/npm/common" > "$npmrc"
+  [ -f "$config_dir/npm/local" ] && cat "$config_dir/npm/local" >> "$npmrc"
   echo 'Done.'
 }
 
@@ -145,10 +153,19 @@ basic_env_setup()
 xdg_dir_create()
 {
   printf 'Creating XDG state & cache directories...'
-  mkdir -p "$XDG_CONFIG_HOME/wakatime"
-  mkdir -p "$XDG_CACHE_HOME/zsh"
+  # bash
   mkdir -p "$XDG_STATE_HOME/bash"
+  # less
   mkdir -p "$XDG_STATE_HOME/less"
+  # npm
+  mkdir -p "$XDG_CONFIG_HOME/npm"
+  mkdir -p "$XDG_DATA_HOME/npm"
+  mkdir -p "$XDG_CACHE_HOME/npm"
+  mkdir -p "$XDG_STATE_HOME/npm/logs"
+  # wakatime
+  mkdir -p "$XDG_CONFIG_HOME/wakatime"
+  # zsh
+  mkdir -p "$XDG_CACHE_HOME/zsh"
   mkdir -p "$XDG_STATE_HOME/zsh"
   echo 'Done.'
 }

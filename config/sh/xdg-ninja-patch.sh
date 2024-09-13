@@ -40,6 +40,9 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 # npm
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 
+# percol
+alias percol='percol --rcfile=$XDG_CONFIG_HOME/percol/rc.py'
+
 # python
 # export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 

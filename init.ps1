@@ -181,6 +181,7 @@ function prepare_windows_env_gui_extra()
     'carnac',
     'ccleaner',
     'chromium',
+    'clash-verge-rev',
     'cpu-z',
     'dotnet3-sdk',
     'dotnet5-sdk',
