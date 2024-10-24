@@ -31,13 +31,6 @@ export PATH="$HOME/.local/bin:$PATH"
 is_wsl2 && export WSL2_HOST_IP="$(cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }')"
 export LOCAL_PROXY_IP="${WSL2_HOST_IP:-localhost}"
 
-# pyenv
-if [ -d "$HOME/.pyenv" ]; then
-  export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init --path)"
-fi
-
 # Aliases
 
 ## Utils

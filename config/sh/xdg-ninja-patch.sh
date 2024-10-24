@@ -35,6 +35,7 @@ export TERMINFO="$XDG_DATA_HOME/terminfo"
 export TERMINFO_DIRS="$XDG_DATA_HOME/terminfo":/usr/share/terminfo
 
 # nodejs
+export NODE_COMPILE_CACHE="$XDG_CACHE_HOME/node_compile_cache"
 export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 
 # npm

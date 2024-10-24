@@ -4,7 +4,7 @@ patch:
     - schema: luna_pinyin # 全拼
     # - schema: double_pinyin # 自然码
   switcher/hotkeys:
-    - "Control+grave" # 注意是control+`，不是command+`
+    - "Control+Shift+grave" # 注意是control+`，不是command+`
   switcher/save_options:
     - full_shape
     - ascii_punct
