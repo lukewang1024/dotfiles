@@ -130,7 +130,6 @@ util_setup()
   blank_lines
   printf 'Installing handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" "$XDG_CONFIG_HOME/proxychains.conf"
-  backup_then_symlink "$util_dir/shell/pyenv-install" "$bin_dir/pyenv-install"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   echo 'Done.'

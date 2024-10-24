@@ -209,7 +209,7 @@ prepare_macos_env_gui_extra()
     calibre
     caprine
     charles
-    clashx
+    clash-verge-rev
     commander-one
     coteditor
     db-browser-for-sqlite
