@@ -93,6 +93,7 @@ function prepare_windows_env_cli_extra()
     'dum',
     'far',
     'fq',
+    'gcloud',
     'git-lfs',
     'gitui',
     'gping',
@@ -114,6 +115,7 @@ function prepare_windows_env_cli_extra()
     'nvm',
     'oraclejdk',
     'pandoc',
+    'pipx',
     'pnpm',
     'python',
     'sbt',
@@ -261,6 +263,7 @@ function prepare_windows_env_gui_extra()
   $wingetPkgs =
     '9NGHP3DX8HDX', # Files App
     '9NW33J738BL0', # Monitorian
+    'Anysphere.Cursor',
     'Bytedance.Feishu',
     'CLechasseur.PathCopyCopy',
     'Dropbox.Dropbox',

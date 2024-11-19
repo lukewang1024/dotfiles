@@ -78,7 +78,9 @@ prepare_macos_env_cli_extra()
 
   local pkgs=(
     brightness
+    colima
     csshx
+    docker
     duti
     fortune
     hyperkit
@@ -92,8 +94,8 @@ prepare_macos_env_cli_extra()
 
   local casks=(
     android-platform-tools
-    docker
     dotnet-sdk
+    google-cloud-sdk
     miniconda
     orbstack
     powershell
@@ -212,6 +214,7 @@ prepare_macos_env_gui_extra()
     clash-verge-rev
     commander-one
     coteditor
+    cursor
     db-browser-for-sqlite
     dropbox
     duet

@@ -119,15 +119,17 @@ install_pip_packages()
     cppman
     ici
     myqr
+    poetry
     powerline-status
     present
     pygments
     pywal
     rainbowstream
     rdbtools
+    ruff
   )
 
-  pip install --upgrade `join ' ' "${pkgs[@]}"`
+  pipx install `join ' ' "${pkgs[@]}"`
 
   echo 'Done.'
 }
