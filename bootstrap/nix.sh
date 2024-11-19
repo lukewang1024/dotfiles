@@ -2,13 +2,16 @@ install_nix_brew_runtimes()
 {
   local pkgs=(
     anyenv
-    corepack
     deno
     go
     node
     php
+    pipx
+    pnpm
     python
+    python-tk
     ruby
+    yarn
   )
   brew install `join ' ' "${pkgs[@]}"`
 }
@@ -189,7 +192,6 @@ install_nix_brew_extra_packages()
     pdfsandwich
     pgcli
     pngquant
-    pnpm
     polipo
     poppler
     privoxy

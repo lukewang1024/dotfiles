@@ -53,7 +53,7 @@ setAppToggles(hyper, {
   f = 'Firefox',
   -- g = '',
   -- h: for arrows
-  i = 'Cloud IDE',
+  i = 'Cursor',
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
@@ -97,7 +97,7 @@ setAppToggles(hyper, {
 setAppToggles(hyperAlt, {
   a = 'Activity Monitor',
   -- b = '',
-  c = 'Google Chrome Canary',
+  c = 'Cloud IDE',
   d = 'DevDocs',
   -- e = '',
   f = 'Figma',

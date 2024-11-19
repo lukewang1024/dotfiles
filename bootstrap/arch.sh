@@ -212,7 +212,6 @@ prepare_arch_env_cli_extra()
     pkgfile
     playerctl
     pngquant
-    pnpm
     poppler
     progress
     proxychains-ng
@@ -235,7 +234,6 @@ prepare_arch_env_cli_extra()
     w3m
     websocat
     wtf
-    yarn
     you-get
     yt-dlp
     zip
@@ -255,6 +253,7 @@ prepare_arch_env_cli_extra()
     git-quick-stats
     gitflow-avh
     go-musicfox-bin
+    google-cloud-cli
     icdiff
     lazydocker-bin
     lazynpm
@@ -408,6 +407,7 @@ prepare_arch_env_gui_extra()
     android-sdk-platform-tools
     android-studio
     corplink-bin
+    cursor-bin
     deepin-wine-tim
     deepin-wine-wechat
     dropbox
