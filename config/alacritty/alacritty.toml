@@ -1,3 +1,4 @@
+[general]
 import = ["/Users/lukew/.dotfiles/config/alacritty/theme.toml", "/Users/lukew/.dotfiles/config/alacritty/local.toml"]
 
 [[keyboard.bindings]]
@@ -179,6 +180,9 @@ mods = "Alt"
 chars = "\u001Bz"
 key = "Z"
 mods = "Alt"
+
+[font]
+size=14
 
 [window.padding]
 x = 2

@@ -196,7 +196,6 @@ prepare_macos_env_gui_extra()
   local casks=(
     aerial
     airbattery
-    aldente
     android-sdk
     android-studio
     androidtool
@@ -262,6 +261,7 @@ prepare_macos_env_gui_extra()
     lyricsx
     maccy
     mark-text
+    markedit
     microsoft-edge
     microsoft-remote-desktop
     mongodb-compass

@@ -94,6 +94,7 @@ function prepare_windows_env_cli_extra()
     'far',
     'fq',
     'gcloud',
+    'gh',
     'git-lfs',
     'gitui',
     'gping',
