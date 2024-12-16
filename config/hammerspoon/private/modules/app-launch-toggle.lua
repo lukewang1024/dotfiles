@@ -46,7 +46,7 @@ end
 
 setAppToggles(hyper, {
   a = 'Arc',
-  b = 'Safari',
+  b = 'com.apple.Safari',
   c = 'Google Chrome',
   d = 'Dictionary',
   e = 'Microsoft Edge',
@@ -58,7 +58,7 @@ setAppToggles(hyper, {
   -- k: for arrows
   -- l: for arrows
   m = 'Music',
-  n = 'nvALT',
+  n = 'MarkEdit',
   o = 'Microsoft OneNote',
   p = 'Preview',
   q = 'qutebrowser',
@@ -108,8 +108,8 @@ setAppToggles(hyperAlt, {
   -- k: for mouse move
   -- l: for mouse move
   m = 'com.tencent.QQMusicMac',                   -- QQ Music
-  n = 'Mark Text',
-  o = 'Omnivore',
+  n = 'MarkText',
+  -- o = '',
   p = 'Pocket',
   -- q = '',
   r = 'Microsoft Remote Desktop',
