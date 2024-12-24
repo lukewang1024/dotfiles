@@ -67,15 +67,44 @@ zinit_setup()
   echo 'Done.'
 }
 
+# Function to check common global zshenv locations
+find_global_zshenv() {
+  local locations=(
+    "/etc/zshenv"
+    "/etc/zsh/zshenv"
+    "/usr/local/etc/zshenv"
+  )
+
+  for loc in "${locations[@]}"; do
+    if [ -f "$loc" ]; then
+      echo "$loc"
+      return 0
+    fi
+  done
+
+  # If no file found, try to get from zsh itself
+  if command -v zsh >/dev/null 2>&1; then
+    # Try to get global zshenv path from zsh
+    local zsh_path=$(zsh -c 'echo $ZSHENV')
+    if [ -f "$zsh_path" ]; then
+      echo "$zsh_path"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
 zsh_common_setup()
 {
   # Use $HOME/.config since $XDG_CONFIG_HOME might be undefined at /etc/zshenv.
   ZDOTENV_EXPORT='export ZDOTDIR="$HOME/.config/zsh"'
-  if [ -f /etc/zshenv ] && grep -wq "$ZDOTENV_EXPORT" /etc/zshenv; then
-    echo 'ZDOTENV exists in /etc/zshenv'
+  local globalZshEnv="$(find_global_zshenv)"
+  if [ -f $globalZshEnv ] && grep -wq "$ZDOTENV_EXPORT" "$globalZshEnv"; then
+    echo "ZDOTENV exists in $globalZshEnv"
   else
-    echo "$ZDOTENV_EXPORT" | sudo tee -a /etc/zshenv > /dev/null
-    echo 'ZDOTENV set in /etc/zshenv'
+    echo "$ZDOTENV_EXPORT" | sudo tee -a "$globalZshEnv" > /dev/null
+    echo "ZDOTENV set in $globalZshEnv"
   fi
 
   backup_then_symlink "$config_dir/zsh/.zlogin" "$XDG_CONFIG_HOME/zsh/.zlogin"
