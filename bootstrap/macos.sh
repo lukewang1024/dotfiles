@@ -181,6 +181,7 @@ prepare_macos_env_gui_extra()
     1615988943 # Folder Peek
     1659622164 # VidHub - Video Library & Player
     1661733229 # LocalSend
+    6444050820 # Draw Things: AI Generation
   )
 
   mas install $masApps
@@ -237,6 +238,7 @@ prepare_macos_env_gui_extra()
     haptickey
     hocus-focus
     horndis
+    hyperconnect                                  # Cross-device interconnection service for the Xiaomi ecosystem
     imagealpha
     imageoptim
     inkscape
@@ -266,6 +268,7 @@ prepare_macos_env_gui_extra()
     microsoft-remote-desktop
     mongodb-compass
     monitorcontrol
+    msty
     mweb2
     netnewswire
     netspot

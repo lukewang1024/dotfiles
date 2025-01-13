@@ -178,6 +178,7 @@ function prepare_windows_env_gui_core()
 function prepare_windows_env_gui_extra()
 {
   $pkgs =
+    'altsnap',
     'android-sdk',
     'android-studio',
     'calibre',
