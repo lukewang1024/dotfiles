@@ -79,7 +79,7 @@ setAppToggles(hyper, {
   ['/'] = 'ForkLift',
   ['\''] = 'kitty',
   ['\\'] = 'MacPass',
-  ['`'] = 'Meetings',
+  -- ['`'] = '',
   ['1'] = 'Reminders',
   ['2'] = 'Calendar',
   ['3'] = 'Spark',
@@ -140,7 +140,7 @@ setAppToggles(hyperAlt, {
   -- ['8'] = '',
   ['9'] = 'WireShark',
   ['0'] = 'V2rayU',
-  ['space'] = 'Lark',
+  ['space'] = 'Feishu Meetings',
 })
 
 -- reload
