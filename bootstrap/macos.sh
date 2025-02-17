@@ -129,6 +129,7 @@ prepare_macos_env_gui_core()
     macpass
     maczip
     mos
+    raycast
     rectangle
     shottr
     snipaste
@@ -405,11 +406,11 @@ setup_macos_gaming()
     battle-net
     dosbox
     dosbox-x
+    ea
     epic-games
     gog-downloader
     homebrew/cask-versions/openemu@experimental
     openra
-    origin
     steam
   )
   brew install --cask `join ' ' "${casks[@]}"`
