@@ -366,6 +366,7 @@ set_macos_configs()
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
   backup_then_symlink "$config_dir/ranger/macos" ~/.config/ranger
   backup_then_symlink "$config_dir/Rime" ~/Library/Rime
+  cp "$config_dir/RectangleApp/RectangleConfig.json" '~/Library/Application Support/Rectangle/RectangleConfig.json'
 
   # Handy scripts
   backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
