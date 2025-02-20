@@ -93,18 +93,17 @@ triggerCapslockFunc()
     ;;;
     ;;; Hyper app toggles
     ;;;
-    case "a": toggleAppWindowExactMatch("Taskmgr", "TaskManagerWindow")                                                                   ; a - Task Manager
+    case "a": toggleAppWindowExactMatch("msedge", "Chrome_WidgetWin_1")                                                                   ; a - Edge
     case "c": toggleAppWindowExactMatch("chrome", "Chrome_WidgetWin_1")                                                                   ; c - Chrome
     case "d": toggleAppWindowExactMatch("Lingoes", "Afx:400000:0", "", getUserAppLink("Lingoes"), 1)                                      ; d - Lingoes
-    case "e": toggleAppWindowExactMatch("msedge", "Chrome_WidgetWin_1")                                                                   ; e - Edge
+    case "e": toggleAppWindowExactMatch("sublime_text", "PX_WINDOW_CLASS", "", getScoopAppLink("Sublime Text 4"))                         ; e - Sublime Text
     case "f": toggleAppWindowExactMatch("firefox", "MozillaWindowClass", "", getScoopAppLink("Firefox"))                                  ; f - Firefox
     case "m": toggleAppWindowExactMatch("foobar2000", "{97E27FAA-C0B3-4b8e-A693-ED7881E99FC1}", "", getScoopAppLink("Foobar2000"))        ; m - Foobar2000
-    case "n": toggleAppWindowExactMatch("Notepad", "Notepad")                                                                             ; n - Notepad
-    case "s": toggleAppWindowExactMatch("sublime_text", "PX_WINDOW_CLASS", "", getScoopAppLink("Sublime Text 4"))                         ; s - Sublime Text
+    case "n": toggleAppWindowExactMatch("Notepad", "Notepad")                                                                             ; n - Notepad    
     case "v": toggleAppWindowExactMatch("Code", "Chrome_WidgetWin_1", "", getScoopAppLink("Visual Studio Code"))                          ; v - VS Code
     case "w": toggleAppWindowExactMatch("WeChat", "WeChatMainWndForPC", "WeChat", getCommonAppLink("WeChat\WeChat"), 1)                   ; w - WeChat
     case "x": toggleAppWindowExactMatch("Seal", "Chrome_WidgetWin_1", "Seal", getCommonAppLink("Seal"))                                   ; x - Seal
-    case "z": toggleAppWindowExactMatch("zeal", "Qt5QWindowIcon", "", getScoopAppLink("Zeal"))                                            ; z - Zeal
+    case "z": toggleAppWindowExactMatch("Explorer", "CabinetWClass")                                                                      ; z - Explorer
     case "``": toggleAppWindowExactMatch("ApplicationFrameHost", "ApplicationFrameWindow", "Calculator", "calculator:")                   ; ` - Calculator
     case "1": toggleAppWindowPartialMatch("ApplicationFrameHost", "ApplicationFrameWindow", "- Calendar", "outlookcal:")                  ; 1 - Calendar
     case "3": toggleAppWindowPartialMatch("ApplicationFrameHost", "ApplicationFrameWindow", "- Mail", "outlookmail:")                     ; 3 - Mail
@@ -121,7 +120,8 @@ triggerCapslockFunc()
     ;;;
     ;;; HyperAlt app toggles
     ;;;
-    case "+e": toggleAppWindowExactMatch("Explorer", "CabinetWClass")                                                                     ; e - Explorer
+    case "+a": toggleAppWindowExactMatch("Taskmgr", "TaskManagerWindow")                                                                  ; a - Task Manager
+    case "+d": toggleAppWindowExactMatch("zeal", "Qt5QWindowIcon", "", getScoopAppLink("Zeal"))                                           ; d - Zeal
     case "+m": toggleAppWindowExactMatch("QQMusic", "TXGuiFoundation", "", getUserAppLink("QQMusic"), 1)                                  ; m - QQ Music
     case "+o": toggleAppWindowExactMatch("ONENOTE", "Framework::CFrame")                                                                  ; o - OneNote
     case "+s": toggleAppWindowExactMatch("Spotify", "Chrome_WidgetWin_0", "", getUserAppLink("Spotify"))                                  ; s - Spotify

@@ -45,11 +45,11 @@ local function setAppToggles(mod, mapping)
 end
 
 setAppToggles(hyper, {
-  a = 'Arc',
-  b = 'com.apple.Safari',
+  a = 'Microsoft Edge',
+  -- b = '',
   c = 'Google Chrome',
   d = 'Dictionary',
-  e = 'Microsoft Edge',
+  e = 'Sublime Text',
   f = 'Firefox',
   -- g = '',
   -- h: for arrows
@@ -59,11 +59,11 @@ setAppToggles(hyper, {
   -- l: for arrows
   m = 'Music',
   n = 'MarkEdit',
-  o = 'Microsoft OneNote',
+  -- o = '',
   p = 'Preview',
-  q = 'qutebrowser',
+  -- q = '',
   r = 'Reeder',
-  s = 'Sublime Text',
+  s = 'com.apple.Safari',
   t = 'Telegram',
   u = 'Screen Sharing',
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
@@ -97,13 +97,13 @@ setAppToggles(hyper, {
 setAppToggles(hyperAlt, {
   a = 'Activity Monitor',
   -- b = '',
-  c = 'Cloud IDE',
+  -- c = '',
   d = 'DevDocs',
   -- e = '',
   f = 'Figma',
-  g = 'Lepton',
+  -- g = '',
   -- h: for mouse move
-  i = 'IINA',
+  i = 'Cloud IDE',
   -- j: for mouse move
   -- k: for mouse move
   -- l: for mouse move
