@@ -92,6 +92,7 @@ find_global_zshenv() {
     fi
   fi
 
+  echo "/etc/zshenv"
   return 1
 }
 

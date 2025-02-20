@@ -193,11 +193,14 @@
 
 # >> Hyper shortcuts
 
-"jumpapp -m lxtask"
+"jumpapp -m chromium"
   Mod3 + a
 
-"jumpapp -m chromium"
+"jumpapp -m google-chrome"
   Mod3 + c
+
+"jumpapp -m subl"
+  Mod3 + e
 
 "jumpapp -m firefox"
   Mod3 + f
@@ -205,14 +208,8 @@
 "jumpapp -m foxitreader"
   Mod3 + p
 
-"jumpapp -m qutebrowser"
-  Mod3 + q
-
 "jumpapp -m zathura"
   Mod3 + r
-
-"jumpapp -m subl"
-  Mod3 + s
 
 "jumpapp -m telegram-desktop"
   Mod3 + t
@@ -252,8 +249,8 @@
 
 # >> Hyper+Shift shortcuts
 
-"jumpapp -m google-chrome"
-  Shift+Mod3 + c
+"jumpapp -m lxtask"
+  Shift+Mod3 + a
 
 # >> Extra XF86 keys
 # these are the extra media keys that some keyboards have

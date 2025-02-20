@@ -10,6 +10,10 @@
                             {
                                 "conditions": [
                                     {
+                                        "identifiers": [{ "is_built_in_keyboard": true }],
+                                        "type": "device_unless"
+                                    },
+                                    {
                                         "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_unless"
                                     },
@@ -27,6 +31,10 @@
                             },
                             {
                                 "conditions": [
+                                    {
+                                        "identifiers": [{ "is_built_in_keyboard": true }],
+                                        "type": "device_unless"
+                                    },
                                     {
                                         "identifiers": [{ "vendor_id": 1452 }],
                                         "type": "device_unless"

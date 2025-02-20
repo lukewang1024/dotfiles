@@ -1,8 +1,7 @@
 *~
 .*~
-/luna_pinyin.userdb/*
 /build/*
 /user.yaml
 /installation.yaml
-opencc/.DS_Store
+/*.userdb/
 .DS_Store

@@ -108,8 +108,6 @@ prepare_macos_env_cli_extra()
 
 prepare_macos_env_gui_core()
 {
-  brew tap homebrew/cask-fonts
-
   local casks=(
     alacritty
     alfred
@@ -177,7 +175,6 @@ prepare_macos_env_gui_extra()
     1497527363 # Blurred
     1499181666 # OwlOCR - Screenshot to Text
     1507782672 # Pixea
-    1564031042 # Omnivore: Read-it-later
     1607635845 # Velja
     1615988943 # Folder Peek
     1659622164 # VidHub - Video Library & Player
@@ -288,7 +285,6 @@ prepare_macos_env_gui_extra()
     provisionql
     proxifier
     qlcolorcode
-    qlimagesize
     qlmarkdown
     qlprettypatch
     qlstephen

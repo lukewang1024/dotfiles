@@ -77,7 +77,9 @@ fi
 is_ssh && [ -f ~/.agent-profile ] && source ~/.agent-profile
 
 # docker host patch for tools not respecting the current `docker context`
-alias dh="DOCKER_HOST=$(docker context inspect --format='{{.Endpoints.docker.Host}}')"
+if exists docker; then
+  alias dh="DOCKER_HOST=$(docker context inspect --format='{{.Endpoints.docker.Host}}')"
+fi
 
 # broot
 broot_config=$(is_macos && echo "$HOME/Library/Preferences/org.dystroy.broot" || echo "$HOME/.config/broot")
