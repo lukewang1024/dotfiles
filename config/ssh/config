@@ -12,20 +12,10 @@ Host github.com
   User git
   IdentityFile ~/.ssh/id_ed25519
 
-Host bitbucket.org
-  HostName bitbucket.org
-  User git
-  IdentityFile ~/.ssh/id_ed25519
-
 # Multiple account support
 
 Host github.com-geek
   HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519-geek
-
-Host bitbucket.org-geek
-  HostName bitbucket.org
   User git
   IdentityFile ~/.ssh/id_ed25519-geek
 
@@ -34,18 +24,8 @@ Host github.com-work
   User git
   IdentityFile ~/.ssh/id_ed25519-work
 
-Host bitbucket.org-work
-  HostName bitbucket.org
-  User git
-  IdentityFile ~/.ssh/id_ed25519-work
-
 Host github.com-misc
   HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519-misc
-
-Host bitbucket.org-misc
-  HostName bitbucket.org
   User git
   IdentityFile ~/.ssh/id_ed25519-misc
 
