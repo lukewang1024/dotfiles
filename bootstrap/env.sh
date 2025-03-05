@@ -161,6 +161,8 @@ xdg_dir_create()
   mkdir -p "$XDG_DATA_HOME/npm"
   mkdir -p "$XDG_CACHE_HOME/npm"
   mkdir -p "$XDG_STATE_HOME/npm/logs"
+  # tldr
+  mkdir -p "$XDG_CACHE_HOME/tldr"
   # wakatime
   mkdir -p "$XDG_CONFIG_HOME/wakatime"
   # zsh

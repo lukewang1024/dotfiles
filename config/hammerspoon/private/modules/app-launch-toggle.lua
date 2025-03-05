@@ -63,7 +63,7 @@ setAppToggles(hyper, {
   p = 'Preview',
   -- q = '',
   r = 'Reeder',
-  s = 'com.apple.Safari',
+  s = 'Safari',
   t = 'Telegram',
   u = 'Screen Sharing',
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
@@ -76,7 +76,7 @@ setAppToggles(hyper, {
   ['.'] = 'Sublime Merge',
   ['['] = 'Skype',
   [']'] = 'Slack',
-  ['/'] = 'ForkLift',
+  ['/'] = 'Marta',
   ['\''] = 'kitty',
   ['\\'] = 'MacPass',
   -- ['`'] = '',

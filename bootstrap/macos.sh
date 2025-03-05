@@ -65,9 +65,16 @@ prepare_macos_env_cli_core()
   install_nix_brew_core_packages
 
   local pkgs=(
+    colima
     mas
   )
   brew install `join ' ' "${pkgs[@]}"`
+
+  # colima service does not respect XDG_CONFIG_HOME and does not configure docker context properly
+  # local services=(
+  #   colima
+  # )
+  # brew services start `join ' ' "${pkgs[@]}"`
 
   basic_env_setup
 }
@@ -78,9 +85,7 @@ prepare_macos_env_cli_extra()
 
   local pkgs=(
     brightness
-    colima
     csshx
-    docker
     duti
     fortune
     hyperkit
@@ -149,9 +154,7 @@ prepare_macos_env_gui_extra()
   local masApps=(
     441258766  # Magnet
     497799835  # Xcode
-    539883307  # LINE
     # 568494494  # Pocket
-    585829637  # Todoist
     664513913  # 富途牛牛
     747648890  # Telegram
     768053424  # Gapplin
@@ -166,7 +169,6 @@ prepare_macos_env_gui_extra()
     1044484672 # ApolloOne - Photo Video Viewer
     1142151959 # Just Focus
     1176895641 # Spark
-    1278508951 # Trello
     1314842898 # miniQpicview (Kantu)
     1449412482 # Reeder 4
     1452453066 # Hidden Bar
@@ -190,6 +192,7 @@ prepare_macos_env_gui_extra()
   brew tap homebrew/cask-versions
   brew tap lukewang1024/homebrew-legacy
   brew tap dteoh/sqa
+  brew tap krtirtho/apps
   brew tap lihaoyun6/tap
 
   local casks=(
@@ -219,19 +222,15 @@ prepare_macos_env_gui_extra()
     electron-fiddle
     espanso
     eul
-    fantastical
     feishu
     figma
     firefox
-    firefox@nightly
     flume
     flux
     folx
     font-smoothing-adjuster
     forklift3
-    google-backup-and-sync
     google-chrome
-    google-chrome@canary
     handbrake
     haptickey
     hocus-focus
@@ -257,11 +256,11 @@ prepare_macos_env_gui_extra()
     logoer
     losslesscut
     lulu
-    lx-music
     lyricsx
     maccy
     mark-text
     markedit
+    marta
     microsoft-edge
     microsoft-remote-desktop
     mongodb-compass
@@ -303,7 +302,6 @@ prepare_macos_env_gui_extra()
     resilio-sync
     robo-3t
     rowanj-gitx
-    safari-technology-preview
     sequel-pro
     shifty
     skim
@@ -313,6 +311,7 @@ prepare_macos_env_gui_extra()
     soundflowerbed
     spotifree
     spotify
+    spotube
     sqlpro-for-postgres
     stats
     stretchly

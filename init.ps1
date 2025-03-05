@@ -270,7 +270,6 @@ function prepare_windows_env_gui_extra()
     'CLechasseur.PathCopyCopy',
     'Dropbox.Dropbox',
     'Google.Drive',
-    'lyswhut.lx-music-desktop',
     'Oracle.VirtualBox',
     'Resilio.ResilioSync',
     'Tencent.QQ',

@@ -88,9 +88,9 @@ prepare_arch_env_cli_core()
     procs
     ripgrep
     rsync
+    tealdeer
     the_silver_searcher
     tig
-    tldr
     tmux
     trash-cli
     unarchiver
@@ -270,6 +270,7 @@ prepare_arch_env_cli_extra()
     touchpad-state-git
     ttf-weather-icons
     ueberzugpp
+    xdg-ninja
   )
   aur_install_pkgs
 
@@ -419,7 +420,6 @@ prepare_arch_env_gui_extra()
     joplin
     kitematic
     losslesscut
-    lx-music-desktop-bin
     mailspring
     marktext-bin
     microsoft-edge-stable-bin

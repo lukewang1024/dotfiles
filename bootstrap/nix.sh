@@ -22,6 +22,9 @@ install_nix_brew_core_packages()
 
   local pkgs=(
     diff-so-fancy
+    docker
+    docker-buildx
+    docker-compose
     fd
     findutils
     fx
@@ -30,6 +33,8 @@ install_nix_brew_core_packages()
     htop
     httpie
     jq
+    lazydocker
+    lazygit
     less
     lf
     lsd
@@ -40,9 +45,9 @@ install_nix_brew_core_packages()
     procs
     ripgrep
     rsync
+    tealdeer
     the_silver_searcher
     tig
-    tldr
     tmux
     trash-cli
     unar
@@ -152,8 +157,6 @@ install_nix_brew_extra_packages()
     jless
     jpegoptim
     kubernetes-cli
-    lazydocker
-    lazygit
     lazynpm
     lolcat
     mailsy
@@ -232,6 +235,7 @@ install_nix_brew_extra_packages()
     wifi-password
     wtf
     wtfutil
+    xdg-ninja
     xpdf
     you-get
     yt-dlp
