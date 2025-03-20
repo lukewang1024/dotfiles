@@ -33,6 +33,10 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strateg
     return
   }
 
+  ; TrayIcon lib does not work on latest Windows 11 build. Strategy 1 & 2 will fail as a result.
+  ; Fix required and some discussions could be found here:
+  ; https://www.autohotkey.com/boards/viewtopic.php?p=499489#p499489
+
   ; Strategy #1 - activate by simulating tray icon click, minimize by simulating close
   if (strategy == 1)
   {
@@ -79,6 +83,21 @@ toggleAppWindow(ahk_exe, ahk_class := "", title := "", bin_target := "", strateg
     else
     {
       WinActivate, %targetWinTitle%
+    }
+    return
+  }
+
+  ; Strategy #4 - activate by launching exe, minimize by simulating close
+  if (strategy == 4)
+  {
+    if WinActive(winTitle)
+    {
+      ; 0x112 = WM_SYSCOMMAND, 0xF060 = SC_CLOSE
+      PostMessage, 0x112, 0xF060
+    }
+    else
+    {
+      Run, %bin_target%
     }
     return
   }
