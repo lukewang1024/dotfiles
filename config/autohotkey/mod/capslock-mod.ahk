@@ -95,25 +95,26 @@ triggerCapslockFunc()
     ;;;
     case "a": toggleAppWindowExactMatch("msedge", "Chrome_WidgetWin_1")                                                                   ; a - Edge
     case "c": toggleAppWindowExactMatch("chrome", "Chrome_WidgetWin_1")                                                                   ; c - Chrome
-    case "d": toggleAppWindowExactMatch("Lingoes", "Afx:400000:0", "", getUserAppLink("Lingoes"), 1)                                      ; d - Lingoes
+    case "d": toggleAppWindowExactMatch("Lingoes", "Afx:400000:0", "", getUserAppLink("Lingoes"), 4)                                      ; d - Lingoes
     case "e": toggleAppWindowExactMatch("sublime_text", "PX_WINDOW_CLASS", "", getScoopAppLink("Sublime Text 4"))                         ; e - Sublime Text
     case "f": toggleAppWindowExactMatch("firefox", "MozillaWindowClass", "", getScoopAppLink("Firefox"))                                  ; f - Firefox
+    case "i": toggleAppWindowExactMatch("Cursor", "Chrome_WidgetWin_1", "", getUserAppLink("Cursor"))                                     ; i - Cursor
     case "m": toggleAppWindowExactMatch("foobar2000", "{97E27FAA-C0B3-4b8e-A693-ED7881E99FC1}", "", getScoopAppLink("Foobar2000"))        ; m - Foobar2000
     case "n": toggleAppWindowExactMatch("Notepad", "Notepad")                                                                             ; n - Notepad    
     case "v": toggleAppWindowExactMatch("Code", "Chrome_WidgetWin_1", "", getScoopAppLink("Visual Studio Code"))                          ; v - VS Code
-    case "w": toggleAppWindowExactMatch("WeChat", "WeChatMainWndForPC", "WeChat", getCommonAppLink("WeChat\WeChat"), 1)                   ; w - WeChat
-    case "x": toggleAppWindowExactMatch("Seal", "Chrome_WidgetWin_1", "Seal", getCommonAppLink("Seal"))                                   ; x - Seal
+    case "w": toggleAppWindowExactMatch("Weixin", "Qt51514QWindowIcon", "", getCommonAppLink("WeChat Beta\WeChat Beta"), 4)               ; w - WeChat
+    case "x": toggleAppWindowExactMatch("Corplink", "Chrome_WidgetWin_1", "SealSuite", getCommonAppLink("Feilian"))                       ; x - Feilian
     case "z": toggleAppWindowExactMatch("Explorer", "CabinetWClass")                                                                      ; z - Explorer
     case "``": toggleAppWindowExactMatch("ApplicationFrameHost", "ApplicationFrameWindow", "Calculator", "calculator:")                   ; ` - Calculator
     case "1": toggleAppWindowPartialMatch("ApplicationFrameHost", "ApplicationFrameWindow", "- Calendar", "outlookcal:")                  ; 1 - Calendar
     case "3": toggleAppWindowPartialMatch("ApplicationFrameHost", "ApplicationFrameWindow", "- Mail", "outlookmail:")                     ; 3 - Mail
     case "5": toggleAppWindowExactMatch("WinSCP", "TScpCommanderForm", "", getScoopAppLink("WinSCP"))                                     ; 5 - WinSCP
     case "9": toggleAppWindowExactMatch("Charles", "SunAwtFrame", "", getUserAppLink("Charles\Charles"))                                  ; 9 - Charles
-    case "0": toggleAppWindowExactMatch("Proxifier", "Proxifier32Cls", "", getScoopAppLink("Proxifier PE"), 1)                            ; 0 - Proxifier
-    case "Space": toggleAppWindowExactMatch("Feishu", "Chrome_WidgetWin_0", "Feishu", getUserAppLink("Feishu"))                           ; Space - Feishu
+    case "0": toggleAppWindowExactMatch("Proxifier", "Proxifier32Cls", "", getScoopAppLink("Proxifier PE"), 4)                            ; 0 - Proxifier
+    case "Space": toggleAppWindowExactMatch("Feishu", "Chrome_WidgetWin_1", "Feishu", getCommonAppLink("Feishu"))                         ; Space - Feishu
     case "SC027": toggleAppWindowExactMatch("WindowsTerminal", "CASCADIA_HOSTING_WINDOW_CLASS", "", getScoopAppLink("Windows Terminal"))  ; ; - Windows Terminal
     case "'": toggleAppWindowExactMatch("alacritty", "Window Class", "", getScoopAppLink("Alacritty"))                                    ; ' - Alacritty
-    case "\": toggleAppWindowExactMatch("KeePass", "WindowsForms10.Window.8.app.0.30495d1_r6_ad1", "", getScoopAppLink("KeePass"))        ; \ - KeePass
+    case "\": toggleAppWindowExactMatch("KeePassXC", "Qt51511QWindowIcon", "", getScoopAppLink("KeePassXC"))                              ; \ - KeePassXC
     case ".": toggleAppWindowExactMatch("sublime_merge", "PX_WINDOW_CLASS", "", getScoopAppLink("Sublime Merge"))                         ; . - Sublime Merge
     case "/": toggleAppWindowExactMatch("doublecmd", "TTOTAL_CMD", "", getScoopAppLink("Double Commander"))                               ; z - Double Commander
 
@@ -122,11 +123,10 @@ triggerCapslockFunc()
     ;;;
     case "+a": toggleAppWindowExactMatch("Taskmgr", "TaskManagerWindow")                                                                  ; a - Task Manager
     case "+d": toggleAppWindowExactMatch("zeal", "Qt5QWindowIcon", "", getScoopAppLink("Zeal"))                                           ; d - Zeal
-    case "+m": toggleAppWindowExactMatch("QQMusic", "TXGuiFoundation", "", getUserAppLink("QQMusic"), 1)                                  ; m - QQ Music
+    case "+m": toggleAppWindowExactMatch("QQMusic", "TXGuiFoundation", "", getUserAppLink("QQMusic"), 4)                                  ; m - QQ Music
     case "+o": toggleAppWindowExactMatch("ONENOTE", "Framework::CFrame")                                                                  ; o - OneNote
     case "+s": toggleAppWindowExactMatch("Spotify", "Chrome_WidgetWin_0", "", getUserAppLink("Spotify"))                                  ; s - Spotify
     case "+w": toggleAppWindowExactMatch("WhatsApp", "Chrome_WidgetWin_1")                                                                ; w - WhatsApp
-    case "+z": toggleAppWindowExactMatch("Zeplin", "Chrome_WidgetWin_1")                                                                  ; z - Zeplin
     case "+0": toggleAppWindowExactMatch("v2rayN", "WindowsForms10.Window.8.app.0.34f5582_r6_ad1", "", getScoopAppLink("v2rayN"))         ; 0 - v2rayN
     case "+Space": toggleAppWindowExactMatch("Feishu", "Chrome_WidgetWin_0", "Feishu Meetings", getUserAppLink("Feishu"))                 ; Space - Feishu Meeting
     case "+/": toggleAppWindowExactMatch("filezilla", "wxWindowNR", "", getScoopAppLink("FileZilla"))                                     ; / - FileZilla

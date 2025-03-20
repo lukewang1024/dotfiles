@@ -73,6 +73,10 @@ function prepare_windows_env_cli_core()
 
   scoop_install $pkgs
 
+  # Uncomment this if proxy needed
+  #sudo winget settings --enable ProxyCommandLineOptions
+  #sudo winget settings set DefaultProxy http://127.0.0.1:1081
+
   $wingetPkgs =
     'JanDeDobbeleer.OhMyPosh',
     'Microsoft.PowerShell'
@@ -141,10 +145,13 @@ function prepare_windows_env_gui_core()
     'alacritty',
     'altsnap',
     'autohotkey',
+    'autohotkey1.1',
     'ditto',
+    'dotnet-sdk',
     'everything',
-    'keepass',
+    'keepassxc',
     'listary',
+    'powertoys',
     'quicklook',
     'snipaste',
     'sublime-merge',
@@ -167,8 +174,8 @@ function prepare_windows_env_gui_core()
   scoop_sudo_install $fonts
 
   $wingetPkgs =
-    'everythingtoolbar',
-    'Rime.Weasel'
+    'Rime.Weasel',
+    'stnkl.EverythingToolbar'
 
   winget_install $wingetPkgs
 
@@ -187,9 +194,6 @@ function prepare_windows_env_gui_extra()
     'chromium',
     'clash-verge-rev',
     'cpu-z',
-    'dotnet3-sdk',
-    'dotnet5-sdk',
-    'dotnet6-sdk',
     'doublecmd',
     'dropit',
     'eartrumpet',
@@ -224,7 +228,6 @@ function prepare_windows_env_gui_extra()
     'pdfsam',
     'phantomjs',
     'potplayer',
-    'powertoys',
     'processhacker',
     'proxifier',
     'putty',
@@ -271,7 +274,6 @@ function prepare_windows_env_gui_extra()
     'Dropbox.Dropbox',
     'Google.Drive',
     'Oracle.VirtualBox',
-    'Resilio.ResilioSync',
     'Tencent.QQ',
     'Tencent.QQMusic',
     'Tencent.WeChat',
@@ -300,6 +302,9 @@ function install_scoop()
   } else {
     iex (new-object net.webclient).downloadstring('https://get.scoop.sh')
   }
+
+  # Uncomment this if proxy needed
+  #scoop config proxy 127.0.0.1:1080
 
   scoop install git
 
@@ -335,7 +340,7 @@ function set_windows_configs()
   # enable ssh-agent service
   sudo Set-Service ssh-agent -StartupType Automatic
 
-  sync_config_repo https://github.com/lukewang1024/dotfiles $dotPath
+  sync_config_repo https://github.com/lukewang1024/dotfiles "$dotPath"
 
   backup_then_symlink "$configPath\alacritty" "$env:APPDATA\alacritty"
   backup_then_symlink "$configPath\powershell" "$env:USERPROFILE\Documents\PowerShell"
@@ -387,7 +392,7 @@ function sync_config_repo($repoUrl, $configPath, $shallow = $false)
 {
   if (Test-Path "$configPath") {
     if (Test-Path "$configPath\.git") {
-      Invoke-Expression "pwsh -Command { cd $configPath ; git pull }"
+      Invoke-Expression "pwsh -Command { cd '$configPath' ; git pull }"
       return
     }
 
