@@ -1,5 +1,6 @@
 source "$partial_dir/shell.sh"
 source "$partial_dir/pkg.sh"
+source "$config_dir/sh/xdg-ninja-patch.sh"
 
 git_setup()
 {
@@ -88,6 +89,31 @@ anyenv_setup()
   anyenv install pyenv
   anyenv install rbenv
   eval "$(anyenv init -)"
+
+  local GH='https://github.com'
+
+  local NODENV_PLUGINS="$(nodenv root)/plugins"
+  sync_config_repo "$NODENV_PLUGINS/node-build"                 "$GH/nodenv/node-build"
+  sync_config_repo "$NODENV_PLUGINS/nodenv-default-packages"    "$GH/nodenv/nodenv-default-packages"
+  sync_config_repo "$NODENV_PLUGINS/nodenv-package-json-engine" "$GH/nodenv/nodenv-package-json-engine"
+  sync_config_repo "$NODENV_PLUGINS/nodenv-package-rehash"      "$GH/nodenv/nodenv-package-rehash"
+  sync_config_repo "$NODENV_PLUGINS/nodenv-update"              "$GH/nodenv/nodenv-update"
+
+  
+  local PYENV_PLUGINS="$(pyenv root)/plugins"
+  sync_config_repo "$PYENV_PLUGINS/pyenv-doctor"     "$GH/pyenv/pyenv-doctor"
+  sync_config_repo "$PYENV_PLUGINS/pyenv-update"     "$GH/pyenv/pyenv-update"
+  sync_config_repo "$PYENV_PLUGINS/pyenv-virtualenv" "$GH/pyenv/pyenv-virtualenv"
+  sync_config_repo "$PYENV_PLUGINS/pyenv-which-ext"  "$GH/pyenv/pyenv-which-ext"
+  
+  local RBENV_PLUGINS="$(rbenv root)/plugins"
+  sync_config_repo "$RBENV_PLUGINS/ruby-build"          "$GH/rbenv/ruby-build"
+  sync_config_repo "$RBENV_PLUGINS/rbenv-vars"          "$GH/rbenv/rbenv-vars"
+  sync_config_repo "$RBENV_PLUGINS/rbenv-each"          "$GH/rbenv/rbenv-each"
+  sync_config_repo "$RBENV_PLUGINS/rbenv-default-gems"  "$GH/rbenv/rbenv-default-gems"
+  sync_config_repo "$RBENV_PLUGINS/rbenv-update"        "$GH/rkh/rbenv-update"
+  sync_config_repo "$RBENV_PLUGINS/rbenv-communal-gems" "$GH/tpope/rbenv-communal-gems"
+  sync_config_repo "$RBENV_PLUGINS/rbenv-user-gems"     "$GH/mislav/rbenv-user-gems"
 }
 
 rustup_setup()
@@ -137,14 +163,16 @@ util_setup()
 
 basic_env_setup()
 {
-  ssh_setup
   profile_setup
   bashit_setup
-  zgen_setup
+  zgen_setup  
+  ssh_setup
   tmux_setup
   git_setup
   tig_setup
+  anyenv_setup
   rustup_setup
+  npm_setup
   vim_setup
   xdg_dir_create
 }

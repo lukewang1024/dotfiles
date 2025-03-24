@@ -235,9 +235,6 @@
 "jumpapp -m kitty"
   Mod3 + apostrophe
 
-"jumpapp -m skype"
-  Mod3 + bracketleft
-
 "jumpapp -m slack"
   Mod3 + bracketright
 

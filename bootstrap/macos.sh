@@ -127,6 +127,7 @@ prepare_macos_env_gui_core()
     hammerspoon
     iina
     iterm2
+    jordanbaird-ice
     karabiner-elements
     keyboardholder
     macpass
@@ -154,8 +155,7 @@ prepare_macos_env_gui_extra()
   local masApps=(
     441258766  # Magnet
     497799835  # Xcode
-    # 568494494  # Pocket
-    664513913  # 富途牛牛
+    664513913  # Futubull
     747648890  # Telegram
     768053424  # Gapplin
     784801555  # OneNote
@@ -273,7 +273,6 @@ prepare_macos_env_gui_extra()
     ntfstool
     nvalt
     omnidisksweeper
-    onedrive
     onyx
     openinterminal
     openmtp
@@ -311,7 +310,6 @@ prepare_macos_env_gui_extra()
     soundflowerbed
     spotifree
     spotify
-    spotube
     sqlpro-for-postgres
     stats
     stretchly
@@ -339,8 +337,6 @@ prepare_macos_env_gui_extra()
     wkhtmltopdf
     xld
     xquartz
-    zeplin
-    zoomus
   )
   brew install --cask `join ' ' "${casks[@]}"`
 

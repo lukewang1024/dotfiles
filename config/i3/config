@@ -103,7 +103,6 @@ bindsym $hyper+1                        $srun -i gsimplecal -e 'gsimplecal'
 
 bindsym $hyper+semicolon                $grun -i aterm -e '$term --class aterm'
 bindsym $hyper+apostrophe               $grun -i kitty -e 'kitty'
-bindsym $hyper+bracketleft              $grun -i skype
 bindsym $hyper+bracketright             $grun -i slack
 bindsym $hyper+backslash                $srun -i keepassxc -e 'keepassxc'
 bindsym $hyper+space                    $grun -i feishu -e 'gtk-launch feishu'
@@ -143,7 +142,6 @@ for_window [instance="lxtask" window_type="normal"]             focus; $fyra -m 
 for_window [instance="musixmatch"]                              focus; $fyra -m B
 for_window [instance="ncmpcpp"]                                 focus; $fyra -m B
 for_window [instance="qutebrowser"]                             focus; $fyra -m B
-for_window [instance="skype"]                                   focus; $fyra -m D
 for_window [instance="slack" title="Slack -"]                   focus; $fyra -m A
 for_window [instance="Steam" title="^Steam$"]                   focus; $fyra -m A
 for_window [instance="sublime_text" window_type="normal"]       focus; $fyra -m A

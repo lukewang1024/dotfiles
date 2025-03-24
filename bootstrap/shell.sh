@@ -137,8 +137,9 @@ bashit_setup()
 
 profile_setup()
 {
-  blank_lines
-  printf 'Symlinking .profile... '
-  backup_then_symlink "$config_dir/sh/.profile" ~/.profile
-  echo 'Done.'
+  # blank_lines
+  # printf 'Symlinking .profile... '
+  # backup_then_symlink "$config_dir/sh/.profile" ~/.profile
+  # echo 'Done.'
+  echo '.profile is skipped for symlinking.'
 }
