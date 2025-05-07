@@ -367,7 +367,12 @@ better_macos_defaults()
   defaults write com.apple.dock show-recents -bool false
 
   # Reset Launchpad apps order
-  defaults write com.apple.dock ResetLaunchPad -bool true
+  local macosVersion=$(sw_vers -productVersion | cut -f1 -d'.')
+  if [ macosVersion -le 15 ]; then
+    find 2>/dev/null /private/var/folders/ -type d -name com.apple.dock.launchpad -exec rm -rf {} +
+  else
+    defaults write com.apple.dock ResetLaunchPad -bool true
+  fi
 
   # Add a spacer to the left side of the Dock (where the applications are)
   defaults write com.apple.dock persistent-apps -array-add '{tile-data={}; tile-type="spacer-tile";}'

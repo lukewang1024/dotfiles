@@ -132,7 +132,6 @@ prepare_macos_env_gui_core()
     macpass
     maczip
     mos
-    raycast
     rectangle
     shottr
     snipaste
@@ -297,6 +296,7 @@ prepare_macos_env_gui_extra()
     quickrecorder
     qutebrowser
     rapidapi
+    raycast
     redisinsight
     resilio-sync
     robo-3t
@@ -329,6 +329,7 @@ prepare_macos_env_gui_extra()
     virtualbox
     virtualbox-extension-pack
     vitalsigns
+    # vmware-fusion
     vnc-viewer
     webpquicklook
     wechat
