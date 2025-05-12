@@ -148,6 +148,7 @@ better_macos_defaults()
   ###############################################################
 
   # Trackpad: enable tap to click for this user and for the login screen
+  defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
   defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
   defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
   defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
@@ -236,11 +237,17 @@ better_macos_defaults()
   # Finder: show path bar
   defaults write com.apple.finder ShowPathbar -bool true
 
+  # Show hidden files in the Finder
+  defaults write com.apple.finder AppleShowAllFiles -bool false
+
   # Display full POSIX path as Finder window title
   defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
 
   # Keep folders on top when sorting by name
   defaults write com.apple.finder _FXSortFoldersFirst -bool true
+  
+  # Keep folders on top on Desktop
+  defaults write com.apple.finder _FXSortFoldersFirstOnDesktop -bool true
 
   # When performing a search, search the current folder by default
   defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
@@ -643,6 +650,9 @@ better_macos_defaults()
   # SlowQuitApps #
   ################
   defaults write com.dteoh.SlowQuitApps delay -int 500
+
+  # Apply the settings
+  /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
 
   ##############################
   # Kill affected applications #

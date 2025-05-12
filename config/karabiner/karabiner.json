@@ -134,6 +134,19 @@
                         ]
                     },
                     {
+                        "description": "Workaround for pressing Esc after ⌘+⌃+Q not able to turn off the screen",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "escape",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to_if_alone": [{ "key_code": "escape" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Change Fn + h/j/k/l to Arrows",
                         "manipulators": [
                             {
