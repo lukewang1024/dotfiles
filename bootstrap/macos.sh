@@ -343,7 +343,7 @@ prepare_macos_env_gui_extra()
   local no_quarantined_casks=(
     syntax-highlight
   )
-  brew install --cask `join ' ' "${no_quarantined_casks[@]}"`
+  brew install --cask --no-quarantine `join ' ' "${no_quarantined_casks[@]}"`
 
   sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 }
