@@ -54,7 +54,6 @@ install_nix_brew_core_packages()
     urlview
     vim
     wget
-    xsv
     yazi
     zoxide
     zsh
@@ -235,6 +234,7 @@ install_nix_brew_extra_packages()
     wifi-password
     wtf
     wtfutil
+    xan
     xdg-ninja
     xpdf
     you-get
