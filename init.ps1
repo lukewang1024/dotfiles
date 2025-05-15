@@ -128,6 +128,7 @@ function prepare_windows_env_cli_extra()
     'shasum',
     'starship',
     'vagrant',
+    'xan',
     'yarn'
 
   scoop_install $pkgs

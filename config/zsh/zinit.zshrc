@@ -3,8 +3,8 @@ config_dir="$HOME/.dotfiles/config"
 GIT_AUTO_FETCH_INTERVAL=1200 # 20min
 
 source "$config_dir/utils.sh";
-source "$config_dir/sh/rc.sh"
 source "$config_dir/zsh/xdg-ninja-patch.zsh"
+source "$config_dir/sh/rc.sh"
 source "$config_dir/zsh/prepare.zsh"
 
 # - - - - - - - - - - - - - - - - - - - -

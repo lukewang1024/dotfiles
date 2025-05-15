@@ -111,7 +111,6 @@ prepare_arch_env_cli_core()
     lf-bin
     navi
     urlview
-    xsv
   )
   aur_install_pkgs
 
@@ -234,6 +233,7 @@ prepare_arch_env_cli_extra()
     w3m
     websocat
     wtf
+    xan
     you-get
     yt-dlp
     zip

@@ -1,8 +1,8 @@
 config_dir="$HOME/.dotfiles/config"
 
 source "$config_dir/utils.sh";
-source "$config_dir/sh/rc.sh"
 source "$config_dir/zsh/xdg-ninja-patch.zsh"
+source "$config_dir/sh/rc.sh"
 source "$config_dir/zsh/prepare.zsh"
 
 source $XDG_DATA_HOME/zgen/zgen.zsh
