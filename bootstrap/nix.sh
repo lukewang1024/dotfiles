@@ -208,6 +208,7 @@ install_nix_brew_extra_packages()
     shellcheck
     sl
     smartmontools
+    sniffnet
     spark
     speedtest-cli
     spotifox

@@ -44,6 +44,7 @@ install_npm_packages()
 
   local pkgs=(
     @angular/cli
+    @anthropic-ai/claude-code
     @squoosh/cli
     @vue/cli
     asar
@@ -83,6 +84,7 @@ install_npm_packages()
     npm-quick-run
     nrm
     open-cli
+    opencommit
     pangu
     pm2
     pnpm

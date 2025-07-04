@@ -88,7 +88,9 @@ set mouse=a
 let mapleader = ","
 
 " <F11> - toggle paste option
-set pastetoggle=<F11>
+if !has('nvim')
+  set pastetoggle=<F11>
+endif
 
 " <CR> - clear previous search highlight
 nnoremap <silent> <CR> :noh<CR><CR>

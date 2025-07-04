@@ -219,6 +219,7 @@ prepare_arch_env_cli_extra()
     shellcheck
     sl
     snapd
+    sniffnet
     starship
     toolong
     translate-shell
