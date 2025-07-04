@@ -118,7 +118,6 @@ prepare_macos_env_gui_core()
     alfred
     alt-tab
     appcleaner
-    browserosaurus
     fliqlo
     font-fira-code-nerd-font
     font-meslo-lg-nerd-font
@@ -208,6 +207,7 @@ prepare_macos_env_gui_extra()
     bitbar
     bob
     boop
+    browserosaurus
     cakebrew
     calibre
     caprine

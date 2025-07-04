@@ -64,7 +64,7 @@ setAppToggles(hyper, {
   -- q = '',
   r = 'Reeder',
   s = 'Safari',
-  t = 'Telegram',
+  t = 'com.trae.app',                             -- Trae
   -- u = '',
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
   w = 'WeChat',
@@ -74,7 +74,7 @@ setAppToggles(hyper, {
   [','] = 'com.apple.systempreferences',          -- CFBundleName changed in macOS 13 Ventura, use CFBundleIdentifier for compatibility
   [';'] = 'Alacritty',
   ['.'] = 'Sublime Merge',
-  -- ['['] = '',
+  ['['] = 'Telegram',
   [']'] = 'Slack',
   ['/'] = 'Marta',
   ['\''] = 'kitty',
@@ -114,7 +114,7 @@ setAppToggles(hyperAlt, {
   -- q = '',
   -- r = '',
   -- s = '',
-  -- t = '',
+  t = 'cn.trae.app',                              -- Trae CN
   -- u = '',
   v = 'VNC Viewer',
   -- w = '',

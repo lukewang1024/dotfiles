@@ -126,6 +126,7 @@ function prepare_windows_env_cli_extra()
     'sbt',
     'scrcpy',
     'shasum',
+    'sniffnet',
     'starship',
     'vagrant',
     'xan',
