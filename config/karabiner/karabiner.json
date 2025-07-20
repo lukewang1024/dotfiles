@@ -90,9 +90,15 @@
                         ]
                     },
                     {
-                        "description": "Change caps_lock key to control+option+command, to escape when pressed alone. (Use command+caps_lock as caps_lock)",
+                        "description": "Change caps_lock key to control+option+command if pressed with other keys, to escape if pressed alone. (Use command+caps_lock as caps_lock)",
                         "manipulators": [
                             {
+                                // "conditions": [
+                                //     {
+                                //         "type": "frontmost_application_unless",
+                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
+                                //     }
+                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": {
@@ -104,6 +110,12 @@
                                 "type": "basic"
                             },
                             {
+                                // "conditions": [
+                                //     {
+                                //         "type": "frontmost_application_unless",
+                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
+                                //     }
+                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": { "optional": ["any"] }
@@ -778,9 +790,15 @@
                         ]
                     },
                     {
-                        "description": "Change caps_lock to control if pressed with other keys, to escape if pressed alone. (Use command+caps_lock as caps_lock)",
+                        "description": "Change caps_lock key to control if pressed with other keys, to escape if pressed alone. (Use command+caps_lock as caps_lock)",
                         "manipulators": [
                             {
+                                // "conditions": [
+                                //     {
+                                //         "type": "frontmost_application_unless",
+                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
+                                //     }
+                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": {
@@ -792,6 +810,12 @@
                                 "type": "basic"
                             },
                             {
+                                // "conditions": [
+                                //     {
+                                //         "type": "frontmost_application_unless",
+                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
+                                //     }
+                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": { "optional": ["any"] }
