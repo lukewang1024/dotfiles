@@ -128,6 +128,7 @@ function prepare_windows_env_cli_extra()
     'shasum',
     'sniffnet',
     'starship',
+    'uv',
     'vagrant',
     'xan',
     'yarn'
