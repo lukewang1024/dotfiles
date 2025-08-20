@@ -93,12 +93,6 @@
                         "description": "Change caps_lock key to control+option+command if pressed with other keys, to escape if pressed alone. (Use command+caps_lock as caps_lock)",
                         "manipulators": [
                             {
-                                // "conditions": [
-                                //     {
-                                //         "type": "frontmost_application_unless",
-                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
-                                //     }
-                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": {
@@ -110,12 +104,6 @@
                                 "type": "basic"
                             },
                             {
-                                // "conditions": [
-                                //     {
-                                //         "type": "frontmost_application_unless",
-                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
-                                //     }
-                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": { "optional": ["any"] }
@@ -133,6 +121,7 @@
                     },
                     {
                         "description": "Post escape if left_control is pressed alone.",
+                        "enabled": false,
                         "manipulators": [
                             {
                                 "from": {
@@ -793,12 +782,6 @@
                         "description": "Change caps_lock key to control if pressed with other keys, to escape if pressed alone. (Use command+caps_lock as caps_lock)",
                         "manipulators": [
                             {
-                                // "conditions": [
-                                //     {
-                                //         "type": "frontmost_application_unless",
-                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
-                                //     }
-                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": {
@@ -810,12 +793,6 @@
                                 "type": "basic"
                             },
                             {
-                                // "conditions": [
-                                //     {
-                                //         "type": "frontmost_application_unless",
-                                //         "bundle_identifiers": ["^com\\.vmware\\.fusion$"]
-                                //     }
-                                // ],
                                 "from": {
                                     "key_code": "caps_lock",
                                     "modifiers": { "optional": ["any"] }
@@ -1345,7 +1322,8 @@
             "virtual_hid_keyboard": {
                 "caps_lock_delay_milliseconds": 0,
                 "country_code": 0,
-                "keyboard_type": "ansi"
+                "keyboard_type": "ansi",
+                "keyboard_type_v2": "ansi"
             }
         },
         {
@@ -1431,7 +1409,8 @@
             "virtual_hid_keyboard": {
                 "caps_lock_delay_milliseconds": 0,
                 "country_code": 0,
-                "keyboard_type": "ansi"
+                "keyboard_type": "ansi",
+                "keyboard_type_v2": "ansi"
             }
         }
     ]

@@ -62,20 +62,20 @@ prepare_debian_env_cli_core()
 {
   pkgs=(
     # Build tools
-    build-essential
-    curl
-    file
+    build-essential                   # Essential packages for building Debian packages
+    curl                              # Command-line tool for transferring data with URL syntax
+    file                              # Utility for determining file types
 
     # Apps
-    fzf
-    git
-    htop
-    ripgrep
-    silversearcher-ag
-    tig
-    tmux
-    vim
-    zsh
+    fzf                               # Command-line fuzzy finder written in Go
+    git                               # Distributed version control system
+    htop                              # Interactive process viewer for Unix systems
+    ripgrep                           # Search tool like grep and The Silver Searcher
+    silversearcher-ag                 # Code-search similar to ack, fast text search tool
+    tig                               # Text interface for Git repositories
+    tmux                              # Terminal multiplexer
+    vim                               # Vi 'workalike' with many additional features
+    zsh                               # UNIX shell (command interpreter)
   )
   debian_install_pkgs
 
@@ -91,33 +91,33 @@ prepare_debian_env_cli_extra()
 {
   pkgs=(
     # Build tools
-    apt-transport-https
-    ca-certificates
-    dstat
-    libbz2-dev
-    libncurses5-dev
-    libreadline-dev
-    libsqlite3-dev
-    libssl-dev
-    llvm
-    make
-    python3-setuptools
-    ruby
-    software-properties-common
-    tk-dev
-    wget
-    xz-utils
-    zlib1g-dev
+    apt-transport-https               # APT transport for downloading via HTTPS
+    ca-certificates                   # Common CA certificates for SSL/TLS verification
+    dstat                             # System resource statistics tool
+    libbz2-dev                        # Development files for bzip2 compression library
+    libncurses5-dev                   # Development files for ncurses library
+    libreadline-dev                   # Development files for GNU readline library
+    libsqlite3-dev                    # Development files for SQLite 3 database
+    libssl-dev                        # Development files for OpenSSL library
+    llvm                              # Low-Level Virtual Machine compiler infrastructure
+    make                              # Utility for directing compilation
+    python3-setuptools                # Python setuptools for package installation
+    ruby                              # Object-oriented scripting language
+    software-properties-common        # Common software properties management
+    tk-dev                            # Development files for Tk GUI toolkit
+    wget                              # Network utility to retrieve files from the web
+    xz-utils                          # XZ compression utilities
+    zlib1g-dev                        # Development files for zlib compression library
 
     # Apps
-    fortune-mod
-    gnupg2
-    neovim
-    polipo
-    python3-dev
-    python3-pip
-    rxvt-unicode-256color
-    w3m-img
+    fortune-mod                       # Fortune cookie program that displays random quotes
+    gnupg2                            # GNU Privacy Guard - encryption and signing tool
+    neovim                            # Vim-fork focused on extensibility and usability
+    polipo                            # Small and fast caching web proxy
+    python3-dev                       # Header files and development tools for Python 3
+    python3-pip                       # Python package installer
+    rxvt-unicode-256color             # Terminal emulator with 256 color support
+    w3m-img                           # Text-based web browser with image support
   )
   debian_install_pkgs
 
@@ -139,15 +139,15 @@ prepare_debian_env_gui_extra()
   echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
 
   pkgs=(
-    alacritty
-    chromium-browser
-    doublecmd-gtk
-    kdiff3
-    keepass2
-    oneko
-    sublime-merge
-    sublime-text
-    zeal
+    alacritty                         # GPU-accelerated terminal emulator
+    chromium-browser                  # Open-source web browser
+    doublecmd-gtk                     # Twin-panel file manager with GTK interface
+    kdiff3                            # File and directory comparison and merge tool
+    keepass2                          # Password manager with strong encryption
+    oneko                             # Desktop cat that chases your mouse cursor
+    sublime-merge                     # Git client with powerful merge tools
+    sublime-text                      # Sophisticated text editor for code and markup
+    zeal                              # Offline documentation browser
   )
   debian_install_pkgs
 
