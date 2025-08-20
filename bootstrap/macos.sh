@@ -239,6 +239,7 @@ prepare_macos_env_gui_extra()
     imageoptim                                    # Tool to optimise images to a smaller size
     inkscape                                      # Vector graphics editor
     istat-menus                                   # System monitoring app
+    itermai                                       # Enable generative AI features in iTerm2
     itsycal                                       # Menu bar calendar
     java                                          # Java Standard Edition Development Kit
     joplin                                        # Note taking and to-do application with synchronisation capabilities

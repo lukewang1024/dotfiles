@@ -53,23 +53,23 @@ function prepare_windows_env_cli_core()
   install_winget
 
   $pkgs =
-    'ag',
-    'delta',
-    'fd',
-    'fx',
-    'fzf',
-    'git',
-    'gow',
-    'jq',
-    'lf',
-    'ln',
-    'openssh',
-    'procs',
-    'runat',
-    'say',
-    'sudo',
-    'touch',
-    'vim'
+    'ag',                             # Fast code searching tool, also known as "The Silver Searcher"
+    'delta',                          # Syntax-highlighting pager for git, diff, and grep output
+    'fd',                             # Fast and user-friendly alternative to the find command
+    'fx',                             # Terminal-based JSON viewer and processor
+    'fzf',                            # Fuzzy finder command-line tool for interactive filtering
+    'git',                            # Distributed version control system
+    'gow',                            # GNU utilities for Windows - provides Unix-like command line tools
+    'jq',                             # Lightweight command-line JSON processor
+    'lf',                             # Terminal file manager with vim-like keybindings
+    'ln',                             # Command for creating symbolic links and hard links
+    'openssh',                        # Secure Shell protocol implementation
+    'procs',                          # Modern replacement for the ps command with colored output
+    'runat',                          # Windows utility for running commands at specific times
+    'say',                            # Text-to-speech command that converts text input into spoken audio
+    'sudo',                           # Allows users to run commands with elevated privileges
+    'touch',                          # Unix-like utility for creating empty files or updating timestamps
+    'vim'                             # Highly configurable text editor with modal editing
 
   scoop_install $pkgs
 
@@ -87,51 +87,51 @@ function prepare_windows_env_cli_core()
 function prepare_windows_env_cli_extra()
 {
   $pkgs =
-    'adb',
-    'aria2',
-    'broot',
-    'cloc',
-    'cowsay',
-    'deno',
-    'duf',
-    'dum',
-    'far',
-    'fq',
-    'gcloud',
-    'gh',
-    'git-lfs',
-    'gitui',
-    'gping',
-    'helix',
-    'kubectl',
-    'lazydocker',
-    'lazygit',
-    'losslesscut',
-    'lxrunoffline',
-    'mc',
-    'micro',
-    'miniconda3',
-    'minikube',
-    'musikcube',
-    'nmap',
-    'nodejs',
-    'now-cli',
-    'ntfy',
-    'nvm',
-    'oraclejdk',
-    'pandoc',
-    'pipx',
-    'pnpm',
-    'python',
-    'sbt',
-    'scrcpy',
-    'shasum',
-    'sniffnet',
-    'starship',
-    'uv',
-    'vagrant',
-    'xan',
-    'yarn'
+    'adb',                            # Android Debug Bridge - Command-line tool for communicating with Android devices
+    'aria2',                          # Multi-protocol download utility with fast parallel downloading
+    'broot',                          # Interactive tree view file manager with fuzzy search
+    'cloc',                           # Count Lines of Code - Tool that counts lines of source code in many languages
+    'cowsay',                         # Fun command-line program that generates ASCII pictures of a cow saying text
+    'deno',                           # Modern JavaScript and TypeScript runtime built on V8
+    'duf',                            # Disk Usage/Free utility - Modern replacement for 'df'
+    'dum',                            # Simple duplicate file finder
+    'far',                            # File and Archive manager - Advanced file manager for Windows
+    'fq',                             # jq for binary formats - Tool for exploring binary data
+    'gcloud',                         # Google Cloud CLI - Command-line interface for Google Cloud Platform
+    'gh',                             # GitHub CLI - Official command-line tool for GitHub
+    'git-lfs',                        # Git Large File Storage - Extension for versioning large files
+    'gitui',                          # Terminal-based Git user interface written in Rust
+    'gping',                          # Ping tool with a graph - Visual ping utility with real-time graphs
+    'helix',                          # Post-modern modal text editor with multiple selections and LSP support
+    'kubectl',                        # Kubernetes command-line tool for managing containerized applications
+    'lazydocker',                     # Terminal UI for Docker and Docker Compose
+    'lazygit',                        # Simple terminal UI for Git commands
+    'losslesscut',                    # Cross-platform GUI tool for lossless trimming of video and audio files,
+    'lxrunoffline',                   # Windows Subsystem for Linux (WSL) management tool
+    'mc',                             # Midnight Commander - Terminal-based file manager with dual-pane interface
+    'micro',                          # Modern terminal-based text editor that aims to be easy to use
+    'miniconda3',                     # Minimal installer for Conda package manager and Python environment management
+    'minikube',                       # Tool for running Kubernetes clusters locally for development and testing
+    'musikcube',                      # Terminal-based music player with a ncurses interface
+    'nmap',                           # Network discovery and security auditing tool for port scanning
+    'nodejs',                         # JavaScript runtime built on Chrome's V8 engine for server-side development
+    'now-cli',                        # Command-line interface for Vercel (formerly Zeit Now) deployment platform
+    'ntfy',                           # Simple notification service for sending push notifications via HTTP requests
+    'nvm',                            # Node Version Manager for switching between different Node.js versions
+    'oraclejdk',                      # Oracle's Java Development Kit for Java application development
+    'pandoc',                         # Universal document converter between numerous markup and document formats
+    'pipx',                           # Tool for installing and running Python applications in isolated environments
+    'pnpm',                           # Fast, disk space efficient package manager for Node.js
+    'python',                         # Python programming language interpreter and runtime environment
+    'sbt',                            # Scala Build Tool for building and managing Scala and Java projects
+    'scrcpy',                         # Tool for displaying and controlling Android devices connected via USB or wireless
+    'shasum',                         # Command-line utility for calculating and verifying SHA checksums of files
+    'sniffnet',                       # Network traffic monitor with a graphical interface
+    'starship',                       # Cross-platform shell prompt that is fast, customizable, and feature-rich
+    'uv',                             # Ultra-fast Python package installer and resolver written in Rust
+    'vagrant',                        # Tool for building and managing virtual machine environments for development
+    'xan',                            # Fast CSV processing tool with various data manipulation and analysis capabilities
+    'yarn'                            # Package manager for Node.js that provides faster, more reliable dependency management
 
   scoop_install $pkgs
 
@@ -144,41 +144,41 @@ function prepare_windows_env_cli_extra()
 function prepare_windows_env_gui_core()
 {
   $pkgs =
-    '7zip',
-    'alacritty',
-    'altsnap',
-    'autohotkey',
-    'autohotkey1.1',
-    'ditto',
-    'dotnet-sdk',
-    'everything',
-    'keepassxc',
-    'listary',
-    'powertoys',
-    'quicklook',
-    'snipaste',
-    'sublime-merge',
-    'sublime-text',
-    'sumatrapdf',
-    'switcheroo',
-    'sysinternals',
-    'trafficmonitor',
-    'unlocker',
-    'vscode',
-    'windows-terminal'
+    '7zip',                           # Open-source file archiver with high compression ratio
+    'alacritty',                      # Cross-platform, GPU-accelerated terminal emulator
+    'altsnap',                        # Window management utility for moving and resizing windows
+    'autohotkey',                     # Powerful automation scripting language for Windows
+    'autohotkey1.1',                  # Legacy version of AutoHotkey for compatibility
+    'ditto',                          # Advanced clipboard manager that stores clipboard history
+    'dotnet-sdk',                     # Microsoft .NET Software Development Kit
+    'everything',                     # Ultra-fast file search engine that instantly locates files
+    'keepassxc',                      # Cross-platform password manager with strong encryption
+    'listary',                        # Smart file search and launcher for Windows
+    'powertoys',                      # Microsoft's collection of utilities for power users
+    'quicklook',                      # Spacebar preview functionality for Windows, similar to macOS
+    'snipaste',                       # Screenshot and image annotation tool with pinning capabilities
+    'sublime-merge',                  # Git client with powerful merge conflict resolution
+    'sublime-text',                   # Sophisticated text editor for code, markup, and prose
+    'sumatrapdf',                     # Lightweight, fast PDF, eBook, and document viewer
+    'switcheroo',                     # Alt-Tab replacement with enhanced window switching
+    'sysinternals',                   # Microsoft's collection of advanced system utilities
+    'trafficmonitor',                 # Network and system monitoring tool with real-time usage display
+    'unlocker',                       # Utility to unlock files that are in use by system processes
+    'vscode',                         # Microsoft's free, open-source code editor with extensive extensions
+    'windows-terminal'                # Modern, fast terminal application for command-line tools
 
   scoop_install $pkgs
 
   $fonts =
-    'FiraCode-NF',
-    'Meslo-NF',
-    'SourceCodePro-NF'
+    'FiraCode-NF',                    # FiraCode Nerd Font - Programming font with ligatures
+    'Meslo-NF',                       # Meslo Nerd Font - Terminal font based on Menlo
+    'SourceCodePro-NF'                # Source Code Pro Nerd Font - Adobe's programming font
 
   scoop_sudo_install $fonts
 
   $wingetPkgs =
-    'Rime.Weasel',
-    'stnkl.EverythingToolbar'
+    'Rime.Weasel',                    # Chinese input method engine for Windows
+    'stnkl.EverythingToolbar'         # Everything search integration for Windows taskbar
 
   winget_install $wingetPkgs
 
@@ -188,99 +188,99 @@ function prepare_windows_env_gui_core()
 function prepare_windows_env_gui_extra()
 {
   $pkgs =
-    'altsnap',
-    'android-sdk',
-    'android-studio',
-    'calibre',
-    'carnac',
-    'ccleaner',
-    'chromium',
-    'clash-verge-rev',
-    'cpu-z',
-    'doublecmd',
-    'dropit',
-    'eartrumpet',
-    'filezilla',
-    'firefox',
-    'flux',
-    'foobar2000',
-    'foobar2000-encoders',
-    'foxit-pdf-reader',
-    'googlechrome',
-    'handbrake',
-    'heidisql',
-    'hexchat',
-    'hub',
-    'hwmonitor',
-    'irfanview',
-    'joplin',
-    'kdiff3',
-    'kitematic',
-    'licecap',
-    'marktext',
-    'mobaxterm',
-    'nimbleset',
-    'nimbletext',
-    'nircmd',
-    'nirlauncher',
-    'nodejs-lts',
-    'obs-studio',
-    'openark',
-    'openhardwaremonitor',
-    'pdfarranger',
-    'pdfsam',
-    'phantomjs',
-    'potplayer',
-    'processhacker',
-    'proxifier',
-    'putty',
-    'qutebrowser',
-    'robo3t',
-    'rufus',
-    'runcat',
-    'screentogif',
-    'slack',
-    'smartmontools',
-    'spacesniffer',
-    'spotify',
-    'sqlitebrowser',
-    'strokesplus',
-    'switchhosts',
-    'synctrayzor',
-    'telegram',
-    'thorium-reader',
-    'translucenttb',
-    'v2rayn',
-    'vcredist',
-    'vcxsrv',
-    'vncviewer',
-    'whatsapp',
-    'win-dynamic-desktop',
-    'windirstat',
-    'winscp',
-    'wireshark',
-    'wsltty',
-    'xming',
-    'xnviewmp',
-    'zeal',
+    'altsnap',                        # Window management utility for moving and resizing windows using Alt+drag
+    'android-sdk',                    # Android Software Development Kit for Android app development
+    'android-studio',                 # Official integrated development environment (IDE) for Android development
+    'calibre',                        # E-book management software for organizing and converting digital books
+    'carnac',                         # Keystroke visualizer for presentations and tutorials
+    'ccleaner',                       # System optimization and privacy tool for cleaning temporary files
+    'chromium',                       # Open-source web browser foundation for Google Chrome
+    'clash-verge-rev',                # Cross-platform proxy client with GUI for network management
+    'cpu-z',                          # System information utility displaying hardware specifications
+    'doublecmd',                      # Dual-pane file manager with advanced features
+    'dropit',                         # Drag-and-drop automation tool with customizable rules
+    'eartrumpet',                     # Advanced volume control with per-application audio management
+    'filezilla',                      # Free FTP, FTPS, and SFTP client for file transfer
+    'firefox',                        # Open-source web browser with privacy-focused features
+    'flux',                           # Screen color temperature adjustment tool for reducing blue light
+    'foobar2000',                     # Lightweight, customizable audio player
+    'foobar2000-encoders',            # Additional audio encoding components for foobar2000
+    'foxit-pdf-reader',               # PDF viewer and editor with annotation capabilities
+    'googlechrome',                   # Popular web browser with integrated Google services
+    'handbrake',                      # Open-source video transcoder for format conversion,
+    'heidisql',                       # Database management GUI for MySQL, MariaDB, PostgreSQL, SQLite
+    'hexchat',                        # Cross-platform IRC client with graphical interface
+    'hub',                            # Command-line wrapper for Git with GitHub integration
+    'hwmonitor',                      # System monitoring tool for hardware temperatures and voltages
+    'irfanview',                      # Fast and compact image viewer and editor
+    'joplin',                         # Open-source note-taking and to-do list application
+    'kdiff3',                         # File and directory comparison and merge tool
+    'kitematic',                      # Docker GUI for managing containers visually
+    'licecap',                        # Screen recording tool that saves as animated GIF files
+    'marktext',                       # Real-time markdown editor with live preview
+    'mobaxterm',                      # Enhanced terminal with X11 server and SSH client
+    'nimbleset',                      # Text manipulation tool for bulk find-and-replace operations
+    'nimbletext',                     # Data manipulation tool for transforming structured text
+    'nircmd',                         # Command-line utility for various Windows system operations
+    'nirlauncher',                    # Collection launcher for all NirSoft utilities
+    'nodejs-lts',                     # Long Term Support version of Node.js JavaScript runtime
+    'obs-studio',                     # Open-source software for video recording and live streaming
+    'openark',                        # Database administration toolkit for MySQL
+    'openhardwaremonitor',            # System monitoring application for hardware sensors
+    'pdfarranger',                    # PDF document manipulation tool for merging and splitting,
+    'pdfsam',                         # PDF manipulation tool for splitting, merging, and rotating pages
+    'phantomjs',                      # Headless WebKit browser for web scraping and automation
+    'potplayer',                      # Feature-rich multimedia player with advanced playback options
+    'processhacker',                  # Advanced system monitor and process manager
+    'proxifier',                      # Network proxy client with SOCKS/HTTPS support
+    'putty',                          # SSH and telnet client for secure remote connections
+    'qutebrowser',                    # Keyboard-driven web browser with vim-like keybindings
+    'robo3t',                         # GUI client for MongoDB database management
+    'rufus',                          # Utility for creating bootable USB drives from ISO images
+    'runcat',                         # System monitor displaying CPU usage through animated cat
+    'screentogif',                    # Screen recorder that exports animations to GIF format
+    'slack',                          # Team communication and collaboration platform
+    'smartmontools',                  # Command-line utilities for monitoring hard drive health
+    'spacesniffer',                   # Disk usage analyzer with treemap visualization
+    'spotify',                        # Music streaming service with millions of songs and podcasts
+    'sqlitebrowser',                  # GUI tool for creating and editing SQLite database files
+    'strokesplus',                    # Mouse gesture recognition software for commands and shortcuts
+    'switchhosts',                    # Quick hosts file editor for switching configurations
+    'synctrayzor',                    # GUI wrapper for Syncthing file synchronization
+    'telegram',                       # Cross-platform messaging app with security focus,
+    'thorium-reader',                 # Accessible EPUB reader supporting various ebook formats
+    'translucenttb',                  # Utility that makes Windows taskbar transparent or translucent
+    'v2rayn',                         # GUI client for V2Ray proxy tool for network privacy
+    'vcredist',                       # Microsoft Visual C++ Redistributable packages
+    'vcxsrv',                         # X11 server for Windows allowing Linux GUI applications
+    'vncviewer',                      # Remote desktop client for connecting to VNC servers
+    'whatsapp',                       # Popular messaging application for text, voice, and video
+    'win-dynamic-desktop',            # Utility that changes wallpaper based on time of day
+    'windirstat',                     # Disk usage statistics viewer with treemap visualization
+    'winscp',                         # SFTP, FTP, and SCP client for secure file transfers
+    'wireshark',                      # Network protocol analyzer for examining network traffic
+    'wsltty',                         # Terminal emulator for Windows Subsystem for Linux
+    'xming',                          # X Window System server for Windows
+    'xnviewmp',                       # Image viewer and converter supporting hundreds of formats
+    'zeal',                           # Offline documentation browser for programming languages,
     'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json',
     'https://raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json'
 
   scoop_install $pkgs
 
   $wingetPkgs =
-    '9NGHP3DX8HDX', # Files App
-    '9NW33J738BL0', # Monitorian
-    'Anysphere.Cursor',
-    'Bytedance.Feishu',
-    'CLechasseur.PathCopyCopy',
-    'Dropbox.Dropbox',
-    'Google.Drive',
-    'Oracle.VirtualBox',
-    'Tencent.QQ',
-    'Tencent.QQMusic',
-    'Tencent.WeChat',
-    'XK72.Charles'
+    '9NGHP3DX8HDX',                   # Files App - Modern file manager for Windows
+    '9NW33J738BL0',                   # Monitorian - Monitor brightness control
+    'Anysphere.Cursor',               # AI-powered code editor with intelligent assistance
+    'Bytedance.Feishu',               # Team collaboration and productivity platform
+    'CLechasseur.PathCopyCopy',       # Context menu plugin for copying file paths
+    'Dropbox.Dropbox',                # Cloud storage and file synchronization service
+    'Google.Drive',                   # Google's cloud storage and office suite
+    'Oracle.VirtualBox',              # Virtual machine software for running multiple OS
+    'Tencent.QQ',                     # Popular Chinese instant messaging application
+    'Tencent.QQMusic',                # Chinese music streaming service
+    'Tencent.WeChat',                 # Chinese multi-purpose messaging and social media app
+    'XK72.Charles'                    # Web debugging proxy for monitoring HTTP traffic
 
   winget_install $wingetPkgs
 }
@@ -288,10 +288,10 @@ function prepare_windows_env_gui_extra()
 function prepare_windows_gaming()
 {
   $pkgs =
-    'dosbox',
-    'dosbox-x',
-    'openra',
-    'steam'
+    'dosbox',                         # Emulator for x86 with DOS for running legacy games
+    'dosbox-x',                       # Enhanced fork of DOSBox with additional features
+    'openra',                         # Real-time strategy game engine for classic Westwood games
+    'steam'                           # Digital distribution platform for PC gaming
 
   scoop_install $pkgs
 }

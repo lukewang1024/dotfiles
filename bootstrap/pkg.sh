@@ -123,6 +123,7 @@ install_pip_packages()
     poetry                            # Modern dependency management and packaging tool for Python projects with lock file support
     powerline-status                  # Statusline plugin for vim, zsh, bash, tmux, IPython, Awesome and i3 providing informative segments
     present                           # Terminal-based presentation tool that renders markdown slides in the command line
+    superclaude                       # SuperClaude Framework Management Hub
     pygments                          # Syntax highlighting library for Python supporting hundreds of programming languages and markup formats
     pywal                             # Tool that generates and changes color schemes for various applications based on image color palettes
     rainbowstream                     # Smart and nice Twitter client on terminal written in Python with real-time streaming
