@@ -45,6 +45,7 @@ install_npm_packages()
   local pkgs=(
     @angular/cli                      # CLI tool for Angular
     @anthropic-ai/claude-code         # Use Claude, Anthropic's AI assistant, right from your terminal
+    @openai/codex                     # OpenAI Codex CLI
     @squoosh/cli                      # A CLI for Squoosh (image compression and optimization tool)
     @vue/cli                          # Command line interface for rapid Vue.js development
     asar                              # Creating Electron app packages
