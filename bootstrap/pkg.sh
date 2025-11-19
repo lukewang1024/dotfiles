@@ -45,6 +45,7 @@ install_npm_packages()
   local pkgs=(
     @angular/cli                      # CLI tool for Angular
     @anthropic-ai/claude-code         # Use Claude, Anthropic's AI assistant, right from your terminal
+    @google/gemini-cli                # Gemini CLI
     @openai/codex                     # OpenAI Codex CLI
     @squoosh/cli                      # A CLI for Squoosh (image compression and optimization tool)
     @vue/cli                          # Command line interface for rapid Vue.js development
@@ -154,6 +155,7 @@ install_cpan_packages()
 install_other_packages()
 {
   backup_then_symlink "$util_dir/shell/find-and-replace" "$bin_dir/find-and-replace"
+  backup_then_symlink "$util_dir/shell/git-newbranch" "$bin_dir/git-newbranch"
   backup_then_symlink "$util_dir/shell/killbp" "$bin_dir/killbp"
   backup_then_symlink "$util_dir/shell/mann" "$bin_dir/mann"
   backup_then_symlink "$util_dir/shell/md2resume" "$bin_dir/md2resume"

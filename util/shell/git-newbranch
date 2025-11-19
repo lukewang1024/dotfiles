@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# git-newbranch - Create a new branch from a target branch (default: origin/HEAD)
+
+set -e
+
+# Show usage if no arguments
+if [ $# -eq 0 ]; then
+    cat << EOF
+Usage: git newbranch <new-branch-name> [target-branch]
+
+Arguments:
+  new-branch-name  Name for the new branch
+  target-branch    Optional. Branch to base on (default: origin/HEAD)
+
+Examples:
+  git newbranch feature/my-feature
+  git newbranch fix/bug origin/main
+  git newbranch feature/test develop
+EOF
+    exit 1
+fi
+
+NEW_BRANCH="$1"
+
+# Determine target branch
+if [ -n "$2" ]; then
+    TARGET="$2"
+else
+    # Get default branch from origin/HEAD
+    TARGET=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/@@')
+
+    # Fallback if origin/HEAD is not set
+    if [ -z "$TARGET" ]; then
+        echo "Error: Could not determine default branch from origin/HEAD" >&2
+        echo "Please specify target branch explicitly or run: git remote set-head origin --auto" >&2
+        exit 1
+    fi
+fi
+
+# Fetch latest changes
+echo "Fetching latest changes from origin..."
+git fetch origin
+
+# Create and checkout new branch
+echo "Creating branch '$NEW_BRANCH' from '$TARGET'..."
+git checkout -b "$NEW_BRANCH" "$TARGET"
+
+echo "✓ Successfully created and checked out branch '$NEW_BRANCH'"
