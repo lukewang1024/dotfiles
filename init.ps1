@@ -65,11 +65,14 @@ function prepare_windows_env_cli_core()
     'ln',                             # Command for creating symbolic links and hard links
     'openssh',                        # Secure Shell protocol implementation
     'procs',                          # Modern replacement for the ps command with colored output
+    'ripgrep',                        # Recursively searches directories for a regex pattern
     'runat',                          # Windows utility for running commands at specific times
     'say',                            # Text-to-speech command that converts text input into spoken audio
     'sudo',                           # Allows users to run commands with elevated privileges
     'touch',                          # Unix-like utility for creating empty files or updating timestamps
-    'vim'                             # Highly configurable text editor with modal editing
+    'vim',                            # Highly configurable text editor with modal editing
+    'yazi',                           # Blazing fast terminal file manager written in Rust, based on async I/O
+    'zoxide'                          # A faster way to navigate your filesystem
 
   scoop_install $pkgs
 
@@ -96,6 +99,7 @@ function prepare_windows_env_cli_extra()
     'duf',                            # Disk Usage/Free utility - Modern replacement for 'df'
     'dum',                            # Simple duplicate file finder
     'far',                            # File and Archive manager - Advanced file manager for Windows
+    'ffmpeg',                         # A complete, cross-platform solution to record, convert and stream audio and video
     'fq',                             # jq for binary formats - Tool for exploring binary data
     'gcloud',                         # Google Cloud CLI - Command-line interface for Google Cloud Platform
     'gh',                             # GitHub CLI - Official command-line tool for GitHub
@@ -103,6 +107,7 @@ function prepare_windows_env_cli_extra()
     'gitui',                          # Terminal-based Git user interface written in Rust
     'gping',                          # Ping tool with a graph - Visual ping utility with real-time graphs
     'helix',                          # Post-modern modal text editor with multiple selections and LSP support
+    'imagemagick',                    # Create, edit, compose, and convert 200+ bitmap image formats.
     'kubectl',                        # Kubernetes command-line tool for managing containerized applications
     'lazydocker',                     # Terminal UI for Docker and Docker Compose
     'lazygit',                        # Simple terminal UI for Git commands
@@ -122,7 +127,9 @@ function prepare_windows_env_cli_extra()
     'pandoc',                         # Universal document converter between numerous markup and document formats
     'pipx',                           # Tool for installing and running Python applications in isolated environments
     'pnpm',                           # Fast, disk space efficient package manager for Node.js
+    'poppler',                        # PDF rendering library
     'python',                         # Python programming language interpreter and runtime environment
+    'resvg',                          # An SVG rendering library.
     'sbt',                            # Scala Build Tool for building and managing Scala and Java projects
     'scrcpy',                         # Tool for displaying and controlling Android devices connected via USB or wireless
     'shasum',                         # Command-line utility for calculating and verifying SHA checksums of files

@@ -13,7 +13,7 @@ bindkey -M emacs '^N' history-substring-search-down
 bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 
-alias rrc='source ~/.zshrc && rehash'
+alias rrc='source "$ZDOTDIR/.zshrc" && rehash'
 alias ssh-agent-connect="source $config_dir/zsh/ssh-agent-connect.zsh"
 
 exists zoxide && eval "$(zoxide init zsh)"
