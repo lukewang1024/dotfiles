@@ -130,6 +130,7 @@ prepare_arch_env_cli_extra()
     autossh                           # Automatically restart SSH sessions and tunnels
     axel                              # Light UNIX download accelerator
     bat                               # Clone of cat(1) with syntax highlighting and Git integration
+    bluetui                           # TUI for managing bluetooth devices
     broot                             # New way to see and navigate directory trees
     calcurse                          # Text-based personal organizer
     checkbashisms                     # Checks for bashisms in shell scripts
@@ -174,6 +175,7 @@ prepare_arch_env_cli_extra()
     hyperfine                         # Command-line benchmarking tool
     iftop                             # Display an interface's bandwidth usage
     imagemagick                       # Tools and libraries to manipulate images in many formats
+    impala                            # TUI for managing wifi
     iptables-nft                      # Linux kernel packet control tool
     irssi                             # Modular IRC client
     jdk-openjdk                       # Open Java Development Kit

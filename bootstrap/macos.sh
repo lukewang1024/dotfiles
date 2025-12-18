@@ -83,6 +83,8 @@ prepare_macos_env_cli_extra()
 {
   install_nix_brew_extra_packages
 
+  brew tap LizardByte/homebrew                    # sunshine
+
   local pkgs=(
     brightness                                    # Change macOS display brightness from the command-line
     csshx                                         # Cluster ssh tool for Terminal.app
@@ -93,6 +95,7 @@ prepare_macos_env_cli_extra()
     mackup                                        # Keep your Mac's application settings in sync
     reattach-to-user-namespace                    # Reattach process (e.g., tmux) to background
     scrcpy                                        # Display and control your Android device
+    sunshine                                      # Self-hosted game stream host for Moonlight
     terminal-notifier                             # Send macOS User Notifications from the command-line
   )
   brew install `join ' ' "${pkgs[@]}"`
@@ -189,9 +192,8 @@ prepare_macos_env_gui_extra()
 
   brew tap homebrew/cask-versions
   brew tap lukewang1024/homebrew-legacy
-  brew tap dteoh/sqa
-  brew tap krtirtho/apps
-  brew tap lihaoyun6/tap
+  brew tap dteoh/sqa                              # slowquitapps
+  brew tap lihaoyun6/tap                          # airbattery, quickrecorder
 
   local casks=(
     aerial                                        # Apple TV Aerial screensaver
@@ -265,6 +267,7 @@ prepare_macos_env_gui_extra()
     microsoft-remote-desktop                      # Remote desktop client
     mongodb-compass                               # Interactive tool for analyzing MongoDB data
     monitorcontrol                                # Tool to control external monitor brightness & volume
+    moonlight                                     # GameStream client
     msty                                          # Run LLMs locally
     mweb2                                         # Markdown writing and note taking
     netnewswire                                   # Free and open-source RSS reader
@@ -307,6 +310,7 @@ prepare_macos_env_gui_extra()
     skim                                          # PDF reader and note-taking application
     slack                                         # Team communication and collaboration software
     sloth                                         # Displays all open files and sockets in use by all running processes
+    slowquitapps
     soundflower                                   # Audio driver for sound routing
     soundflowerbed                                # Taps into Soundflower channels and route them to an audio device
     spotifree                                     # Automatically mutes ads on Spotify (not supported)

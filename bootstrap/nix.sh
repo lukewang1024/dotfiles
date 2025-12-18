@@ -182,6 +182,7 @@ install_nix_brew_extra_packages()
     neovim                            # Ambitious Vim-fork focused on extensibility and agility
     netcat                            # Utility for managing network connections
     nmap                              # Port scanning utility for large networks
+    nnn                               # Tiny, lightning fast, feature-packed file manager
     ntfy                              # Send push notifications to your phone or desktop via PUT/POST
     nyancat                           # Renders an animated, color, ANSI-text loop of the Poptart Cat
     ocrmypdf                          # Adds an OCR text layer to scanned PDF files
@@ -203,9 +204,11 @@ install_nix_brew_extra_packages()
     qpdf                              # Tools for and transforming and inspecting PDF files
     ranger                            # File browser
     redis                             # Persistent key-value database, with built-in net interface
+    resvg                             # SVG rendering tool and library
     rtv                               # Reddit terminal viewer (package unavailable)
     sc-im                             # Spreadsheet program for the terminal, using ncurses
     scc                               # Fast and accurate code counter with complexity and COCOMO estimates
+    sevenzip                          # 7-Zip is a file archiver with a high compression ratio
     shellcheck                        # Static analysis and lint tool, for (ba)sh scripts
     sl                                # Prints a steam locomotive if you type sl instead of ls
     smartmontools                     # SMART hard drive monitoring
