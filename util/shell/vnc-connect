@@ -4,16 +4,16 @@ print_usage() {
   cat << 'EOB' >&2
 Connect to VNC server securely by SSH tunnel.
 [Synopsis]
-./vnc-connect [host] ([display])
+vnc-connect [host] [display]
 [host]
 Required, host alias configured in `~/.ssh/config`.
 [display]
-Optional, 1 is used by default.
+Optional, display number (1, 2, etc.) or :1, :2, etc. Default is 1.
 EOB
-  exit 0
+  exit 1
 }
 
-if [ $# = 0 ]; then
+if [ $# -eq 0 ]; then
   print_usage
 fi
 
@@ -21,22 +21,34 @@ config_dir="$HOME/.dotfiles/config"
 source "$config_dir/utils.sh";
 
 HOST=$1
-DISPLAY=${2:-1}
-PORT=$((DISPLAY + 5900))
+DISPLAY_ARG=${2:-1}
 
-trap "jobs -p | xargs kill; ssh $HOST 'vncserver -kill :$DISPLAY'" EXIT
+# Strip leading colon if present
+DISPLAY_NUM=${DISPLAY_ARG#:}
 
-ssh $HOST "vncserver :$DISPLAY"
-ssh -L $PORT:localhost:$PORT -N $HOST &
+# Calculate ports
+REMOTE_PORT=$((DISPLAY_NUM + 5900))
+LOCAL_PORT=$((DISPLAY_NUM + 15900))
 
-if is_macos; then
-  open vnc://localhost:$PORT
-elif exists vncviewer; then
-  vncviewer localhost:$PORT
+# Check if tunnel already exists
+if lsof -i :$LOCAL_PORT > /dev/null 2>&1; then
+  echo "Tunnel already exists on port $LOCAL_PORT"
 else
-  echo "vncviewer not found in PATH. You might connect to localhost:$PORT manually."
+  echo "Creating SSH tunnel: localhost:$LOCAL_PORT -> $HOST:$REMOTE_PORT"
+  ssh -N -f -L $LOCAL_PORT:localhost:$REMOTE_PORT $HOST
+  if [ $? -eq 0 ]; then
+    echo "Tunnel established successfully"
+  else
+    echo "Failed to create SSH tunnel"
+    exit 1
+  fi
 fi
 
-sleep 1
-
-echo; read -p 'Press any key to exit.' -n 1 -r; echo
+# Open VNC connection
+if is_macos; then
+  open vnc://localhost:$LOCAL_PORT
+elif exists vncviewer; then
+  vncviewer localhost:$LOCAL_PORT
+else
+  echo "VNC viewer not found. Connect manually to localhost:$LOCAL_PORT"
+fi

@@ -22,6 +22,7 @@ install_nix_brew_core_packages()
   brew tap beeftornado/rmtree
 
   local pkgs=(
+    btop                              # Resource monitor. C++ version and continuation of bashtop and bpytop
     diff-so-fancy                     # Good-lookin' diffs with diff-highlight and more
     docker                            # Pack, ship and run any application as a lightweight container
     docker-buildx                     # Docker CLI plugin for extended build capabilities with BuildKit
@@ -31,7 +32,6 @@ install_nix_brew_core_packages()
     fx                                # Terminal JSON viewer
     fzf                               # Command-line fuzzy finder written in Go
     git                               # Distributed revision control system
-    htop                              # Improved top (interactive process viewer)
     httpie                            # User-friendly cURL replacement (command-line HTTP client)
     jq                                # Lightweight and flexible command-line JSON processor
     lazydocker                        # Lazier way to manage everything docker
@@ -146,6 +146,7 @@ install_nix_brew_extra_packages()
     hashcat                           # World's fastest and most advanced password recovery utility
     helix                             # Post-modern modal text editor
     hexyl                             # Command-line hex viewer
+    htop                              # Improved top (interactive process viewer)
     httpstat                          # Curl statistics made simple
     hub                               # Add GitHub support to git on the command-line
     hyperfine                         # Command-line benchmarking tool

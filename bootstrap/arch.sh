@@ -70,12 +70,12 @@ prepare_arch_env_gui()
 prepare_arch_env_cli_core()
 {
   pkgs=(
+    btop                              # A monitor of system resources, bpytop ported to C++
     diff-so-fancy                     # Good-lookin' diffs with diff-highlight and more
     fd                                # Simple, fast and user-friendly alternative to find
     fx                                # Terminal JSON viewer
     fzf                               # Command-line fuzzy finder written in Go
     git                               # Distributed revision control system
-    htop                              # Improved top (interactive process viewer)
     httpie                            # User-friendly cURL replacement (command-line HTTP client)
     jq                                # Lightweight and flexible command-line JSON processor
     less                              # Pager program similar to more
@@ -171,6 +171,7 @@ prepare_arch_env_cli_extra()
     hashcat                           # World's fastest and most advanced password recovery utility
     helix                             # Post-modern modal text editor
     hexyl                             # Command-line hex viewer
+    htop                              # Improved top (interactive process viewer)
     hub                               # Add GitHub support to git on the command-line
     hyperfine                         # Command-line benchmarking tool
     iftop                             # Display an interface's bandwidth usage
@@ -292,6 +293,7 @@ prepare_arch_env_gui_core()
     blueman                           # GTK+ Bluetooth Manager
     dmenu                             # Dynamic menu for X
     dunst                             # Customizable and lightweight notification-daemon
+    evince                            # Document viewer (PDF, PostScript, XPS, djvu, dvi, tiff, cbr, cbz, cb7, cbt)
     fcitx                             # Flexible Input Method Framework
     fcitx-configtool                  # Configuration tool for Fcitx
     fcitx-im                          # Input method module for Fcitx
@@ -302,6 +304,8 @@ prepare_arch_env_gui_core()
     foliate                           # Simple and modern GTK eBook reader
     galculator                        # GTK+ based scientific calculator
     gsimplecal                        # Simple and lightweight GTK calendar
+    hyprpicker                        # A wlroots-compatible Wayland color picker that does not suck
+    hyprshot                          # Hyprland screenshot utility
     i3-wm                             # Improved tiling window manager
     libdbusmenu-glib                  # GLib library that implements the DBusMenu protocol
     libdbusmenu-gtk2                  # GTK2 library that implements the DBusMenu protocol
@@ -322,6 +326,7 @@ prepare_arch_env_gui_core()
     redshift                          # Adjusts the color temperature of your screen
     rofi                              # Window switcher, application launcher and dmenu replacement
     rofi-scripts                      # Collection of scripts for rofi
+    switcheroo                        # Convert between different image filetypes and resize them easily
     thunar                            # Modern file manager for Xfce
     thunar-archive-plugin             # Archive plugin for Thunar
     thunar-media-tags-plugin          # Media tags plugin for Thunar
@@ -357,10 +362,12 @@ prepare_arch_env_gui_core()
     gluqlo-git                        # Fliqlo for Linux
     i3ass                             # Collection of scripts for i3 window manager
     jumpapp                           # Run or focus applications in i3
+    localsend-bin                     # An open source cross-platform alternative to AirDrop
     nerd-fonts-fira-code              # Iconic font aggregator, collection, and patcher
     sublime-merge                     # Git client, done Sublime
     sublime-text-4                    # Sophisticated text editor for code, markup and prose
     visual-studio-code-bin            # Visual Studio Code (binary)
+    walker                            # wayland application runner
     xgetres                           # Get X resources
     xinit-xsession                    # Allow xinit to function like xdm
   )
