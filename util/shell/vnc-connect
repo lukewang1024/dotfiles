@@ -46,7 +46,12 @@ fi
 
 # Open VNC connection
 if is_macos; then
-  open vnc://localhost:$LOCAL_PORT
+  REALVNC_PATH="/Applications/VNC Viewer.app/Contents/MacOS/vncviewer"
+  if [ -x "$REALVNC_PATH" ]; then
+    "$REALVNC_PATH" localhost:$LOCAL_PORT &
+  else
+    open vnc://localhost:$LOCAL_PORT
+  fi
 elif exists vncviewer; then
   vncviewer localhost:$LOCAL_PORT
 else

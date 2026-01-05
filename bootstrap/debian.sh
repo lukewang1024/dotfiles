@@ -42,6 +42,7 @@ prepare_debian_env()
 prepare_debian_env_core()
 {
   prepare_debian_env_cli_core
+  prepare_debian_env_gui_core
   brew_cleanup
 }
 
@@ -54,6 +55,7 @@ prepare_debian_env_cli()
 
 prepare_debian_env_gui()
 {
+  prepare_debian_env_gui_core
   prepare_debian_env_gui_extra
   brew_cleanup
 }
@@ -125,11 +127,31 @@ prepare_debian_env_cli_extra()
   extra_env_setup
 }
 
+prepare_debian_env_gui_core()
+{
+  pkgs=(
+    dunst                             # dmenu-ish notification-daemon
+    feh                               # imlib2 based image viewer
+    firefox-esr                       # Mozilla Firefox web browser - Extended Support Release (ESR)
+    flameshot                         # Powerful yet simple-to-use screenshot software
+    fonts-noto                        # metapackage to pull in all Noto fonts
+    fonts-noto-cjk                    # "No Tofu" font families with large Unicode coverage (CJK regular and bold)
+    rofi                              # window switcher, run dialog and dmenu replacement
+    i3-wm                             # improved dynamic tiling window manager
+    polybar                           # Fast and easy-to-use tool for creating status bars
+    xcape                             # Configure modifier keys to act as other keys when pressed and released
+    xbindkeys                         # Associate a combination of keys or mouse buttons with a shell command
+    xclip                             # command line interface to X selections
+    xsel                              # command-line tool to access X clipboard and selection buffers
+  )
+  debian_install_pkgs
+}
+
 prepare_debian_env_gui_extra()
 {
   ppas=(
     ppa:mmstick76/alacritty # Alacritty
-    ppa:jtaylor/keepass     # KeyPass2
+    ppa:jtaylor/keepass     # KeePass2
     ppa:zeal-developers/ppa # Zeal
   )
   debian_add_PPAs
