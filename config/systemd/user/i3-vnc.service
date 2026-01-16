@@ -1,0 +1,14 @@
+[Unit]
+Description=i3 window manager (VNC session)
+PartOf=graphical-session.target
+Wants=i3-vnc.target
+Wants=autostart.target
+
+[Service]
+Type=simple
+# Inherit DISPLAY and other X11 environment from caller
+PassEnvironment=DISPLAY XAUTHORITY VNC_SESSION
+ExecStart=i3
+ExecStop=systemctl --user stop --no-block graphical-session.target
+Restart=on-failure
+RestartSec=1

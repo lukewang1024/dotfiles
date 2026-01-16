@@ -1,5 +1,5 @@
 [general]
-import = ["/Users/lukew/.dotfiles/config/alacritty/theme.toml", "/Users/lukew/.dotfiles/config/alacritty/local.toml"]
+import = ["~/.config/alacritty/theme.toml", "~/.config/alacritty/local.toml"]
 
 [[keyboard.bindings]]
 chars = "\u001B0"

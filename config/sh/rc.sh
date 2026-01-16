@@ -2,6 +2,11 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export EDITOR='vim'
 
+# Add flatpak directories to XDG_DATA_DIRS (user path takes precedence)
+if is_linux; then
+  export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+fi
+
 # Use xterm-256color for non-tmux remote session
 is_ssh && ! is_tmux && export TERM='xterm-256color'
 
@@ -74,6 +79,8 @@ if is_linux; then
   alias spath="PATH="$(echo ${PATH} | awk -v RS=: -v ORS=: '/home/ {next} {print}' | sed 's/:*$//')""
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'
   alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
+  alias vnc-i3='VNC_DESKTOP_SESSION=i3 vncserver'
+  alias vnc-xfce='VNC_DESKTOP_SESSION=xfce vncserver'
 fi
 
 # attempt to connect to existing ssh-agent instance on remote sessions

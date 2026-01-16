@@ -140,6 +140,7 @@ prepare_debian_env_gui_core()
     i3-wm                             # improved dynamic tiling window manager
     polybar                           # Fast and easy-to-use tool for creating status bars
     xcape                             # Configure modifier keys to act as other keys when pressed and released
+    xautomation                       # Control X from the command line, and find things on the screen
     xbindkeys                         # Associate a combination of keys or mouse buttons with a shell command
     xclip                             # command line interface to X selections
     xsel                              # command-line tool to access X clipboard and selection buffers

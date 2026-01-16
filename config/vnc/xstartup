@@ -1,0 +1,58 @@
+#!/bin/bash
+unset SESSION_MANAGER
+export XKL_XMODMAP_DISABLE=1
+
+# Mark as VNC session
+export VNC_SESSION=1
+export VNCDESKTOP="${VNCDESKTOP:-VNC}"
+
+# Session type: use VNC_DESKTOP_SESSION env var, or default to i3
+# Set via: VNC_DESKTOP_SESSION=xfce vncserver :1
+session=${VNC_DESKTOP_SESSION:-i3}
+
+# Try to use existing systemd user D-Bus session if available
+# This avoids creating a conflicting D-Bus session
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+    # Check if systemd user bus is available
+    if [ -S "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/bus" ]; then
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/bus"
+    else
+        # Fall back to launching a new dbus session
+        eval $(dbus-launch --sh-syntax)
+    fi
+fi
+
+# Use systemd approach (VNC_USE_SYSTEMD=1) or legacy xinitrc approach
+# Set via: VNC_USE_SYSTEMD=0 vncserver :1  (to disable systemd)
+use_systemd=${VNC_USE_SYSTEMD:-1}
+
+if [ "$use_systemd" = "1" ]; then
+    # Load common environment (Xresources, input method, etc.)
+    [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+    export GTK_IM_MODULE=fcitx
+    export QT_IM_MODULE=fcitx
+    export XMODIFIERS=@im=fcitx
+    export XDG_SESSION_TYPE=x11
+
+    # Try to export environment to systemd user session
+    # This may fail if systemd user manager is not accessible
+    if dbus-update-activation-environment --systemd DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS VNC_SESSION 2>/dev/null; then
+        echo "=== Starting $session via systemd ==="
+
+        # Start i3 via systemd with VNC-specific target
+        case $session in
+            i3|i3wm)
+                if systemctl --user start --wait i3-vnc.service 2>&1; then
+                    exit 0
+                else
+                    echo "systemd start failed, falling back to direct execution"
+                fi
+                ;;
+        esac
+    else
+        echo "=== systemd integration unavailable, using direct execution ==="
+    fi
+fi
+
+# Fallback: use xinitrc directly (works reliably)
+exec ~/.xinitrc "$session"

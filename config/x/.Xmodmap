@@ -6,6 +6,10 @@ clear lock
 ! use capslock as hyper key
 keycode 66 = Hyper_L Hyper_L Caps_Lock
 
+! F18 as hyper key (for NoMachine passthrough from macOS)
+! Use Hyper_R to avoid xcape Hyper_L=Escape triggering on repeats
+keycode 196 = Hyper_R
+
 ! use Esc to access 3rd and 4th value in keycode definition below
 keycode 999 = Escape
 keycode 9 = Mode_switch
@@ -14,7 +18,7 @@ keycode 9 = Mode_switch
 remove mod4 = Hyper_L
 
 ! set mod3 to hyper key
-add mod3 = Hyper_L
+add mod3 = Hyper_L Hyper_R
 
 ! more accessible end
 keycode 13 = 4 dollar End End

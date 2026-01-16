@@ -1,4 +1,5 @@
-session=xfce
-geometry=1920x1080
+# VNC Server Configuration
+# Only listen on localhost (for SSH tunnel)
 localhost
-alwaysshared
+# Set geometry
+geometry=1920x1080
