@@ -191,6 +191,7 @@ install_nix_brew_extra_packages()
     oha                               # HTTP load generator, inspired by rakyll/hey with tui animation
     onefetch                          # Command-line Git information tool
     open-mpi                          # High performance message passing library
+    opencode                          # AI coding agent, built for the terminal
     optipng                           # PNG file optimizer
     p7zip                             # 7-Zip (high compression file archiver) implementation
     pandoc                            # Swiss-army knife of markup format conversion

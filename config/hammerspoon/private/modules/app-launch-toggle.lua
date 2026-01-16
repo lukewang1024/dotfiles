@@ -108,7 +108,7 @@ setAppToggles(hyperAlt, {
   -- k: for mouse move
   -- l: for mouse move
   m = 'com.tencent.QQMusicMac',                   -- QQ Music
-  n = 'MarkText',
+  n = 'NoMachine',
   -- o = '',
   p = 'Pocket',
   -- q = '',
@@ -125,7 +125,7 @@ setAppToggles(hyperAlt, {
   [';'] = 'Alacritty',
   -- ['.'] = '',
   -- ['['] = '',
-  -- [']'] = '',
+  [']'] = 'Discord',
   ['/'] = 'Commander One',
   ['\''] = 'kitty',
   ['\\'] = 'cn.futu.Niuniu',                      -- Futubull
