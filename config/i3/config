@@ -134,6 +134,8 @@ for_window [instance="feishu"]                                  focus; $fyra -m 
 for_window [instance="filemanagerA"]                            focus; $fyra -m A
 for_window [instance="filemanagerB"]                            focus; $fyra -m B
 for_window [instance="filemanagerD"]                            focus; $fyra -m D
+for_window [instance="google-chrome" window_role="browser"]     focus; $fyra -m A
+for_window [instance="google-chrome" window_role="pop-up"]      focus; $fyra -m D
 for_window [instance="FoxitReader" window_type="normal"]        focus; $fyra -m A
 for_window [instance="irssi"]                                   focus; $fyra -m D
 for_window [instance="kitty"]                                   focus; $fyra -m A

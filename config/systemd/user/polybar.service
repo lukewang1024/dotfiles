@@ -1,9 +1,11 @@
 [Unit]
 Description=polybar
 PartOf=graphical-session.target
-Wants=i3.service
-After=i3.service
+# Works with both i3.service (local) and i3-vnc.service (VNC)
+After=i3.service i3-vnc.service
 
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 ExecStart=%h/.local/bin/polybar-launch
+ExecStop=killall -q polybar

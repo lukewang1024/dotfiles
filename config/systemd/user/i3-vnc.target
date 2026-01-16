@@ -1,0 +1,22 @@
+[Unit]
+Description=i3 utilities for VNC sessions
+PartOf=graphical-session.target
+# BindsTo ensures target stops/restarts with the service
+BindsTo=i3-vnc.service
+After=i3-vnc.service
+
+# VNC-compatible services only (no hardware-dependent ones)
+Wants=dunst.service
+Wants=fcitx.service
+Wants=polybar.service
+Wants=reload-i3.path
+Wants=reload-polybar.path
+Wants=wallpaper.service
+Wants=tmux.service
+
+# Excluded from i3-utils.target:
+# - autorandr.service (physical display management)
+# - picom.service (compositor, not useful in VNC)
+# - xss-lock.service (screen lock)
+# - lxpolkit.service (usually not needed)
+# - xfce.target (optional, add if needed)
