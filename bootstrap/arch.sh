@@ -266,6 +266,7 @@ prepare_arch_env_cli_extra()
     mycli                             # CLI for MySQL with auto-completion and syntax highlighting
     nb                                # Command-line and local web note-taking, bookmarking, and archiving
     ocrmypdf                          # Adds an OCR text layer to scanned PDF files
+    opencode-bin                      # The AI coding agent built for the terminal
     pdfsandwich                       # Generate sandwich OCR PDFs from scanned file
     pgcli                             # CLI for Postgres with auto-completion and syntax highlighting
     powershell-bin                    # Command-line shell and scripting language

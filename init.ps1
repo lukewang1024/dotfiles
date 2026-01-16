@@ -123,6 +123,7 @@ function prepare_windows_env_cli_extra()
     'now-cli',                        # Command-line interface for Vercel (formerly Zeit Now) deployment platform
     'ntfy',                           # Simple notification service for sending push notifications via HTTP requests
     'nvm',                            # Node Version Manager for switching between different Node.js versions
+    'opencode',                       # AI coding agent, built for the terminal
     'oraclejdk',                      # Oracle's Java Development Kit for Java application development
     'pandoc',                         # Universal document converter between numerous markup and document formats
     'pipx',                           # Tool for installing and running Python applications in isolated environments
