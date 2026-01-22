@@ -1,0 +1,12 @@
+#!/bin/sh
+# Send OSC 9 notification to local terminal (works via SSH with proper terminal)
+# Usage: notify [message]
+
+msg="${1:-Done}"
+
+if [ -n "$TMUX" ]; then
+  # Passthrough for tmux (requires: set -g allow-passthrough on)
+  printf '\ePtmux;\e\e]9;%s\a\e\\' "$msg"
+else
+  printf '\e]9;%s\a' "$msg"
+fi

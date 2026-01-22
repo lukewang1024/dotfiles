@@ -78,6 +78,7 @@ apply_linux_app_configs()
   backup_then_symlink "$util_dir/linux/kbmod" "$bin_dir/kbmod"
   backup_then_symlink "$util_dir/linux/local-http-proxy" "$bin_dir/local-http-proxy"
   backup_then_symlink "$util_dir/linux/lock" "$bin_dir/lock"
+  backup_then_symlink "$util_dir/linux/notify" "$bin_dir/notify"
   backup_then_symlink "$util_dir/linux/record-audio" "$bin_dir/record-audio"
   backup_then_symlink "$util_dir/linux/record-screencast" "$bin_dir/record-screencast"
   backup_then_symlink "$util_dir/linux/record-video" "$bin_dir/record-video"

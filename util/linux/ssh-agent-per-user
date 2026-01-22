@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 . "$HOME/.dotfiles/config/sh/ssh-agent-connect.sh"
 spawnPerUserSSHAgent

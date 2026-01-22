@@ -1,7 +1,7 @@
 [Unit]
 Description=polybar
-PartOf=graphical-session.target
-# Works with both i3.service (local) and i3-vnc.service (VNC)
+# Stop polybar when i3 stops, so it restarts with new sessions
+PartOf=i3.service i3-vnc.service
 After=i3.service i3-vnc.service
 
 [Service]

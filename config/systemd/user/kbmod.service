@@ -1,5 +1,8 @@
 [Unit]
 Description=keyboard tweaks
+# Stop when i3 stops, so it restarts with new sessions
+PartOf=i3.service i3-vnc.service
+After=i3.service i3-vnc.service
 
 [Service]
 Type=oneshot

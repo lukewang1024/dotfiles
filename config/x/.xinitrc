@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 #
 # ~/.xinitrc
 #
@@ -25,6 +25,10 @@ is_vnc_session() {
 init_common() {
   # Resources and environment - needed for all sessions
   [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+
+  # Import environment to systemd and start graphical session target
+  systemctl --user import-environment DISPLAY XAUTHORITY
+  systemctl --user start graphical-session.target
 
   export GTK_IM_MODULE=fcitx
   export QT_IM_MODULE=fcitx

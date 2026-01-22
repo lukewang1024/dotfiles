@@ -2,6 +2,14 @@
 unset SESSION_MANAGER
 export XKL_XMODMAP_DISABLE=1
 
+# Wait for X server to be ready (fixes race condition)
+for i in $(seq 1 20); do
+    if xdpyinfo >/dev/null 2>&1; then
+        break
+    fi
+    sleep 0.3
+done
+
 # Mark as VNC session
 export VNC_SESSION=1
 export VNCDESKTOP="${VNCDESKTOP:-VNC}"
