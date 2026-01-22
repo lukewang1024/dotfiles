@@ -146,6 +146,33 @@ prepare_debian_env_gui_core()
     xsel                              # command-line tool to access X clipboard and selection buffers
   )
   debian_install_pkgs
+
+  setup_fcitx_rime
+}
+
+setup_fcitx_rime()
+{
+  # Install fcitx and rime input method
+  pkgs=(
+    fcitx                             # Flexible Input Method Framework
+    fcitx-rime                        # Rime input method engine for fcitx
+    fcitx-config-gtk                  # GTK+ GUI configuration tool for fcitx
+    fcitx-frontend-gtk2               # GTK+2 frontend for fcitx
+    fcitx-frontend-gtk3               # GTK+3 frontend for fcitx
+    fcitx-frontend-qt5                # Qt5 frontend for fcitx
+    fcitx-ui-classic                  # Classic UI for fcitx
+  )
+  debian_install_pkgs
+
+  # Set fcitx as default input method
+  im-config -n fcitx
+
+  # Enable fcitx systemd user service
+  systemctl --user daemon-reload
+  systemctl --user enable fcitx.service
+
+  echo "fcitx-rime installed. Please log out and log back in for changes to take effect."
+  echo "Run 'fcitx-config-gtk3' to configure input methods after restart."
 }
 
 prepare_debian_env_gui_extra()
@@ -157,9 +184,9 @@ prepare_debian_env_gui_extra()
   )
   debian_add_PPAs
 
-  # Sublime Text 3 & Sublime Merge (Stable)
-  wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
-  echo "deb https://download.sublimetext.com/ apt/stable/" | sudo tee /etc/apt/sources.list.d/sublime-text.list
+  # Sublime Text & Sublime Merge (Stable)
+  wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo tee /etc/apt/keyrings/sublimehq-pub.asc > /dev/null
+  echo -e 'Types: deb\nURIs: https://download.sublimetext.com/\nSuites: apt/stable/\nSigned-By: /etc/apt/keyrings/sublimehq-pub.asc' | sudo tee /etc/apt/sources.list.d/sublime-text.sources
 
   pkgs=(
     alacritty                         # GPU-accelerated terminal emulator

@@ -83,21 +83,18 @@ bindsym $super+e                        $exe thunar
 
 # >> Hyper shortcuts
 
-bindsym $hyper+a                        $grun -i lxtask -e 'lxtask'
-bindsym $hyper+c                        $grun -i chromium -e 'chrome-launcher chromium'
-bindsym $hyper+$alt+c                   $grun -i chromium -e 'chrome-launcher chromium nosecurity'
-bindsym $hyper+e                        $grun -i filemanagerA -e 'thunar-launcher filemanagerA ThunarDetailsView'
+bindsym $hyper+c                        $grun -i google-chrome -e 'google-chrome'
+bindsym $hyper+e                        $grun -i sublime_text -x subl -e 'subl'
 bindsym $hyper+f                        $grun -c firefox -e 'firefox'
 bindsym $hyper+m                        $srun -i lx-music-desktop -e 'gtk-launch lx-music-desktop'
 bindsym $hyper+p                        $grun -i FoxitReader -e 'foxitreader'
 bindsym $hyper+q                        $grun -i qutebrowser -e 'qutebrowser'
 bindsym $hyper+r                        $grun -c Zathura -e 'zathura'
-bindsym $hyper+s                        $grun -i sublime_text -x subl -e 'subl'
 bindsym $hyper+t                        $grun -i telegram-desktop -e 'telegram-desktop'
 bindsym $hyper+v                        $grun -i code
 bindsym $hyper+w                        $srun -i wechat.exe -e 'gtk-launch com.qq.weixin.deepin'
 bindsym $hyper+x                        $srun -i corplink -e 'corplink'
-bindsym $hyper+z                        $srun -i zeal -e 'zeal'
+bindsym $hyper+z                        $grun -i filemanagerA -e 'thunar-launcher filemanagerA ThunarDetailsView'
 
 bindsym $hyper+1                        $srun -i gsimplecal -e 'gsimplecal'
 
@@ -109,12 +106,12 @@ bindsym $hyper+space                    $grun -i feishu -e 'gtk-launch feishu'
 
 # >> Hyper+Shift shortcuts
 
-bindsym $hyper+Shift+c                  $grun -i google-chrome -e 'chrome-launcher chrome'
-bindsym $hyper+Shift+$alt+c             $grun -i google-chrome -e 'chrome-launcher chrome nosecurity'
+bindsym $hyper+Shift+a                  $grun -i lxtask -e 'lxtask'
 bindsym $hyper+Shift+e                  $grun -i filemanagerB -e 'thunar-launcher filemanagerB ThunarIconView'
 bindsym $hyper+Control+e                $grun -i filemanagerD -e 'thunar-launcher filemanagerD ThunarDetailsView'
 bindsym $hyper+Shift+m                  $srun -i qqmusic -e 'qqmusic'
 bindsym $hyper+Shift+w                  $srun -i weixin -e 'gtk-launch wechat-uos'
+bindsym $hyper+Shift+z                  $srun -i zeal -e 'zeal'
 
 bindsym $hyper+Shift+bracketright       $srun -i whatsapp-for-linux -e 'gtk-launch com.github.eneshecan.WhatsAppForLinux'
 bindsym $hyper+Shift+semicolon          $grun -i termite -e 'termite'

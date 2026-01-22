@@ -4,5 +4,7 @@ Documentation=man:fcitx(1)
 PartOf=graphical-session.target
 
 [Service]
-Environment=XMODIFIERS="@im=fcitx" GTK_IM_MODULE=fcitx QT_IM_MODULE=fcitx
+Environment=XMODIFIERS=@im=fcitx
+Environment=GTK_IM_MODULE=fcitx
+Environment=QT_IM_MODULE=fcitx
 ExecStart=fcitx -D

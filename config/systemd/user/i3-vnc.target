@@ -13,6 +13,7 @@ Wants=reload-i3.path
 Wants=reload-polybar.path
 Wants=wallpaper.service
 Wants=tmux.service
+Wants=kbmod.service
 
 # Excluded from i3-utils.target:
 # - autorandr.service (physical display management)
