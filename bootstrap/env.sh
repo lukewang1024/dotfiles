@@ -99,13 +99,12 @@ anyenv_setup()
   sync_config_repo "$NODENV_PLUGINS/nodenv-package-rehash"      "$GH/nodenv/nodenv-package-rehash"
   sync_config_repo "$NODENV_PLUGINS/nodenv-update"              "$GH/nodenv/nodenv-update"
 
-  
   local PYENV_PLUGINS="$(pyenv root)/plugins"
   sync_config_repo "$PYENV_PLUGINS/pyenv-doctor"     "$GH/pyenv/pyenv-doctor"
   sync_config_repo "$PYENV_PLUGINS/pyenv-update"     "$GH/pyenv/pyenv-update"
   sync_config_repo "$PYENV_PLUGINS/pyenv-virtualenv" "$GH/pyenv/pyenv-virtualenv"
   sync_config_repo "$PYENV_PLUGINS/pyenv-which-ext"  "$GH/pyenv/pyenv-which-ext"
-  
+
   local RBENV_PLUGINS="$(rbenv root)/plugins"
   sync_config_repo "$RBENV_PLUGINS/ruby-build"          "$GH/rbenv/ruby-build"
   sync_config_repo "$RBENV_PLUGINS/rbenv-vars"          "$GH/rbenv/rbenv-vars"
@@ -156,6 +155,7 @@ util_setup()
   blank_lines
   printf 'Installing handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" "$XDG_CONFIG_HOME/proxychains.conf"
+  backup_then_symlink "$util_dir/agent/claude-notify-stop" "$bin_dir/claude-notify-stop"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   echo 'Done.'
@@ -165,7 +165,7 @@ basic_env_setup()
 {
   profile_setup
   bashit_setup
-  zgen_setup  
+  zgen_setup
   ssh_setup
   tmux_setup
   git_setup
