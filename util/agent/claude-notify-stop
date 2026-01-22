@@ -1,0 +1,54 @@
+#!/bin/sh
+# Claude Code hook script to notify when a task completes
+# Usage: claude-notify-stop --install  (to add to hooks)
+#        Or configure in ~/.claude/settings.json hooks.stop
+
+SETTINGS_FILE="$HOME/.claude/settings.json"
+HOOK_COMMAND='{"type":"command","command":"claude-notify-stop"}'
+
+install_hook() {
+  mkdir -p "$(dirname "$SETTINGS_FILE")"
+
+  if [ ! -f "$SETTINGS_FILE" ]; then
+    echo '{}' > "$SETTINGS_FILE"
+  fi
+
+  # Check if hook already exists (search in nested hooks array)
+  if jq -e '.hooks.Stop[]? | .hooks[]? | select(.command == "claude-notify-stop")' "$SETTINGS_FILE" >/dev/null 2>&1; then
+    echo "Hook already installed"
+    return 0
+  fi
+
+  # Add hook with correct structure: hooks.Stop[].matcher + hooks.Stop[].hooks[]
+  jq --argjson cmd "$HOOK_COMMAND" '
+    .hooks //= {} |
+    .hooks.Stop //= [] |
+    .hooks.Stop += [{"matcher": "", "hooks": [$cmd]}]
+  ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" \
+    && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+
+  echo "Hook installed to $SETTINGS_FILE"
+}
+
+# Handle --install flag
+if [ "$1" = "--install" ]; then
+  install_hook
+  exit $?
+fi
+
+# Normal hook operation
+INPUT=$(cat)
+TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path')
+
+if [ -f "$TRANSCRIPT_PATH" ]; then
+  # Extract latest assistant message, clean up and truncate
+  MSG=$(tail -20 "$TRANSCRIPT_PATH" | \
+        jq -r 'select(.message.role == "assistant") | .message.content[0].text' 2>/dev/null | \
+        tail -1 | \
+        tr '\n' ' ' | \
+        sed 's/  */ /g' | \
+        cut -c1-80)
+fi
+
+# Write directly to terminal since Claude Code captures stdout
+notify "Claude: ${MSG:-Done}" > /dev/tty 2>&1 || notify "Claude: ${MSG:-Done}"
