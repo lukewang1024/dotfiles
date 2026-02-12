@@ -45,12 +45,12 @@ local function setAppToggles(mod, mapping)
 end
 
 setAppToggles(hyper, {
-  a = 'Microsoft Edge',
+  a = 'com.microsoft.edgemac',                    -- Microsoft Edge
   -- b = '',
-  c = 'Google Chrome',
+  c = 'com.google.Chrome',                        -- Google Chrome
   d = 'Dictionary',
   e = 'Sublime Text',
-  f = 'Firefox',
+  f = 'org.mozilla.firefox',                      -- Firefox
   -- g = '',
   -- h: for arrows
   i = 'Cursor',
@@ -100,7 +100,7 @@ setAppToggles(hyperAlt, {
   -- c = '',
   d = 'DevDocs',
   -- e = '',
-  f = 'Figma',
+  -- f = '',
   -- g = '',
   -- h: for mouse move
   i = 'Cloud IDE',

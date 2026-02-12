@@ -135,6 +135,7 @@ prepare_macos_env_gui_core()
     macpass                                       # Open-source, KeePass-client and password manager
     maczip                                        # Utility to open, create and modify archive files
     mos                                           # Smooths scrolling and set mouse scroll directions independently
+    pika                                          # Colour picker for colours onscreen
     rectangle                                     # Move and resize windows using keyboard shortcuts or snap areas
     shottr                                        # Screenshot measurement and annotation tool
     snipaste                                      # Snip or pin screenshots
@@ -220,19 +221,21 @@ prepare_macos_env_gui_extra()
     db-browser-for-sqlite                         # Browser for SQLite databases
     dropbox                                       # Client for the Dropbox cloud storage service
     duet                                          # Remote desktop and second display tool
+    easydict                                      # Dictionary and translator app
     electron-fiddle                               # Create and play with small Electron experiments
     espanso                                       # Cross-platform Text Expander written in Rust
     eul                                           # Status monitoring
     feishu                                        # Project management software
-    figma                                         # Collaborative team software
     firefox                                       # Web browser
     flume                                         # Instagram desktop client (cask unavailable)
+    fluor                                         # Change the behavior of the fn keys depending on the active application
     flux                                          # Screen colour temperature controller
     folx                                          # Download manager with a torrent client
     font-smoothing-adjuster                       # Re-enable the font smoothing controls
     forklift3                                     # File manager and FTP/SFTP/WebDAV client (cask unavailable)
     google-chrome                                 # Web browser
     handbrake                                     # Open-source video transcoder
+    handy                                         # Speech to text application
     haptickey                                     # Trigger haptic feedback when tapping Touch Bar
     hocus-focus                                   # Hide cursor while typing (cask unavailable)
     horndis                                       # Android USB tethering driver
@@ -259,6 +262,7 @@ prepare_macos_env_gui_extra()
     losslesscut                                   # Trims video and audio files losslessly
     lulu                                          # Open-source firewall to block unknown outgoing connections
     lyricsx                                       # Lyrics for iTunes, Spotify, Vox and Audirvana Plus
+    mac-mouse-fix@2                               # Mouse utility to add gesture functions and smooth scrolling to 3rd party mice
     maccy                                         # Clipboard manager
     mark-text                                     # Markdown editor
     markedit                                      # Markdown editor
