@@ -11,6 +11,7 @@
   }; f"
   br = branch
   ca = commit -am
+  cb = !git-clone-bare
   ci = commit -v
   cl = clone
   co = checkout

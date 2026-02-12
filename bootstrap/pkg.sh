@@ -63,6 +63,7 @@ install_npm_packages()
     gatsby-cli                        # Command-line interface for Gatsby, the React-based static site generator
     git-file-history                  # Command-line tool to quickly browse the git history of a specific file
     gulp-cli                          # Command-line interface for Gulp, the JavaScript toolkit and task runner
+    happy-coder                       # Mobile and Web client for Claude Code and Codex
     hexo-cli                          # Command-line interface for Hexo, the fast and simple static blog framework
     hiper                             # Performance profiling tool to get statistics about page load performance
     http-server                       # Simple, zero-configuration command-line HTTP server for serving static files
@@ -155,6 +156,7 @@ install_cpan_packages()
 install_other_packages()
 {
   backup_then_symlink "$util_dir/shell/find-and-replace" "$bin_dir/find-and-replace"
+  backup_then_symlink "$util_dir/shell/git-clone-bare" "$bin_dir/git-clone-bare"
   backup_then_symlink "$util_dir/shell/git-newbranch" "$bin_dir/git-newbranch"
   backup_then_symlink "$util_dir/shell/killbp" "$bin_dir/killbp"
   backup_then_symlink "$util_dir/shell/mann" "$bin_dir/mann"

@@ -184,6 +184,7 @@ install_nix_brew_extra_packages()
     netcat                            # Utility for managing network connections
     nmap                              # Port scanning utility for large networks
     nnn                               # Tiny, lightning fast, feature-packed file manager
+    noti                              # Trigger notifications when a process completes
     ntfy                              # Send push notifications to your phone or desktop via PUT/POST
     nyancat                           # Renders an animated, color, ANSI-text loop of the Poptart Cat
     ocrmypdf                          # Adds an OCR text layer to scanned PDF files
