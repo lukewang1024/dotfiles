@@ -4,11 +4,7 @@
   assume = update-index --assume-unchanged
   assumeall = !git st -s | awk {print
   assumed = !git ls-files -v | grep ^h | cut -c 3-
-  bcl = "!f() { \
-    ref=${1-$(git branch --show-current)}; \
-    [ "$(uname -s)" = 'Darwin' ] && cmd='gxargs' || cmd='xargs'; \
-    git branch --merged ${ref} | grep -vE \" ${ref}$\" | $cmd -r git branch -d; \
-  }; f"
+  bcl = !git-branch-cleanup
   br = branch
   ca = commit -am
   cb = !git-clone-bare
@@ -82,7 +78,7 @@
   }; f"
   mg = merge
   new = !sh -c \"git log $1@{1}..$1@{0} \"$@\"\"
-  nb = !git-newbranch
+  nb = !git-new-branch
   ours = "!f() { git checkout --ours $@ && git add $@; }; f"
   pb = push backup --follow-tags
   po = push origin --follow-tags
