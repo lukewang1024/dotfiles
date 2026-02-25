@@ -26,6 +26,10 @@ export PATH="/usr/local/bin:$PATH"
 if is_linux; then
   [ -d ~/.linuxbrew ] && eval "$(~/.linuxbrew/bin/brew shellenv)"
   [ -d /home/linuxbrew/.linuxbrew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  # nodenv cannot control global npm packages installed with linuxbrew node. Though `brew unlink node && brew link node`
+  # can have all global npm packages linked to linuxbrew bin folder, it will be cumbersome to do unlink-link every time
+  # a global npm package is installed.
+  exists brew && [ -d "$(brew --prefix node)/bin" ] && export PATH="$(brew --prefix node)/bin:$PATH"
 elif is_macos; then
   [ -d /opt/homebrew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 fi

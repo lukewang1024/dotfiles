@@ -64,7 +64,7 @@ setAppToggles(hyper, {
   -- q = '',
   r = 'Reeder',
   s = 'Safari',
-  t = 'com.trae.app',                             -- Trae
+  t = 'ru.keepcoder.Telegram',                    -- Telegram
   -- u = '',
   v = 'com.microsoft.VSCode',                     -- Visual Studio Code
   w = 'WeChat',
@@ -74,7 +74,7 @@ setAppToggles(hyper, {
   [','] = 'com.apple.systempreferences',          -- CFBundleName changed in macOS 13 Ventura, use CFBundleIdentifier for compatibility
   [';'] = 'iTerm',
   ['.'] = 'Sublime Merge',
-  ['['] = 'Telegram',
+  -- ['['] = '',
   [']'] = 'Slack',
   ['/'] = 'Marta',
   ['\''] = 'Terminal',
@@ -107,7 +107,7 @@ setAppToggles(hyperAlt, {
   -- j: for mouse move
   -- k: for mouse move
   -- l: for mouse move
-  m = 'com.tencent.QQMusicMac',                   -- QQ Music
+  m = 'cn.wenyu.bodian.bodianPc',                 -- 波点音乐
   n = 'NoMachine',
   -- o = '',
   p = 'Pocket',
