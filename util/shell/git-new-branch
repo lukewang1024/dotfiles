@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# git-newbranch - Create a new branch from a target branch (default: origin/HEAD)
+# git-new-branch - Create a new branch from a target branch (default: origin/HEAD)
 
 set -e
 
 # Show usage if no arguments
 if [ $# -eq 0 ]; then
     cat << EOF
-Usage: git newbranch <new-branch-name> [target-branch]
+Usage: git new-branch <new-branch-name> [target-branch]
 
 Arguments:
   new-branch-name  Name for the new branch
   target-branch    Optional. Branch to base on (default: origin/HEAD)
 
 Examples:
-  git newbranch feature/my-feature
-  git newbranch fix/bug origin/main
-  git newbranch feature/test develop
+  git new-branch feature/my-feature
+  git new-branch fix/bug origin/main
+  git new-branch feature/test develop
 EOF
     exit 1
 fi
