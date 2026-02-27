@@ -53,7 +53,7 @@ setAppToggles(hyper, {
   f = 'org.mozilla.firefox',                      -- Firefox
   -- g = '',
   -- h: for arrows
-  i = 'Cursor',
+  i = 'Cloud IDE',
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
@@ -103,14 +103,14 @@ setAppToggles(hyperAlt, {
   -- f = '',
   -- g = '',
   -- h: for mouse move
-  i = 'Cloud IDE',
+  -- i = '',
   -- j: for mouse move
   -- k: for mouse move
   -- l: for mouse move
   m = 'cn.wenyu.bodian.bodianPc',                 -- 波点音乐
   n = 'NoMachine',
   -- o = '',
-  p = 'Pocket',
+  p = 'IINA',
   -- q = '',
   -- r = '',
   -- s = '',

@@ -1,0 +1,25 @@
+# Clash Verge Local Profile - Feilian VPN via SSH Tunnel
+#
+# Prerequisites: SSH tunnel providing local SOCKS5
+#   ssh -D 8888 -N -p 8022 <android-ip>
+
+proxies:
+  - name: feilian-tunnel
+    type: socks5
+    server: 127.0.0.1
+    port: 8888  # must match your ssh -D port
+
+proxy-groups:
+  - name: Feilian
+    type: select
+    proxies:
+      - feilian-tunnel
+      - DIRECT
+
+rules:
+  # Corporate internal IP ranges → tunnel
+  - IP-CIDR,10.0.0.0/8,Feilian
+  - IP-CIDR,28.0.0.0/8,Feilian
+
+  # Everything else → direct
+  - MATCH,DIRECT
