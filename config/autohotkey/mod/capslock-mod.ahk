@@ -98,7 +98,6 @@ triggerCapslockFunc()
     case "d": toggleAppWindowExactMatch("Lingoes", "Afx:400000:0", "", getUserAppLink("Lingoes"), 4)                                      ; d - Lingoes
     case "e": toggleAppWindowExactMatch("sublime_text", "PX_WINDOW_CLASS", "", getScoopAppLink("Sublime Text 4"))                         ; e - Sublime Text
     case "f": toggleAppWindowExactMatch("firefox", "MozillaWindowClass", "", getScoopAppLink("Firefox"))                                  ; f - Firefox
-    case "i": toggleAppWindowExactMatch("Cursor", "Chrome_WidgetWin_1", "", getUserAppLink("Cursor"))                                     ; i - Cursor
     case "m": toggleAppWindowExactMatch("foobar2000", "{97E27FAA-C0B3-4b8e-A693-ED7881E99FC1}", "", getScoopAppLink("Foobar2000"))        ; m - Foobar2000
     case "n": toggleAppWindowExactMatch("Notepad", "Notepad")                                                                             ; n - Notepad    
     case "v": toggleAppWindowExactMatch("Code", "Chrome_WidgetWin_1", "", getScoopAppLink("Visual Studio Code"))                          ; v - VS Code

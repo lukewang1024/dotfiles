@@ -200,7 +200,6 @@ prepare_macos_env_gui_extra()
     aerial                                        # Apple TV Aerial screensaver
     airbattery                                    # Battery monitoring utility (cask unavailable)
     android-sdk                                   # Tools for the Android SDK
-    android-studio                                # Tools for building Android applications
     androidtool                                   # App for recording the screen and installing apps in iOS and Android
     apppolice                                     # App for quickly limiting CPU usage of any running process
     aria2gui                                      # Graphical user interface for Aria2
@@ -217,7 +216,6 @@ prepare_macos_env_gui_extra()
     clash-verge-rev                               # Continuation of Clash Verge - A Clash Meta GUI based on Tauri
     commander-one                                 # Two-panel file manager
     coteditor                                     # Plain-text editor for web pages, program source codes and more
-    cursor                                        # Write, edit, and chat about your code with AI
     db-browser-for-sqlite                         # Browser for SQLite databases
     dropbox                                       # Client for the Dropbox cloud storage service
     duet                                          # Remote desktop and second display tool

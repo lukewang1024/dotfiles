@@ -417,9 +417,7 @@ prepare_arch_env_gui_extra()
   pkgs=(
     android-sdk                       # Android software development kit
     android-sdk-platform-tools        # Platform-Tools for Google Android SDK
-    android-studio                    # IDE for Android development
     corplink-bin                      # Corporate VPN client
-    cursor-bin                        # AI-powered code editor
     deepin-wine-tim                   # Tencent QQ/TIM on Deepin Wine
     deepin-wine-wechat                # Tencent WeChat on Deepin Wine
     dropbox                           # Cloud backup and synchronization service

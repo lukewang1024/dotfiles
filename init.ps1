@@ -280,7 +280,6 @@ function prepare_windows_env_gui_extra()
   $wingetPkgs =
     '9NGHP3DX8HDX',                   # Files App - Modern file manager for Windows
     '9NW33J738BL0',                   # Monitorian - Monitor brightness control
-    'Anysphere.Cursor',               # AI-powered code editor with intelligent assistance
     'Bytedance.Feishu',               # Team collaboration and productivity platform
     'CLechasseur.PathCopyCopy',       # Context menu plugin for copying file paths
     'Dropbox.Dropbox',                # Cloud storage and file synchronization service
