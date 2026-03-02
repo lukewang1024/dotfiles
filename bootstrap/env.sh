@@ -132,6 +132,14 @@ python_setup()
   echo 'Done.'
 }
 
+pnpm_setup()
+{
+  blank_lines
+  printf 'Symlinking pnpm config... '
+  backup_then_symlink "$config_dir/pnpm" "$XDG_CONFIG_HOME/pnpm"
+  echo 'Done.'
+}
+
 npm_setup()
 {
   blank_lines
@@ -173,6 +181,7 @@ basic_env_setup()
   anyenv_setup
   rustup_setup
   npm_setup
+  pnpm_setup
   vim_setup
   xdg_dir_create
 }
