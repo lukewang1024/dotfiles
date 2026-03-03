@@ -71,6 +71,7 @@ function prepare_windows_env_cli_core()
     'sudo',                           # Allows users to run commands with elevated privileges
     'touch',                          # Unix-like utility for creating empty files or updating timestamps
     'vim',                            # Highly configurable text editor with modal editing
+    'witr',                           # ('Why Is This Running') is a tool that explains the causal chain behind running processes with additional insights.
     'yazi',                           # Blazing fast terminal file manager written in Rust, based on async I/O
     'zoxide'                          # A faster way to navigate your filesystem
 

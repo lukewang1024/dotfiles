@@ -111,6 +111,7 @@ prepare_arch_env_cli_core()
     lf-bin                            # Terminal file manager
     navi                              # Interactive cheatsheet tool for the command-line
     urlview                           # URL extractor/launcher
+    witr-bin                          # A Linux CLI tool that explains the causal chain behind running processes
   )
   aur_install_pkgs
 
