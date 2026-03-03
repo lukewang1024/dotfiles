@@ -55,6 +55,7 @@ install_nix_brew_core_packages()
     urlview                           # URL extractor/launcher
     vim                               # Vi 'workalike' with many additional features
     wget                              # Internet file retriever
+    witr                              # Why is this running?
     yazi                              # Blazing fast terminal file manager written in Rust, based on async I/O
     zoxide                            # Shell extension to navigate your filesystem faster
     zsh                               # UNIX shell (command interpreter)
