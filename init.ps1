@@ -94,8 +94,10 @@ function prepare_windows_env_cli_extra()
     'adb',                            # Android Debug Bridge - Command-line tool for communicating with Android devices
     'aria2',                          # Multi-protocol download utility with fast parallel downloading
     'broot',                          # Interactive tree view file manager with fuzzy search
+    'chafa',                          # Terminal graphics for the 21st century
     'cloc',                           # Count Lines of Code - Tool that counts lines of source code in many languages
     'cowsay',                         # Fun command-line program that generates ASCII pictures of a cow saying text
+    'csvlens',                        # Command line csv viewer
     'deno',                           # Modern JavaScript and TypeScript runtime built on V8
     'duf',                            # Disk Usage/Free utility - Modern replacement for 'df'
     'dum',                            # Simple duplicate file finder
@@ -106,6 +108,7 @@ function prepare_windows_env_cli_extra()
     'gh',                             # GitHub CLI - Official command-line tool for GitHub
     'git-lfs',                        # Git Large File Storage - Extension for versioning large files
     'gitui',                          # Terminal-based Git user interface written in Rust
+    'glow',                           # Render markdown on the CLI
     'gping',                          # Ping tool with a graph - Visual ping utility with real-time graphs
     'helix',                          # Post-modern modal text editor with multiple selections and LSP support
     'imagemagick',                    # Create, edit, compose, and convert 200+ bitmap image formats.

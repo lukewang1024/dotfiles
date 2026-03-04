@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>__LABEL__</string>
+    <key>ProgramArguments</key>
+    <array>
+__COMMAND_ARGS__
+    </array>
+    <key>StartCalendarInterval</key>
+    <array>
+__CALENDAR_INTERVALS__
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/__LABEL_SHORT__.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/__LABEL_SHORT__.err</string>
+</dict>
+</plist>

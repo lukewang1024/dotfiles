@@ -134,6 +134,7 @@ prepare_arch_env_cli_extra()
     bluetui                           # TUI for managing bluetooth devices
     broot                             # New way to see and navigate directory trees
     calcurse                          # Text-based personal organizer
+    chafa                             # Image-to-text converter supporting a wide range of symbols and palettes, transparency, animations, etc.
     checkbashisms                     # Checks for bashisms in shell scripts
     cloc                              # Count Lines of Code - counts source code lines
     cmake                             # Cross-platform make
@@ -142,6 +143,7 @@ prepare_arch_env_cli_extra()
     cowsay                            # Configurable speaking/thinking cow
     cpanminus                         # Get, unpack, build, and install modules from CPAN
     cpulimit                          # CPU usage limiter
+    csvlens                           # Command line csv viewer
     dnsmasq                           # Lightweight DNS forwarder and DHCP server
     docker                            # Pack, ship and run any application as a lightweight container
     docker-compose                    # Tool for defining and running multi-container Docker applications

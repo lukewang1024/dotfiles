@@ -1,0 +1,170 @@
+#!/bin/sh
+# setup-launchagent - Create and manage macOS launch agents from a template
+#
+# Uses StartCalendarInterval for sleep/wake reliability.
+#
+# Usage:
+#   setup-launchagent --label com.lukew.kinit \
+#                     --command "/usr/bin/kinit --keychain user@REALM" \
+#                     --hours "0,4,8,12,16,20"
+#   setup-launchagent --list
+#   setup-launchagent --uninstall --label com.lukew.kinit
+
+set -e
+
+LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || readlink "$0" 2>/dev/null || echo "$0")")" && pwd)"
+TEMPLATE_DIR="$(cd "$SCRIPT_DIR/../../config/launchd" && pwd)"
+TEMPLATE="$TEMPLATE_DIR/launchagent.plist.template"
+MANAGED_TAG="<!-- managed by setup-launchagent -->"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  setup-launchagent --label LABEL --command "CMD" --hours "H1,H2,..."
+  setup-launchagent --list
+  setup-launchagent --uninstall --label LABEL
+
+Options:
+  --label LABEL       Reverse-DNS label (e.g. com.lukew.kinit)
+  --command "CMD"     Command with arguments (space-separated, quoted as one string)
+  --hours "H,H,..."  Comma-separated hours (0-23) for StartCalendarInterval
+  --list              Show agents installed by this tool
+  --uninstall         Remove the agent identified by --label
+  -h, --help          Show this help
+EOF
+  exit "${1:-0}"
+}
+
+# --- argument parsing ---
+LABEL="" COMMAND="" HOURS="" ACTION="install"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --label)    LABEL="$2";   shift 2 ;;
+    --command)  COMMAND="$2";  shift 2 ;;
+    --hours)    HOURS="$2";   shift 2 ;;
+    --list)     ACTION="list"; shift ;;
+    --uninstall) ACTION="uninstall"; shift ;;
+    -h|--help)  usage 0 ;;
+    *)          echo "Unknown option: $1" >&2; usage 1 ;;
+  esac
+done
+
+# --- list ---
+if [ "$ACTION" = "list" ]; then
+  echo "Managed launch agents:"
+  found=0
+  for f in "$LAUNCH_AGENTS_DIR"/*.plist; do
+    [ -f "$f" ] || continue
+    if grep -q "managed by setup-launchagent" "$f" 2>/dev/null; then
+      label=$(sed -n '/<key>Label<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;}' "$f")
+      loaded=""
+      if launchctl list 2>/dev/null | grep -q "$label"; then
+        loaded=" (loaded)"
+      fi
+      echo "  $label$loaded  [$f]"
+      found=1
+    fi
+  done
+  [ "$found" = "0" ] && echo "  (none)"
+  exit 0
+fi
+
+# --- validate label ---
+if [ -z "$LABEL" ]; then
+  echo "Error: --label is required" >&2
+  usage 1
+fi
+
+PLIST_PATH="$LAUNCH_AGENTS_DIR/$LABEL.plist"
+
+# --- uninstall ---
+if [ "$ACTION" = "uninstall" ]; then
+  if [ -f "$PLIST_PATH" ]; then
+    launchctl unload "$PLIST_PATH" 2>/dev/null || true
+    rm "$PLIST_PATH"
+    echo "Removed $LABEL"
+  else
+    echo "No agent found: $PLIST_PATH" >&2
+    exit 1
+  fi
+  exit 0
+fi
+
+# --- install: validate remaining args ---
+if [ -z "$COMMAND" ]; then
+  echo "Error: --command is required" >&2
+  usage 1
+fi
+if [ -z "$HOURS" ]; then
+  echo "Error: --hours is required" >&2
+  usage 1
+fi
+if [ ! -f "$TEMPLATE" ]; then
+  echo "Error: template not found at $TEMPLATE" >&2
+  exit 1
+fi
+
+# --- build ProgramArguments entries ---
+build_command_args() {
+  # Split command string on spaces, respecting the simple case
+  for arg in $COMMAND; do
+    printf '        <string>%s</string>\n' "$arg"
+  done
+}
+
+# --- build StartCalendarInterval entries ---
+build_intervals() {
+  IFS=','
+  for hour in $HOURS; do
+    hour=$(echo "$hour" | tr -d ' ')
+    cat <<ENTRY
+        <dict>
+            <key>Hour</key>
+            <integer>$hour</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+ENTRY
+  done
+  unset IFS
+}
+
+# --- derive short label for log filenames ---
+LABEL_SHORT="${LABEL##*.}"
+
+# --- generate plist ---
+mkdir -p "$LAUNCH_AGENTS_DIR"
+
+CMD_FILE=$(mktemp)
+CAL_FILE=$(mktemp)
+build_command_args > "$CMD_FILE"
+build_intervals > "$CAL_FILE"
+
+# Build plist line by line, substituting placeholders and expanding blocks
+{
+  echo "$MANAGED_TAG"
+  while IFS= read -r line; do
+    case "$line" in
+      *__LABEL_SHORT__*) echo "$line" | sed "s|__LABEL_SHORT__|$LABEL_SHORT|g" ;;
+      *__LABEL__*)       echo "$line" | sed "s|__LABEL__|$LABEL|g" ;;
+      *__COMMAND_ARGS__*) cat "$CMD_FILE" ;;
+      *__CALENDAR_INTERVALS__*) cat "$CAL_FILE" ;;
+      *)                 echo "$line" ;;
+    esac
+  done < "$TEMPLATE"
+} > "$PLIST_PATH.tmp"
+
+rm -f "$CMD_FILE" "$CAL_FILE"
+
+# --- install ---
+if [ -f "$PLIST_PATH" ]; then
+  launchctl unload "$PLIST_PATH" 2>/dev/null || true
+fi
+mv "$PLIST_PATH.tmp" "$PLIST_PATH"
+
+launchctl load "$PLIST_PATH"
+echo "Installed and loaded: $LABEL"
+echo "  Plist: $PLIST_PATH"
+echo "  Logs:  /tmp/$LABEL_SHORT.log, /tmp/$LABEL_SHORT.err"
