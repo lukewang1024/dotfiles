@@ -368,6 +368,7 @@ set_macos_configs()
   cp "$config_dir/RectangleApp/RectangleConfig.json" '~/Library/Application Support/Rectangle/RectangleConfig.json'
 
   # Handy scripts
+  backup_then_symlink "$util_dir/macos/setup-launchagent" "$bin_dir/setup-launchagent"
   backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
 
   brew_multi_user_permission

@@ -67,8 +67,10 @@ install_nix_brew_extra_packages()
 {
   brew tap abhimanyu003/sttr     # sttr
   brew tap anhoder/go-musicfox   # go-musicfox & spotifox
+  brew tap arimxyer/tap          # models
   brew tap clangen/musikcube     # musikcube
   brew tap egoist/tap            # dum
+  brew tap gromgit/brewtils      # taproom
   brew tap jesseduffield/lazynpm # lazynpm
   brew tap textualize/homebrew   # frogmouth
   brew tap wader/tap             # fq
@@ -88,6 +90,7 @@ install_nix_brew_extra_packages()
     broot                             # New way to see and navigate directory trees
     c2048                             # Console version of 2048
     calcurse                          # Text-based personal organizer
+    chafa                             # Versatile and fast Unicode/ASCII/ANSI graphics renderer
     cheat                             # Create and view interactive cheat sheets for *nix commands
     checkbashisms                     # Checks for bashisms in shell scripts
     cmake                             # Cross-platform make
@@ -97,6 +100,7 @@ install_nix_brew_extra_packages()
     cowsay                            # Apjanke's fork of the classic cowsay project
     cpanminus                         # Get, unpack, build, and install modules from CPAN
     cpulimit                          # CPU usage limiter
+    csvlens                           # Command-line csv viewer
     ddgr                              # DuckDuckGo from the terminal
     diffutils                         # File comparison utilities
     dive                              # Tool for exploring each layer in a docker image
@@ -160,6 +164,7 @@ install_nix_brew_extra_packages()
     jpegoptim                         # Utility to optimize JPEG files
     kubernetes-cli                    # Kubernetes command-line interface
     lazynpm                           # NPM scripts runner (special tap)
+    llmfit                            # Find what models run on your hardware
     lolcat                            # Rainbows and unicorns in your console!
     mailsy                            # Quickly generate a temporary email address
     make                              # Utility for directing compilation
@@ -168,6 +173,7 @@ install_nix_brew_extra_packages()
     midnight-commander                # Terminal-based visual file manager
     minikube                          # Run a Kubernetes cluster locally
     mkcert                            # Simple tool to make locally trusted development certificates
+    models                            # Fast CLI and TUI for browsing AI model information from models.dev
     mosh                              # Remote terminal application
     mpc                               # Command-line music player client for mpd
     mpd                               # Music Player Daemon
@@ -222,6 +228,7 @@ install_nix_brew_extra_packages()
     spotifox                          # Spotify player (special tap)
     starship                          # Cross-shell prompt for astronauts
     sttr                              # CLI to perform various operations on string
+    taproom                           # Interactive TUI for Homebrew
     taskell                           # Command-line Kanban board/task manager with support for Trello
     tesseract                         # OCR (Optical Character Recognition) engine
     tesseract-lang                    # Enables extra languages support for Tesseract
