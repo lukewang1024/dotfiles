@@ -156,9 +156,6 @@ install_cpan_packages()
 install_other_packages()
 {
   backup_then_symlink "$util_dir/shell/find-and-replace" "$bin_dir/find-and-replace"
-  backup_then_symlink "$util_dir/shell/git-branch-cleanup" "$bin_dir/git-branch-cleanup"
-  backup_then_symlink "$util_dir/shell/git-clone-bare" "$bin_dir/git-clone-bare"
-  backup_then_symlink "$util_dir/shell/git-new-branch" "$bin_dir/git-new-branch"
   backup_then_symlink "$util_dir/shell/killbp" "$bin_dir/killbp"
   backup_then_symlink "$util_dir/shell/mann" "$bin_dir/mann"
   backup_then_symlink "$util_dir/shell/md2resume" "$bin_dir/md2resume"

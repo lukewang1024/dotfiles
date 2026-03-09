@@ -368,6 +368,7 @@ prepare_arch_env_gui_core()
     jumpapp                           # Run or focus applications in i3
     localsend-bin                     # An open source cross-platform alternative to AirDrop
     nerd-fonts-fira-code              # Iconic font aggregator, collection, and patcher
+    obsidian-bin                      # Powerful knowledge base that works on top of a local folder of plain text Markdown files
     sublime-merge                     # Git client, done Sublime
     sublime-text-4                    # Sophisticated text editor for code, markup and prose
     visual-studio-code-bin            # Visual Studio Code (binary)

@@ -135,6 +135,7 @@ prepare_macos_env_gui_core()
     macpass                                       # Open-source, KeePass-client and password manager
     maczip                                        # Utility to open, create and modify archive files
     mos                                           # Smooths scrolling and set mouse scroll directions independently
+    obsidian                                      # Knowledge base that works on top of a local folder of plain text Markdown files
     pika                                          # Colour picker for colours onscreen
     rectangle                                     # Move and resize windows using keyboard shortcuts or snap areas
     shottr                                        # Screenshot measurement and annotation tool
@@ -270,7 +271,6 @@ prepare_macos_env_gui_extra()
     mongodb-compass                               # Interactive tool for analyzing MongoDB data
     monitorcontrol                                # Tool to control external monitor brightness & volume
     moonlight                                     # GameStream client
-    msty                                          # Run LLMs locally
     mweb2                                         # Markdown writing and note taking
     netnewswire                                   # Free and open-source RSS reader
     netspot                                       # WiFi site survey software and WiFi scanner

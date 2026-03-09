@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # git-new-branch - Create a new branch from a target branch (default: origin/HEAD)
 
 set -e
@@ -23,7 +23,7 @@ fi
 NEW_BRANCH="$1"
 
 # Determine target branch
-if [ -n "$2" ]; then
+if [ -n "${2:-}" ]; then
     TARGET="$2"
 else
     # Get default branch from origin/HEAD

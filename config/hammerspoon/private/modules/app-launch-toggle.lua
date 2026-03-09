@@ -59,7 +59,7 @@ setAppToggles(hyper, {
   -- l: for arrows
   m = 'Music',
   n = 'MarkEdit',
-  -- o = '',
+  o = 'Obsidian',
   p = 'Preview',
   -- q = '',
   r = 'Reeder',
