@@ -22,6 +22,9 @@ git_setup()
   cat "$config_dir/git/common" >> "$XDG_CONFIG_HOME/git/config"
   [ -f "$config_dir/git/local" ] && cat "$config_dir/git/local" >> "$XDG_CONFIG_HOME/git/config"
 
+  backup_then_symlink "$util_dir/shell/git-branch-cleanup" "$bin_dir/git-branch-cleanup"
+  backup_then_symlink "$util_dir/shell/git-clone-bare" "$bin_dir/git-clone-bare"
+  backup_then_symlink "$util_dir/shell/git-new-branch" "$bin_dir/git-new-branch"
   backup_then_symlink "$util_dir/shell/git-set-identity" "$bin_dir/git-set-identity"
 
   # MacOS

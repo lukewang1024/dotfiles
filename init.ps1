@@ -167,6 +167,7 @@ function prepare_windows_env_gui_core()
     'keepassxc',                      # Cross-platform password manager with strong encryption
     'listary',                        # Smart file search and launcher for Windows
     'localsend',                      # Share files to nearby devices. An open source cross-platform alternative to AirDrop
+    'obsidian',                       # Powerful knowledge base that works on top of a local folder of plain text Markdown files
     'powertoys',                      # Microsoft's collection of utilities for power users
     'quicklook',                      # Spacebar preview functionality for Windows, similar to macOS
     'snipaste',                       # Screenshot and image annotation tool with pinning capabilities
