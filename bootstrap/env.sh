@@ -185,6 +185,7 @@ basic_env_setup()
   rustup_setup
   npm_setup
   pnpm_setup
+  python_setup
   vim_setup
   xdg_dir_create
 }
@@ -192,6 +193,8 @@ basic_env_setup()
 xdg_dir_create()
 {
   printf 'Creating XDG state & cache directories...'
+  # android
+  mkdir -p "$XDG_DATA_HOME/android"
   # bash
   mkdir -p "$XDG_STATE_HOME/bash"
   # less
