@@ -17,14 +17,13 @@ tig_setup()
 
 vim_setup()
 {
-  printf 'Symlinking .vimrc... '
-  backup_then_symlink "$config_dir/vim/.vimrc" ~/.vimrc
-  backup_then_symlink "$config_dir/nvim/coc-settings.json" ~/.vim/coc-settings.json
-  backup_then_symlink "$config_dir/nvim" ~/.config/nvim
+  printf 'Symlinking vim/nvim config (XDG)... '
+  backup_then_symlink "$config_dir/vim" "$XDG_CONFIG_HOME/vim"
+  backup_then_symlink "$config_dir/vim" "$XDG_CONFIG_HOME/nvim"
   echo 'Done.'
 
   echo 'Installing vim-plug...'
-  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+  curl -fLo "$XDG_DATA_HOME/vim/autoload/plug.vim" --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   vim +PlugInstall +qa
   echo 'Done.'

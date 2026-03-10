@@ -13,6 +13,9 @@ export CARGO_HOME="$XDG_DATA_HOME/cargo"
 # docker
 export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 
+# easyocr
+export EASYOCR_MODULE_PATH="$XDG_CONFIG_HOME/EasyOCR"
+
 # gem
 export GEM_HOME="$XDG_DATA_HOME/gem"
 export GEM_SPEC_CACHE="$XDG_CACHE_HOME/gem"
@@ -45,7 +48,7 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 alias percol='percol --rcfile=$XDG_CONFIG_HOME/percol/rc.py'
 
 # python
-# export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
+export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
 
 # rustup
 export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
