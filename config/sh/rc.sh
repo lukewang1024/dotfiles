@@ -2,6 +2,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export EDITOR='vim'
 
+# Reset PATH to system default to avoid duplication from inherited environments (e.g. tmux)
+PATH='/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'
+
 # Add flatpak directories to XDG_DATA_DIRS (user path takes precedence)
 if is_linux; then
   export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
