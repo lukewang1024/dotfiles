@@ -202,6 +202,7 @@ prepare_arch_env_cli_extra()
     mutt                              # Mongrel of mail user agents
     ncdu                              # NCurses Disk Usage
     ncmpcpp                           # Ncurses-based client for the Music Player Daemon
+    neomutt                           # A version of mutt with added features
     neovim                            # Ambitious Vim-fork focused on extensibility and agility
     nghttp2                           # HTTP/2 C library and tools
     ntfysh-bin                        # Send push notifications to your phone or desktop
