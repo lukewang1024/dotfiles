@@ -35,6 +35,8 @@ elif is_macos; then
 fi
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+# Prepend goenv shims to PATH instead of appending
+export GOENV_PATH_ORDER=front
 
 # Homebrew
 export HOMEBREW_NO_AUTO_UPDATE=1
@@ -77,6 +79,7 @@ alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
 alias claude='claude --dangerously-skip-permissions'
 alias codex='codex --dangerously-bypass-approvals-and-sandbox'
+alias oc=openclaw
 
 ## Tools from npm
 alias create-react-app='npx create-react-app'

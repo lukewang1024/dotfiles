@@ -187,6 +187,7 @@ install_nix_brew_extra_packages()
     ncdu                              # NCurses Disk Usage
     ncmpcpp                           # Ncurses-based client for the Music Player Daemon
     neofetch                          # Fast, highly customisable system info script
+    neomutt                           # E-mail reader with support for Notmuch, NNTP and much more
     neovim                            # Ambitious Vim-fork focused on extensibility and agility
     netcat                            # Utility for managing network connections
     nmap                              # Port scanning utility for large networks

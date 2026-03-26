@@ -74,8 +74,8 @@ setAppToggles(hyper, {
   [','] = 'com.apple.systempreferences',          -- CFBundleName changed in macOS 13 Ventura, use CFBundleIdentifier for compatibility
   [';'] = 'iTerm',
   ['.'] = 'Sublime Merge',
-  -- ['['] = '',
-  [']'] = 'Slack',
+  ['['] = 'com.hnc.Discord',                      -- Discord
+  [']'] = 'com.tinyspeck.slackmacgap',            -- Slack
   ['/'] = 'Marta',
   ['\''] = 'Terminal',
   ['\\'] = 'MacPass',
@@ -90,7 +90,7 @@ setAppToggles(hyper, {
   ['8'] = 'Resilio Sync',
   ['9'] = 'Charles',
   ['0'] = 'Proxifier',
-  ['space'] = 'Feishu',
+  ['space'] = 'com.electron.lark',                -- Feishu
 })
 
 -- hyperAlt application shortcuts
@@ -124,8 +124,8 @@ setAppToggles(hyperAlt, {
   -- [','] = '',
   [';'] = 'Alacritty',
   -- ['.'] = '',
-  -- ['['] = '',
-  [']'] = 'Discord',
+  ['['] = 'com.larksuite.larkApp',                -- Lark
+  -- [']'] = '',
   ['/'] = 'Commander One',
   ['\''] = 'kitty',
   ['\\'] = 'cn.futu.Niuniu',                      -- Futubull
