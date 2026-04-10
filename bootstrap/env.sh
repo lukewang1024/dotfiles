@@ -167,6 +167,7 @@ util_setup()
   printf 'Installing handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" "$XDG_CONFIG_HOME/proxychains.conf"
   backup_then_symlink "$util_dir/agent/claude-notify-stop" "$bin_dir/claude-notify-stop"
+  backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   echo 'Done.'

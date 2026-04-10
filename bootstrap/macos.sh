@@ -323,6 +323,7 @@ prepare_macos_env_gui_extra()
     suspicious-package                            # Application for inspecting installer packages
     swiftdefaultappsprefpane                      # Replacement for RCDefaultApps, written in Swift
     switchhosts                                   # App to switch hosts
+    tailscale-app                                 # Mesh VPN based on WireGuard
     the-unarchiver                                # Unpacks archive files
     thorium                                       # Epub reader
     toau                                          # System optimization utility (cask unavailable)

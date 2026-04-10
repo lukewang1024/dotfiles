@@ -27,6 +27,7 @@ install_nix_brew_core_packages()
     docker                            # Pack, ship and run any application as a lightweight container
     docker-buildx                     # Docker CLI plugin for extended build capabilities with BuildKit
     docker-compose                    # Isolated development environments using Docker
+    docker-credential-helper          # Platform keystore credential helper for Docker
     fd                                # Simple, fast and user-friendly alternative to find
     findutils                         # Collection of GNU find, xargs, and locate
     fx                                # Terminal JSON viewer

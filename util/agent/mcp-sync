@@ -1,0 +1,325 @@
+#!/usr/bin/env sh
+# mcp-sync — Sync MCP server config from mcporter to coding agents
+#
+# mcporter is the single source of truth for MCP server definitions.
+# This script reads ~/.mcporter/mcporter.json and syncs config for:
+#   - Claude Code  (claude mcp add --scope user)
+#   - Codex        (codex mcp add)
+#   - OpenCode     (opencode mcp add)
+#
+# Auth tokens: For HTTP servers with Authorization headers, the token
+# value is stored in an env var named MCP_TOKEN_<UPPERNAME> so agents
+# can reference it without embedding secrets in config.
+#
+# Usage:
+#   mcp-sync              Sync all agents
+#   mcp-sync claude       Sync Claude Code only
+#   mcp-sync codex        Sync Codex only
+#   mcp-sync opencode     Sync OpenCode only
+#   mcp-sync --dry-run    Show what would be written
+#   mcp-sync --status     Show current state of all agents
+#   mcp-sync --install    Add symlink to ~/.local/bin
+
+set -eu
+
+MCPORTER_CONFIG="${MCPORTER_CONFIG:-$HOME/.mcporter/mcporter.json}"
+DRY_RUN=false
+
+# -- helpers ------------------------------------------------------------------
+
+die()  { printf 'error: %s\n' "$1" >&2; exit 1; }
+info() { printf '  %s\n' "$1"; }
+
+check_deps() {
+  command -v jq  >/dev/null || die "jq is required (brew install jq)"
+  [ -f "$MCPORTER_CONFIG" ] || die "mcporter config not found at $MCPORTER_CONFIG"
+}
+
+server_names() {
+  jq -r '.mcpServers | keys[]' "$MCPORTER_CONFIG"
+}
+
+server_json() {
+  jq -r --arg name "$1" '.mcpServers[$name]' "$MCPORTER_CONFIG"
+}
+
+server_type() {
+  local json="$1"
+  if echo "$json" | jq -e '.command' >/dev/null 2>&1; then
+    echo "stdio"
+  elif echo "$json" | jq -e '.url' >/dev/null 2>&1; then
+    echo "http"
+  elif echo "$json" | jq -e '.baseUrl' >/dev/null 2>&1; then
+    echo "http"
+  else
+    echo "unknown"
+  fi
+}
+
+# Derive env var name for bearer token: MCP_TOKEN_<UPPERNAME>
+token_env_var() {
+  echo "MCP_TOKEN_$(echo "$1" | tr '[:lower:]-' '[:upper:]_')"
+}
+
+# Extract bare token from "Bearer <token>" header value
+bearer_token() {
+  echo "$1" | sed 's/^Bearer //'
+}
+
+# Ensure token env var is exported for the current session and written
+# to ~/.mcporter/env (sourceable file for shell profile).
+persist_token_env() {
+  local var_name="$1" token="$2"
+  local env_file="$HOME/.mcporter/env"
+
+  # Export for current process
+  export "$var_name=$token"
+
+  # Persist to env file (create or update)
+  mkdir -p "$(dirname "$env_file")"
+  if [ -f "$env_file" ] && grep -q "^export $var_name=" "$env_file" 2>/dev/null; then
+    # Update existing entry
+    sed -i.bak "s|^export $var_name=.*|export $var_name=\"$token\"|" "$env_file"
+    rm -f "$env_file.bak"
+  else
+    echo "export $var_name=\"$token\"" >> "$env_file"
+  fi
+}
+
+# -- Claude Code --------------------------------------------------------------
+
+sync_claude() {
+  printf 'Claude Code (claude mcp add --scope user)\n'
+  command -v claude >/dev/null || { info "claude not found, skipping"; return; }
+
+  local existing
+  existing=$(claude mcp list 2>&1 || true)
+
+  for name in $(server_names); do
+    json=$(server_json "$name")
+    type=$(server_type "$json")
+
+    # Check if already configured at user scope
+    if echo "$existing" | grep -q "$name"; then
+      info "$name: already configured, skipping"
+      continue
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+      info "[dry-run] would add: $name ($type)"
+      continue
+    fi
+
+    case "$type" in
+      stdio)
+        cmd=$(echo "$json" | jq -r '.command')
+        args=$(echo "$json" | jq -r '.args // [] | .[]')
+        env_args=""
+        while IFS= read -r env_entry; do
+          [ -z "$env_entry" ] && continue
+          env_args="$env_args -e $env_entry"
+        done <<EOF
+$(echo "$json" | jq -r '.env // {} | to_entries[] | "\(.key)=\(.value)"')
+EOF
+
+        eval claude mcp add --transport stdio --scope user "$name" $env_args -- "$cmd" $args 2>&1 && \
+          info "$name: added (stdio)" || \
+          info "$name: failed to add"
+        ;;
+      http)
+        url=$(echo "$json" | jq -r '.url // .baseUrl')
+        auth_header=$(echo "$json" | jq -r '.headers.Authorization // empty')
+        header_args=""
+
+        if [ -n "$auth_header" ]; then
+          header_args="-H \"Authorization: $auth_header\""
+        fi
+
+        eval claude mcp add --transport http --scope user "$name" "$url" $header_args 2>&1 && \
+          info "$name: added (http)" || \
+          info "$name: failed to add"
+        ;;
+      *)
+        info "$name: unknown transport type, skipping"
+        ;;
+    esac
+  done
+}
+
+# -- Codex --------------------------------------------------------------------
+
+sync_codex() {
+  printf 'Codex\n'
+  command -v codex >/dev/null || { info "codex not found, skipping"; return; }
+
+  local existing
+  existing=$(codex mcp list 2>&1 || true)
+
+  for name in $(server_names); do
+    json=$(server_json "$name")
+    type=$(server_type "$json")
+
+    # Check if already configured
+    if echo "$existing" | grep -q "$name"; then
+      info "$name: already configured, skipping"
+      continue
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+      info "[dry-run] would add: $name ($type)"
+      continue
+    fi
+
+    case "$type" in
+      stdio)
+        cmd=$(echo "$json" | jq -r '.command')
+        args=$(echo "$json" | jq -r '.args // [] | .[]')
+        env_args=$(echo "$json" | jq -r '
+          .env // {} | to_entries[] | " --env \(.key)=\(.value)"
+        ' | tr -d '\n')
+
+        eval codex mcp add "$name" $env_args -- "$cmd" $args 2>&1 && \
+          info "$name: added (stdio)" || \
+          info "$name: failed to add"
+        ;;
+      http)
+        url=$(echo "$json" | jq -r '.url // .baseUrl')
+        auth_header=$(echo "$json" | jq -r '.headers.Authorization // empty')
+        bearer_args=""
+
+        if [ -n "$auth_header" ]; then
+          var_name=$(token_env_var "$name")
+          token=$(bearer_token "$auth_header")
+          persist_token_env "$var_name" "$token"
+          bearer_args="--bearer-token-env-var $var_name"
+          info "$name: token stored in \$$var_name"
+        fi
+
+        eval codex mcp add "$name" --url "$url" $bearer_args 2>&1 && \
+          info "$name: added (http)" || \
+          info "$name: failed to add"
+        ;;
+      *)
+        info "$name: unknown transport type, skipping"
+        ;;
+    esac
+  done
+}
+
+# -- OpenCode -----------------------------------------------------------------
+# OpenCode stores MCP config in SQLite (~/.local/share/opencode/opencode.db),
+# and its `mcp add` is TUI-only (no non-interactive mode).
+# We skip automated sync and print instructions instead.
+
+sync_opencode() {
+  printf 'OpenCode\n'
+  command -v opencode >/dev/null || { info "opencode not found, skipping"; return; }
+
+  info "OpenCode uses interactive TUI for mcp add — cannot sync automatically"
+  info "Run 'opencode mcp add' manually for each server, or use mcporter directly:"
+
+  for name in $(server_names); do
+    json=$(server_json "$name")
+    type=$(server_type "$json")
+
+    case "$type" in
+      stdio)
+        cmd=$(echo "$json" | jq -r '[.command] + (.args // []) | join(" ")')
+        info "  opencode mcp add  →  $name  →  $cmd"
+        ;;
+      http)
+        url=$(echo "$json" | jq -r '.url // .baseUrl')
+        info "  opencode mcp add  →  $name  →  $url"
+        ;;
+    esac
+  done
+}
+
+# -- Status -------------------------------------------------------------------
+
+show_status() {
+  printf 'mcporter (%s)\n' "$MCPORTER_CONFIG"
+  for name in $(server_names); do
+    local type
+    type=$(server_type "$(server_json "$name")")
+    info "$name ($type)"
+  done
+
+  echo
+  printf 'Claude Code (user scope)\n'
+  if command -v claude >/dev/null; then
+    claude mcp list 2>&1 | sed 's/^/  /'
+  else
+    info "(not installed)"
+  fi
+
+  echo
+  printf 'Codex\n'
+  if command -v codex >/dev/null; then
+    codex mcp list 2>&1 | sed 's/^/  /'
+  else
+    info "(not installed)"
+  fi
+
+  echo
+  printf 'OpenCode\n'
+  if command -v opencode >/dev/null; then
+    opencode mcp list 2>&1 | sed 's/^/  /'
+  else
+    info "(not installed)"
+  fi
+}
+
+# -- Install ------------------------------------------------------------------
+
+do_install() {
+  local bin_dir="$HOME/.local/bin"
+  local script_path
+  script_path="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+
+  mkdir -p "$bin_dir"
+  if [ -L "$bin_dir/mcp-sync" ]; then
+    info "symlink already exists at $bin_dir/mcp-sync"
+  else
+    ln -sf "$script_path" "$bin_dir/mcp-sync"
+    info "installed symlink: $bin_dir/mcp-sync → $script_path"
+  fi
+}
+
+# -- main ---------------------------------------------------------------------
+
+main() {
+  targets=""
+
+  for arg in "$@"; do
+    case "$arg" in
+      --dry-run) DRY_RUN=true ;;
+      --status)  check_deps; show_status; exit 0 ;;
+      --install) do_install; exit 0 ;;
+      --help|-h)
+        sed -n '2,/^$/s/^# //p' "$0"
+        exit 0
+        ;;
+      claude|codex|opencode) targets="$targets $arg" ;;
+      *) die "unknown argument: $arg" ;;
+    esac
+  done
+
+  check_deps
+
+  # Default: sync all
+  [ -z "$targets" ] && targets="claude codex opencode"
+
+  for target in $targets; do
+    case "$target" in
+      claude)   sync_claude   ;;
+      codex)    sync_codex    ;;
+      opencode) sync_opencode ;;
+    esac
+    echo
+  done
+
+  printf 'Done.\n'
+}
+
+main "$@"
