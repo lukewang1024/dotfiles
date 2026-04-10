@@ -3,7 +3,7 @@ export LANG=en_US.UTF-8
 export EDITOR='vim'
 
 # Reset PATH to system default to avoid duplication from inherited environments (e.g. tmux)
-PATH='/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'
+PATH='/usr/bin:/bin:/usr/sbin:/sbin'
 
 # Add flatpak directories to XDG_DATA_DIRS (user path takes precedence)
 if is_linux; then
@@ -24,7 +24,6 @@ export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
 
 # PATH
 export PATH="/usr/bin/core_perl:$PATH"
-export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 if is_linux; then
   [ -d ~/.linuxbrew ] && eval "$(~/.linuxbrew/bin/brew shellenv)"

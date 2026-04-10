@@ -73,6 +73,7 @@ install_npm_packages()
     localtunnel                       # Tool to expose your localhost to the world via secure tunnels
     loopback-cli                      # Command-line interface for LoopBack, the Node.js API framework
     madge                             # Dependency graph visualization tool for JavaScript projects
+    mcporter                          # TypeScript runtime and CLI for connecting to configured Model Context Protocol servers
     majestic                          # Zero-config GUI for Jest testing framework with test coverage and watch mode
     memlab                            # Memory leak detection and heap analysis tool for JavaScript applications
     mermaid.cli                       # Command-line interface for Mermaid, the diagramming and charting tool
@@ -94,6 +95,7 @@ install_npm_packages()
     readability-cli                   # Command-line tool that extracts and formats the main readable content from web pages
     serve                             # Static file server that serves files from a directory via HTTP
     serverless                        # Framework for building and deploying serverless applications to cloud providers
+    skills                            # The open agent skills ecosystem
     source-map-explorer               # Tool that analyzes JavaScript bundles using source maps to show which files contribute to bundle size
     svgexport                         # Command-line utility for converting SVG files to PNG, JPEG, PDF and other formats
     taskbook                          # Command-line task management tool for creating, organizing, and tracking tasks and notes in the terminal
