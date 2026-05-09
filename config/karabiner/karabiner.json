@@ -5,6 +5,19 @@
             "complex_modifications": {
                 "rules": [
                     {
+                        "description": "Right Command → fn",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "right_command",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [{ "apple_vendor_top_case_key_code": "keyboard_fn" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Swap left command and option & map caps_lock to f18 in virtual machine/remote desktop",
                         "manipulators": [
                             {
