@@ -119,8 +119,8 @@ prepare_macos_env_gui_core()
   local casks=(
     alacritty                                     # GPU-accelerated terminal emulator
     alfred                                        # Application launcher and productivity software
-    alt-tab                                       # Enable Windows-like alt-tab
     appcleaner                                    # Application uninstaller
+    dockdoor                                      # Window peeking utility app
     fliqlo                                        # Flip clock screensaver
     font-fira-code-nerd-font                      # FiraCode Nerd Font (Fira Code)
     font-meslo-lg-nerd-font                       # MesloLG Nerd Font families (Meslo LG)
@@ -200,6 +200,7 @@ prepare_macos_env_gui_extra()
   local casks=(
     aerial                                        # Apple TV Aerial screensaver
     airbattery                                    # Battery monitoring utility (cask unavailable)
+    alt-tab                                       # Enable Windows-like alt-tab
     android-sdk                                   # Tools for the Android SDK
     androidtool                                   # App for recording the screen and installing apps in iOS and Android
     apppolice                                     # App for quickly limiting CPU usage of any running process
