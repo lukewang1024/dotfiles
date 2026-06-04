@@ -13,7 +13,29 @@ debian_install_pkgs()
 {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install -y `join ' ' "${pkgs[@]}"`
+
+  # Skip packages that have no installation candidate on this distro/release
+  # (e.g. firefox-esr on Ubuntu, polybar on older releases), so one missing
+  # package doesn't abort the entire install.
+  local available=()
+  local unavailable=()
+  local candidate
+  for pkg in "${pkgs[@]}"; do
+    candidate="$(apt-cache policy "$pkg" 2> /dev/null | sed -n 's/^ *Candidate: //p')"
+    if [ -n "$candidate" ] && [ "$candidate" != '(none)' ]; then
+      available+=("$pkg")
+    else
+      unavailable+=("$pkg")
+    fi
+  done
+
+  if [ ${#unavailable[@]} -gt 0 ]; then
+    echo "Skipping unavailable packages: ${unavailable[*]}"
+  fi
+  if [ ${#available[@]} -gt 0 ]; then
+    sudo apt install -y `join ' ' "${available[@]}"`
+  fi
+
   unset pkgs
 }
 
@@ -115,7 +137,6 @@ prepare_debian_env_cli_extra()
     fortune-mod                       # Fortune cookie program that displays random quotes
     gnupg2                            # GNU Privacy Guard - encryption and signing tool
     neovim                            # Vim-fork focused on extensibility and usability
-    polipo                            # Small and fast caching web proxy
     python3-dev                       # Header files and development tools for Python 3
     python3-pip                       # Python package installer
     rxvt-unicode-256color             # Terminal emulator with 256 color support
