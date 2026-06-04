@@ -86,11 +86,11 @@ git_setup()
 
 anyenv_setup()
 {
-  anyenv install --init https://github.com/lukewang1024/anyenv-install.git
-  anyenv install goenv
-  anyenv install nodenv
-  anyenv install pyenv
-  anyenv install rbenv
+  anyenv install --force-init https://github.com/lukewang1024/anyenv-install.git
+  anyenv install --skip-existing goenv
+  anyenv install --skip-existing nodenv
+  anyenv install --skip-existing pyenv
+  anyenv install --skip-existing rbenv
   eval "$(anyenv init -)"
 
   local GH='https://github.com'
