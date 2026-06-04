@@ -113,6 +113,56 @@ zsh_common_setup()
   backup_then_symlink "$config_dir/zsh/.p10k.zsh" "$XDG_CONFIG_HOME/zsh/.p10k.zsh"
 }
 
+# Set up exactly one shell environment, since only one shell is typically used,
+# and make it the default login shell. Defaults to zgen; select another via
+# DOTFILES_SHELL or by calling zinit_setup / bashit_setup manually.
+#   DOTFILES_SHELL=zgen  (default)
+#   DOTFILES_SHELL=zinit
+#   DOTFILES_SHELL=bash_it
+shell_setup()
+{
+  case "${DOTFILES_SHELL:-zgen}" in
+    'zgen')
+      zgen_setup
+      set_default_shell zsh
+      ;;
+    'zinit')
+      zinit_setup
+      set_default_shell zsh
+      ;;
+    'bash_it')
+      bashit_setup
+      set_default_shell bash
+      ;;
+    *)
+      echo "Unknown DOTFILES_SHELL '$DOTFILES_SHELL', falling back to zgen."
+      zgen_setup
+      set_default_shell zsh
+      ;;
+  esac
+}
+
+set_default_shell()
+{
+  local shell_path="$(command -v "$1")"
+  if [ -z "$shell_path" ]; then
+    echo "Cannot find $1 in PATH, skip changing the default shell."
+    return 1
+  fi
+
+  if [ "$SHELL" = "$shell_path" ]; then
+    echo "Default shell is already $shell_path"
+    return 0
+  fi
+
+  # The shell must be whitelisted in /etc/shells before chsh accepts it
+  grep -qx "$shell_path" /etc/shells || echo "$shell_path" | sudo tee -a /etc/shells > /dev/null
+
+  printf "Changing default shell to $shell_path... "
+  chsh -s "$shell_path"
+  echo 'Done.'
+}
+
 bashit_setup()
 {
   blank_lines

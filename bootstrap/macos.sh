@@ -90,9 +90,9 @@ prepare_macos_env_cli_extra()
     csshx                                         # Cluster ssh tool for Terminal.app
     duti                                          # Select default apps for documents and URL schemes on macOS
     fortune                                       # Infamous electronic fortune-cookie generator
-    hyperkit                                      # Toolkit for embedding hypervisor capabilities in your application
     m-cli                                         # Swiss Army Knife for macOS
     mackup                                        # Keep your Mac's application settings in sync
+    powershell                                    # Command-line shell and scripting language
     reattach-to-user-namespace                    # Reattach process (e.g., tmux) to background
     scrcpy                                        # Display and control your Android device
     sunshine                                      # Self-hosted game stream host for Moonlight
@@ -106,7 +106,6 @@ prepare_macos_env_cli_extra()
     gcloud-cli                                    # Set of tools to manage resources and applications hosted on Google Cloud
     miniconda                                     # Minimal installer for conda
     orbstack                                      # Replacement for Docker Desktop
-    powershell                                    # Command-line shell and scripting language
     vagrant                                       # Development environment
   )
   brew install --cask `join ' ' "${casks[@]}"`
@@ -192,26 +191,19 @@ prepare_macos_env_gui_extra()
 
   # Cask packages
 
-  brew tap homebrew/cask-versions
   brew tap lukewang1024/homebrew-legacy
-  brew tap dteoh/sqa                              # slowquitapps
+  brew tap darrylmorley/whatcable                 # whatcable
   brew tap lihaoyun6/tap                          # airbattery, quickrecorder
 
   local casks=(
     aerial                                        # Apple TV Aerial screensaver
     airbattery                                    # Battery monitoring utility (cask unavailable)
     alt-tab                                       # Enable Windows-like alt-tab
-    android-sdk                                   # Tools for the Android SDK
     androidtool                                   # App for recording the screen and installing apps in iOS and Android
-    apppolice                                     # App for quickly limiting CPU usage of any running process
-    aria2gui                                      # Graphical user interface for Aria2
     background-music                              # Audio utility
     betterdisplay                                 # Display management tool
-    bitbar                                        # Utility to display the output from any script or program in the menu bar
-    bob                                           # Translation application for text, pictures, and manual input
     boop                                          # Scriptable scratchpad for developers
     browserosaurus                                # Open-source browser prompter
-    cakebrew                                      # GUI app for Homebrew
     calibre                                       # E-books management software
     caprine                                       # Elegant Facebook Messenger desktop app
     charles                                       # Web debugging Proxy application
@@ -227,26 +219,20 @@ prepare_macos_env_gui_extra()
     eul                                           # Status monitoring
     feishu                                        # Project management software
     firefox                                       # Web browser
-    flume                                         # Instagram desktop client (cask unavailable)
     fluor                                         # Change the behavior of the fn keys depending on the active application
     flux                                          # Screen colour temperature controller
     folx                                          # Download manager with a torrent client
     font-smoothing-adjuster                       # Re-enable the font smoothing controls
-    forklift3                                     # File manager and FTP/SFTP/WebDAV client (cask unavailable)
     google-chrome                                 # Web browser
     handbrake                                     # Open-source video transcoder
     handy                                         # Speech to text application
     haptickey                                     # Trigger haptic feedback when tapping Touch Bar
-    hocus-focus                                   # Hide cursor while typing (cask unavailable)
-    horndis                                       # Android USB tethering driver
     hyperconnect                                  # Cross-device interconnection service for the Xiaomi ecosystem
-    imagealpha                                    # Utility to reduce the size of 24-bit PNG files
     imageoptim                                    # Tool to optimise images to a smaller size
     inkscape                                      # Vector graphics editor
     istat-menus                                   # System monitoring app
     itermai                                       # Enable generative AI features in iTerm2
     itsycal                                       # Menu bar calendar
-    java                                          # Java Standard Edition Development Kit
     joplin                                        # Note taking and to-do application with synchronisation capabilities
     jupyter-notebook-viewer                       # Utility to render Jupyter notebooks
     kap                                           # Open-source screen recorder built with web technology
@@ -254,11 +240,9 @@ prepare_macos_env_gui_extra()
     keepingyouawake                               # Tool to prevent the system from going into sleep mode
     keka                                          # File archiver
     keycastr                                      # Open-source keystroke visualiser
-    kitematic                                     # Visual user interface for Docker Container management
     kitty                                         # GPU-based terminal emulator
     lark                                          # Project management software
     lepton                                        # Snippet management app
-    logoer                                        # Create logos with a simple interface
     losslesscut                                   # Trims video and audio files losslessly
     lulu                                          # Open-source firewall to block unknown outgoing connections
     lyricsx                                       # Lyrics for iTunes, Spotify, Vox and Audirvana Plus
@@ -268,7 +252,6 @@ prepare_macos_env_gui_extra()
     markedit                                      # Markdown editor
     marta                                         # Extensible two-pane file manager
     microsoft-edge                                # Multi-platform web browser
-    microsoft-remote-desktop                      # Remote desktop client
     mongodb-compass                               # Interactive tool for analyzing MongoDB data
     monitorcontrol                                # Tool to control external monitor brightness & volume
     moonlight                                     # GameStream client
@@ -277,15 +260,12 @@ prepare_macos_env_gui_extra()
     netspot                                       # WiFi site survey software and WiFi scanner
     nightfall                                     # Menu bar utility for toggling dark mode
     ntfstool                                      # Utility that provides NTFS read and write support
-    nvalt                                         # Note taking app
     omnidisksweeper                               # Finds large, unwanted files and deletes them
     onyx                                          # Verify system files structure, run miscellaneous maintenance and more
     openinterminal                                # Finder Toolbar app to open the current directory in Terminal or Editor
     openmtp                                       # Android file transfer
     pdf-expert                                    # PDF reader, editor and annotator
     pdfsam-basic                                  # Extracts pages, splits, merges, mixes and rotates PDF files
-    phantomjs                                     # Headless web browser
-    pngyu                                         # Front-end GUI application for pngquant
     provisionql                                   # Quick Look plugin for mobile apps and provisioning profiles
     proxifier                                     # Proxy client
     qlcolorcode                                   # Quick Look plug-in that renders source code with syntax highlighting
@@ -296,9 +276,6 @@ prepare_macos_env_gui_extra()
     qq                                            # Instant messaging tool
     qqmusic                                       # Chinese music streaming application
     quicklook-csv                                 # Quick Look plugin for CSV files
-    quicklook-json                                # Quick Look plugin for JSON files
-    quicklook-pat                                 # Quick Look plugin for Adobe Photoshop pattern files
-    quicklookapk                                  # Quick Look plugin for Android packages
     quicklookase                                  # Quick Look generator for Adobe Swatch Exchange files
     quickrecorder                                 # Screen recording app (cask unavailable)
     qutebrowser                                   # Keyboard-driven, vim-like browser based on PyQt5
@@ -306,17 +283,11 @@ prepare_macos_env_gui_extra()
     raycast                                       # Control your tools with a few keystrokes
     redisinsight                                  # GUI for streamlined Redis application development
     resilio-sync                                  # File sync and share software
-    robo-3t                                       # MongoDB management tool
-    rowanj-gitx                                   # Native graphical client for the git version control system
-    sequel-pro                                    # MySQL/MariaDB database management platform
+    sequel-ace                                    # MySQL/MariaDB database management
     shifty                                        # Menu bar app that provides more control over Night Shift
     skim                                          # PDF reader and note-taking application
     slack                                         # Team communication and collaboration software
     sloth                                         # Displays all open files and sockets in use by all running processes
-    slowquitapps
-    soundflower                                   # Audio driver for sound routing
-    soundflowerbed                                # Taps into Soundflower channels and route them to an audio device
-    spotifree                                     # Automatically mutes ads on Spotify (not supported)
     spotify                                       # Music streaming service
     sqlpro-for-postgres                           # Lightweight PostgreSQL database client
     stats                                         # System monitor for the menu bar
@@ -327,24 +298,22 @@ prepare_macos_env_gui_extra()
     tailscale-app                                 # Mesh VPN based on WireGuard
     the-unarchiver                                # Unpacks archive files
     thorium                                       # Epub reader
-    toau                                          # System optimization utility (cask unavailable)
     topnotch                                      # Utility to hide the notch
-    tweeten                                       # Twitter client (cask unavailable)
     ubersicht                                     # Run commands and display their output on the desktop
     uninstallpkg                                  # PKG software package uninstall tool
     utm                                           # Virtual machines UI using QEMU
     v2rayu                                        # Collection of tools to build a dedicated basic communication network
     vagrant-manager                               # Vagrant management tool
     virtualbox                                    # Virtualiser for arm64 hardware
-    virtualbox-extension-pack                     # VirtualBox Extension Pack (cask unavailable)
-    vitalsigns                                    # System monitoring utility (cask unavailable)
     # vmware-fusion                                 # Create, manage, and run virtual machines
     vnc-viewer                                    # Remote desktop application focusing on security
     webpquicklook                                 # Quick Look plugin for webp files
     wechat                                        # Free messaging and calling application
+    whatcable                                     # Menu bar app for USB-C cable diagnostics
     whatsapp                                      # Native desktop client for WhatsApp
+    windows-app                                   # Connect to Windows
     wireshark                                     # Network protocol analyzer
-    wkhtmltopdf                                   # HTML to PDF renderer
+    xbar                                          # View output from scripts in the menu bar
     xld                                           # Lossless audio decoder
     xquartz                                       # Open-source version of the X.Org X Window System
   )
@@ -354,8 +323,6 @@ prepare_macos_env_gui_extra()
     syntax-highlight                              # Quicklook extension for source files
   )
   brew install --cask --no-quarantine `join ' ' "${no_quarantined_casks[@]}"`
-
-  sudo kextload /Library/Extensions/HoRNDIS.kext # enable HoRNDIS
 }
 
 set_macos_configs()
@@ -414,8 +381,7 @@ setup_macos_gaming()
     dosbox-x                                      # Fork of the DOSBox project
     ea                                            # Electronic Arts game launcher
     epic-games                                    # Launcher for Epic Games games
-    gog-downloader                                # Tool for downloading games from GOG.com (cask unavailable)
-    homebrew/cask-versions/openemu@experimental   # Video game console emulator (experimental)
+    openemu                                       # Retro video game emulation
     openra                                        # Real-time strategy game engine for Westwood games
     steam                                         # Video game digital distribution service
   )

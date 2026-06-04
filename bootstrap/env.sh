@@ -176,8 +176,7 @@ util_setup()
 basic_env_setup()
 {
   profile_setup
-  bashit_setup
-  zgen_setup
+  shell_setup # zgen by default; set DOTFILES_SHELL=zinit|bash_it to override
   ssh_setup
   tmux_setup
   git_setup

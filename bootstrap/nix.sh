@@ -105,13 +105,14 @@ install_nix_brew_extra_packages()
     ddgr                              # DuckDuckGo from the terminal
     diffutils                         # File comparison utilities
     dive                              # Tool for exploring each layer in a docker image
-    dog                               # Command-line DNS client
+    doggo                             # Command-line DNS Client for Humans
     duf                               # Disk Usage/Free Utility - a better 'df' alternative
     dum                               # Npm scripts runner written in Rust
     ed                                # Classic UNIX line editor
     emscripten                        # LLVM bytecode to JavaScript compiler
     exiftool                          # Perl lib for reading and writing EXIF metadata
     extract_url                       # Perl script to extracts URLs from emails or plain text
+    fastfetch                         # Like neofetch, but much faster because written mostly in C
     ffmpeg                            # Play, record, convert, and stream audio and video
     ffmpegthumbnailer                 # Create thumbnails for your video files
     figlet                            # Banner-like program prints strings as ASCII art
@@ -131,7 +132,7 @@ install_nix_brew_extra_packages()
     git-delta                         # Syntax-highlighting pager for git and diff output
     git-extras                        # Small git utilities
     git-filter-repo                   # Quickly rewrite git repository history
-    git-flow-avh                      # AVH edition of git-flow
+    git-flow                          # Extensions to follow Vincent Driessen's branching model
     git-lfs                           # Git extension for versioning large files
     git-quick-stats                   # Simple and efficient way to access statistics in git
     gitui                             # Blazing fast terminal-ui for git written in rust
@@ -143,7 +144,6 @@ install_nix_brew_extra_packages()
     gnu-which                         # GNU implementation of which utility
     gnutls                            # GNU Transport Layer Security (TLS) Library
     go-musicfox                       # Music player in terminal (special tap)
-    googler                           # Google search from terminal (special tap)
     gping                             # Ping, but with a graph
     graphviz                          # Graph visualization software from AT&T and Bell Labs
     grep                              # GNU grep, egrep and fgrep
@@ -208,7 +208,6 @@ install_nix_brew_extra_packages()
     pdfsandwich                       # Generate sandwich OCR PDFs from scanned file
     pgcli                             # CLI for Postgres with auto-completion and syntax highlighting
     pngquant                          # PNG image optimizing utility
-    polipo                            # Lightweight web proxy (package unavailable)
     poppler                           # PDF rendering library (based on the xpdf-3.0 code base)
     privoxy                           # Advanced filtering web proxy
     progress                          # Coreutils progress viewer
@@ -217,7 +216,6 @@ install_nix_brew_extra_packages()
     ranger                            # File browser
     redis                             # Persistent key-value database, with built-in net interface
     resvg                             # SVG rendering tool and library
-    rtv                               # Reddit terminal viewer (package unavailable)
     sc-im                             # Spreadsheet program for the terminal, using ncurses
     scc                               # Fast and accurate code counter with complexity and COCOMO estimates
     sevenzip                          # 7-Zip is a file archiver with a high compression ratio
@@ -231,7 +229,6 @@ install_nix_brew_extra_packages()
     starship                          # Cross-shell prompt for astronauts
     sttr                              # CLI to perform various operations on string
     taproom                           # Interactive TUI for Homebrew
-    taskell                           # Command-line Kanban board/task manager with support for Trello
     tesseract                         # OCR (Optical Character Recognition) engine
     tesseract-lang                    # Enables extra languages support for Tesseract
     testdisk                          # Powerful free data recovery utility
@@ -239,7 +236,6 @@ install_nix_brew_extra_packages()
     tmate                             # Instant terminal sharing
     tmuxinator                        # Manage complex tmux sessions easily
     toolong                           # Terminal log viewer (special tap)
-    tpp                               # Terminal presentation tool (special tap)
     translate-shell                   # Command-line translator using Google Translate and more
     tree                              # Display directories as trees (with optional color/HTML output)
     ueberzugpp                        # Command line tool for displaying images (special tap)
