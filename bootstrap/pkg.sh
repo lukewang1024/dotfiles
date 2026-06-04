@@ -5,7 +5,23 @@ install_common_packages()
   install_gem_packages
   install_pip_packages
   install_cpan_packages
+  install_ai_agent_tools
   install_other_packages
+}
+
+install_ai_agent_tools()
+{
+  echo 'Installing AI coding agents...'
+
+  # Claude Code - native installer (recommended; auto-updates in background)
+  curl -fsSL https://claude.ai/install.sh | bash
+
+  # Codex CLI - standalone installer (recommended; rerun to upgrade)
+  curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
+
+  # Gemini CLI is installed via npm, which is its recommended method
+
+  echo 'Done.'
 }
 
 install_cargo_packages()
@@ -26,8 +42,6 @@ install_gem_packages()
   echo 'Installing gems...'
 
   local pkgs=(
-    boom                              # boom lets you access text snippets over your command line
-    gas                               # Manage your git author accounts
     iStats                            # Stats for your mac
     mdless                            # A pager like less, but for Markdown files
   )
@@ -43,40 +57,23 @@ install_npm_packages()
   echo 'Installing global npm packages...'
 
   local pkgs=(
-    @angular/cli                      # CLI tool for Angular
-    @anthropic-ai/claude-code         # Use Claude, Anthropic's AI assistant, right from your terminal
-    @google/gemini-cli                # Gemini CLI
-    @openai/codex                     # OpenAI Codex CLI
-    @squoosh/cli                      # A CLI for Squoosh (image compression and optimization tool)
-    @vue/cli                          # Command line interface for rapid Vue.js development
-    asar                              # Creating Electron app packages
-    bower                             # The browser package manager
+    @electron/asar                    # Creating Electron app packages
+    @google/gemini-cli                # Gemini CLI (npm is the officially recommended install method)
+    @mermaid-js/mermaid-cli           # Command-line interface for Mermaid, the diagramming and charting tool
     brightness-cli                    # Change the screen brightness
     clipboard-cli                     # Access the system clipboard (copy/paste)
-    coinmon                           # Cryptocurrency price monitoring tool (package unpublished)
     commitizen                        # Git commit, but play nice with conventions
     create-dmg                        # Create a good-looking DMG for your macOS app in seconds
     depcheck                          # Check dependencies in your node module
-    english-dictionary-cli            # English Dictionary from the command line
-    expo-cli                          # The command-line tool for creating and publishing Expo apps
-    express-generator                 # Express' application generator
-    gatsby-cli                        # Command-line interface for Gatsby, the React-based static site generator
     git-file-history                  # Command-line tool to quickly browse the git history of a specific file
-    gulp-cli                          # Command-line interface for Gulp, the JavaScript toolkit and task runner
-    happy-coder                       # Mobile and Web client for Claude Code and Codex
+    happy                             # Mobile and Web client for Claude Code and Codex
     hexo-cli                          # Command-line interface for Hexo, the fast and simple static blog framework
-    hiper                             # Performance profiling tool to get statistics about page load performance
     http-server                       # Simple, zero-configuration command-line HTTP server for serving static files
-    import-sort-cli                   # Command-line tool to automatically sort and organize ES6 import statements
     is-website-vulnerable             # Security tool that checks if a website has known vulnerabilities in its frontend JavaScript libraries
-    leetcode-cli                      # Command-line interface for LeetCode platform to browse and submit coding problems
     localtunnel                       # Tool to expose your localhost to the world via secure tunnels
-    loopback-cli                      # Command-line interface for LoopBack, the Node.js API framework
     madge                             # Dependency graph visualization tool for JavaScript projects
     mcporter                          # TypeScript runtime and CLI for connecting to configured Model Context Protocol servers
-    majestic                          # Zero-config GUI for Jest testing framework with test coverage and watch mode
     memlab                            # Memory leak detection and heap analysis tool for JavaScript applications
-    mermaid.cli                       # Command-line interface for Mermaid, the diagramming and charting tool
     musicn                            # Download music in your command line
     nativefier                        # Wrap web apps natively
     nativescript                      # Command-line interface for building NativeScript projects
@@ -105,7 +102,6 @@ install_npm_packages()
     typescript                        # Microsoft's typed superset of JavaScript that compiles to plain JavaScript
     updtr                             # Tool for updating npm dependencies interactively, allowing you to review and selectively update packages
     vercel                            # Deployment platform and CLI for frontend frameworks and static sites with global CDN and serverless functions
-    weinre                            # Web Inspector Remote debugger for remotely debugging web pages on mobile devices and other targets
     workbox-cli                       # Command-line interface for Google's Workbox library, used to add service workers and offline functionality
     yo                                # Scaffolding tool that runs Yeoman generators to quickly create project boilerplates and code templates
     zx                                # Tool for writing shell scripts in JavaScript/TypeScript with better ergonomics than traditional bash scripting
@@ -130,8 +126,6 @@ install_pip_packages()
     present                           # Terminal-based presentation tool that renders markdown slides in the command line
     pygments                          # Syntax highlighting library for Python supporting hundreds of programming languages and markup formats
     pywal                             # Tool that generates and changes color schemes for various applications based on image color palettes
-    rainbowstream                     # Smart and nice Twitter client on terminal written in Python with real-time streaming
-    rdbtools                          # Collection of utilities to parse, filter, and analyze Redis RDB files for memory optimization
     ruff                              # Extremely fast Python linter and code formatter written in Rust
   )
 
