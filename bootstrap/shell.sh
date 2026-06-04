@@ -150,17 +150,29 @@ set_default_shell()
     return 1
   fi
 
-  if [ "$SHELL" = "$shell_path" ]; then
-    echo "Default shell is already $shell_path"
+  # Read the actual configured login shell from the user database, since $SHELL
+  # only reflects the environment of the current session.
+  local current_shell
+  if command -v getent > /dev/null 2>&1; then
+    current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+  elif command -v dscl > /dev/null 2>&1; then
+    current_shell="$(dscl . -read "/Users/$USER" UserShell 2> /dev/null | awk '{print $2}')"
+  else
+    current_shell="$SHELL"
+  fi
+
+  # Skip if the specified shell is already configured, regardless of which
+  # install of it (e.g. /usr/bin/zsh vs brew zsh) the entry points to.
+  if [ "$(basename "$current_shell")" = "$1" ]; then
+    echo "Default shell is already $current_shell"
     return 0
   fi
 
   # The shell must be whitelisted in /etc/shells before chsh accepts it
   grep -qx "$shell_path" /etc/shells || echo "$shell_path" | sudo tee -a /etc/shells > /dev/null
 
-  printf "Changing default shell to $shell_path... "
+  echo "Changing default shell to $shell_path..."
   chsh -s "$shell_path"
-  echo 'Done.'
 }
 
 bashit_setup()
