@@ -49,7 +49,14 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/ranger/linux" ~/.config/ranger
   backup_then_symlink "$config_dir/redshift/redshift.conf" ~/.config/redshift.conf
   backup_then_symlink "$config_dir/rofi" ~/.config/rofi
-  backup_then_symlink "$config_dir/systemd" ~/.config/systemd
+  # Symlink systemd user units one by one rather than the whole tree, so that
+  # machine-local units and *.wants/ enablement state can live in the real
+  # ~/.config/systemd/user without ending up tracked in this repo.
+  mkdir -p ~/.config/systemd/user
+  for unit in "$config_dir"/systemd/user/*; do
+    [ -f "$unit" ] || continue
+    backup_then_symlink "$unit" ~/.config/systemd/user/"$(basename "$unit")"
+  done
   backup_then_symlink "$config_dir/thunar" ~/.config/Thunar
   backup_then_symlink "$config_dir/tilda" ~/.config/tilda
   backup_then_symlink "$config_dir/v2ray" ~/.config/v2ray

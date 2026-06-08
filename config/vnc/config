@@ -1,5 +1,5 @@
 # VNC Server Configuration
-# Only listen on localhost (for SSH tunnel)
+# Only listen on localhost (connect via SSH tunnel or NoMachine)
 localhost
 # Set geometry
 geometry=1920x1080
