@@ -1,0 +1,74 @@
+#!/bin/sh
+# Wire hiroppy/tmux-agent-sidebar's live-data hooks into Claude Code.
+#
+# The tmux plugin only detects assistant panes; the sidebar shows live
+# prompt/task/subagent data only when these Claude Code hooks forward
+# events to its hook.sh. The plugin does NOT self-install these (its only
+# auto-wire path is the `/plugin install` marketplace route, which assumes
+# a ~/.tmux/plugins layout we don't use), so we install them here.
+#
+# Idempotent + self-healing: re-running refreshes stale plugin paths and
+# never duplicates entries or clobbers unrelated hooks. Mirrors the
+# approach in util/agent/claude-notify-stop and the plugin's own installer.
+#
+# Usage: agent-sidebar-hooks-install              install / refresh
+#        agent-sidebar-hooks-install --uninstall  remove
+
+SETTINGS_FILE="$HOME/.claude/settings.json"
+HOOK="$HOME/.local/share/tmux/plugins/tmux-agent-sidebar/hook.sh"
+MARKER="tmux-agent-sidebar/hook.sh"
+
+# Claude Code event : sidebar subcommand (mirrors the plugin's hooks/hooks.json)
+EVENTS="SessionStart:session-start
+SessionEnd:session-end
+UserPromptSubmit:user-prompt-submit
+Notification:notification
+Stop:stop
+StopFailure:stop-failure
+PermissionDenied:permission-denied
+CwdChanged:cwd-changed
+SubagentStart:subagent-start
+SubagentStop:subagent-stop
+PostToolUse:activity-log
+TaskCreated:task-created
+TaskCompleted:task-completed
+TeammateIdle:teammate-idle"
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "agent-sidebar-hooks-install: jq not found, skipping" >&2
+  exit 0
+fi
+
+mode="install"
+[ "$1" = "--uninstall" ] && mode="uninstall"
+
+mkdir -p "$(dirname "$SETTINGS_FILE")"
+[ -f "$SETTINGS_FILE" ] || echo '{}' > "$SETTINGS_FILE"
+
+echo "$EVENTS" | while IFS=: read -r event sub; do
+  [ -n "$event" ] || continue
+  cmd="bash $HOOK claude $sub"
+  tmp="$SETTINGS_FILE.tmp"
+
+  # Strip any prior sidebar hook for this subcommand (any path), drop blocks
+  # left empty by the strip, then (install only) append the canonical command.
+  jq --arg ev "$event" --arg sub "$sub" --arg cmd "$cmd" --arg marker "$MARKER" --arg mode "$mode" '
+    .hooks //= {} |
+    .hooks[$ev] //= [] |
+    .hooks[$ev] |= map(.hooks = ((.hooks // []) | map(select(
+      (((.command // "") | contains($marker)) and ((.command // "") | endswith("claude " + $sub))) | not
+    )))) |
+    .hooks[$ev] |= map(select((.hooks // []) | length > 0)) |
+    if $mode == "install" then
+      .hooks[$ev] += [{"matcher": "", "hooks": [{"type": "command", "command": $cmd}]}]
+    else . end |
+    # Tidy: drop the event key entirely if it ended up empty
+    if (.hooks[$ev] | length) == 0 then del(.hooks[$ev]) else . end
+  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+done
+
+if [ "$mode" = "install" ]; then
+  echo "agent-sidebar hooks installed to $SETTINGS_FILE"
+else
+  echo "agent-sidebar hooks removed from $SETTINGS_FILE"
+fi
