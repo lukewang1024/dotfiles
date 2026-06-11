@@ -20,7 +20,8 @@
 #       agent(claude) | git(tig) / shell / dev / editor(nvim)     (4 right panes)
 #   Backend:
 #       agent(claude) | git(tig) / shell / editor(nvim)           (3 right panes)
-# Pop the agent sidebar on demand with prefix+Tab.
+# The agent sidebar auto-appears after a short delay (so tmuxinator's layout
+# settles first); toggle it any time with prefix+Tab.
 #
 # usage: gen-tmuxinator-configs [code_root]      (default: ~/Code)
 
