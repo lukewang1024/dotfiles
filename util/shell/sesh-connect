@@ -1,0 +1,25 @@
+#!/bin/sh
+# sesh-connect - fzf-tmux session picker for sesh, bound to `prefix + T`.
+# https://github.com/joshmedeski/sesh
+#
+# Lists tmux sessions, zoxide dirs, and configured sesh sessions in an fzf-tmux
+# popup, then connects to the selection. The header lists filters you can toggle:
+#   ^a all   ^t tmux   ^g configs   ^x zoxide   ^f find   ^d kill session
+#
+# -T makes a tmuxinator-named pick build its layout via `tmuxinator start <name>`
+# (falls back gracefully for dir / tmux-session picks).
+
+sesh connect -T "$(
+  sesh list --icons | fzf-tmux -p 80%,70% \
+    --no-sort --ansi --border-label ' sesh ' --prompt '⚡  ' \
+    --header '^a all ^t tmux ^g configs ^x zoxide ^f find ^d kill' \
+    --bind 'tab:down,btab:up' \
+    --bind 'ctrl-a:change-prompt(⚡  )+reload(sesh list --icons)' \
+    --bind 'ctrl-t:change-prompt(🪟  )+reload(sesh list -t --icons)' \
+    --bind 'ctrl-g:change-prompt(⚙️  )+reload(sesh list -c --icons)' \
+    --bind 'ctrl-x:change-prompt(📁  )+reload(sesh list -z --icons)' \
+    --bind 'ctrl-f:change-prompt(🔎  )+reload(fd -H -d 2 -t d -E .Trash . ~)' \
+    --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡  )+reload(sesh list --icons)' \
+    --preview-window 'right:55%' \
+    --preview 'sesh preview {}'
+)"

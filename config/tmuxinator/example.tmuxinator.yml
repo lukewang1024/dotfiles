@@ -1,0 +1,40 @@
+# Reference tmuxinator layout — the canonical coding session.
+# This file is a TEMPLATE (not auto-loaded). Two ways to use it:
+#
+#   1. Repo-local, params live in the repo:
+#        cp this to <repo>/.tmuxinator.yml  (commit it, or gitignore for local-only)
+#        cd <repo> && tmuxinator local        # alias: mux start .
+#
+#   2. Named, machine-local, pickable from sesh (prefix+T):
+#        cp this to ~/.config/tmuxinator/<name>.yml  (set name + absolute root)
+#        sesh shows it automatically; selecting it runs `tmuxinator start <name>`.
+#
+# Layout (tmux `main-vertical`; agent gets 55% via main-pane-width in tmux.conf):
+#   +-----------+-----------+
+#   |           |  git      |
+#   |  agent    +-----------+
+#   |  (claude) |  shell    |
+#   |  = main   +-----------+
+#   |           | [dev]     |   <- delete this pane for backends (→ 3 right panes)
+#   |           +-----------+
+#   |           |  editor   |
+#   +-----------+-----------+
+# The agent sidebar is on-demand: pop it with prefix+Tab once the session is up.
+
+name: REPLACE-ME              # session name (and sesh picker label)
+root: .                       # repo-local: "." ; named config: absolute repo path
+startup_window: code
+
+windows:
+  - code:
+      layout: main-vertical
+      panes:
+        - agent:              # left / main pane
+            - claude
+        - git:
+            - tig
+        - shell:              # bare prompt — scratch / commands
+        - dev:                # dev server — delete this whole pane for backends
+            -                 # e.g. add "pnpm --filter portal dev" to auto-run
+        - editor:
+            - nvim

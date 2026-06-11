@@ -4,6 +4,11 @@ tmux_setup()
   printf 'Symlinking tmux config files... '
   backup_then_symlink "$config_dir/tmux" "$XDG_CONFIG_HOME/tmux"
   backup_then_symlink "$config_dir/tmux/tmux.conf" "$HOME/.tmux.conf" # hardcoded usage exists somewhere, so keep it
+  # sesh smart session manager (driven from tmux via `prefix + T`)
+  backup_then_symlink "$config_dir/sesh" "$XDG_CONFIG_HOME/sesh"
+  backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
+  # tmuxinator pool-config generator (writes machine-local ~/.config/tmuxinator/*.yml)
+  backup_then_symlink "$util_dir/shell/gen-tmuxinator-configs" "$bin_dir/gen-tmuxinator-configs"
   echo 'Done.'
 }
 
