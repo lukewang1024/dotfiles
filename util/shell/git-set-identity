@@ -1,18 +1,166 @@
 #!/bin/sh
+# git-set-identity — manage and switch named git author identities.
+#
+# Invoked as `git identity …` via the alias in config/git/alias. An identity is
+# a name/email/(optional signingkey) triple stored in the GLOBAL gitconfig as
+#   user.<id>.name  user.<id>.email  user.<id>.signingkey
+# `use` copies one into a repo's config so commits made there carry it.
+#
+# Subcommands:
+#   git identity                      show the repo's current identity
+#   git identity list                 list every defined identity
+#   git identity current              show the repo's current identity (+ match)
+#   git identity use <id> [--global]  apply <id> to this repo (or --global)
+#   git identity <id>                 shorthand for `use <id>`
+#   git identity add <id> --name N --email E [--signingkey K]
+#   git identity remove|rm <id>       delete the identity from the global config
+#   git identity help                 this help
+#
+# Author fields only by design — SSH keys / host aliases stay in ~/.ssh/config.
 
-if [ $# = 0 ]; then
-	echo 'Usage: git-set-identity [identity]'
-	exit 1
-fi
+# No `set -e`: this script leans on `cond && action` / `cond || fallback` idioms
+# whose normal path returns non-zero, which set -e would turn into silent exits.
+# Real errors are reported explicitly via die(). set -u stays on to catch typos.
+set -u
 
-result="$(git config --global --list | grep -E "^user\.$1\.\w+=.+$")"
+self="git identity"
 
-if [ -z "$result" ]; then
-  echo "Cannot find identity $1"
-	exit 1
-fi
+die() { echo "$self: $*" >&2; exit 1; }
 
-git config user.name "$(git config user.$1.name)"
-git config user.email "$(git config user.$1.email)"
-git config user.signingkey "$(git config user.$1.signingkey)"
-echo "Local git config set to identity $1"
+usage() {
+  cat <<EOF
+$self — manage and switch named git author identities.
+
+An identity is a name/email/(optional signingkey) triple stored in the global
+gitconfig as user.<id>.name / user.<id>.email / user.<id>.signingkey.
+
+  $self                      show the repo's current identity
+  $self list                 list every defined identity (* = current)
+  $self current              show the repo's current identity (+ matched id)
+  $self use <id> [--global]  apply <id> to this repo (or the machine default)
+  $self <id>                 shorthand for 'use <id>'
+  $self add <id> --name N --email E [--signingkey K]
+  $self remove <id>          delete the identity from the global config
+  $self help                 this help
+EOF
+}
+
+# True when <id> has at least a name or email defined in the global config.
+identity_exists() {
+  [ -n "$(git config --global --get "user.$1.name" 2>/dev/null)" ] ||
+  [ -n "$(git config --global --get "user.$1.email" 2>/dev/null)" ]
+}
+
+# Print every defined identity id, one per line (middle segment of
+# user.<id>.name keys; plain user.name has no third segment so it never matches).
+identity_ids() {
+  git config --global --get-regexp '^user\.[^.]+\.(name|email)$' 2>/dev/null |
+    sed -n 's/^user\.\([^.]*\)\.\(name\|email\)\b.*/\1/p' | sort -u
+}
+
+cmd_list() {
+  ids="$(identity_ids)"
+  [ -n "$ids" ] || { echo "No identities defined. Add one with: $self add <id> --name … --email …"; return 0; }
+  cur_email="$(git config --get user.email 2>/dev/null || true)"
+  printf '%s\n' "$ids" | while IFS= read -r id; do
+    name="$(git config --global --get "user.$id.name" 2>/dev/null || true)"
+    email="$(git config --global --get "user.$id.email" 2>/dev/null || true)"
+    key="$(git config --global --get "user.$id.signingkey" 2>/dev/null || true)"
+    marker=' '
+    [ -n "$cur_email" ] && [ "$email" = "$cur_email" ] && marker='*'
+    printf '%s %-12s %s <%s>%s\n' "$marker" "$id" "$name" "$email" \
+      "$( [ -n "$key" ] && printf ' [key %s]' "$key" )"
+  done
+}
+
+cmd_current() {
+  name="$(git config --get user.name 2>/dev/null || true)"
+  email="$(git config --get user.email 2>/dev/null || true)"
+  key="$(git config --get user.signingkey 2>/dev/null || true)"
+  [ -n "$name$email" ] || { echo "No user.name/user.email set in this repo."; return 0; }
+  match=''
+  for id in $(identity_ids); do
+    [ "$(git config --global --get "user.$id.email" 2>/dev/null || true)" = "$email" ] && { match="$id"; break; }
+  done
+  printf '%s <%s>%s%s\n' "$name" "$email" \
+    "$( [ -n "$key" ] && printf ' [key %s]' "$key" )" \
+    "$( [ -n "$match" ] && printf '  (identity: %s)' "$match" )"
+}
+
+cmd_use() {
+  id=''; scope='--local'
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --global) scope='--global' ;;
+      --local)  scope='--local' ;;
+      -*) die "use: unknown flag '$1'" ;;
+      *) [ -z "$id" ] || die "use: unexpected argument '$1'"; id="$1" ;;
+    esac
+    shift
+  done
+  [ -n "$id" ] || die "use: missing identity name"
+  identity_exists "$id" || die "no such identity: $id (see '$self list')"
+  if [ "$scope" = "--local" ] && ! git rev-parse --git-dir >/dev/null 2>&1; then
+    die "not inside a git repository (use --global to set the machine default)"
+  fi
+
+  name="$(git config --global --get "user.$id.name" 2>/dev/null || true)"
+  email="$(git config --global --get "user.$id.email" 2>/dev/null || true)"
+  key="$(git config --global --get "user.$id.signingkey" 2>/dev/null || true)"
+
+  [ -n "$name" ]  && git config "$scope" user.name  "$name"  || true
+  [ -n "$email" ] && git config "$scope" user.email "$email" || true
+  # Set the signing key when the identity defines one; otherwise clear any
+  # leftover key so switching to a non-signing identity doesn't sign by mistake.
+  if [ -n "$key" ]; then
+    git config "$scope" user.signingkey "$key"
+  else
+    git config "$scope" --unset user.signingkey 2>/dev/null || true
+  fi
+
+  echo "${scope#--} git config set to identity '$id' ($name <$email>)"
+}
+
+cmd_add() {
+  id=''; name=''; email=''; key=''
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --name)       shift; name="${1:?--name needs a value}" ;;
+      --email)      shift; email="${1:?--email needs a value}" ;;
+      --signingkey) shift; key="${1:?--signingkey needs a value}" ;;
+      -*) die "add: unknown flag '$1'" ;;
+      *) [ -z "$id" ] || die "add: unexpected argument '$1'"; id="$1" ;;
+    esac
+    shift
+  done
+  [ -n "$id" ] || die "add: missing identity name"
+  [ -n "$name" ] && [ -n "$email" ] || die "add: --name and --email are required"
+  if identity_exists "$id"; then die "identity '$id' already exists (remove it first to redefine)"; fi
+
+  git config --global "user.$id.name"  "$name"
+  git config --global "user.$id.email" "$email"
+  [ -n "$key" ] && git config --global "user.$id.signingkey" "$key"
+  echo "Added identity '$id' ($name <$email>)${key:+ [key $key]}"
+}
+
+cmd_remove() {
+  [ $# -ge 1 ] || die "remove: missing identity name"
+  id="$1"
+  identity_exists "$id" || die "no such identity: $id (see '$self list')"
+  git config --global --remove-section "user.$id" 2>/dev/null || true
+  echo "Removed identity '$id'"
+}
+
+[ $# -ge 1 ] || { cmd_current; exit 0; }
+
+sub="$1"; shift
+case "$sub" in
+  list|ls)        cmd_list "$@" ;;
+  current|show)   cmd_current "$@" ;;
+  use)            cmd_use "$@" ;;
+  add)            cmd_add "$@" ;;
+  remove|rm|del)  cmd_remove "$@" ;;
+  help|-h|--help) usage ;;
+  -*)             die "unknown flag '$sub' (try '$self help')" ;;
+  *)              cmd_use "$sub" "$@" ;;   # legacy: `git identity <id>` == `use <id>`
+esac
