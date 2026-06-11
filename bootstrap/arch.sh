@@ -110,6 +110,8 @@ prepare_arch_env_cli_core()
     find-the-command                  # Find which package provides a command
     lf-bin                            # Terminal file manager
     navi                              # Interactive cheatsheet tool for the command-line
+    sesh-bin                          # Smart tmux session manager built on top of zoxide
+    tmuxinator                        # Declarative per-project tmux session/layout configs (.tmuxinator.yml)
     urlview                           # URL extractor/launcher
     witr-bin                          # A Linux CLI tool that explains the causal chain behind running processes
   )

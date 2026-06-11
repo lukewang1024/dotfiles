@@ -47,10 +47,12 @@ install_nix_brew_core_packages()
     procs                             # Modern replacement for ps written in Rust
     ripgrep                           # Search tool like grep and The Silver Searcher
     rsync                             # Utility that provides fast incremental file transfer
+    sesh                              # Smart tmux session manager built on top of zoxide
     tealdeer                          # Very fast implementation of tldr in Rust
     the_silver_searcher               # Code-search similar to ack
     tig                               # Text interface for Git repositories
     tmux                              # Terminal multiplexer
+    tmuxinator                        # Declarative per-project tmux session/layout configs (.tmuxinator.yml)
     trash-cli                         # Command-line interface to the freedesktop.org trashcan
     unar                              # Command-line unarchiving tools supporting multiple formats
     urlview                           # URL extractor/launcher
