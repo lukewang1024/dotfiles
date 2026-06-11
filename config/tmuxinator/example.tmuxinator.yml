@@ -19,7 +19,8 @@
 #   |           +-----------+
 #   |           |  editor   |
 #   +-----------+-----------+
-# The agent sidebar is on-demand: pop it with prefix+Tab once the session is up.
+# The agent sidebar auto-appears shortly after the layout settles (a built-in
+# delay lets tmuxinator finish first); toggle it any time with prefix+Tab.
 
 name: REPLACE-ME              # session name (and sesh picker label)
 root: .                       # repo-local: "." ; named config: absolute repo path
