@@ -62,8 +62,12 @@ done | sort -u)
 #    (the ag-dev use-and-throw convention), and not nested inside another root
 #    (submodules, e.g. .../idl). A non-primary worktree is kept only if it is a
 #    numbered slot `<repo>-<number>`.
-roots=$(for r in $roots; do
-  case "$r" in "$CODE_ROOT"/*) ;; *) continue ;; esac
+# Accumulate into a variable rather than wrapping this loop in $(...): macOS's
+# bash 3.2 mis-parses a `case` pattern's `)` inside $(...) as closing the
+# substitution, so the case statements below must not live in a sub-shell.
+filtered=
+for r in $roots; do
+  case "$r" in "$CODE_ROOT"/*) : ;; *) continue ;; esac
   case "$r" in *-worktrees/*) continue ;; esac
   nested=0
   for p in $roots; do
@@ -78,8 +82,10 @@ roots=$(for r in $roots; do
     case "$base" in "$num") continue ;; esac      # no '-' at all → not a slot
     case "$num" in ''|*[!0-9]*) continue ;; esac  # suffix not all digits → skip
   fi
-  printf '%s\n' "$r"
-done)
+  filtered="$filtered$r
+"
+done
+roots=$filtered
 
 # 3. Write one named config per root (honoring .genignore manual exclusions).
 IGNORE="$DEST/.genignore"
