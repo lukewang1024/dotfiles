@@ -167,14 +167,18 @@ util_setup()
   printf 'Installing handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" "$XDG_CONFIG_HOME/proxychains.conf"
   backup_then_symlink "$util_dir/agent/agent-sidebar-hooks-install" "$bin_dir/agent-sidebar-hooks-install"
+  backup_then_symlink "$util_dir/agent/agent-sidebar-binary-install" "$bin_dir/agent-sidebar-binary-install"
   backup_then_symlink "$util_dir/agent/claude-notify-stop" "$bin_dir/claude-notify-stop"
   backup_then_symlink "$util_dir/agent/claude-settings-apply" "$bin_dir/claude-settings-apply"
   backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
-  # Apply shared Claude Code settings base, then wire tmux-agent-sidebar's
-  # Claude Code hooks (both idempotent; skip if jq absent)
+  # Apply shared Claude Code settings base, fetch the tmux-agent-sidebar binary
+  # via its non-interactive downloader (so prefix+Tab binds without the manual
+  # install menu), and wire its Claude Code hooks (all idempotent; each skips
+  # cleanly if its deps are missing)
   "$util_dir/agent/claude-settings-apply" >/dev/null 2>&1 || true
+  "$util_dir/agent/agent-sidebar-binary-install" >/dev/null 2>&1 || true
   "$util_dir/agent/agent-sidebar-hooks-install" >/dev/null 2>&1 || true
   echo 'Done.'
 }
