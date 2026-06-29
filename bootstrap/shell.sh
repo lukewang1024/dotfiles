@@ -10,6 +10,21 @@ tmux_setup()
   # tmuxinator pool-config generator (writes machine-local ~/.config/tmuxinator/*.yml)
   backup_then_symlink "$util_dir/shell/gen-tmuxinator-configs" "$bin_dir/gen-tmuxinator-configs"
   echo 'Done.'
+
+  # Install TPM + all plugins non-interactively so a fresh machine never depends
+  # on the user pressing prefix+I. tmux.conf only auto-clones TPM when tmux
+  # starts interactively, so clone it here first; bin/install_plugins then starts
+  # a throwaway server that sources the config (populating @tpm_plugins) and
+  # clones any missing plugins, no-opping the already-installed ones.
+  local tpm_dir="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tpm"
+  if command -v tmux > /dev/null 2>&1 && command -v git > /dev/null 2>&1; then
+    printf 'Installing tmux plugins via TPM... '
+    [ -d "$tpm_dir" ] || git clone --quiet --depth 1 https://github.com/tmux-plugins/tpm "$tpm_dir"
+    "$tpm_dir/bin/install_plugins" > /dev/null 2>&1 || true
+    echo 'Done.'
+  else
+    echo 'tmux or git missing; skipping TPM plugin install.'
+  fi
 }
 
 tig_setup()

@@ -1,0 +1,50 @@
+#!/bin/sh
+# Download the hiroppy/tmux-agent-sidebar binary non-interactively.
+#
+# tmux-agent-sidebar is a compiled Rust plugin: prefix+Tab (toggle) and
+# prefix+Shift+Tab (toggle all windows) are only bound by tmux-agent-sidebar.tmux
+# once it finds the binary. With no binary the loader drops into an interactive
+# install menu (tmux display-menu) and exits before binding -- so a fresh
+# bootstrap silently lands a dead prefix+Tab unless the user notices the menu
+# and picks "Download binary". This runs the plugin's own installer in its
+# non-interactive download-binary mode (prebuilt release binary, no Rust
+# needed), i.e. the upstream README's install flow minus the manual menu step.
+#
+# Idempotent; skips cleanly when curl or the plugin are missing.
+#
+# Usage: agent-sidebar-binary-install              download / refresh
+#        agent-sidebar-binary-install --uninstall  remove the binary
+
+REPO="hiroppy/tmux-agent-sidebar"
+PLUGIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tmux-agent-sidebar"
+WIZARD="$PLUGIN_DIR/install-wizard.sh"
+BINARY="$PLUGIN_DIR/bin/tmux-agent-sidebar"
+
+if [ "$1" = "--uninstall" ]; then
+  rm -f "$BINARY"
+  echo "agent-sidebar binary removed from $BINARY"
+  exit 0
+fi
+
+command -v curl >/dev/null 2>&1 || {
+  echo "agent-sidebar-binary-install: curl not found, skipping" >&2
+  exit 0
+}
+
+# Clone the plugin if TPM hasn't already, so this script is standalone and
+# order-independent relative to the TPM install step.
+if [ ! -d "$PLUGIN_DIR/.git" ] && command -v git >/dev/null 2>&1; then
+  git clone --quiet "https://github.com/$REPO" "$PLUGIN_DIR" 2>/dev/null || true
+fi
+
+[ -f "$WIZARD" ] || {
+  echo "agent-sidebar-binary-install: plugin not installed, skipping" >&2
+  exit 0
+}
+
+# Delegate to the plugin's own non-interactive downloader. It detects the
+# platform, fetches the matching prebuilt release asset, and (on macOS) strips
+# quarantine xattrs + ad-hoc re-signs so Gatekeeper doesn't SIGKILL it. Keeping
+# this a thin wrapper means we track upstream's install logic instead of
+# duplicating (and drifting from) it.
+bash "$WIZARD" download-binary
