@@ -1,0 +1,76 @@
+#!/bin/sh
+# Apply the reusable "essence" of Claude Code user settings, shared across
+# machines. Merges a small curated base into ~/.claude/settings.json:
+#   - permissions.defaultMode      (auto)
+#   - skipDangerousModePermissionPrompt / skipAutoPermissionPrompt
+#   - disableClaudeAiConnectors
+#   - enabledPlugins + extraKnownMarketplaces  (claude-hud, ralph-loop)
+#
+# Why a jq-merge and not a symlink: Claude rewrites settings.json at runtime
+# (effortLevel via /effort, model via /model, feedbackSurveyState, permission
+# and plugin toggles), so a tracked symlink would constantly churn or lose
+# writes. We deep-merge only the keys we own and leave everything else —
+# permissions.allow, hooks, project adapters, feedbackSurveyState — untouched.
+# Mirrors util/agent/agent-sidebar-hooks-install and claude-notify-stop.
+#
+# Idempotent + non-destructive: deep-merge preserves machine-local plugins
+# (e.g. frontend-design, ralph-skills) and existing permissions.allow entries.
+#
+# Usage: claude-settings-apply              install / refresh
+#        claude-settings-apply --uninstall  remove the keys we manage
+
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+# The curated, machine-agnostic base. Deep-merged over existing settings so
+# our values win on conflict while sibling keys are preserved.
+BASE='{
+  "permissions": { "defaultMode": "auto" },
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
+  "disableClaudeAiConnectors": true,
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true,
+    "ralph-loop@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-hud": { "source": { "source": "github", "repo": "jarrodwatts/claude-hud" } }
+  }
+}'
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "claude-settings-apply: jq not found, skipping" >&2
+  exit 0
+fi
+
+mode="install"
+[ "$1" = "--uninstall" ] && mode="uninstall"
+
+mkdir -p "$(dirname "$SETTINGS_FILE")"
+[ -f "$SETTINGS_FILE" ] || echo '{}' > "$SETTINGS_FILE"
+
+tmp="$SETTINGS_FILE.tmp"
+
+if [ "$mode" = "install" ]; then
+  # Deep merge: `*` recursively merges objects and overwrites scalars, with the
+  # right operand (our base) winning. permissions.allow / sibling plugins survive.
+  jq --argjson base "$BASE" '. * $base' "$SETTINGS_FILE" > "$tmp" \
+    && mv "$tmp" "$SETTINGS_FILE"
+  echo "claude settings base applied to $SETTINGS_FILE"
+else
+  # Remove only the keys we manage; leave permissions.allow and everything else.
+  jq '
+    del(.skipDangerousModePermissionPrompt, .skipAutoPermissionPrompt, .disableClaudeAiConnectors)
+    | if has("permissions") then .permissions |= del(.defaultMode)
+        | (if (.permissions | length) == 0 then del(.permissions) else . end)
+      else . end
+    | if has("enabledPlugins") then
+        .enabledPlugins |= del(."claude-hud@claude-hud", ."ralph-loop@claude-plugins-official")
+        | (if (.enabledPlugins | length) == 0 then del(.enabledPlugins) else . end)
+      else . end
+    | if has("extraKnownMarketplaces") then
+        .extraKnownMarketplaces |= del(."claude-hud")
+        | (if (.extraKnownMarketplaces | length) == 0 then del(.extraKnownMarketplaces) else . end)
+      else . end
+  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
+  echo "claude settings base removed from $SETTINGS_FILE"
+fi
