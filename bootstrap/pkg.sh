@@ -21,6 +21,13 @@ install_ai_agent_tools()
 
   # Gemini CLI is installed via npm, which is its recommended method
 
+  # peon-ping - Claude Code audio/desktop notifier; installs to
+  # ~/.claude/hooks/peon-ping and self-registers its hooks across every Claude
+  # Code event (it supersedes any ad-hoc Stop notifier). Piping keeps it
+  # non-interactive; --no-rc skips shell-rc edits since this repo owns those.
+  # Idempotent: re-running upgrades in place and preserves config.json.
+  curl -fsSL https://raw.githubusercontent.com/PeonPing/peon-ping/main/install.sh | bash -s -- --no-rc
+
   echo 'Done.'
 }
 
