@@ -80,7 +80,7 @@ alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 ## AI coding agent related
 export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
 alias claude='claude --dangerously-skip-permissions'
-alias codex='codex --dangerously-bypass-approvals-and-sandbox'
+alias codex='codex --yolo'
 alias oc=openclaw
 
 ## Tools from npm
