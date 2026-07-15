@@ -97,8 +97,8 @@ setAppToggles(hyper, {
 setAppToggles(hyperAlt, {
   a = 'Activity Monitor',
   -- b = '',
-  -- c = '',
-  d = 'DevDocs',
+  c = 'ChatGPT',
+  d = 'com.bot.pc.doubao',                        -- 豆包
   -- e = '',
   -- f = '',
   -- g = '',
@@ -120,7 +120,7 @@ setAppToggles(hyperAlt, {
   -- w = '',
   -- x = '',
   -- y = '',
-  -- z = '',
+  z = 'DevDocs',
   -- [','] = '',
   [';'] = 'Alacritty',
   -- ['.'] = '',
