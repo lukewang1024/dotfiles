@@ -302,7 +302,6 @@ prepare_macos_env_gui_extra()
     ubersicht                                     # Run commands and display their output on the desktop
     uninstallpkg                                  # PKG software package uninstall tool
     utm                                           # Virtual machines UI using QEMU
-    v2rayu                                        # Collection of tools to build a dedicated basic communication network
     vagrant-manager                               # Vagrant management tool
     virtualbox                                    # Virtualiser for arm64 hardware
     # vmware-fusion                                 # Create, manage, and run virtual machines
