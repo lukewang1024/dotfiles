@@ -8,9 +8,10 @@
 # alone.
 #
 # Gets a config: each repo's main checkout, plus numbered pool slots whose dir is
-# named `<repo>-<number>` (e.g. axon-web-7). Skipped: use-and-throw worktrees
-# under any `<repo>-worktrees/` dir (the ag-dev per-task convention), worktrees
-# registered outside the code root, and non-numbered extra worktrees.
+# named `<repo>-<number>` (e.g. axon-web-7). Skipped: anything under a `z-archive/`
+# dir (parked repos — pull one out manually when you need it), use-and-throw
+# worktrees under any `<repo>-worktrees/` dir (the ag-dev per-task convention),
+# worktrees registered outside the code root, and non-numbered extra worktrees.
 #
 # Manual exclusions persist across re-runs via a one-name-per-line ignore file
 # at ~/.config/tmuxinator/.genignore (blank lines and #comments allowed).
@@ -68,6 +69,7 @@ done | sort -u)
 filtered=
 for r in $roots; do
   case "$r" in "$CODE_ROOT"/*) : ;; *) continue ;; esac
+  case "$r" in */z-archive/*) continue ;; esac
   case "$r" in *-worktrees/*) continue ;; esac
   nested=0
   for p in $roots; do
