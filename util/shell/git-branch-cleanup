@@ -1,75 +1,117 @@
 #!/bin/sh
-# git-branch-cleanup - Clean up branches merged into the current (or specified) ref
-# Provides a concise summary instead of noisy git error output
+# git-branch-cleanup - Clean up branches already integrated into the current (or specified) ref
+# Recognizes fast-forward / merge-commit integration (safe `git branch -d`) AND
+# content-level integration that leaves no topological trace: squash merges,
+# rebase merges, and "merged upstream then locally merged a stale base" cases.
+# Content-merged branches are force-deleted (`git branch -D`) and reported separately.
+#
+# Usage: git-branch-cleanup [ref] [--dry-run]
 
 set -eu
 
-ref=${1:-$(git branch --show-current)}
+ref=""
+dry_run=0
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run|-n) dry_run=1 ;;
+        *) ref=$arg ;;
+    esac
+done
+[ -n "$ref" ] || ref=$(git branch --show-current)
 
-# Collect worktree branches for fast lookup (newline-delimited)
+# Branches checked out in a worktree can't be deleted; collect for skip/lookup.
 worktree_branches=$(git worktree list --porcelain | sed -n 's|^branch refs/heads/||p')
 
-# Collect merged branches, excluding the ref itself
-merged=$(git branch --merged "$ref" --format='%(refname:short)' | grep -v "^${ref}$" || true)
+# is_content_merged BRANCH — true if BRANCH's changes are already present in $ref
+# even when its tip is not an ancestor (squash / rebase / stale-merge).
+is_content_merged() {
+    _b=$1
+    _mb=$(git merge-base "$ref" "$_b" 2>/dev/null) || return 1
 
-if [ -z "$merged" ]; then
-    echo "No merged branches to clean up."
-    exit 0
-fi
+    # Squash detection: collapse the whole branch into one synthetic commit on the
+    # merge-base and ask whether that combined patch already exists in $ref.
+    _tree=$(git rev-parse "$_b^{tree}")
+    _dangling=$(git commit-tree "$_tree" -p "$_mb" -m _)
+    case "$(git cherry "$ref" "$_dangling")" in
+        "") return 0 ;;   # empty diff over merge-base = nothing to merge
+        -*) return 0 ;;   # combined patch already in $ref (squash / stale-merge)
+    esac
 
-deleted=""
-skipped_worktree=""
-skipped_unmerged=""
-n_deleted=0
-n_skipped_worktree=0
-n_skipped_unmerged=0
+    # Rebase detection: every individual branch commit's patch is already in $ref
+    # (rebase preserves per-commit patch-ids; the squash check above would miss it).
+    _cherry=$(git cherry "$ref" "$_b")
+    if [ -n "$_cherry" ] && ! printf '%s\n' "$_cherry" | grep -q '^+'; then
+        return 0
+    fi
+    return 1
+}
 
-for branch in $merged; do
-    # Skip branches used by worktrees
-    if echo "$worktree_branches" | grep -qx "$branch"; then
+deleted=""            ; n_deleted=0
+soft_deleted=""       ; n_soft=0
+skipped_worktree=""   ; n_wt=0
+skipped_unmerged=""   ; n_unmerged=0
+
+for branch in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
+    [ "$branch" = "$ref" ] && continue
+
+    if printf '%s\n' "$worktree_branches" | grep -qx "$branch"; then
         skipped_worktree="${skipped_worktree}  ${branch}
 "
-        n_skipped_worktree=$((n_skipped_worktree + 1))
+        n_wt=$((n_wt + 1))
         continue
     fi
 
-    # Try to delete; capture stderr for not-fully-merged cases
-    if err=$(git branch -d "$branch" 2>&1); then
+    # Fast path: safe delete for topologically-merged branches.
+    if [ "$dry_run" -eq 0 ] && err=$(git branch -d "$branch" 2>&1); then
         deleted="${deleted}  ${branch}
 "
         n_deleted=$((n_deleted + 1))
-    else
-        case "$err" in
-            *"not fully merged"*)
-                skipped_unmerged="${skipped_unmerged}  ${branch}
+        continue
+    fi
+    if [ "$dry_run" -eq 1 ] && git merge-base --is-ancestor "$branch" "$ref" 2>/dev/null; then
+        deleted="${deleted}  ${branch}
 "
-                n_skipped_unmerged=$((n_skipped_unmerged + 1))
-                ;;
-            *)
-                echo "  error deleting '$branch': $err"
-                ;;
-        esac
+        n_deleted=$((n_deleted + 1))
+        continue
+    fi
+
+    # Not an ancestor: fall back to content-level detection.
+    if is_content_merged "$branch"; then
+        if [ "$dry_run" -eq 1 ]; then
+            soft_deleted="${soft_deleted}  ${branch}  (would force-delete)
+"
+        else
+            git branch -D "$branch" >/dev/null
+            soft_deleted="${soft_deleted}  ${branch}
+"
+        fi
+        n_soft=$((n_soft + 1))
+    else
+        skipped_unmerged="${skipped_unmerged}  ${branch}
+"
+        n_unmerged=$((n_unmerged + 1))
     fi
 done
 
-# Summary
 plural() { [ "$1" -eq 1 ] && echo "branch" || echo "branches"; }
+[ "$dry_run" -eq 1 ] && echo "(dry-run — nothing deleted)"
 
 if [ $n_deleted -gt 0 ]; then
     echo "Deleted $n_deleted $(plural $n_deleted):"
     printf '%s' "$deleted"
 fi
-
-if [ $n_skipped_worktree -gt 0 ]; then
-    echo "Skipped $n_skipped_worktree $(plural $n_skipped_worktree) (in use by worktree):"
+if [ $n_soft -gt 0 ]; then
+    echo "Force-deleted $n_soft $(plural $n_soft) (content already in '$ref' via squash/rebase/stale-merge):"
+    printf '%s' "$soft_deleted"
+fi
+if [ $n_wt -gt 0 ]; then
+    echo "Skipped $n_wt $(plural $n_wt) (in use by worktree):"
     printf '%s' "$skipped_worktree"
 fi
-
-if [ $n_skipped_unmerged -gt 0 ]; then
-    echo "Skipped $n_skipped_unmerged $(plural $n_skipped_unmerged) (not fully merged to remote):"
+if [ $n_unmerged -gt 0 ]; then
+    echo "Skipped $n_unmerged $(plural $n_unmerged) (not merged — has unique work):"
     printf '%s' "$skipped_unmerged"
 fi
-
-if [ $n_deleted -eq 0 ] && [ $n_skipped_worktree -eq 0 ] && [ $n_skipped_unmerged -eq 0 ]; then
-    echo "No merged branches to clean up."
+if [ $((n_deleted + n_soft + n_wt + n_unmerged)) -eq 0 ]; then
+    echo "No branches to clean up."
 fi
