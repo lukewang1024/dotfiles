@@ -166,6 +166,11 @@ util_setup()
   blank_lines
   printf 'Installing handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" "$XDG_CONFIG_HOME/proxychains.conf"
+  # Shared, tool-agnostic agent conventions (SSOT): AGENTS.md → codex/opencode
+  # global paths; CLAUDE.md imports it (Claude reads CLAUDE.md, not AGENTS.md).
+  backup_then_symlink "$config_dir/agent/AGENTS.md" "$HOME/.codex/AGENTS.md"
+  backup_then_symlink "$config_dir/agent/AGENTS.md" "$XDG_CONFIG_HOME/opencode/AGENTS.md"
+  backup_then_symlink "$config_dir/agent/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
   backup_then_symlink "$util_dir/agent/agent-sidebar-hooks-install" "$bin_dir/agent-sidebar-hooks-install"
   backup_then_symlink "$util_dir/agent/agent-sidebar-binary-install" "$bin_dir/agent-sidebar-binary-install"
   backup_then_symlink "$util_dir/agent/claude-settings-apply" "$bin_dir/claude-settings-apply"
