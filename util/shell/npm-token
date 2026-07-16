@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# npm-token — manage and switch named npm authTokens for a registry.
+#
+# Analogous to git-set-identity, but for the `//<host>/:_authToken=` line in an
+# npmrc. Tokens are NEVER printed and NEVER stored in this repo. Storage backend:
+#   * macOS  -> login Keychain (service "npm-token:<host>", via `security`)
+#   * else   -> files (mode 0600) under $XDG_CONFIG_HOME/npm-token/profiles/<name>
+# A plaintext name index ($XDG_CONFIG_HOME/npm-token/names, no secrets) lets
+# `list` work uniformly across backends. `use` rewrites the authToken line of
+# the target npmrc (default ~/.npmrc), collapsing any duplicates into one line.
+#
+# Usage:
+#   npm-token list                 # list profiles, mark the active one
+#   npm-token current              # print the active profile name
+#   npm-token use <name>           # activate <name>'s token in the npmrc
+#   npm-token add <name>           # store a token for <name> (reads stdin/prompt, no echo)
+#   npm-token remove <name>        # delete a stored profile
+#
+# Env / flags:
+#   NPM_TOKEN_REGISTRY   registry host   (default: bnpm.byted.org)
+#   NPM_TOKEN_NPMRC      target npmrc    (default: $HOME/.npmrc)
+#   NPM_TOKEN_BACKEND    keychain|file   (default: keychain on macOS, else file)
+#   --registry <host> / --npmrc <path>   per-call overrides
+
+set -euo pipefail
+
+HOST="${NPM_TOKEN_REGISTRY:-bnpm.byted.org}"
+NPMRC="${NPM_TOKEN_NPMRC:-$HOME/.npmrc}"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/npm-token"
+STORE="$CONFIG_DIR/profiles"
+INDEX="$CONFIG_DIR/names"
+
+die() { printf 'npm-token: %s\n' "$*" >&2; exit 1; }
+
+# --- flags ---------------------------------------------------------------
+ARGS=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --registry) HOST="${2:?--registry needs a value}"; shift 2 ;;
+    --npmrc)    NPMRC="${2:?--npmrc needs a value}"; shift 2 ;;
+    *)          ARGS+=("$1"); shift ;;
+  esac
+done
+set -- "${ARGS[@]:-}"
+
+KEY="//${HOST}/:_authToken="
+
+# default backend: keychain on macOS, file elsewhere
+if [ -z "${NPM_TOKEN_BACKEND:-}" ]; then
+  if [ "$(uname -s)" = "Darwin" ]; then NPM_TOKEN_BACKEND=keychain; else NPM_TOKEN_BACKEND=file; fi
+fi
+KC_SERVICE="npm-token:${HOST}"
+
+mkdir -p "$CONFIG_DIR"; chmod 700 "$CONFIG_DIR" 2>/dev/null || true
+touch "$INDEX"; chmod 600 "$INDEX" 2>/dev/null || true
+
+index_add() { grep -qxF "$1" "$INDEX" 2>/dev/null || printf '%s\n' "$1" >> "$INDEX"; }
+index_del() { grep -vxF "$1" "$INDEX" > "$INDEX.tmp" 2>/dev/null || true; mv "$INDEX.tmp" "$INDEX"; }
+
+# --- storage backend ------------------------------------------------------
+store_set() { # name token
+  case "$NPM_TOKEN_BACKEND" in
+    keychain) security add-generic-password -U -a "$1" -s "$KC_SERVICE" -w "$2" ;;
+    file) mkdir -p "$STORE"; chmod 700 "$STORE" 2>/dev/null || true
+          printf '%s' "$2" > "$STORE/$1"; chmod 600 "$STORE/$1" ;;
+  esac
+  index_add "$1"
+}
+store_get() { # name -> token on stdout
+  case "$NPM_TOKEN_BACKEND" in
+    keychain) security find-generic-password -a "$1" -s "$KC_SERVICE" -w 2>/dev/null ;;
+    file) [ -f "$STORE/$1" ] && cat "$STORE/$1" ;;
+  esac
+}
+store_has() { # name
+  case "$NPM_TOKEN_BACKEND" in
+    keychain) security find-generic-password -a "$1" -s "$KC_SERVICE" -w >/dev/null 2>&1 ;;
+    file) [ -f "$STORE/$1" ] ;;
+  esac
+}
+store_del() { # name
+  case "$NPM_TOKEN_BACKEND" in
+    keychain) security delete-generic-password -a "$1" -s "$KC_SERVICE" >/dev/null 2>&1 || true ;;
+    file) rm -f "$STORE/$1" ;;
+  esac
+  index_del "$1"
+}
+store_names() { [ -s "$INDEX" ] && grep -v '^$' "$INDEX" || true; }
+
+# --- npmrc helpers --------------------------------------------------------
+active_token() { [ -f "$NPMRC" ] && grep -F "$KEY" "$NPMRC" 2>/dev/null | tail -n1 | sed "s|^${KEY}||" || true; }
+active_name() {
+  local cur; cur="$(active_token)"; [ -n "$cur" ] || return 0
+  local n; while IFS= read -r n; do [ -n "$n" ] || continue
+    if [ "$(store_get "$n")" = "$cur" ]; then printf '%s' "$n"; return 0; fi
+  done < <(store_names)
+}
+
+# --- commands -------------------------------------------------------------
+cmd_list() {
+  local cur; cur="$(active_name)"; local any=0 n
+  while IFS= read -r n; do [ -n "$n" ] || continue; any=1
+    if [ "$n" = "$cur" ]; then printf '* %s\n' "$n"; else printf '  %s\n' "$n"; fi
+  done < <(store_names)
+  [ "$any" = 1 ] || printf '(no profiles; add one with: npm-token add <name>)\n' >&2
+  [ -n "$(active_token)" ] && [ -z "$cur" ] && \
+    printf '(active token in %s matches no stored profile)\n' "$NPMRC" >&2 || true
+}
+cmd_current() {
+  local n; n="$(active_name)"
+  if [ -n "$n" ]; then printf '%s\n' "$n"
+  elif [ -n "$(active_token)" ]; then printf '(unknown token for %s)\n' "$HOST"; exit 1
+  else printf '(no authToken set for %s)\n' "$HOST"; exit 1; fi
+}
+cmd_use() {
+  local name="${1:?usage: npm-token use <name>}"
+  store_has "$name" || die "no such profile: $name (see: npm-token list)"
+  local token; token="$(store_get "$name")"; [ -n "$token" ] || die "profile '$name' is empty"
+  touch "$NPMRC"
+  local tmp; tmp="$(mktemp "${NPMRC}.XXXXXX")"
+  grep -vF "$KEY" "$NPMRC" > "$tmp" 2>/dev/null || true
+  printf '%s%s\n' "$KEY" "$token" >> "$tmp"
+  chmod 600 "$tmp"; mv "$tmp" "$NPMRC"
+  printf 'npm-token: "%s" is now active for %s\n' "$name" "$HOST"
+}
+cmd_add() {
+  local name="${1:?usage: npm-token add <name>}" token
+  if [ -t 0 ]; then
+    printf 'Paste authToken for "%s" (hidden): ' "$name" >&2
+    stty -echo 2>/dev/null || true; IFS= read -r token || true; stty echo 2>/dev/null || true; printf '\n' >&2
+  else token="$(cat)"; fi   # piped: reads all of stdin, tolerates no trailing newline
+  [ -n "${token:-}" ] || die "empty token, nothing saved"
+  store_set "$name" "$token"
+  printf 'npm-token: saved "%s" (backend: %s)\n' "$name" "$NPM_TOKEN_BACKEND"
+}
+cmd_remove() {
+  local name="${1:?usage: npm-token remove <name>}"
+  store_has "$name" || die "no such profile: $name"
+  store_del "$name"; printf 'npm-token: removed "%s"\n' "$name"
+}
+
+case "${1:-}" in
+  list|ls|"")    cmd_list ;;
+  current|cur)   cmd_current ;;
+  use|switch)    shift; cmd_use "$@" ;;
+  add|set)       shift; cmd_add "$@" ;;
+  remove|rm|del) shift; cmd_remove "$@" ;;
+  -h|--help|help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *) die "unknown command: $1 (try: npm-token --help)" ;;
+esac
