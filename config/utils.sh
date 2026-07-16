@@ -25,4 +25,7 @@ is_cygwin() { is_os cygwin; }
 
 is_ssh() { [ -n "$SSH_CLIENT" ]; }
 is_tmux() { [ -n "$TMUX" ]; }
-is_tty() { [[ "$(tty)" == /dev/tty* ]]; }
+# True only on a Linux text virtual console (/dev/tty1..6), where p10k instant
+# prompt must stay off. Must NOT match pseudo-terminals: macOS PTYs are
+# /dev/ttysNNN and Linux PTYs are /dev/pts/N — hence the digit right after "tty".
+is_tty() { [[ "$(tty)" == /dev/tty[0-9]* ]]; }

@@ -2,8 +2,10 @@ config_dir="$HOME/.dotfiles/config"
 
 source "$config_dir/utils.sh";
 source "$config_dir/zsh/xdg-ninja-patch.zsh"
-source "$config_dir/sh/rc.sh"
+# prepare.zsh enables p10k instant prompt, so it must run before the heavier rc.sh
+# (brew shellenv, docker, etc.) — the prompt then paints in ~1ms instead of ~90ms.
 source "$config_dir/zsh/prepare.zsh"
+source "$config_dir/sh/rc.sh"
 
 source $XDG_DATA_HOME/zgen/zgen.zsh
 
