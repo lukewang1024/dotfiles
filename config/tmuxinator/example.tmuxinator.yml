@@ -1,4 +1,4 @@
-# Reference tmuxinator layout — the canonical coding session.
+# Reference tmuxinator layout — the canonical task session (task/window model).
 # This file is a TEMPLATE (not auto-loaded). Two ways to use it:
 #
 #   1. Repo-local, params live in the repo:
@@ -8,34 +8,44 @@
 #   2. Named, machine-local, pickable from sesh (prefix+T):
 #        cp this to ~/.config/tmuxinator/<name>.yml  (set name + absolute root)
 #        sesh shows it automatically; selecting it runs `tmuxinator start <name>`.
+#      (gen-tmuxinator-configs writes exactly this shape, one per pooled repo.)
 #
-# Layout (tmux `main-vertical`; agent gets 55% via main-pane-width in tmux.conf):
-#   +-----------+-----------+
-#   |           |  git      |
-#   |  agent    +-----------+
-#   |  (claude) |  shell    |
-#   |  = main   +-----------+
-#   |           | [dev]     |   <- delete this pane for backends (→ 3 right panes)
-#   |           +-----------+
-#   |           |  editor   |
-#   +-----------+-----------+
-# The agent sidebar auto-appears shortly after the layout settles (a built-in
-# delay lets tmuxinator finish first); toggle it any time with prefix+Tab.
+# Model: a session is a TASK, seeded with one repo. Two kinds of window:
+#   +----------------------+     +----------------------+
+#   |                      |     |  git (tig)           |   <- <repo> window:
+#   |   agent  (mux-agent) |     +----------------------+      that repo's
+#   |   = the driver,      |     |  shell               |      inspection surface
+#   |     full window      |     +----------------------+
+#   |                      |     |  [dev]               |   <- frontends only
+#   +----------------------+     +----------------------+
+#     ^ startup lands here          ^ one per repo in the task
+#
+# The task GROWS by accretion — fold in more repos as inspection windows:
+#   - manually:  prefix+G  (pick a repo from the pool)
+#   - the agent: it runs `mux-inspect <path>` itself when its work reaches into
+#     another repo. Put this in the repo's CLAUDE.md / AGENTS.md (codex + opencode
+#     read AGENTS.md too) so all three agents follow it:
+#
+#       When your work starts touching another local repo, run
+#       `mux-inspect <abs-repo-path>` once so it appears as an inspection window.
+#       Then bring it into your own write scope: Claude → `/add-dir <path>`;
+#       codex → relaunch with `--add-dir <path>` if you must write there (reads
+#       already work); opencode → it will prompt on first external access.
+#
+# mux-agent picks the CLI from $MUX_AGENT (claude | codex | opencode; default claude).
 
-name: REPLACE-ME              # session name (and sesh picker label)
+name: REPLACE-ME              # session name (and sesh picker label) = the task
 root: .                       # repo-local: "." ; named config: absolute repo path
-startup_window: code
+startup_window: agent
 
 windows:
-  - code:
-      layout: main-vertical
+  - agent:                    # the session-level coding agent — where you steer
+      - mux-agent
+  - REPLACE-ME:               # seed repo's inspection window (name it after the repo)
+      layout: main-horizontal
       panes:
-        - agent:              # left / main pane
-            - claude
-        - git:
+        - git:                # tig on top, full width
             - tig
-        - shell:              # bare prompt — scratch / commands
+        - shell:              # bare prompt — scratch / commands / `nvim <file>`
         - dev:                # dev server — delete this whole pane for backends
             -                 # e.g. add "pnpm --filter portal dev" to auto-run
-        - editor:
-            - nvim

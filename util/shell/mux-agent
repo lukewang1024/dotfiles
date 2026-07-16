@@ -1,0 +1,30 @@
+#!/bin/sh
+# mux-agent — launch the task's coding agent in the current directory.
+#
+# Under the task/window model a session == one task, and the agent is the
+# session-level driver living in its own full window (not a per-repo sidebar).
+# Which CLI it is comes from $MUX_AGENT so claude / codex / opencode are
+# interchangeable without touching the generated tmuxinator configs (they all
+# just run `mux-agent`).
+#
+# Cross-repo WRITE scope grows by accretion and is handled per-agent when a repo
+# enters the task (see mux-inspect and the AGENTS.md / CLAUDE.md convention),
+# because runtime scope-growth is not uniform across the three:
+#   claude   — /add-dir at runtime (immediate)
+#   codex    — reads the tree by default; restart with --add-dir to WRITE elsewhere
+#   opencode — declare via `references`, or approve `external_directory` on first touch
+#
+# usage: mux-agent [extra args passed through to the agent]
+#        MUX_AGENT=codex mux-agent      # override per session/pane
+set -eu
+
+agent=${MUX_AGENT:-claude}
+case $agent in
+  claude)   exec claude "$@" ;;
+  codex)    exec codex "$@" ;;
+  opencode) exec opencode "$@" ;;
+  *)
+    echo "mux-agent: unknown MUX_AGENT='$agent' (want claude|codex|opencode)" >&2
+    exit 2
+    ;;
+esac

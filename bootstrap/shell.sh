@@ -9,6 +9,10 @@ tmux_setup()
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
   # tmuxinator pool-config generator (writes machine-local ~/.config/tmuxinator/*.yml)
   backup_then_symlink "$util_dir/shell/gen-tmuxinator-configs" "$bin_dir/gen-tmuxinator-configs"
+  # task/window model: agent launcher + per-repo inspection windows (see prefix+G)
+  backup_then_symlink "$util_dir/shell/mux-agent" "$bin_dir/mux-agent"
+  backup_then_symlink "$util_dir/shell/mux-inspect" "$bin_dir/mux-inspect"
+  backup_then_symlink "$util_dir/shell/mux-inspect-pick" "$bin_dir/mux-inspect-pick"
   echo 'Done.'
 
   # Install TPM + all plugins non-interactively so a fresh machine never depends
