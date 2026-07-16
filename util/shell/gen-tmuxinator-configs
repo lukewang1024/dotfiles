@@ -16,13 +16,14 @@
 # Manual exclusions persist across re-runs via a one-name-per-line ignore file
 # at ~/.config/tmuxinator/.genignore (blank lines and #comments allowed).
 #
-# Layout (tmux main-vertical, agent 55% via main-pane-width in tmux.conf):
-#   Frontend (package.json / pnpm-workspace.yaml / frontend/):
-#       agent(claude) | git(tig) / shell / dev / editor(nvim)     (4 right panes)
-#   Backend:
-#       agent(claude) | git(tig) / shell / editor(nvim)           (3 right panes)
-# The agent sidebar auto-appears after a short delay (so tmuxinator's layout
-# settles first); toggle it any time with prefix+Tab.
+# Layout (task/window model — a session is a task, seeded with one repo):
+#   - agent window: the session-level coding agent (mux-agent → claude/codex/
+#     opencode via $MUX_AGENT), rooted at the repo. This is where you steer.
+#   - <repo> window: that repo's inspection surface — git(tig) on top, a shell
+#     beneath (+ a dev-server pane for frontends). Full-screen, small-screen safe.
+# The task grows by accretion: fold more repos in as inspection windows with
+# prefix+G (manual) or `mux-inspect <path>` (the agent, per the AGENTS.md
+# convention). The seed repo above is just window count 1 of that same model.
 #
 # usage: gen-tmuxinator-configs [code_root]      (default: ~/Code)
 
@@ -106,16 +107,15 @@ for r in $roots; do
     printf '%s (%s)\n' "$MARKER" "$r"
     printf 'name: %s\n' "$name"
     printf 'root: %s\n' "$r"
-    printf 'startup_window: code\n'
+    printf 'startup_window: agent\n'
     printf 'windows:\n'
-    printf '  - code:\n'
-    printf '      layout: main-vertical\n'
+    printf '  - agent:\n            - mux-agent\n'
+    printf '  - %s:\n' "$name"
+    printf '      layout: main-horizontal\n'
     printf '      panes:\n'
-    printf '        - agent:\n            - claude\n'
     printf '        - git:\n            - tig\n'
     printf '        - shell:\n'
     [ "$fe" = 1 ] && printf '        - dev:\n            -\n'
-    printf '        - editor:\n            - nvim\n'
   } > "$DEST/$name.yml"
   written=$((written + 1))
 done
