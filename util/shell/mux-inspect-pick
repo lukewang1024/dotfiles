@@ -46,7 +46,9 @@ sel=$(
 ) || exit 0
 [ -n "$sel" ] || exit 0
 
-mux-inspect "$sel" --focus
+# --force: a human explicitly picking a repo is always honoured, and is the way
+# to fold a repo into an ad-hoc session that mux-agent never marked as a task.
+mux-inspect "$sel" --focus --force
 
 if [ "${MUX_AGENT:-claude}" = claude ] && tmux list-windows -F '#W' | grep -qx agent; then
   tmux send-keys -t agent "/add-dir $sel" Enter
