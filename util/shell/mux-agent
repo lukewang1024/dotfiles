@@ -18,6 +18,14 @@
 #        MUX_AGENT=codex mux-agent      # override per session/pane
 set -eu
 
+# Mark this tmux session as a task workbench. This is the single flag that opts
+# a session into the window-per-role model: only here does the agent-driven
+# `mux-inspect` fold repos in as inspection windows. Sessions where the agent is
+# launched some other way (a bare `claude` in an ad-hoc session) stay unmarked,
+# so that automatic behaviour never leaks into them. Session-scoped, so it lives
+# for the session and is queryable from any pane via `tmux show-option -qv`.
+[ -n "${TMUX:-}" ] && tmux set-option @mux_task 1 2>/dev/null || true
+
 agent=${MUX_AGENT:-claude}
 case $agent in
   claude)   exec claude "$@" ;;

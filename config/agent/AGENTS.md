@@ -7,15 +7,22 @@ global instructions path (`~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`);
 
 ## tmux task/window model — folding another repo into the task
 
-You run inside a tmux **task session**: one session is one task, you (the agent)
-are the driver living in the `agent` window, and each repo the task touches gets
-its own inspection window (git/tig + shell).
+Some tmux sessions are **task workbenches**: one session is one task, you (the
+agent) are the driver living in the `agent` window, and each repo the task
+touches gets its own inspection window (git/tig + shell). Such a session is
+launched via `mux-agent`, which stamps it with a `@mux_task` marker. You may
+equally be running in an **ordinary** session (a bare agent the human started
+ad-hoc); there, this whole mechanism stays out of the way and you do nothing
+special for cross-repo work.
 
 When your work starts touching a **local repo other than the one you started in**:
 
-1. Run `mux-inspect <absolute-repo-path>` once (via your shell tool). It adds that
-   repo as an inspection window in the current tmux session, detached — it appears
-   without stealing focus. Idempotent, so it is safe to re-run.
+1. Run `mux-inspect <absolute-repo-path>` once (via your shell tool). In a
+   workbench it adds that repo as an inspection window in the current session,
+   detached — it appears without stealing focus. Idempotent and safe to re-run.
+   It **self-gates**: in an ordinary (non-workbench) session it simply no-ops, so
+   you can call it unconditionally without worrying about which kind of session
+   you are in — no need to detect the session type yourself.
 2. Bring the repo into your own **write** scope (the mechanism differs per agent):
    - **Claude Code** — `/add-dir <path>` (effective immediately).
    - **Codex** — you can already read it; to write there the session must be

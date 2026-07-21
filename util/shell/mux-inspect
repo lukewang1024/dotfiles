@@ -19,20 +19,38 @@
 # (claude: /add-dir; codex: reads by default, relaunch with --add-dir to write;
 # opencode: references / external_directory). See mux-agent.
 #
-# usage: mux-inspect <repo-path> [--focus]
+# The window-per-role model is opt-in per session: only sessions launched as a
+# task workbench (marked with @mux_task by mux-agent) get inspection windows. In
+# any other session — a bare agent in an ad-hoc session, or the human's everyday
+# session — this no-ops, so the agent-driven convention never appends surprise
+# windows where they don't belong. Pass --force to override (the manual prefix+G
+# picker does, since an explicit human pick is always honoured and is one way to
+# turn an ordinary session into a workbench).
+#
+# usage: mux-inspect <repo-path> [--focus] [--force]
 set -eu
 
-[ $# -ge 1 ] || { echo "usage: mux-inspect <repo-path> [--focus]" >&2; exit 2; }
+[ $# -ge 1 ] || { echo "usage: mux-inspect <repo-path> [--focus] [--force]" >&2; exit 2; }
 path=$1; shift
 focus=0
+force=0
 for a in "$@"; do
   case $a in
     --focus) focus=1 ;;
+    --force) force=1 ;;
     *) echo "mux-inspect: unknown arg: $a" >&2; exit 2 ;;
   esac
 done
 
 [ -n "${TMUX:-}" ] || { echo "mux-inspect: not inside a tmux session" >&2; exit 1; }
+
+# Gate on the workbench marker unless forced. exit 0 (not an error): the agent
+# calls this speculatively per the AGENTS.md convention, and a non-workbench
+# session is a normal, expected state — not a failure to retry or report.
+if [ "$force" = 0 ] && [ "$(tmux show-option -qv @mux_task)" != 1 ]; then
+  echo "mux-inspect: not a task workbench session (no @mux_task); skipping — pass --force to override" >&2
+  exit 0
+fi
 path=$(cd "$path" 2>/dev/null && pwd -P) || { echo "mux-inspect: no such dir: $1" >&2; exit 1; }
 
 sess=$(tmux display-message -p '#S')
