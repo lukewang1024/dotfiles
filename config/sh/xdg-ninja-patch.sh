@@ -23,6 +23,9 @@ export GEM_SPEC_CACHE="$XDG_CACHE_HOME/gem"
 # go
 export GOPATH="$XDG_DATA_HOME/go"
 
+# goenv (anyenv) — otherwise it overrides GOPATH with $HOME/go/<version>
+export GOENV_GOPATH_PREFIX="$XDG_DATA_HOME/go"
+
 # less
 export LESSHISTFILE="$XDG_STATE_HOME/less/history"
 
@@ -46,6 +49,9 @@ export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
 
 # percol
 alias percol='percol --rcfile=$XDG_CONFIG_HOME/percol/rc.py'
+
+# puppeteer / @puppeteer/browsers — Chrome for Testing download cache (~/chrome, ~/browsers)
+export PUPPETEER_CACHE_DIR="$XDG_CACHE_HOME/puppeteer"
 
 # python
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
