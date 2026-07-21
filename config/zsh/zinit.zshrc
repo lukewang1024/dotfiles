@@ -35,10 +35,10 @@ zinit light romkatv/powerlevel10k
 # Plugins
 # - - - - - - - - - - - - - - - - - - - -
 
-# Not figured out how to get these two plugins to work
-  # OMZP::gitfast/gitfast.plugin.zsh \
-  # OMZP::emoji/emoji.plugin.zsh \
-
+# Most OMZ plugins are single self-contained files — load them as OMZP:: snippets
+# (fast, individually fetched & cached, all Turbo-deferred). Multi-file OMZ
+# plugins that source sibling files can't be loaded this way and are handled by
+# the multisrc block further below.
 zinit wait lucid for \
   OMZL::directories.zsh \
   OMZL::git.zsh \
@@ -77,10 +77,31 @@ zinit wait lucid for \
   OMZP::vscode/vscode.plugin.zsh \
   OMZP::web-search/web-search.plugin.zsh \
   OMZP::yarn/yarn.plugin.zsh \
+  supercrabtree/k \
+  ver'main' conda-incubator/conda-zsh-completion \
   zsh-users/zsh-history-substring-search \
   lukewang1024/zsh-tmuxinator \
   atload'_zsh_autosuggest_start' zsh-users/zsh-autosuggestions \
   atpull'zinit creinstall -q .' blockf zsh-users/zsh-completions
+
+# Multi-file OMZ plugins: a plain OMZP:: snippet only copies the .plugin.zsh and
+# leaves siblings behind, so these break at runtime (gitfast -> git-prompt.sh,
+# macos -> music/spotify, emoji -> emoji-char-definitions.zsh). The old `svn`
+# whole-dir fetch is dead (GitHub dropped Subversion on 2024-01-08). Instead load
+# Oh My Zsh as ONE Turbo plugin and `multisrc` these files in place (siblings
+# intact). One clone, Turbo-deferred, updated via `zinit update ohmyzsh`.
+# pick'/dev/null' is essential: without it zinit auto-sources the repo's main
+# file (oh-my-zsh.sh), which boots the whole OMZ framework (defines `omz`, sets
+# ZSH_CACHE_DIR, runs its own compinit/termsupport). We only want the 3 files.
+() {
+  local -a omz=(
+    plugins/gitfast/gitfast.plugin.zsh
+    plugins/emoji/emoji.plugin.zsh
+  )
+  is_macos && omz+=( plugins/macos/macos.plugin.zsh )
+  zinit ice wait lucid pick'/dev/null' multisrc"${(j: :)omz}"
+  zinit light ohmyzsh/ohmyzsh
+}
 
 zinit wait'1' lucid for \
   atinit'zicompinit; zicdreplay' zdharma-continuum/fast-syntax-highlighting

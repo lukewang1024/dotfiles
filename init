@@ -62,11 +62,6 @@ case $1 in
     install_npm_packages
     ;;
 
-  'zgen')
-    source "$partial_dir/shell.sh"
-    zgen_setup
-    ;;
-
   'zinit')
     source "$partial_dir/shell.sh"
     zinit_setup

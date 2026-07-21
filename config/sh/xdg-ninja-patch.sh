@@ -70,6 +70,3 @@ alias xonsh='xonsh --rc "$XDG_CONFIG_HOME/xonsh/xonshrc"'
 
 # xorg-xauth
 export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
-
-# zgen
-export ZGEN_DIR="$XDG_DATA_HOME/zgen"

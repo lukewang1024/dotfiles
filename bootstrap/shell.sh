@@ -64,19 +64,6 @@ ssh_setup()
   echo 'Done.'
 }
 
-zgen_setup()
-{
-  blank_lines
-  echo 'Setup zgen...'
-  sync_config_repo "$XDG_DATA_HOME/zgen" https://github.com/tarjoilija/zgen
-  echo 'Done.'
-
-  printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/zgen.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
-  zsh_common_setup
-  echo 'Done.'
-}
-
 zinit_setup()
 {
   blank_lines
@@ -137,30 +124,20 @@ zsh_common_setup()
   backup_then_symlink "$config_dir/zsh/.p10k.zsh" "$XDG_CONFIG_HOME/zsh/.p10k.zsh"
 }
 
-# Set up exactly one shell environment, since only one shell is typically used,
-# and make it the default login shell. Defaults to zgen; select another via
-# DOTFILES_SHELL or by calling zinit_setup / bashit_setup manually.
-#   DOTFILES_SHELL=zgen  (default)
-#   DOTFILES_SHELL=zinit
-#   DOTFILES_SHELL=bash_it
+# Set up the shell environment and make zsh the default login shell. zinit is the
+# only supported plugin manager: benchmarking showed its turbo (deferred) loading
+# reaches a usable prompt ~2x faster than zgen's fully-synchronous load, and zgen
+# is effectively unmaintained upstream. zgen and bash_it were removed accordingly.
 shell_setup()
 {
-  case "${DOTFILES_SHELL:-zgen}" in
-    'zgen')
-      zgen_setup
-      set_default_shell zsh
-      ;;
+  case "${DOTFILES_SHELL:-zinit}" in
     'zinit')
       zinit_setup
       set_default_shell zsh
       ;;
-    'bash_it')
-      bashit_setup
-      set_default_shell bash
-      ;;
     *)
-      echo "Unknown DOTFILES_SHELL '$DOTFILES_SHELL', falling back to zgen."
-      zgen_setup
+      echo "Unknown DOTFILES_SHELL '$DOTFILES_SHELL', falling back to zinit."
+      zinit_setup
       set_default_shell zsh
       ;;
   esac
@@ -197,27 +174,6 @@ set_default_shell()
 
   echo "Changing default shell to $shell_path..."
   chsh -s "$shell_path"
-}
-
-bashit_setup()
-{
-  blank_lines
-  echo 'Setup bash-it...'
-  sync_config_repo ~/.bash_it https://github.com/Bash-it/bash-it
-  ~/.bash_it/install.sh --no-modify-config
-  echo 'Done.'
-
-  printf 'Symlinking .bash_profile and .bashrc... '
-  backup_then_symlink "$config_dir/bash/bash_it.bash_profile" ~/.bash_profile
-  backup_then_symlink "$config_dir/bash/bash_it.bashrc" ~/.bashrc
-  echo 'Done.'
-
-  # Enable common plugins
-  bash -i -c ' \
-    bash-it enable alias      ag general git tmux; \
-    bash-it enable plugin     alias-completion base extract git jenv less-pretty-cat nodenv pyenv rbenv tmux; \
-    bash-it enable completion bash-it brew conda git git_flow_avh npm ssh system tmux; \
-    exit'
 }
 
 profile_setup()
