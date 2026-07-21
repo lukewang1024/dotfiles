@@ -18,14 +18,15 @@
 #
 # Env / flags:
 #   NPM_TOKEN_REGISTRY   registry host   (default: bnpm.byted.org)
-#   NPM_TOKEN_NPMRC      target npmrc    (default: $HOME/.npmrc)
+#   NPM_TOKEN_NPMRC      target npmrc    (default: $NPM_CONFIG_USERCONFIG, else ~/.npmrc)
 #   NPM_TOKEN_BACKEND    keychain|file   (default: keychain on macOS, else file)
 #   --registry <host> / --npmrc <path>   per-call overrides
 
 set -euo pipefail
 
 HOST="${NPM_TOKEN_REGISTRY:-bnpm.byted.org}"
-NPMRC="${NPM_TOKEN_NPMRC:-$HOME/.npmrc}"
+# npm honours NPM_CONFIG_USERCONFIG over ~/.npmrc, so target that when set.
+NPMRC="${NPM_TOKEN_NPMRC:-${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}}"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/npm-token"
 STORE="$CONFIG_DIR/profiles"
 INDEX="$CONFIG_DIR/names"
