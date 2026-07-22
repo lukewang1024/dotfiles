@@ -19,8 +19,6 @@ install_ai_agent_tools()
   # Codex CLI - standalone installer (recommended; rerun to upgrade)
   curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
 
-  # Gemini CLI is installed via npm, which is its recommended method
-
   # peon-ping - Claude Code audio/desktop notifier; installs to
   # ~/.claude/hooks/peon-ping and self-registers its hooks across every Claude
   # Code event (it supersedes any ad-hoc Stop notifier). Piping keeps it
@@ -65,7 +63,6 @@ install_npm_packages()
 
   local pkgs=(
     @electron/asar                    # Creating Electron app packages
-    @google/gemini-cli                # Gemini CLI (npm is the officially recommended install method)
     @mermaid-js/mermaid-cli           # Command-line interface for Mermaid, the diagramming and charting tool
     brightness-cli                    # Change the screen brightness
     clipboard-cli                     # Access the system clipboard (copy/paste)
