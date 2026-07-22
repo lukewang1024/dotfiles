@@ -177,6 +177,9 @@ util_setup()
   backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
+  # Kerberos ticket auto-renew (macOS keychain / Linux keytab). Install per-machine
+  # with: kinit-auto-login install  (not run here — it prompts for the SSO password).
+  backup_then_symlink "$util_dir/kerberos/kinit-auto-login" "$bin_dir/kinit-auto-login"
   # Apply shared Claude Code settings base, fetch the tmux-agent-sidebar binary
   # via its non-interactive downloader (so prefix+Tab binds without the manual
   # install menu), and wire its Claude Code hooks (all idempotent; each skips
