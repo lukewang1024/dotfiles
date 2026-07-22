@@ -1,0 +1,736 @@
+#!/bin/sh
+# kinit-auto-login — keep the ByteDance intranet Kerberos ticket auto-renewed, so
+# you never have to run kinit by hand again.
+#
+# Keeps the ticket alive at the source so expiry never happens. Picks the best
+# mechanism per platform:
+#   • macOS: kinit --keychain <principal> — password stored in the login keychain,
+#            no keytab file needed. A user LaunchAgent renews on a timer (launchd
+#            does not source the shell rc, so kinit must be an absolute path).
+#   • Linux: keytab — the only workable option for unattended/headless use. The
+#            supervisor prefers systemd --user (oneshot service + timer: start on
+#            boot, survive logout, self-heal); it only falls back to nohup+rc hook
+#            when no user manager is reachable. Generating the keytab MUST query
+#            the KDC's salt dynamically (BYTEDANCE.COM uses REALM+local, non-empty)
+#            and the kvno (which rotates), or preauth fails; verify with kinit -kt.
+#
+# Usage:
+#   kinit-auto-login install [--principal name@BYTEDANCE.COM]  # install + start auto-renew
+#   kinit-auto-login renew                                     # renew once now (called by LaunchAgent/daemon)
+#   kinit-auto-login status                                    # show renew status + klist
+#   kinit-auto-login uninstall                                 # remove auto-renew
+#   kinit-auto-login write-env-template                        # write a config template
+#   kinit-auto-login gen-keytab                                # (Linux) regenerate the keytab only
+#   kinit-auto-login _run                                      # (Linux, internal) daemon loop
+#
+# Ported from ccm-harness scripts/kinit-auto-login.sh (telemetry removed, rebranded
+# to a dotfiles-owned namespace); the keytab salt/kvno probing edge cases originate
+# from anygen-inventor skills/ag-persistent-git-auth (archived).
+
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SELF="$SCRIPT_DIR/$(basename "$0")"
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/kinit-auto-login"
+ENV_FILE="$CONFIG_DIR/kinit.env"
+STATE_DIR="$CONFIG_DIR/krb5"
+LOG_FILE="$STATE_DIR/kinit.log"
+PID_FILE="$STATE_DIR/kinit-daemon.pid"
+
+REALM_DEFAULT="BYTEDANCE.COM"
+# Tickets usually last 10~24h; renewing every 6h leaves ample slack (a renewal
+# missed while macOS was asleep is made up once on wake).
+INTERVAL_DEFAULT=21600
+
+# Reuse the dotfiles' existing com.lukew.* reverse-DNS naming (see util/macos/setup-launchagent).
+LAUNCHD_LABEL="com.lukew.kinit"
+LAUNCHD_PLIST="$HOME/Library/LaunchAgents/${LAUNCHD_LABEL}.plist"
+
+# Linux prefers systemd --user (oneshot service + timer, see linux_systemd_*): real
+# start-on-boot, survive-logout (enable-linger), self-healing restart.
+SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+SYSTEMD_UNIT="kinit-auto-login"          # → .service + .timer
+
+# rc autostart hook, only needed for the nohup fallback (used only when systemd
+# --user is not detected). Written into the login shell's rc — ByteDance devboxes
+# default to zsh, so hardcoding .bashrc would not take effect. The hook body is
+# POSIX syntax, portable across zsh/bash.
+case "$(basename "${SHELL:-/bin/bash}")" in
+  zsh)  RC_FILE="${ZDOTDIR:-$HOME}/.zshrc" ;;  # when zsh sets ZDOTDIR, .zshrc lives there, not $HOME
+  bash) RC_FILE="$HOME/.bashrc" ;;
+  *)    RC_FILE="$HOME/.profile" ;;
+esac
+HOOK_BEGIN="# >>> dotfiles kinit-auto-login (managed) >>>"
+HOOK_END="# <<< dotfiles kinit-auto-login (managed) <<<"
+
+log_line() { echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >>"$LOG_FILE" 2>/dev/null || true; }
+
+usage() {
+  # Print the leading comment block (skip the shebang; stop at the first non-comment line).
+  awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$SELF"
+}
+
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+
+write_template() {
+  mkdir -p "$CONFIG_DIR"
+  if [ -f "$ENV_FILE" ]; then
+    echo "already exists: $ENV_FILE"
+    return 0
+  fi
+  cat >"$ENV_FILE" <<TEMPLATE
+# kinit auto-login config
+KRB_PRINCIPAL=your.name@${REALM_DEFAULT}
+# Ignored on macOS (password lives in the login keychain); on Linux it is filled in
+# automatically by gen-keytab.
+KEYTAB_PATH=
+# Renewal interval (seconds); default ${INTERVAL_DEFAULT}=6h
+KINIT_INTERVAL_SECONDS=${INTERVAL_DEFAULT}
+# Optional: git URL used for verification
+GIT_TEST_URL=
+TEMPLATE
+  chmod 600 "$ENV_FILE"
+  echo "wrote template: $ENV_FILE"
+}
+
+# Persist the resolved principal into kinit.env — background renewals (launchd /
+# systemd / nohup hook) do not carry the install-time --principal, they can only
+# read it back from env or the klist cache; once the cache is cleared, if env has
+# no principal, renew fails before kinit. Persist it at install time, keep 0600.
+persist_principal() {
+  principal="$1"
+  mkdir -p "$CONFIG_DIR"
+  [ -f "$ENV_FILE" ] || write_template
+  if grep -q '^KRB_PRINCIPAL=' "$ENV_FILE" 2>/dev/null; then
+    sed -i.bak "s|^KRB_PRINCIPAL=.*|KRB_PRINCIPAL=$principal|" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
+  else
+    printf 'KRB_PRINCIPAL=%s\n' "$principal" >>"$ENV_FILE"
+  fi
+  chmod 600 "$ENV_FILE"
+}
+
+# Resolve the principal: --principal on the command line > KRB_PRINCIPAL in the env
+# file > default ticket from klist > error out.
+resolve_principal() {
+  p="${CLI_PRINCIPAL:-}"
+  if [ -z "$p" ] && [ -f "$ENV_FILE" ]; then
+    # shellcheck disable=SC1090
+    . "$ENV_FILE" 2>/dev/null || true
+    case "${KRB_PRINCIPAL:-}" in
+      ""|your.name@*) : ;;
+      *) p="$KRB_PRINCIPAL" ;;
+    esac
+  fi
+  if [ -z "$p" ]; then
+    # If a ticket already exists, reuse its default principal so the user need not retype it.
+    p="$(klist 2>/dev/null | sed -n 's/^.*[Pp]rincipal:[[:space:]]*//p' | head -1)"
+  fi
+  if [ -z "$p" ]; then
+    echo "Cannot determine the Kerberos principal. Pass --principal name@${REALM_DEFAULT}," >&2
+    echo "or run '$(basename "$SELF") write-env-template' first and fill in KRB_PRINCIPAL." >&2
+    return 1
+  fi
+  case "$p" in
+    *@*) : ;;
+    *) p="${p}@${REALM_DEFAULT}" ;;  # bare username: append the default realm
+  esac
+  printf '%s\n' "$p"
+}
+
+load_interval() {
+  iv="$INTERVAL_DEFAULT"
+  if [ -f "$ENV_FILE" ]; then
+    # shellcheck disable=SC1090
+    . "$ENV_FILE" 2>/dev/null || true
+    case "${KINIT_INTERVAL_SECONDS:-}" in
+      ''|*[!0-9]*) : ;;
+      *) iv="$KINIT_INTERVAL_SECONDS" ;;
+    esac
+  fi
+  printf '%s\n' "$iv"
+}
+
+# ---------------------------------------------------------------------------
+# macOS: kinit --keychain + LaunchAgent
+# ---------------------------------------------------------------------------
+
+macos_renew() {
+  principal="$(resolve_principal)" || return 1
+  mkdir -p "$STATE_DIR"
+  # --keychain: the first time prompts for the password and stores it in the login
+  # keychain; after that, unattended renewals read straight from the keychain.
+  if kinit --keychain "$principal" >>"$LOG_FILE" 2>&1; then
+    log_line "kinit ok ($principal)"
+    return 0
+  fi
+  log_line "kinit FAILED ($principal) — no password in keychain? run once interactively: kinit --keychain $principal"
+  return 1
+}
+
+macos_install() {
+  principal="$(resolve_principal)" || return 1
+  mkdir -p "$STATE_DIR"
+  echo "principal: $principal"
+
+  # First renewal: if the keychain has no password yet, this step prompts for it once.
+  echo "• Initializing the ticket (first run prompts for the SSO password; later renewals are automatic)"
+  if ! kinit --keychain "$principal"; then
+    echo "kinit failed. Confirm the principal is correct and the KDC is reachable (VPN), then retry." >&2
+    return 1
+  fi
+  persist_principal "$principal"  # persist so background renew can still resolve it after the cache is cleared
+  klist || true
+
+  # Write the LaunchAgent: ProgramArguments points at this script's `renew`, so Login
+  # Items show the readable kinit-auto-login (rather than bash).
+  mkdir -p "$(dirname "$LAUNCHD_PLIST")"
+  interval="$(load_interval)"
+  /usr/bin/python3 - "$LAUNCHD_PLIST" "$LAUNCHD_LABEL" "$SELF" "$interval" \
+    "$STATE_DIR/kinit.out.log" "$STATE_DIR/kinit.err.log" <<'PY'
+import os, plistlib, sys
+plist_path, label, self_path, interval, out_path, err_path = sys.argv[1:]
+# launchd does not inherit the login shell's PATH; kinit/klist are addressed by
+# absolute dir, and this provides a safe fallback PATH.
+payload = {
+    "Label": label,
+    "ProgramArguments": [self_path, "renew"],
+    "EnvironmentVariables": {"PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"},
+    "RunAtLoad": True,
+    "StartInterval": int(interval),
+    "StandardOutPath": out_path,
+    "StandardErrorPath": err_path,
+}
+with open(plist_path, "wb") as fh:
+    plistlib.dump(payload, fh)
+PY
+
+  domain="gui/$(id -u)"
+  launchctl bootout "$domain" "$LAUNCHD_PLIST" >/dev/null 2>&1 || true
+  if launchctl bootstrap "$domain" "$LAUNCHD_PLIST" >/dev/null 2>&1; then
+    launchctl kickstart -k "$domain/$LAUNCHD_LABEL" >/dev/null 2>&1 || true
+    echo "✓ Installed and started auto-renew: $LAUNCHD_PLIST"
+    echo "  Renews every $((interval/3600))h; status: $(basename "$SELF") status"
+  else
+    echo "launchctl bootstrap failed, see $STATE_DIR/kinit.err.log" >&2
+    return 1
+  fi
+}
+
+macos_uninstall() {
+  domain="gui/$(id -u)"
+  launchctl bootout "$domain" "$LAUNCHD_PLIST" >/dev/null 2>&1 || true
+  rm -f "$LAUNCHD_PLIST"
+  echo "✓ Removed LaunchAgent: $LAUNCHD_PLIST (the keychain password is kept; use Keychain Access to clear it)"
+}
+
+macos_status() {
+  domain="gui/$(id -u)"
+  echo "== LaunchAgent =="
+  if launchctl print "$domain/$LAUNCHD_LABEL" >/dev/null 2>&1; then
+    echo "loaded: $LAUNCHD_LABEL"
+  else
+    echo "not loaded (not installed or already removed)"
+  fi
+  [ -f "$LAUNCHD_PLIST" ] && echo "plist: $LAUNCHD_PLIST"
+  echo "== klist =="
+  klist 2>&1 || echo "(no valid ticket)"
+  [ -f "$LOG_FILE" ] && { echo "== recent log =="; tail -5 "$LOG_FILE"; }
+}
+
+# ---------------------------------------------------------------------------
+# Linux: keytab renewal. The supervisor prefers systemd --user (service+timer);
+#        it falls back to nohup+rc hook only when no user manager (stripped-down
+#        container / no login session) is detected.
+# ---------------------------------------------------------------------------
+
+# Whether systemd --user is usable: needs systemctl and a reachable user manager
+# (often unreachable in containers / with no session). KINIT_ASSUME_SYSTEMD=1 is a test hook.
+linux_has_systemd() {
+  [ "${KINIT_ASSUME_SYSTEMD:-}" = 1 ] && return 0
+  command -v systemctl >/dev/null 2>&1 || return 1
+  systemctl --user show-environment >/dev/null 2>&1
+}
+
+linux_supervisor() {
+  if [ "${KINIT_SUPERVISOR:-auto}" = nohup ]; then echo nohup; return; fi
+  if linux_has_systemd; then echo systemd; else echo nohup; fi
+}
+
+linux_keytab_path() {
+  principal="$1"
+  if [ -f "$ENV_FILE" ]; then
+    # shellcheck disable=SC1090
+    . "$ENV_FILE" 2>/dev/null || true
+  fi
+  if [ -n "${KEYTAB_PATH:-}" ] && [ "${KEYTAB_PATH:-}" != "" ]; then
+    printf '%s\n' "$KEYTAB_PATH"
+  else
+    printf '%s\n' "$STATE_DIR/$(echo "$principal" | cut -d@ -f1).keytab"
+  fi
+}
+
+# Query salt + kvno dynamically, then generate and verify the keytab (BYTEDANCE.COM
+# salt is non-empty and the kvno rotates; a hardcoded -k 1 / empty salt is guaranteed
+# to fail preauth). Ported from anygen gen-keytab-linux.py.
+linux_gen_keytab() {
+  principal="$(resolve_principal)" || return 1
+  keytab="$(linux_keytab_path "$principal")"
+  mkdir -p "$(dirname "$keytab")"
+  echo "principal: $principal"
+  echo "keytab:    $keytab"
+  KAL_PRINCIPAL="$principal" KAL_KEYTAB="$keytab" python3 - <<'PY'
+import getpass, os, pty, re, select, signal, subprocess, sys, tempfile, time
+principal = os.environ["KAL_PRINCIPAL"]
+keytab = os.environ["KAL_KEYTAB"]
+PASSWORD_PROMPT = b"Password"
+TIMEOUT = 30
+
+def drive_pty(argv, scripted, env_overrides=None, timeout=TIMEOUT):
+    env = os.environ.copy()
+    if env_overrides:
+        env.update(env_overrides)
+    master, slave = pty.openpty()
+    pid = os.fork()
+    if pid == 0:
+        os.close(master)
+        os.dup2(slave, 0); os.dup2(slave, 1); os.dup2(slave, 2)
+        if slave > 2: os.close(slave)
+        os.execvpe(argv[0], argv, env)
+    os.close(slave)
+    buf = b""; output = b""; pending = list(scripted)
+    deadline = time.time() + timeout; exited = False; status = -1
+    try:
+        while time.time() < deadline:
+            r, _, _ = select.select([master], [], [], 1)
+            if not r:
+                wpid, st = os.waitpid(pid, os.WNOHANG)
+                if wpid != 0:
+                    exited = True
+                    status = os.WEXITSTATUS(st) if os.WIFEXITED(st) else -1
+                    break
+                continue
+            try:
+                chunk = os.read(master, 4096)
+            except OSError:
+                break
+            if not chunk:
+                break
+            buf += chunk; output += chunk
+            while pending and pending[0][0] in buf:
+                _t, response = pending.pop(0)
+                os.write(master, response); buf = b""
+                deadline = time.time() + timeout
+    finally:
+        if not exited:
+            # Deadline reached while the child is still alive: TERM then KILL to reap
+            # it, so waitpid(pid, 0) never blocks forever (a stuck kinit/ktutil would
+            # otherwise hang gen-keytab indefinitely).
+            for sig in (signal.SIGTERM, signal.SIGKILL):
+                try:
+                    os.kill(pid, sig)
+                except OSError:
+                    break
+                for _ in range(20):  # wait up to 1s for it to exit
+                    try:
+                        wpid, st = os.waitpid(pid, os.WNOHANG)
+                    except OSError:
+                        wpid, st = pid, 0
+                    if wpid:
+                        status = os.WEXITSTATUS(st) if os.WIFEXITED(st) else -1
+                        exited = True
+                        break
+                    time.sleep(0.05)
+                if exited:
+                    break
+        os.close(master)
+    return status, output
+
+def query_salt(password):
+    fd, trace_path = tempfile.mkstemp(prefix="krb5trace-"); os.close(fd)
+    trace = ""
+    try:
+        status, output = drive_pty(["kinit", principal],
+            [(PASSWORD_PROMPT, (password + "\n").encode())],
+            env_overrides={"KRB5_TRACE": trace_path})
+        try:
+            with open(trace_path) as f: trace = f.read()
+        except OSError:
+            trace = ""
+        if status != 0:
+            tail = output.decode("utf-8", "replace").strip()
+            ttail = "\n".join(trace.splitlines()[-20:])
+            msg = [f"kinit failed (exit {status}) for {principal}."]
+            if tail: msg.append(f"kinit said:\n{tail}")
+            if ttail: msg.append(f"KRB5_TRACE tail:\n{ttail}")
+            msg.append("Common causes: wrong SSO password, KDC unreachable (check VPN/network), clock skew >5min.")
+            sys.exit("\n\n".join(msg))
+    finally:
+        try: os.unlink(trace_path)
+        except OSError: pass
+    m = re.search(r'salt "([^"]+)"', trace)
+    if m: return m.group(1)
+    local, _, realm = principal.partition("@")
+    return f"{realm}{local}"
+
+def query_kvno():
+    out = subprocess.check_output(["kvno", principal], text=True,
+                                  stderr=subprocess.STDOUT, timeout=TIMEOUT)
+    m = re.search(r"kvno\s*=\s*(\d+)", out)
+    if not m: sys.exit(f"could not parse kvno output: {out}")
+    return int(m.group(1))
+
+password = getpass.getpass(">>> Kerberos password: ")
+print("• kinit (verify password, probe KDC salt)")
+salt = query_salt(password); print(f"  salt = {salt}")
+print("• kvno (query current key version)")
+try:
+    kvno = query_kvno()
+except subprocess.CalledProcessError as e:
+    sys.exit(f"kvno failed (wrong password or KDC unreachable?): {e.output}")
+except subprocess.TimeoutExpired:
+    sys.exit(f"kvno timed out ({TIMEOUT}s) — KDC unreachable? check VPN/network.")
+print(f"  kvno = {kvno}")
+print(f"• ktutil add_entry -k {kvno} -e aes256-cts -s {salt}")
+drive_pty(["ktutil"], [
+    (b"ktutil:", f"add_entry -password -p {principal} -k {kvno} -e aes256-cts -s {salt}\n".encode()),
+    (PASSWORD_PROMPT, (password + "\n").encode()),
+    (b"ktutil:", f"write_kt {keytab}\n".encode()),
+    (b"ktutil:", b"quit\n"),
+])
+if not os.path.exists(keytab):
+    sys.exit("keytab was not generated (ktutil not on PATH? which ktutil)")
+os.chmod(keytab, 0o600)
+print("• Verify the keytab with kinit -kt")
+rc = subprocess.call(["kinit", "-kt", keytab, principal],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+if rc != 0:
+    sys.exit(f"keytab verification failed: kinit -kt exit code {rc} (kvno just rotated? rerun; or clock skew >5min)")
+print(f"\n✓ keytab ready: {keytab}")
+PY
+  rc=$?
+  [ $rc -eq 0 ] || return $rc
+  # Write KEYTAB_PATH back into the env file
+  [ -f "$ENV_FILE" ] || write_template
+  if grep -q '^KEYTAB_PATH=' "$ENV_FILE" 2>/dev/null; then
+    sed -i.bak "s|^KEYTAB_PATH=.*|KEYTAB_PATH=$keytab|" "$ENV_FILE" && rm -f "$ENV_FILE.bak"
+  else
+    echo "KEYTAB_PATH=$keytab" >>"$ENV_FILE"
+  fi
+}
+
+linux_renew() {
+  principal="$(resolve_principal)" || return 1
+  keytab="$(linux_keytab_path "$principal")"
+  mkdir -p "$STATE_DIR"
+  if [ ! -f "$keytab" ]; then
+    log_line "keytab missing: $keytab"
+    echo "keytab does not exist: $keytab — run '$(basename "$SELF") gen-keytab' first" >&2
+    return 1
+  fi
+  if kinit -kt "$keytab" "$principal" >>"$LOG_FILE" 2>&1; then
+    log_line "kinit ok ($principal)"
+    return 0
+  fi
+  # An expired keytab usually means the password rotated / the kvno changed — prompt to regenerate.
+  log_line "kinit FAILED ($principal) — keytab may be stale (password rotation / kvno change), rerun gen-keytab"
+  return 1
+}
+
+# Field 22 of /proc/<pid>/stat is starttime (comm may contain spaces/parens, so take
+# everything after the last ')' and then count).
+_proc_starttime() {
+  [ -r "/proc/$1/stat" ] || return 1
+  line="$(cat "/proc/$1/stat" 2>/dev/null)" || return 1
+  after="${line##*) }"                       # drop the pid and (comm)
+  echo "$after" | awk '{print $20}'          # field 22 → the 20th field of `after`
+}
+
+# The cmdline must contain both this script's path and _run, confirming this pid is really our daemon.
+_proc_is_our_daemon() {
+  [ -r "/proc/$1/cmdline" ] || return 1
+  cmd="$(tr '\0' ' ' < "/proc/$1/cmdline" 2>/dev/null)"
+  # Match in two independent passes: SELF and _run are separated by a single space,
+  # so a single combined pattern would miss due to the shared boundary space.
+  case " $cmd " in (*" $SELF "*) ;; (*) return 1 ;; esac   # contains this script's path
+  case " $cmd " in (*" _run "*) return 0 ;; esac           # and contains the _run argument
+  return 1
+}
+
+# Return the pid "confirmed to be our daemon", else non-zero. PID file format:
+# <pid> <starttime>. Triple check (alive + cmdline is this script's _run +
+# starttime matches) to avoid killing the wrong process after PID reuse post-OOM.
+linux_daemon_pid() {
+  [ -f "$PID_FILE" ] || return 1
+  read -r pid saved_start < "$PID_FILE" 2>/dev/null || return 1
+  [ -n "${pid:-}" ] || return 1
+  case "$pid" in *[!0-9]*) return 1 ;; esac  # digits only, else not a real pid
+  kill -0 "$pid" 2>/dev/null || return 1
+  _proc_is_our_daemon "$pid" || return 1
+  if [ -n "${saved_start:-}" ]; then         # if we have a fingerprint, verify it to rule out PID reuse
+    cur_start="$(_proc_starttime "$pid")" || return 1
+    [ "$cur_start" = "$saved_start" ] || return 1
+  fi
+  printf '%s\n' "$pid"
+}
+
+linux_daemon_running() { linux_daemon_pid >/dev/null 2>&1; }
+
+linux_daemon_run() {
+  principal="$(resolve_principal)" || return 1
+  keytab="$(linux_keytab_path "$principal")"
+  interval="$(load_interval)"
+  mkdir -p "$STATE_DIR"
+  # Record pid + starttime fingerprint for running/uninstall to verify identity.
+  printf '%s %s\n' "$$" "$(_proc_starttime $$)" >"$PID_FILE"
+  trap 'log_line "daemon stopping (pid $$)"; rm -f "$PID_FILE"; exit 0' INT TERM
+  log_line "daemon started (pid $$, $principal, interval ${interval}s)"
+  while :; do
+    if kinit -kt "$keytab" "$principal" >/dev/null 2>&1; then
+      log_line "kinit ok ($principal)"
+    else
+      log_line "kinit FAILED ($principal) — keytab stale? rerun gen-keytab"
+    fi
+    sleep "$interval"
+  done
+}
+
+linux_daemon_start() {
+  if pid="$(linux_daemon_pid)"; then
+    echo "daemon already running (pid $pid)"
+    return 0
+  fi
+  rm -f "$PID_FILE"  # clean up a stale pid left by OOM / reuse (already confirmed not our process)
+  nohup "$SELF" _run >/dev/null 2>&1 &
+  sleep 1
+  if pid="$(linux_daemon_pid)"; then
+    echo "daemon started (pid $pid); log: $LOG_FILE"
+  else
+    echo "daemon failed to start, see $LOG_FILE" >&2
+    return 1
+  fi
+}
+
+# ---- systemd --user path (preferred): service(oneshot renew) + timer(boot + periodic) ----
+
+linux_systemd_write_units() {
+  interval="$(load_interval)"
+  local_bin="$HOME/.local/bin"
+  sysd_path="${PATH:-/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+  # systemd --user does not inherit the login shell PATH; kinit/klist live in /usr/bin,
+  # but still prepend ~/.local/bin to be safe.
+  case ":$sysd_path:" in (*":$local_bin:"*) ;; (*) sysd_path="$local_bin:$sysd_path";; esac
+  mkdir -p "$SYSTEMD_USER_DIR"
+  cat > "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.service" <<UNIT
+[Unit]
+Description=kinit auto-login (renew Kerberos ticket via keytab)
+
+[Service]
+Type=oneshot
+ExecStart=$SELF renew
+Environment=PATH=$sysd_path
+UNIT
+  cat > "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.timer" <<UNIT
+[Unit]
+Description=kinit auto-login timer (boot + every $((interval/3600))h)
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=${interval}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+UNIT
+}
+
+linux_systemd_install() {
+  linux_systemd_write_units
+  systemctl --user daemon-reload >/dev/null 2>&1 || true
+  # linger is the prerequisite for the systemd path's "survive logout / headless
+  # unattended" behavior: without it, the user manager exits once the last session
+  # ends and the timer stops renewing. After enable-linger we MUST verify the result
+  # is yes; otherwise we cannot claim a successful install — remove the units we just
+  # wrote and fall back to nohup (the fallback path can at least recover on next login).
+  loginctl enable-linger "$(id -un)" >/dev/null 2>&1 || true
+  linger="$(loginctl show-user "$(id -un)" -p Linger --value 2>/dev/null)"
+  if [ "$linger" != yes ]; then
+    echo "⚠️ Could not enable linger (Linger=${linger:-unknown}): a systemd --user timer will exit with the" >&2
+    echo "   user manager after a full logout, so survive-logout / headless unattended is not guaranteed." >&2
+    echo "   Cleaned up the units and fell back to nohup. Proper fix: have an admin run" >&2
+    echo "   sudo loginctl enable-linger $(id -un)  then rerun install." >&2
+    rm -f "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.timer" "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.service"
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    return 1
+  fi
+  if ! systemctl --user enable --now "$SYSTEMD_UNIT.timer" >/dev/null 2>&1; then
+    echo "systemctl --user enable failed, falling back to nohup" >&2
+    rm -f "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.timer" "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.service"
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    return 1
+  fi
+  systemctl --user start "$SYSTEMD_UNIT.service" >/dev/null 2>&1 || true  # renew once immediately
+  echo "✓ Installed systemd --user timer: $SYSTEMD_UNIT.timer (boot + every $(( $(load_interval)/3600 ))h, linger=yes survives logout)"
+  echo "  status: $(basename "$SELF") status  ·  log: journalctl --user -u $SYSTEMD_UNIT.service"
+}
+
+linux_systemd_installed() {
+  [ -f "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.timer" ]
+}
+
+linux_systemd_uninstall() {
+  systemctl --user disable --now "$SYSTEMD_UNIT.timer" >/dev/null 2>&1 || true
+  systemctl --user stop "$SYSTEMD_UNIT.service" >/dev/null 2>&1 || true
+  rm -f "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.timer" "$SYSTEMD_USER_DIR/$SYSTEMD_UNIT.service"
+  systemctl --user daemon-reload >/dev/null 2>&1 || true
+  echo "✓ Removed systemd --user timer/service"
+}
+
+# ---- nohup fallback path: resident loop + login-shell rc hook (only when systemd --user is unavailable) ----
+
+linux_nohup_install() {
+  # Login-shell rc autostart hook (so the daemon recovers after a headless SSH
+  # reconnect; not firing in a non-interactive shell is expected).
+  if [ -f "$RC_FILE" ] && grep -qF "$HOOK_BEGIN" "$RC_FILE"; then
+    echo "• autostart hook already present in $RC_FILE"
+  else
+    {
+      echo ""
+      echo "$HOOK_BEGIN"
+      echo "\"$SELF\" _start_if_needed >/dev/null 2>&1 || true"
+      echo "$HOOK_END"
+    } >>"$RC_FILE"
+    echo "• wrote autostart hook to $RC_FILE"
+  fi
+  linux_daemon_start
+}
+
+linux_nohup_uninstall() {
+  removed=1
+  if pid="$(linux_daemon_pid)"; then
+    # Only signal a pid "confirmed to be our daemon" (linux_daemon_pid already checked
+    # cmdline+starttime, avoiding killing an unrelated same-user process after PID reuse post-OOM).
+    # While the daemon is in sleep, bash defers the SIGTERM trap until sleep returns
+    # (possibly 6h later), so kill the sleep child first, then TERM; if it does not
+    # exit within 1s, SIGKILL as a backstop.
+    pkill -P "$pid" 2>/dev/null || true
+    kill "$pid" 2>/dev/null || true
+    sleep 1
+    if kill -0 "$pid" 2>/dev/null; then
+      pkill -9 -P "$pid" 2>/dev/null || true
+      kill -9 "$pid" 2>/dev/null || true
+    fi
+    removed=0
+  elif [ -f "$PID_FILE" ]; then
+    echo "• PID file is stale / an unrelated process; cleaning up only, sending no signal"
+  fi
+  rm -f "$PID_FILE"
+  if [ -f "$RC_FILE" ] && grep -qF "$HOOK_BEGIN" "$RC_FILE"; then
+    sed -i.bak "/$(printf '%s' "$HOOK_BEGIN" | sed 's/[][\/.*^$]/\\&/g')/,/$(printf '%s' "$HOOK_END" | sed 's/[][\/.*^$]/\\&/g')/d" "$RC_FILE" && rm -f "$RC_FILE.bak"
+    echo "✓ removed the autostart hook from $RC_FILE"
+    removed=0
+  fi
+  return $removed
+}
+
+# ---- public dispatch ----
+
+linux_install() {
+  principal="$(resolve_principal)" || return 1
+  keytab="$(linux_keytab_path "$principal")"
+  if [ ! -f "$keytab" ]; then
+    echo "• no keytab found, generating one first"
+    linux_gen_keytab || return 1
+  fi
+  persist_principal "$principal"  # persist so background renew can still resolve it after the cache is cleared
+  sup="$(linux_supervisor)"
+  echo "• supervisor: $sup"
+  if [ "$sup" = systemd ]; then
+    linux_systemd_install || { echo "• systemd failed, switching to nohup"; linux_nohup_install; }
+  else
+    linux_nohup_install
+  fi
+}
+
+linux_uninstall() {
+  # Idempotently clean up both supervisors (leave no residue on migration/reinstall).
+  linux_systemd_installed && linux_systemd_uninstall
+  linux_nohup_uninstall || true
+  echo "keytab kept: $(linux_keytab_path "$(resolve_principal 2>/dev/null)" 2>/dev/null)"
+}
+
+linux_status() {
+  echo "== supervisor =="
+  if linux_systemd_installed; then
+    echo "systemd --user: $SYSTEMD_UNIT.timer"
+    systemctl --user status "$SYSTEMD_UNIT.timer" --no-pager 2>/dev/null | sed -n '1,4p' || true
+    echo "  next trigger: $(systemctl --user list-timers "$SYSTEMD_UNIT.timer" --no-pager 2>/dev/null | sed -n '2p')"
+  else
+    if pid="$(linux_daemon_pid)"; then
+      echo "nohup daemon running (pid $pid)"
+    else
+      echo "not installed / not running"
+    fi
+  fi
+  echo "== klist =="
+  klist 2>&1 || echo "(no valid ticket)"
+  [ -f "$LOG_FILE" ] && { echo "== recent log =="; tail -5 "$LOG_FILE"; }
+}
+
+# ---------------------------------------------------------------------------
+# Platform dispatch
+# ---------------------------------------------------------------------------
+
+CLI_PRINCIPAL=""
+ACTION="${1:-}"; shift || true
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --principal) CLI_PRINCIPAL="${2:-}"; shift 2 ;;
+    --principal=*) CLI_PRINCIPAL="${1#*=}"; shift ;;
+    *) shift ;;
+  esac
+done
+
+OS="$(uname -s)"
+
+case "$ACTION" in
+  install)
+    case "$OS" in
+      Darwin) macos_install ;;
+      Linux)  linux_install ;;
+      *) echo "unsupported platform: $OS" >&2; exit 1 ;;
+    esac
+    ;;
+  renew)
+    case "$OS" in
+      Darwin) macos_renew ;;
+      Linux)  linux_renew ;;
+      *) echo "unsupported platform: $OS" >&2; exit 1 ;;
+    esac
+    ;;
+  uninstall)
+    case "$OS" in
+      Darwin) macos_uninstall ;;
+      Linux)  linux_uninstall ;;
+      *) echo "unsupported platform: $OS" >&2; exit 1 ;;
+    esac
+    ;;
+  status)
+    case "$OS" in
+      Darwin) macos_status ;;
+      Linux)  linux_status ;;
+      *) echo "unsupported platform: $OS" >&2; exit 1 ;;
+    esac
+    ;;
+  gen-keytab)
+    [ "$OS" = "Linux" ] || { echo "gen-keytab is Linux-only (macOS uses the keychain, no keytab needed)" >&2; exit 1; }
+    linux_gen_keytab
+    ;;
+  write-env-template) write_template ;;
+  _run)               linux_daemon_run ;;         # internal: daemon loop body
+  _start_if_needed)   linux_daemon_running || linux_daemon_start ;;  # internal: called by the login-shell rc hook
+  ""|-h|--help|help)  usage ;;
+  *) echo "unknown subcommand: $ACTION" >&2; usage; exit 1 ;;
+esac
