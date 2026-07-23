@@ -53,6 +53,9 @@ export LOCAL_PROXY_IP="${WSL2_HOST_IP:-localhost}"
 alias cb=clipboard
 alias n=nvim
 alias ttmux='TERM=xterm-256color tmux'
+# Re-sync tmux-adaptive-theme to the terminal's current light/dark background
+# (run after changing the terminal theme); needs a tty, no-ops outside tmux.
+alias tmux-theme-sync="$HOME/.local/share/tmux/plugins/tmux-adaptive-theme/detect-appearance.sh"
 alias pping='prettyping --nolegend'
 alias ports='lsof -iTCP -sTCP:LISTEN -P'
 alias upenv='nodenv update && pyenv update && rbenv update && vim +PlugUpgrade +PlugUpdate +qa'
