@@ -53,3 +53,21 @@ The human keeps `$HOME` tidy: most tool state is redirected into XDG dirs via
 - When a tool supports an env var to relocate its dir (`FOO_HOME`, `*_CACHE_DIR`,
   goenv `GOENV_GOPATH_PREFIX`, puppeteer `PUPPETEER_CACHE_DIR`, …), add the export
   to `xdg-ninja-patch.sh` rather than accepting the `$HOME`-root default.
+
+## Shell scripts — POSIX sh, not bash
+
+New shell scripts are **POSIX `sh`** (`#!/bin/sh`), not bash. They must run
+under a strict POSIX shell and in a minimal environment (e.g. a launchd/systemd
+job with no `LANG` and a bare `PATH`), so don't assume bash or a login shell.
+
+- Avoid bashisms: no `[[ … ]]`, `local`, arrays, `$'…'`, `${var:offset:len}`,
+  `<<<`, `read -d/-t/-u`, process substitution. Use `case`, `printf`, `cut`,
+  `stty`/`dd` for byte-wise reads, `expr`/`$(( ))` for arithmetic.
+- Don't name a function after a POSIX special built-in (`set`, `read`, `test`,
+  `eval`, …) — under POSIX the built-in wins and the function is never called
+  (a bash-only footgun). Name helpers `t`, `opt`, etc.
+- Validate with `sh -n script` (syntax) and mentally with `dash`/`set -u`.
+- Verified with `/bin/sh -n`; keep executables in `~/.local/bin` per above.
+
+Exceptions: vendored third-party code keeps its upstream interpreter, and a
+compiled helper (Swift/Go/…) is fine when a shell genuinely can't do the job.
