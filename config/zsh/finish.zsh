@@ -1,5 +1,9 @@
-# Launch tmux on remote session
-is_ssh && ! is_tmux && tmux
+# Launch tmux on remote session — attach to an existing session if one is
+# detached, else start a fresh one. Can't lean on OMZ tmux's autoconnect alias:
+# that plugin is Turbo-deferred (loads after the first prompt) while this snippet
+# runs synchronously, so the alias isn't defined yet and a bare `tmux` would just
+# `new-session` every login. Spell out attach-or-create so it's load-order-proof.
+is_ssh && ! is_tmux && { tmux attach || tmux new-session; }
 
 source "$config_dir/sh/profile.sh"
 
