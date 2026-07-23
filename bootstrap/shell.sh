@@ -7,12 +7,6 @@ tmux_setup()
   # sesh smart session manager (driven from tmux via `prefix + T`)
   backup_then_symlink "$config_dir/sesh" "$XDG_CONFIG_HOME/sesh"
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
-  # tmuxinator pool-config generator (writes machine-local ~/.config/tmuxinator/*.yml)
-  backup_then_symlink "$util_dir/shell/gen-tmuxinator-configs" "$bin_dir/gen-tmuxinator-configs"
-  # task/window model: agent launcher + per-repo inspection windows (see prefix+G)
-  backup_then_symlink "$util_dir/shell/mux-agent" "$bin_dir/mux-agent"
-  backup_then_symlink "$util_dir/shell/mux-inspect" "$bin_dir/mux-inspect"
-  backup_then_symlink "$util_dir/shell/mux-inspect-pick" "$bin_dir/mux-inspect-pick"
   echo 'Done.'
 
   # Install TPM + all plugins non-interactively so a fresh machine never depends
@@ -20,7 +14,8 @@ tmux_setup()
   # starts interactively, so clone it here first; bin/install_plugins then starts
   # a throwaway server that sources the config (populating @tpm_plugins) and
   # clones any missing plugins, no-opping the already-installed ones.
-  local tpm_dir="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tpm"
+  local plugins_dir="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins"
+  local tpm_dir="$plugins_dir/tpm"
   if command -v tmux > /dev/null 2>&1 && command -v git > /dev/null 2>&1; then
     printf 'Installing tmux plugins via TPM... '
     [ -d "$tpm_dir" ] || git clone --quiet --depth 1 https://github.com/tmux-plugins/tpm "$tpm_dir"
@@ -28,6 +23,20 @@ tmux_setup()
     echo 'Done.'
   else
     echo 'tmux or git missing; skipping TPM plugin install.'
+  fi
+
+  # tmux-agent-workbench (task/window model + git-worktree workspaces, see
+  # prefix+G/M-g/M-t/M-T) is its own repo (lukewang1024/tmux-agent-workbench),
+  # cloned by TPM above. Anything tmux itself spawns already gets the plugin's
+  # bin dirs on PATH via its `.tmux` entrypoints; the plugin also ships `install`
+  # (which enumerates and symlinks its own bins, so this file never tracks the
+  # command list) to cover calling e.g. `ws-new` from a shell tmux never touched.
+  # Run it from the TPM clone once that clone exists.
+  local workbench_dir="$plugins_dir/tmux-agent-workbench"
+  if [ -x "$workbench_dir/install" ]; then
+    printf 'Installing tmux-agent-workbench commands... '
+    "$workbench_dir/install" "$bin_dir"
+    echo 'Done.'
   fi
 }
 

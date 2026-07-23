@@ -12,10 +12,12 @@
 #
 # Model: a session is a TASK, seeded with one repo. Two kinds of window:
 #   +----------------------+     +----------------------+
-#   |                      |     |  git (tig)           |   <- <repo> window:
+#   |                      |     |  git (tig/lazygit)   |   <- <repo> window:
 #   |   agent  (mux-agent) |     +----------------------+      that repo's
-#   |   = the driver,      |     |  shell               |      inspection surface
-#   |     full window      |     +----------------------+
+#   |   = the driver,      |     |  shell (scratchpad)  |      inspection surface,
+#   |     full window      |     +----------------------+      even-vertical
+#   |                      |     |  editor (nvim/vim)   |
+#   |                      |     +----------------------+
 #   |                      |     |  [dev]               |   <- frontends only
 #   +----------------------+     +----------------------+
 #     ^ startup lands here          ^ one per repo in the task
@@ -42,10 +44,12 @@ windows:
   - agent:                    # the session-level coding agent — where you steer
       - mux-agent
   - REPLACE-ME:               # seed repo's inspection window (name it after the repo)
-      layout: main-horizontal
+      layout: even-vertical
       panes:
-        - git:                # tig on top, full width
+        - git:                # tig by default; MUX_GIT_TOOL=lazygit to swap it
             - tig
-        - shell:              # bare prompt — scratch / commands / `nvim <file>`
+        - shell:              # empty scratchpad — lands here, not in git/editor
+        - editor:             # $VISUAL/$EDITOR, else nvim falling back to vim
+            - vim
         - dev:                # dev server — delete this whole pane for backends
             -                 # e.g. add "pnpm --filter portal dev" to auto-run
