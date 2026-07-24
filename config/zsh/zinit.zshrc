@@ -141,8 +141,14 @@ else # *nix
   fi
 fi
 
-zinit snippet "$config_dir/zsh/rc.zsh"
+# Local, hand-edited config: `source` directly rather than via `zinit snippet`.
+# zinit caches AND zcompiles a snippet on first load and never re-reads a local
+# file afterward, so edits here silently keep running the stale cached copy until
+# the cache is busted (this bit us: a finish.zsh rewrite never took effect). These
+# load synchronously (no Turbo) so zinit buys nothing — plain `source` always
+# reads the live file. Matches the `source` calls at the top of this file.
+source "$config_dir/zsh/rc.zsh"
 
-[ -f "$XDG_CONFIG_HOME/.zshrc.local" ] && zinit snippet "$XDG_CONFIG_HOME/.zshrc.local"
+[ -f "$XDG_CONFIG_HOME/.zshrc.local" ] && source "$XDG_CONFIG_HOME/.zshrc.local"
 
-zinit snippet "$config_dir/zsh/finish.zsh"
+source "$config_dir/zsh/finish.zsh"
