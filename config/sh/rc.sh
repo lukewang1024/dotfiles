@@ -35,6 +35,25 @@ if is_linux; then
 elif is_macos; then
   [ -d /opt/homebrew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
+
+# `brew shellenv` ends with `export FPATH`, which marks zsh's tied fpath EXPORTED.
+# That leaks a *version-specific* fpath into child zsh processes — and the login
+# shell here is the system zsh (5.7.1) while interactive shells are Homebrew zsh
+# (5.9.2). The 5.9.2 shell inherits 5.7.1's completion dirs and never adds its own,
+# so its `comparguments` builtin runs against 5.7.1 `_arguments`/`_cat` functions
+# and completion dies with "_arguments:comparguments:NNN: not enough arguments"
+# (e.g. on `cat <Tab>`). Repair: put THIS zsh's own version-matched function dir
+# first so completion functions match the running binary, then drop the export
+# flag so fpath stops leaking across zsh versions. The Cellar-path guard fires only
+# when Homebrew ships a zsh of exactly the running version, so a system zsh run
+# interactively keeps its own (already-correct) fpath untouched.
+if [ -n "$ZSH_VERSION" ]; then
+  if [ -n "$HOMEBREW_PREFIX" ] && [ -d "$HOMEBREW_PREFIX/Cellar/zsh/$ZSH_VERSION/share/zsh/functions" ]; then
+    fpath=( "$HOMEBREW_PREFIX/Cellar/zsh/$ZSH_VERSION/share/zsh/functions" $fpath )
+  fi
+  typeset +x FPATH  # keep fpath process-local; never re-export it to children
+fi
+
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 # Prepend goenv shims to PATH instead of appending
