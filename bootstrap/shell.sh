@@ -3,7 +3,16 @@ tmux_setup()
   blank_lines
   printf 'Symlinking tmux config files... '
   backup_then_symlink "$config_dir/tmux" "$XDG_CONFIG_HOME/tmux"
-  backup_then_symlink "$config_dir/tmux/tmux.conf" "$HOME/.tmux.conf" # hardcoded usage exists somewhere, so keep it
+  # Do NOT also symlink ~/.tmux.conf. tmux 3.2+ sources EVERY existing default
+  # config path, so having both ~/.tmux.conf and ~/.config/tmux/tmux.conf point
+  # here loads the whole config twice — running tpm/continuum and every
+  # `set-hook -ga` (append) twice. That double-fired tmux-resurrect restores,
+  # which re-typed `--resume` commands into already-running agent TUIs. The XDG
+  # symlink above is the single source of truth; OMZ's ZSH_TMUX_CONFIG falls back
+  # to it on its own. Clean up a stale duplicate left by older setups.
+  case "$(readlink "$HOME/.tmux.conf" 2> /dev/null)" in
+    */.dotfiles/config/tmux/tmux.conf) rm -f "$HOME/.tmux.conf" ;;
+  esac
   # sesh smart session manager (driven from tmux via `prefix + T`)
   backup_then_symlink "$config_dir/sesh" "$XDG_CONFIG_HOME/sesh"
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
