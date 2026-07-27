@@ -337,9 +337,31 @@ set_macos_configs()
   backup_then_symlink "$util_dir/macos/setup-launchagent" "$bin_dir/setup-launchagent"
   backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
 
+  setup_peon_relay_agent
+
   brew_multi_user_permission
   fix_battery_drain_over_sleep
   better_macos_defaults # This needs to be the last one, as Terminal will be killed when finish.
+}
+
+setup_peon_relay_agent()
+{
+  # peon-ping's audio relay (`peon relay`) is a local HTTP server that plays
+  # sounds on this Mac so SSH / remote / container Claude sessions can ring it.
+  # Run it as a KeepAlive LaunchAgent — starts at login, restarts if it dies —
+  # instead of a hand-started `peon relay --daemon`. peon-ping lives outside this
+  # repo (~/.claude/hooks/peon-ping), so this no-ops when it isn't installed.
+  local peon="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/peon-ping/peon.sh"
+  if [ ! -f "$peon" ]; then
+    echo 'peon-ping not installed; skipping relay LaunchAgent.'
+    return 0
+  fi
+  # A launchd (foreground) relay and a manual `--daemon` both bind port 19998,
+  # so retire any hand-started daemon first (no-op if none is running).
+  bash "$peon" relay --stop >/dev/null 2>&1 || true
+  "$util_dir/macos/setup-launchagent" --label com.lukew.peon-relay \
+                    --command "/bin/bash $peon relay" \
+                    --keepalive
 }
 
 brew_multi_user_permission()
