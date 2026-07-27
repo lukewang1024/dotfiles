@@ -175,6 +175,13 @@ util_setup()
   backup_then_symlink "$util_dir/agent/agent-sidebar-binary-install" "$bin_dir/agent-sidebar-binary-install"
   backup_then_symlink "$util_dir/agent/claude-settings-apply" "$bin_dir/claude-settings-apply"
   backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
+  # Alacritty light/dark theme swap — driven on macOS appearance changes by
+  # config/tmux/appearance-{light,dark}.conf; `auto` seeds theme-active.toml.
+  backup_then_symlink "$util_dir/shell/alacritty-appearance" "$bin_dir/alacritty-appearance"
+  # Login-scoped light/dark watcher (macOS): keeps nvim + Alacritty on the OS
+  # appearance even with no tmux running. Install per-machine (non-interactive):
+  #   appearance-daemon install
+  backup_then_symlink "$util_dir/shell/appearance-daemon" "$bin_dir/appearance-daemon"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   # Kerberos ticket auto-renew (macOS keychain / Linux keytab). Install per-machine
@@ -187,6 +194,9 @@ util_setup()
   "$util_dir/agent/claude-settings-apply" >/dev/null 2>&1 || true
   "$util_dir/agent/agent-sidebar-binary-install" >/dev/null 2>&1 || true
   "$util_dir/agent/agent-sidebar-hooks-install" >/dev/null 2>&1 || true
+  # Seed Alacritty's theme-active.toml (gitignored) from the current macOS
+  # appearance so a fresh checkout has a theme before the first light/dark switch.
+  is_macos && "$util_dir/shell/alacritty-appearance" auto >/dev/null 2>&1 || true
   echo 'Done.'
 }
 
