@@ -16,6 +16,8 @@ tmux_setup()
   # sesh smart session manager (driven from tmux via `prefix + T`)
   backup_then_symlink "$config_dir/sesh" "$XDG_CONFIG_HOME/sesh"
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
+  # tmux-autoreload launcher (deps-satisfied wrapper, sourced from tmux.conf)
+  backup_then_symlink "$util_dir/shell/tmux-autoreload-launch" "$bin_dir/tmux-autoreload-launch"
   echo 'Done.'
 
   # Install TPM + all plugins non-interactively so a fresh machine never depends

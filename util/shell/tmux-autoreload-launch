@@ -1,0 +1,25 @@
+#!/bin/sh
+# tmux-autoreload-launch - start b0o/tmux-autoreload with its deps satisfied.
+# https://github.com/b0o/tmux-autoreload
+#
+# The plugin watches the tmux config and reloads it on save, but ships two
+# GNU/bash assumptions that break its own tpm auto-launch on a stock macOS:
+#   - it calls GNU `realpath -e`, which BSD realpath lacks. We keep Homebrew
+#     coreutils g-prefixed (grealpath) rather than shadowing BSD tools on PATH,
+#     so scope its gnubin onto PATH for just this process instead of globally.
+#   - it needs bash >= 4.4 (declare -g / inherit_errexit); macOS ships 3.2, so
+#     `brew install bash` must have put a modern bash ahead of /bin on PATH.
+# On Linux realpath is already GNU and bash is modern, so the gnubin dirs below
+# simply don't exist and PATH is left untouched. The plugin is a singleton, so
+# running this when tpm already started it (the Linux case) is a harmless no-op.
+
+plugin="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tmux-autoreload/tmux-autoreload.tmux"
+[ -x "$plugin" ] || exit 0
+
+for d in /opt/homebrew/opt/coreutils/libexec/gnubin \
+         /usr/local/opt/coreutils/libexec/gnubin; do
+  [ -d "$d" ] && PATH="$d:$PATH"
+done
+export PATH
+
+exec "$plugin"
