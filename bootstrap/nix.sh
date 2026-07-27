@@ -20,6 +20,9 @@ install_nix_brew_runtimes()
 install_nix_brew_core_packages()
 {
   brew tap beeftornado/rmtree
+  # rmtree ships a `brew` command, not a formula/cask, so fully-qualified-install
+  # auto-trust doesn't apply — trust the whole tap so its command may load.
+  brew trust beeftornado/rmtree 2>/dev/null || true
 
   local pkgs=(
     btop                              # Resource monitor. C++ version and continuation of bashtop and bpytop
@@ -69,20 +72,10 @@ install_nix_brew_core_packages()
 
 install_nix_brew_extra_packages()
 {
-  brew tap abhimanyu003/sttr     # sttr
-  brew tap abhinav/tap           # tmux-fastcopy
-  brew tap anhoder/go-musicfox   # go-musicfox & spotifox
-  brew tap arimxyer/tap          # models
-  brew tap bifrost-proxy/bifrost # bifrost
-  brew tap clangen/musikcube     # musikcube
-  brew tap egoist/tap            # dum
-  brew tap gromgit/brewtils      # taproom
-  brew tap jesseduffield/lazynpm # lazynpm
-  brew tap jstkdng/programs      # ueberzugpp
-  brew tap textualize/homebrew   # frogmouth
-  brew tap wader/tap             # fq
-  brew tap xwmx/taps             # nb
-
+  # Third-party formulae are listed fully-qualified (tap/name) in the pkgs array
+  # below: `brew install user/repo/formula` auto-taps the repo AND records durable
+  # trust in trust.json before resolving, so no explicit `brew tap` is needed and
+  # newer Homebrew's third-party-tap trust gate never blocks a headless bootstrap.
   local pkgs=(
     ansifilter                        # Strip or convert ANSI codes into HTML, (La)Tex, RTF, or BBCode
     aria2                             # Download with resuming and segmented downloading
@@ -92,7 +85,7 @@ install_nix_brew_extra_packages()
     bash                              # Bourne-Again SHell, a UNIX command interpreter
     bash-completion                   # Programmable completion for Bash 3.2
     bat                               # Clone of cat(1) with syntax highlighting and Git integration
-    bifrost                           # High-performance HTTP/HTTPS/SOCKS5 proxy server written in Rust
+    bifrost-proxy/bifrost/bifrost     # High-performance HTTP/HTTPS/SOCKS5 proxy server written in Rust
     binutils                          # GNU binary tools for native development
     broot                             # New way to see and navigate directory trees
     c2048                             # Console version of 2048
@@ -113,7 +106,7 @@ install_nix_brew_extra_packages()
     dive                              # Tool for exploring each layer in a docker image
     doggo                             # Command-line DNS Client for Humans
     duf                               # Disk Usage/Free Utility - a better 'df' alternative
-    dum                               # Npm scripts runner written in Rust
+    egoist/tap/dum                    # Npm scripts runner written in Rust
     ed                                # Classic UNIX line editor
     emscripten                        # LLVM bytecode to JavaScript compiler
     exiftool                          # Perl lib for reading and writing EXIF metadata
@@ -125,8 +118,8 @@ install_nix_brew_extra_packages()
     file-formula                      # Utility to determine file types
     fish                              # User-friendly command-line shell for UNIX-like operating systems
     fpp                               # CLI program that accepts piped input and presents files for selection
-    fq                                # Brokered message queue optimized for performance
-    frogmouth                         # Terminal browser for markdown documents
+    wader/tap/fq                      # Brokered message queue optimized for performance
+    textualize/homebrew/frogmouth     # Terminal browser for markdown documents
     fswatch                           # Monitor a directory for changes and run a shell command
     gawk                              # GNU awk utility
     gdu                               # Disk usage analyzer with console interface written in Go
@@ -149,7 +142,7 @@ install_nix_brew_extra_packages()
     gnu-tar                           # GNU version of the tar archiving utility
     gnu-which                         # GNU implementation of which utility
     gnutls                            # GNU Transport Layer Security (TLS) Library
-    go-musicfox                       # Music player in terminal (special tap)
+    anhoder/go-musicfox/go-musicfox   # Music player in terminal (special tap)
     gping                             # Ping, but with a graph
     graphviz                          # Graph visualization software from AT&T and Bell Labs
     grep                              # GNU grep, egrep and fgrep
@@ -170,7 +163,7 @@ install_nix_brew_extra_packages()
     jless                             # Command-line pager for JSON data
     jpegoptim                         # Utility to optimize JPEG files
     kubernetes-cli                    # Kubernetes command-line interface
-    lazynpm                           # NPM scripts runner (special tap)
+    jesseduffield/lazynpm/lazynpm     # NPM scripts runner (special tap)
     llmfit                            # Find what models run on your hardware
     lolcat                            # Rainbows and unicorns in your console!
     mailsy                            # Quickly generate a temporary email address
@@ -180,17 +173,17 @@ install_nix_brew_extra_packages()
     midnight-commander                # Terminal-based visual file manager
     minikube                          # Run a Kubernetes cluster locally
     mkcert                            # Simple tool to make locally trusted development certificates
-    models                            # Fast CLI and TUI for browsing AI model information from models.dev
+    arimxyer/tap/models               # Fast CLI and TUI for browsing AI model information from models.dev
     mosh                              # Remote terminal application
     mpc                               # Command-line music player client for mpd
     mpd                               # Music Player Daemon
     mps-youtube                       # Terminal based YouTube player and downloader
     mpv                               # Media player based on MPlayer and mplayer2
     multitail                         # Tail multiple files in one terminal simultaneously
-    musikcube                         # Terminal-based audio engine, library, player and server
+    clangen/musikcube/musikcube       # Terminal-based audio engine, library, player and server
     mutt                              # Mongrel of mail user agents (part elm, pine, mush, mh, etc.)
     mycli                             # CLI for MySQL with auto-completion and syntax highlighting
-    nb                                # Command-line and local web note-taking, bookmarking, and archiving
+    xwmx/taps/nb                      # Command-line and local web note-taking, bookmarking, and archiving
     ncdu                              # NCurses Disk Usage
     ncmpcpp                           # Ncurses-based client for the Music Player Daemon
     neofetch                          # Fast, highly customisable system info script
@@ -231,21 +224,21 @@ install_nix_brew_extra_packages()
     sniffnet                          # Cross-platform application to monitor your network traffic
     spark                             # Sparklines for the shell
     speedtest-cli                     # Command-line interface for https://speedtest.net bandwidth tests
-    spotifox                          # Spotify player (special tap)
+    anhoder/go-musicfox/spotifox      # Spotify player (special tap)
     starship                          # Cross-shell prompt for astronauts
-    sttr                              # CLI to perform various operations on string
-    taproom                           # Interactive TUI for Homebrew
+    abhimanyu003/sttr/sttr            # CLI to perform various operations on string
+    gromgit/brewtils/taproom          # Interactive TUI for Homebrew
     tesseract                         # OCR (Optical Character Recognition) engine
     tesseract-lang                    # Enables extra languages support for Tesseract
     testdisk                          # Powerful free data recovery utility
     thefuck                           # Programmatically correct mistyped console commands
     tmate                             # Instant terminal sharing
-    tmux-fastcopy                     # easymotion-style text copying for tmux.
+    abhinav/tap/tmux-fastcopy         # easymotion-style text copying for tmux.
     tmuxinator                        # Manage complex tmux sessions easily
     toolong                           # Terminal log viewer (special tap)
     translate-shell                   # Command-line translator using Google Translate and more
     tree                              # Display directories as trees (with optional color/HTML output)
-    ueberzugpp                        # Command line tool for displaying images (special tap)
+    jstkdng/programs/ueberzugpp       # Command line tool for displaying images (special tap)
     unzip                             # Extraction utility for .zip compressed archives
     w3m                               # Pager/text based browser
     watch                             # Executes a program periodically, showing output fullscreen
