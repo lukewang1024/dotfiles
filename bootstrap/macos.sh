@@ -83,14 +83,10 @@ prepare_macos_env_cli_extra()
 {
   install_nix_brew_extra_packages
 
-  brew tap LizardByte/homebrew                    # sunshine
-  brew tap cormacrelf/tap                         # dark-notify
-  brew trust cormacrelf/tap 2>/dev/null || true   # newer brew gates 3rd-party taps
-
   local pkgs=(
     brightness                                    # Change macOS display brightness from the command-line
     csshx                                         # Cluster ssh tool for Terminal.app
-    dark-notify                                   # Watcher for macOS 10.14+ light/dark mode changes
+    cormacrelf/tap/dark-notify                    # Watcher for macOS 10.14+ light/dark mode changes
     duti                                          # Select default apps for documents and URL schemes on macOS
     fortune                                       # Infamous electronic fortune-cookie generator
     m-cli                                         # Swiss Army Knife for macOS
@@ -98,7 +94,7 @@ prepare_macos_env_cli_extra()
     powershell                                    # Command-line shell and scripting language
     reattach-to-user-namespace                    # Reattach process (e.g., tmux) to background
     scrcpy                                        # Display and control your Android device
-    sunshine                                      # Self-hosted game stream host for Moonlight
+    LizardByte/homebrew/sunshine                  # Self-hosted game stream host for Moonlight
     terminal-notifier                             # Send macOS User Notifications from the command-line
   )
   brew install `join ' ' "${pkgs[@]}"`
@@ -194,13 +190,9 @@ prepare_macos_env_gui_extra()
 
   # Cask packages
 
-  brew tap lukewang1024/homebrew-legacy
-  brew tap darrylmorley/whatcable                 # whatcable
-  brew tap lihaoyun6/tap                          # airbattery, quickrecorder
-
   local casks=(
     aerial                                        # Apple TV Aerial screensaver
-    airbattery                                    # Battery monitoring utility (cask unavailable)
+    lihaoyun6/tap/airbattery                      # Battery monitoring utility (cask unavailable)
     alt-tab                                       # Enable Windows-like alt-tab
     androidtool                                   # App for recording the screen and installing apps in iOS and Android
     background-music                              # Audio utility
@@ -258,7 +250,7 @@ prepare_macos_env_gui_extra()
     mongodb-compass                               # Interactive tool for analyzing MongoDB data
     monitorcontrol                                # Tool to control external monitor brightness & volume
     moonlight                                     # GameStream client
-    mweb2                                         # Markdown writing and note taking
+    lukewang1024/legacy/mweb2                     # Markdown writing and note taking
     netnewswire                                   # Free and open-source RSS reader
     netspot                                       # WiFi site survey software and WiFi scanner
     nightfall                                     # Menu bar utility for toggling dark mode
@@ -280,7 +272,7 @@ prepare_macos_env_gui_extra()
     qqmusic                                       # Chinese music streaming application
     quicklook-csv                                 # Quick Look plugin for CSV files
     quicklookase                                  # Quick Look generator for Adobe Swatch Exchange files
-    quickrecorder                                 # Screen recording app (cask unavailable)
+    lihaoyun6/tap/quickrecorder                   # Screen recording app (cask unavailable)
     qutebrowser                                   # Keyboard-driven, vim-like browser based on PyQt5
     rapidapi                                      # HTTP client that helps testing and describing APIs
     raycast                                       # Control your tools with a few keystrokes
@@ -311,7 +303,7 @@ prepare_macos_env_gui_extra()
     vnc-viewer                                    # Remote desktop application focusing on security
     webpquicklook                                 # Quick Look plugin for webp files
     wechat                                        # Free messaging and calling application
-    whatcable                                     # Menu bar app for USB-C cable diagnostics
+    darrylmorley/whatcable/whatcable              # Menu bar app for USB-C cable diagnostics
     whatsapp                                      # Native desktop client for WhatsApp
     windows-app                                   # Connect to Windows
     wireshark                                     # Network protocol analyzer
