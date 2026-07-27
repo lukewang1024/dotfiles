@@ -28,6 +28,7 @@ install_nix_brew_core_packages()
     docker-buildx                     # Docker CLI plugin for extended build capabilities with BuildKit
     docker-compose                    # Isolated development environments using Docker
     docker-credential-helper          # Platform keystore credential helper for Docker
+    entr                              # Run arbitrary commands when files change
     fd                                # Simple, fast and user-friendly alternative to find
     findutils                         # Collection of GNU find, xargs, and locate
     fx                                # Terminal JSON viewer
@@ -69,16 +70,18 @@ install_nix_brew_core_packages()
 install_nix_brew_extra_packages()
 {
   brew tap abhimanyu003/sttr     # sttr
+  brew tap abhinav/tap           # tmux-fastcopy
   brew tap anhoder/go-musicfox   # go-musicfox & spotifox
   brew tap arimxyer/tap          # models
+  brew tap bifrost-proxy/bifrost # bifrost
   brew tap clangen/musikcube     # musikcube
   brew tap egoist/tap            # dum
   brew tap gromgit/brewtils      # taproom
   brew tap jesseduffield/lazynpm # lazynpm
+  brew tap jstkdng/programs      # ueberzugpp
   brew tap textualize/homebrew   # frogmouth
   brew tap wader/tap             # fq
   brew tap xwmx/taps             # nb
-  brew tap jstkdng/programs      # ueberzugpp
 
   local pkgs=(
     ansifilter                        # Strip or convert ANSI codes into HTML, (La)Tex, RTF, or BBCode
@@ -89,6 +92,7 @@ install_nix_brew_extra_packages()
     bash                              # Bourne-Again SHell, a UNIX command interpreter
     bash-completion                   # Programmable completion for Bash 3.2
     bat                               # Clone of cat(1) with syntax highlighting and Git integration
+    bifrost                           # High-performance HTTP/HTTPS/SOCKS5 proxy server written in Rust
     binutils                          # GNU binary tools for native development
     broot                             # New way to see and navigate directory trees
     c2048                             # Console version of 2048
@@ -236,6 +240,7 @@ install_nix_brew_extra_packages()
     testdisk                          # Powerful free data recovery utility
     thefuck                           # Programmatically correct mistyped console commands
     tmate                             # Instant terminal sharing
+    tmux-fastcopy                     # easymotion-style text copying for tmux.
     tmuxinator                        # Manage complex tmux sessions easily
     toolong                           # Terminal log viewer (special tap)
     translate-shell                   # Command-line translator using Google Translate and more
