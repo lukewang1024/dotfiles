@@ -1,5 +1,5 @@
 [general]
-import = ["~/.config/alacritty/theme.toml", "~/.config/alacritty/local.toml"]
+import = ["~/.config/alacritty/theme-active.toml", "~/.config/alacritty/local.toml"]
 
 [[keyboard.bindings]]
 chars = "\u001B0"
@@ -187,3 +187,8 @@ size=14
 [window.padding]
 x = 2
 y = 2
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

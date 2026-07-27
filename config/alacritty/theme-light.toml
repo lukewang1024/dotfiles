@@ -1,0 +1,30 @@
+# One Light — palette from rakr/vim-one (light), so Alacritty matches the editor
+# in light mode. Selected at runtime by `alacritty-appearance light`, which
+# copies this to theme-active.toml (the file alacritty.toml imports). See README.
+#
+# normal.* = vim-one light hues (hue_1..6); bright.* = the deeper red/orange
+# variants (hue_5_2 / hue_6_2); greys from mono_1..3.
+
+[colors.primary]
+background = "0xfafafa"
+foreground = "0x494b53"
+
+[colors.normal]
+black   = "0x494b53"
+red     = "0xe45649"
+green   = "0x50a14f"
+yellow  = "0x986801"
+blue    = "0x4078f2"
+magenta = "0xa626a4"
+cyan    = "0x0184bc"
+white   = "0xa0a1a7"
+
+[colors.bright]
+black   = "0x696c77"
+red     = "0xca1243"
+green   = "0x50a14f"
+yellow  = "0xc18401"
+blue    = "0x4078f2"
+magenta = "0xa626a4"
+cyan    = "0x0184bc"
+white   = "0xffffff"

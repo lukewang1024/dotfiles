@@ -1,0 +1,46 @@
+#!/bin/sh
+# alacritty-appearance light|dark|auto — point Alacritty at the light or dark One
+# theme so it tracks the system appearance. Alacritty has no native OS-theme
+# following, so we swap the imported theme file and let its live_config_reload
+# pick it up: this writes $cfg/theme-active.toml (imported by alacritty.toml)
+# from the tracked theme-{light,dark}.toml.
+#
+# Wiring: config/tmux/appearance-{light,dark}.conf call this on every macOS
+# light/dark switch (sourced by tmux-dark-notify's dark-notify), so Alacritty
+# rides the same OS signal that already drives tmux + nvim. `auto` (used at
+# install / first run, and on tmux start) reads the current macOS appearance.
+#
+# Note: the push signal only fires while a tmux server is running (dark-notify
+# lives inside tmux-dark-notify). That covers the normal workflow; run
+# `alacritty-appearance auto` by hand otherwise.
+#
+# POSIX sh — may run from dark-notify's minimal environment.
+set -u
+
+cfg="${XDG_CONFIG_HOME:-$HOME/.config}/alacritty"
+
+want="${1:-auto}"
+if [ "$want" = auto ]; then
+   # AppleInterfaceStyle reads "Dark" in dark mode and is absent in light mode.
+   if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -qi dark; then
+      want=dark
+   else
+      want=light
+   fi
+fi
+
+case "$want" in
+   light | dark) ;;
+   *) printf 'usage: %s light|dark|auto\n' "${0##*/}" >&2; exit 2 ;;
+esac
+
+src="$cfg/theme-$want.toml"
+dst="$cfg/theme-active.toml"
+[ -f "$src" ] || { printf 'alacritty-appearance: missing %s\n' "$src" >&2; exit 1; }
+
+# Skip a redundant rewrite so we don't trigger a needless live reload.
+[ -f "$dst" ] && cmp -s "$src" "$dst" && exit 0
+
+# Atomic replace so Alacritty never reads a half-written file.
+tmp="$dst.$$"
+cat "$src" > "$tmp" && mv "$tmp" "$dst"

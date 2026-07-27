@@ -7,7 +7,7 @@ call plug#begin(s:data_home . '/vim/plugged')
 Plug 'airblade/vim-gitgutter', { 'branch': 'main' }
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'editorconfig/editorconfig-vim'
-Plug 'joshdick/onedark.vim', { 'branch': 'main' }
+Plug 'rakr/vim-one'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim', { 'for': 'markdown' }
@@ -51,8 +51,71 @@ call plug#end()
 " be iMproved, enter the current millenium
 set nocompatible
 
-" one-dark for the win
-colorscheme onedark
+" use Comma as Leader key — MUST precede any <Leader> mapping, since <Leader>
+" is expanded to mapleader's value at map-definition time (a later assignment
+" would leave earlier maps bound to the default '\').
+let mapleader = ","
+
+" true color for vim-one (falls back gracefully if unsupported)
+if (has('termguicolors'))
+  set termguicolors
+endif
+
+" The terminal's current light/dark theme is published to a per-host state file
+" by tmux-adaptive-theme whenever the terminal reports a change (tmux's native
+" mode-2031 hooks) — see config/vim/lua/appearance.lua for the why. Read it as
+" the source of truth for &background; fall back to dark only if absent/invalid.
+function! s:AppearanceValue() abort
+  let l:base = empty($XDG_STATE_HOME) ? $HOME . '/.local/state' : $XDG_STATE_HOME
+  let l:file = l:base . '/appearance'
+  if filereadable(l:file)
+    let l:v = trim(get(readfile(l:file), 0, ''))
+    if l:v ==# 'light' || l:v ==# 'dark'
+      return l:v
+    endif
+  endif
+  return 'dark'
+endfunction
+
+" vim-one for the win — initial &background follows the terminal, not hardcoded,
+" so a light terminal loads light directly (no dark->light flash).
+let &background = s:AppearanceValue()
+colorscheme one
+
+" Apply a background value everywhere it needs to land: set &background, force
+" the colorscheme to regenerate its highlights (setting &background alone isn't
+" enough for every scheme), and rebuild vim-airline — airline caches a palette
+" derived from the scheme's highlight groups, and segments like the tabline can
+" otherwise trail the buffer. Mirrors config/vim/lua/appearance.lua for nvim.
+function! s:ApplyBackground(want) abort
+  if a:want !=# 'light' && a:want !=# 'dark' | return | endif
+  let &background = a:want
+  if exists('g:colors_name') && !empty(g:colors_name)
+    execute 'colorscheme' g:colors_name
+  endif
+  if exists(':AirlineRefresh') == 2
+    silent! AirlineRefresh
+  endif
+endfunction
+
+" Keep &background in sync as the terminal theme changes at runtime.
+if has('nvim')
+  " nvim: libuv fs watch -> live, no focus/tty needed, works inside tmux & SSH.
+  lua require('appearance').setup()
+else
+  " plain vim: no fs watch, so best-effort — re-read on refocus.
+  function! s:ReadAppearance() abort
+    let l:v = s:AppearanceValue()
+    if &background !=# l:v
+      call s:ApplyBackground(l:v)
+    endif
+  endfunction
+  autocmd FocusGained * call s:ReadAppearance()
+endif
+
+" <Leader>B - toggle dark/light background (manual override; the FocusGained /
+" fs-watch auto-sync will reset it to the terminal's theme on next change).
+nnoremap <silent> <Leader>B :call <SID>ApplyBackground(&background ==# 'dark' ? 'light' : 'dark')<CR>
 
 " show line numbers in vim
 set number
@@ -83,9 +146,6 @@ set secure
 
 " enable mouse support
 set mouse=a
-
-" use Comma as Leader key
-let mapleader = ","
 
 " <F11> - toggle paste option
 if !has('nvim')
@@ -350,10 +410,11 @@ command! -nargs=? Fold :call     CocAction('fold', <f-args>)
 " Add `:OR` command for organize imports of the current buffer
 command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.organizeImport')
 
-" Add (Neo)Vim's native statusline support
-" NOTE: Please see `:h coc-status` for integrations with external plugins that
-" provide custom statusline: lightline.vim, vim-airline
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+" Native statusline support is intentionally NOT set here: we use vim-airline,
+" which surfaces coc#status() via its own integration (see `:h coc-status`).
+" Prepending with `set statusline^=` would also break on re-source — airline's
+" statusline is `%!airline#statusline(...)`, and `%!` is only legal at column 0,
+" so prepending in front of it raises E539.
 
 " Mappings for CoCList
 " Show all diagnostics
@@ -489,7 +550,7 @@ let g:UltiSnipsEditSplit="vertical"
 " vim-airline "
 """""""""""""""
 
-let g:airline_theme='onedark'
+let g:airline_theme='one'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#formatter = 'unique_tail_improved'

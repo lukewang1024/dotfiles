@@ -84,10 +84,13 @@ prepare_macos_env_cli_extra()
   install_nix_brew_extra_packages
 
   brew tap LizardByte/homebrew                    # sunshine
+  brew tap cormacrelf/tap                         # dark-notify
+  brew trust cormacrelf/tap 2>/dev/null || true   # newer brew gates 3rd-party taps
 
   local pkgs=(
     brightness                                    # Change macOS display brightness from the command-line
     csshx                                         # Cluster ssh tool for Terminal.app
+    dark-notify                                   # Watcher for macOS 10.14+ light/dark mode changes
     duti                                          # Select default apps for documents and URL schemes on macOS
     fortune                                       # Infamous electronic fortune-cookie generator
     m-cli                                         # Swiss Army Knife for macOS

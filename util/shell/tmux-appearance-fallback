@@ -1,0 +1,32 @@
+#!/bin/sh
+# tmux-appearance-fallback light|dark — OS-appearance fallback that drives
+# tmux-adaptive-theme for terminals WITHOUT native theme reporting (DEC mode
+# 2031), e.g. Apple Terminal.app and older clients.
+#
+# Wiring: tmux-dark-notify runs `dark-notify -c tmux-theme-mode.sh`, which
+# source-file's the conf pointed at by @dark-notify-theme-path-{light,dark};
+# those confs (config/tmux/appearance-{light,dark}.conf) run-shell this script
+# with the new mode on every macOS light/dark switch.
+#
+# Why the guard: dark-notify is OS-truth, but the native client-*-theme hooks are
+# terminal-truth (they follow the terminal's ACTUAL theme, which may be pinned
+# against the OS — this repo pins kitty to One Dark). If any attached client
+# reports a native theme, that path is authoritative and we do nothing, so a
+# 2031-capable terminal is never double-driven / flip-flopped by the OS signal.
+# Only when no client reports a theme (all non-2031) do we apply the OS mode.
+#
+# POSIX sh — dark-notify's callback runs in a minimal environment.
+set -u
+case "${1:-}" in
+   light|dark) want=$1 ;;
+   *) printf 'usage: %s light|dark\n' "$0" >&2; exit 2 ;;
+esac
+command -v tmux >/dev/null 2>&1 || exit 0
+tmux has-session >/dev/null 2>&1 || exit 0
+
+# Defer to native mode-2031 reporting when present.
+if [ -n "$(tmux list-clients -F '#{client_theme}' 2>/dev/null | tr -d '[:space:]')" ]; then
+   exit 0
+fi
+
+exec "$HOME/.local/share/tmux/plugins/tmux-adaptive-theme/set-appearance.sh" "$want"

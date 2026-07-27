@@ -1,0 +1,87 @@
+#!/bin/sh
+# theme-sync — force EVERY running tmux server and nvim instance onto the
+# terminal's CURRENT light/dark theme, right now, from one source of truth: the
+# terminal's actual background read via an OSC 11 query.
+#
+# The push-based paths keep things in sync automatically where they work — tmux's
+# native mode-2031 hooks, and the appearance state file that nvim watches. But
+# not every terminal reports mode 2031 (Apple Terminal.app, Alacritty, some
+# iTerm2 builds all answer the `#{client_theme}` query with nothing), and an
+# editor started before the watcher existed isn't listening. This is the manual
+# reconcile-everything hammer: run it from an interactive terminal after changing
+# your terminal (or OS) theme and every tmux + nvim you have open snaps to match.
+#
+# It fans out to, in order:
+#   1. the shared state file  -> every nvim with the fs watcher reacts live, and
+#      plain vim on its next FocusGained
+#   2. every running tmux server (all sockets) -> @adaptive_appearance + repaint
+#   3. every LIVE nvim socket directly (remote-expr, no keystrokes injected) ->
+#      covers instances that predate the watcher
+#
+# Needs a controlling tty for the OSC query; works with or without $TMUX. POSIX sh.
+set -u
+
+[ -t 1 ] || { echo "theme-sync: needs an interactive terminal (a tty)." >&2; exit 1; }
+
+# --- 1. detect appearance from the terminal's real background (OSC 11) --------
+old_stty=$(stty -g 2>/dev/null) || { echo "theme-sync: no tty." >&2; exit 1; }
+stty raw -echo min 0 time 2 2>/dev/null            # ~0.2s ceiling for the reply
+printf '\033]11;?\007' > /dev/tty                  # BEL-terminated query
+resp=$(head -c 48 < /dev/tty 2>/dev/null)
+stty "$old_stty" 2>/dev/null
+
+case "$resp" in
+   *rgb:*) hex=${resp#*rgb:} ;;
+   *) echo "theme-sync: terminal did not answer the OSC 11 query." >&2; exit 1 ;;
+esac
+# hex = RRRR/GGGG/BBBB (16-bit) or RR/GG/BB — take the high byte of each channel
+r=${hex%%/*}; rest=${hex#*/}; g=${rest%%/*}; rest=${rest#*/}; b=${rest%%[!0-9A-Fa-f]*}
+hibyte() { printf '%s' "$1" | cut -c1-2; }
+r=$(( 0x$(hibyte "$r") )); g=$(( 0x$(hibyte "$g") )); b=$(( 0x$(hibyte "$b") ))
+lum=$(( (r*2126 + g*7152 + b*722) / 10000 ))       # perceived luminance 0..255
+[ "$lum" -gt 128 ] && want=light || want=dark
+
+# --- 2. publish the state file (nvim fs watchers + vim FocusGained) -----------
+state="${XDG_STATE_HOME:-$HOME/.local/state}/appearance"
+mkdir -p "$(dirname "$state")" 2>/dev/null
+printf '%s\n' "$want" > "$state.$$" 2>/dev/null && mv "$state.$$" "$state" 2>/dev/null
+
+# --- 3. every running tmux server ---------------------------------------------
+theme="$HOME/.local/share/tmux/plugins/tmux-adaptive-theme/tmux-adaptive-theme.tmux"
+n_tmux=0
+if command -v tmux >/dev/null 2>&1; then
+   # tmux keeps its sockets in a per-uid dir; honour a custom $TMUX_TMPDIR too.
+   for dir in "${TMUX_TMPDIR:-}" "/tmp"; do
+      [ -n "$dir" ] || continue
+      sdir="$dir/tmux-$(id -u)"
+      [ -d "$sdir" ] || continue
+      for sock in "$sdir"/*; do
+         [ -S "$sock" ] || continue
+         tmux -S "$sock" has-session 2>/dev/null || continue
+         tmux -S "$sock" set-option -g @adaptive_appearance "$want" 2>/dev/null || continue
+         [ -x "$theme" ] && tmux -S "$sock" run-shell -b "$theme" 2>/dev/null
+         n_tmux=$((n_tmux + 1))
+      done
+      break   # first existing dir wins; don't double-process /tmp
+   done
+fi
+
+# --- 4. every LIVE nvim instance (direct, best-effort) ------------------------
+# nvim names its socket nvim.<pid>.<n> in $XDG_RUNTIME_DIR (or $TMPDIR). Dead
+# instances leave stale sockets behind, so skip any whose pid is gone — that
+# also avoids a pile of connection-refused stalls. remote-expr, not remote-send:
+# it evaluates without injecting keystrokes into whatever the user is editing.
+n_nvim=0
+if command -v nvim >/dev/null 2>&1; then
+   expr="execute('set background=$want | if !empty(get(g:,\"colors_name\",\"\")) | execute \"colorscheme \".g:colors_name | endif')"
+   for pat in "${XDG_RUNTIME_DIR:-$HOME/.cache/run}"/nvim.*.* "${TMPDIR:-/tmp}"/nvim.*/*; do
+      for sock in $pat; do
+         [ -S "$sock" ] || continue
+         pid=${sock##*/nvim.}; pid=${pid%%.*}
+         case "$pid" in ''|*[!0-9]*) : ;; *) kill -0 "$pid" 2>/dev/null || continue ;; esac
+         nvim --server "$sock" --remote-expr "$expr" >/dev/null 2>&1 && n_nvim=$((n_nvim + 1))
+      done
+   done
+fi
+
+echo "theme-sync: $want  (tmux servers: $n_tmux, nvim: $n_nvim)"

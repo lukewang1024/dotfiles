@@ -1,0 +1,114 @@
+#!/bin/sh
+# appearance-daemon — make light/dark follow the macOS system appearance even
+# when no tmux server is running, so nvim and Alacritty update everywhere and not
+# only inside tmux (where tmux-dark-notify drives them).
+#
+# It runs `dark-notify` as a login-scoped LaunchAgent; on every macOS light/dark
+# switch (and once at load) it writes the shared state file
+# ($XDG_STATE_HOME/appearance) and swaps Alacritty's theme — the same two effects
+# tmux's dark-notify fallback produces, but not gated on a tmux server:
+#   - state file  -> nvim's libuv watcher flips &background live; plain vim on
+#                    its next FocusGained (see config/vim/lua/appearance.lua)
+#   - Alacritty   -> alacritty-appearance swaps the imported theme (live reload)
+#
+# This is OS-truth: a terminal pinned against the OS (e.g. kitty -> One Dark)
+# will have its nvim follow the OS too. Inside tmux the existing tmux path also
+# runs; both are idempotent, so the overlap is harmless.
+#
+# Subcommands: apply | run | install | uninstall | status
+# Install is per-machine and non-interactive: `appearance-daemon install`.
+#
+# POSIX sh; `run`/`apply` execute from launchd's minimal environment.
+set -u
+
+# launchd hands us a bare PATH — make our helpers and Homebrew reachable.
+PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH
+
+LABEL="com.lukew.appearance"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/appearance"
+
+detect() {
+   # AppleInterfaceStyle reads "Dark" in dark mode and is absent in light mode.
+   if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -qi dark; then
+      echo dark
+   else
+      echo light
+   fi
+}
+
+apply() {
+   want=$(detect)
+   # state file (atomic) -> nvim libuv watcher + vim FocusGained
+   mkdir -p "$(dirname "$STATE")" 2>/dev/null || true
+   if [ ! -f "$STATE" ] || [ "$(cat "$STATE" 2>/dev/null)" != "$want" ]; then
+      printf '%s\n' "$want" > "$STATE.$$" && mv "$STATE.$$" "$STATE"
+   fi
+   # Alacritty has no native OS-theme following.
+   if command -v alacritty-appearance >/dev/null 2>&1; then
+      alacritty-appearance "$want" || true
+   fi
+}
+
+find_darknotify() {
+   command -v dark-notify 2>/dev/null && return 0
+   for p in /opt/homebrew/bin/dark-notify /usr/local/bin/dark-notify; do
+      [ -x "$p" ] && { echo "$p"; return 0; }
+   done
+   return 1
+}
+
+self_path() {
+   # Stable absolute path to this script (usually the ~/.local/bin symlink).
+   echo "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+}
+
+case "${1:-}" in
+   apply)
+      apply
+      ;;
+   run)
+      dn=$(find_darknotify) || { echo "appearance-daemon: dark-notify not found (brew install cormacrelf/tap/dark-notify)" >&2; exit 1; }
+      # -c runs the command on the initial value and on every change.
+      exec "$dn" -c "$(self_path) apply"
+      ;;
+   install)
+      self=$(self_path)
+      mkdir -p "$(dirname "$PLIST")"
+      cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key><string>$LABEL</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>$self</string>
+        <string>run</string>
+    </array>
+    <key>RunAtLoad</key><true/>
+    <key>KeepAlive</key><true/>
+    <key>StandardOutPath</key><string>/tmp/$LABEL.log</string>
+    <key>StandardErrorPath</key><string>/tmp/$LABEL.err</string>
+</dict>
+</plist>
+EOF
+      launchctl unload "$PLIST" 2>/dev/null || true
+      launchctl load "$PLIST"
+      echo "installed & loaded: $LABEL"
+      echo "  plist: $PLIST"
+      echo "  logs:  /tmp/$LABEL.log, /tmp/$LABEL.err"
+      ;;
+   uninstall)
+      launchctl unload "$PLIST" 2>/dev/null || true
+      rm -f "$PLIST" && echo "removed: $LABEL"
+      ;;
+   status)
+      launchctl list 2>/dev/null | grep -q "$LABEL" && echo "loaded" || echo "not loaded"
+      ;;
+   *)
+      echo "usage: ${0##*/} apply|run|install|uninstall|status" >&2
+      exit 2
+      ;;
+esac
