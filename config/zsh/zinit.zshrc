@@ -72,7 +72,6 @@ zinit wait lucid for \
   OMZP::systemadmin/systemadmin.plugin.zsh \
   OMZP::taskwarrior/taskwarrior.plugin.zsh \
   OMZP::tig/tig.plugin.zsh \
-  OMZP::tmux/tmux.plugin.zsh \
   OMZP::urltools/urltools.plugin.zsh \
   OMZP::vscode/vscode.plugin.zsh \
   OMZP::web-search/web-search.plugin.zsh \
@@ -86,7 +85,9 @@ zinit wait lucid for \
 
 # Multi-file OMZ plugins: a plain OMZP:: snippet only copies the .plugin.zsh and
 # leaves siblings behind, so these break at runtime (gitfast -> git-prompt.sh,
-# macos -> music/spotify, emoji -> emoji-char-definitions.zsh). The old `svn`
+# macos -> music/spotify, emoji -> emoji-char-definitions.zsh, tmux ->
+# tmux.extra.conf/tmux.only.conf, which a bare `tmux` passes to `tmux -f` and
+# tmux then dies with "No such file or directory"). The old `svn`
 # whole-dir fetch is dead (GitHub dropped Subversion on 2024-01-08). Instead load
 # Oh My Zsh as ONE Turbo plugin and `multisrc` these files in place (siblings
 # intact). One clone, Turbo-deferred, updated via `zinit update ohmyzsh`.
@@ -97,6 +98,7 @@ zinit wait lucid for \
   local -a omz=(
     plugins/gitfast/gitfast.plugin.zsh
     plugins/emoji/emoji.plugin.zsh
+    plugins/tmux/tmux.plugin.zsh
   )
   is_macos && omz+=( plugins/macos/macos.plugin.zsh )
   zinit ice wait lucid pick'/dev/null' multisrc"${(j: :)omz}"
