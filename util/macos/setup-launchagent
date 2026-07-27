@@ -1,12 +1,18 @@
 #!/bin/sh
 # setup-launchagent - Create and manage macOS launch agents from a template
 #
-# Uses StartCalendarInterval for sleep/wake reliability.
+# Two scheduling modes:
+#   --hours "H,H,..."  periodic run via StartCalendarInterval (sleep/wake safe)
+#   --keepalive        persistent daemon via KeepAlive (restart if it exits)
+# Both also set RunAtLoad, so the job runs once immediately on load/login.
 #
 # Usage:
 #   setup-launchagent --label com.lukew.kinit \
 #                     --command "/usr/bin/kinit --keychain user@REALM" \
 #                     --hours "0,4,8,12,16,20"
+#   setup-launchagent --label com.lukew.peon-relay \
+#                     --command "/bin/bash /path/to/peon.sh relay" \
+#                     --keepalive
 #   setup-launchagent --list
 #   setup-launchagent --uninstall --label com.lukew.kinit
 
@@ -22,6 +28,7 @@ usage() {
   cat <<'EOF'
 Usage:
   setup-launchagent --label LABEL --command "CMD" --hours "H1,H2,..."
+  setup-launchagent --label LABEL --command "CMD" --keepalive
   setup-launchagent --list
   setup-launchagent --uninstall --label LABEL
 
@@ -29,6 +36,8 @@ Options:
   --label LABEL       Reverse-DNS label (e.g. com.lukew.kinit)
   --command "CMD"     Command with arguments (space-separated, quoted as one string)
   --hours "H,H,..."  Comma-separated hours (0-23) for StartCalendarInterval
+  --keepalive         Persistent daemon: KeepAlive (restart on exit). Mutually
+                      exclusive with --hours; exactly one is required to install.
   --list              Show agents installed by this tool
   --uninstall         Remove the agent identified by --label
   -h, --help          Show this help
@@ -37,13 +46,14 @@ EOF
 }
 
 # --- argument parsing ---
-LABEL="" COMMAND="" HOURS="" ACTION="install"
+LABEL="" COMMAND="" HOURS="" KEEPALIVE="" ACTION="install"
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --label)    LABEL="$2";   shift 2 ;;
     --command)  COMMAND="$2";  shift 2 ;;
     --hours)    HOURS="$2";   shift 2 ;;
+    --keepalive) KEEPALIVE=1; shift ;;
     --list)     ACTION="list"; shift ;;
     --uninstall) ACTION="uninstall"; shift ;;
     -h|--help)  usage 0 ;;
@@ -97,8 +107,12 @@ if [ -z "$COMMAND" ]; then
   echo "Error: --command is required" >&2
   usage 1
 fi
-if [ -z "$HOURS" ]; then
-  echo "Error: --hours is required" >&2
+if [ -n "$HOURS" ] && [ -n "$KEEPALIVE" ]; then
+  echo "Error: --hours and --keepalive are mutually exclusive" >&2
+  usage 1
+fi
+if [ -z "$HOURS" ] && [ -z "$KEEPALIVE" ]; then
+  echo "Error: one of --hours or --keepalive is required" >&2
   usage 1
 fi
 if [ ! -f "$TEMPLATE" ]; then
@@ -114,8 +128,14 @@ build_command_args() {
   done
 }
 
-# --- build StartCalendarInterval entries ---
-build_intervals() {
+# --- build the scheduling block (StartCalendarInterval or KeepAlive) ---
+build_schedule() {
+  if [ -n "$KEEPALIVE" ]; then
+    printf '    <key>KeepAlive</key>\n    <true/>\n'
+    return
+  fi
+  echo '    <key>StartCalendarInterval</key>'
+  echo '    <array>'
   IFS=','
   for hour in $HOURS; do
     hour=$(echo "$hour" | tr -d ' ')
@@ -129,6 +149,7 @@ build_intervals() {
 ENTRY
   done
   unset IFS
+  echo '    </array>'
 }
 
 # --- derive short label for log filenames ---
@@ -138,9 +159,9 @@ LABEL_SHORT="${LABEL##*.}"
 mkdir -p "$LAUNCH_AGENTS_DIR"
 
 CMD_FILE=$(mktemp)
-CAL_FILE=$(mktemp)
+SCHED_FILE=$(mktemp)
 build_command_args > "$CMD_FILE"
-build_intervals > "$CAL_FILE"
+build_schedule > "$SCHED_FILE"
 
 # Build plist line by line, substituting placeholders and expanding blocks
 {
@@ -150,13 +171,13 @@ build_intervals > "$CAL_FILE"
       *__LABEL_SHORT__*) echo "$line" | sed "s|__LABEL_SHORT__|$LABEL_SHORT|g" ;;
       *__LABEL__*)       echo "$line" | sed "s|__LABEL__|$LABEL|g" ;;
       *__COMMAND_ARGS__*) cat "$CMD_FILE" ;;
-      *__CALENDAR_INTERVALS__*) cat "$CAL_FILE" ;;
+      *__SCHEDULE__*)    cat "$SCHED_FILE" ;;
       *)                 echo "$line" ;;
     esac
   done < "$TEMPLATE"
 } > "$PLIST_PATH.tmp"
 
-rm -f "$CMD_FILE" "$CAL_FILE"
+rm -f "$CMD_FILE" "$SCHED_FILE"
 
 # --- install ---
 if [ -f "$PLIST_PATH" ]; then

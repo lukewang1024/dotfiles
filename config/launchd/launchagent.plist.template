@@ -8,10 +8,7 @@
     <array>
 __COMMAND_ARGS__
     </array>
-    <key>StartCalendarInterval</key>
-    <array>
-__CALENDAR_INTERVALS__
-    </array>
+__SCHEDULE__
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>
