@@ -46,6 +46,32 @@ state="${XDG_STATE_HOME:-$HOME/.local/state}/appearance"
 mkdir -p "$(dirname "$state")" 2>/dev/null
 printf '%s\n' "$want" > "$state.$$" 2>/dev/null && mv "$state.$$" "$state" 2>/dev/null
 
+# --- helper: never block on a wedged server -----------------------------------
+# The fan-out below talks to long-lived servers, and a live pid is no promise of
+# a live event loop: a stale `nvim --embed` whose parent stopped pumping its RPC
+# channel still owns a listening socket, accepts the connection, and then never
+# answers — `--remote-expr` waits forever. Nothing here is worth stalling an
+# interactive prompt for, so every remote call gets a ceiling.
+if command -v timeout >/dev/null 2>&1; then
+   deadline() { timeout "$@"; }
+elif command -v gtimeout >/dev/null 2>&1; then      # macOS w/ coreutils, no gnubin
+   deadline() { gtimeout "$@"; }
+else
+   deadline() {                                     # POSIX fallback: watchdog + kill
+      dl_secs=$1; shift
+      "$@" & dl_cmd=$!
+      # exit 7 == "I fired": the victim's own exit status can't be trusted to
+      # say it was killed (nvim traps SIGTERM and exits 1 on its own terms).
+      { sleep "$dl_secs"; kill -TERM "$dl_cmd" 2>/dev/null && exit 7; } & dl_watch=$!
+      wait "$dl_cmd" 2>/dev/null; dl_st=$?
+      kill -TERM "$dl_watch" 2>/dev/null
+      wait "$dl_watch" 2>/dev/null; dl_wst=$?
+      [ "$dl_wst" -eq 7 ] && dl_st=124
+      return "$dl_st"
+   }
+fi
+n_stuck=0
+
 # --- 3. every running tmux server ---------------------------------------------
 theme="$HOME/.local/share/tmux/plugins/tmux-adaptive-theme/tmux-adaptive-theme.tmux"
 n_tmux=0
@@ -57,9 +83,9 @@ if command -v tmux >/dev/null 2>&1; then
       [ -d "$sdir" ] || continue
       for sock in "$sdir"/*; do
          [ -S "$sock" ] || continue
-         tmux -S "$sock" has-session 2>/dev/null || continue
-         tmux -S "$sock" set-option -g @adaptive_appearance "$want" 2>/dev/null || continue
-         [ -x "$theme" ] && tmux -S "$sock" run-shell -b "$theme" 2>/dev/null
+         deadline 3 tmux -S "$sock" has-session 2>/dev/null || continue
+         deadline 3 tmux -S "$sock" set-option -g @adaptive_appearance "$want" 2>/dev/null || continue
+         [ -x "$theme" ] && deadline 3 tmux -S "$sock" run-shell -b "$theme" 2>/dev/null
          n_tmux=$((n_tmux + 1))
       done
       break   # first existing dir wins; don't double-process /tmp
@@ -69,8 +95,9 @@ fi
 # --- 4. every LIVE nvim instance (direct, best-effort) ------------------------
 # nvim names its socket nvim.<pid>.<n> in $XDG_RUNTIME_DIR (or $TMPDIR). Dead
 # instances leave stale sockets behind, so skip any whose pid is gone — that
-# also avoids a pile of connection-refused stalls. remote-expr, not remote-send:
-# it evaluates without injecting keystrokes into whatever the user is editing.
+# also avoids a pile of connection-refused stalls. A live pid still isn't enough
+# (see `deadline` above), hence the 2s ceiling per instance. remote-expr, not
+# remote-send: it evaluates without injecting keystrokes into what's being edited.
 n_nvim=0
 if command -v nvim >/dev/null 2>&1; then
    expr="execute('set background=$want | if !empty(get(g:,\"colors_name\",\"\")) | execute \"colorscheme \".g:colors_name | endif')"
@@ -79,9 +106,14 @@ if command -v nvim >/dev/null 2>&1; then
          [ -S "$sock" ] || continue
          pid=${sock##*/nvim.}; pid=${pid%%.*}
          case "$pid" in ''|*[!0-9]*) : ;; *) kill -0 "$pid" 2>/dev/null || continue ;; esac
-         nvim --server "$sock" --remote-expr "$expr" >/dev/null 2>&1 && n_nvim=$((n_nvim + 1))
+         deadline 2 nvim --server "$sock" --remote-expr "$expr" >/dev/null 2>&1
+         case $? in
+            0) n_nvim=$((n_nvim + 1)) ;;
+            124|143) n_stuck=$((n_stuck + 1)) ;;   # timeout(1) / SIGTERM'd watchdog
+         esac
       done
    done
 fi
 
-echo "theme-sync: $want  (tmux servers: $n_tmux, nvim: $n_nvim)"
+[ "$n_stuck" -gt 0 ] && stuck="  (skipped $n_stuck unresponsive)" || stuck=
+echo "theme-sync: $want  (tmux servers: $n_tmux, nvim: $n_nvim)$stuck"
