@@ -5,6 +5,17 @@ Host *
   IgnoreUnknown UseKeychain
   UseKeychain yes
 
+# Machine-specific hosts live in ~/.ssh/config.local (untracked; bootstrap
+# touches an empty one). peon-ping remote-pane focus: give each devbox a
+# LocalForward of its tmux control socket, so clicking a relayed notification
+# switches the remote pane by driving the local tmux client over that socket
+# (one round-trip, no extra ssh per click). ssh-focus.sh finds it via `ssh -G`.
+# Add to the relevant Host block(s) in config.local:
+#   Host <box>
+#     LocalForward /Users/<you>/.ssh/tmux-%n.sock /tmp/tmux-<remote-uid>/default
+#     StreamLocalBindUnlink yes   # clean stale sockets on reconnect
+# (%n = the host alias, keeping the local socket per-box; requires local &
+#  remote tmux to share a protocol version, else it falls back to ssh-exec.)
 Include config.local
 
 Host github.com
