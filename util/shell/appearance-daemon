@@ -11,8 +11,8 @@
 #                    its next FocusGained (see config/vim/lua/appearance.lua)
 #   - Alacritty   -> alacritty-appearance swaps the imported theme (live reload)
 #
-# This is OS-truth: a terminal pinned against the OS (e.g. kitty -> One Dark)
-# will have its nvim follow the OS too. Inside tmux the existing tmux path also
+# This is OS-truth: a terminal pinned against the OS (rather than following it,
+# as kitty now does) will have its nvim follow the OS too. Inside tmux the existing tmux path also
 # runs; both are idempotent, so the overlap is harmless.
 #
 # Subcommands: apply | run | install | uninstall | status
