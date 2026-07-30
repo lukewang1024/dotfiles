@@ -13,6 +13,25 @@ $ ~/.dotfiles/init macos # bootstrap macOS core environment
 - Create a file in `$XDG_CONFIG_HOME/.rc.local` to override configs from `~/.dotfiles/config/sh/rc.sh`.
 - Create a file in `$XDG_CONFIG_HOME/.zshrc.local` to override configs from `$XDG_CONFIG_HOME/zsh/.zshrc`.
 
+### Keeping already-provisioned machines in sync
+
+Config *content* is symlinked into the repo, so editing a file and pushing means
+every machine picks it up on the next `git pull` — no extra step. Only *new setup
+steps* (new symlinks, tmux/vim plugins, wrappers, XDG dirs) need re-running:
+
+```bash
+$ cd ~/.dotfiles && git pull   # post-merge hook auto-runs `./init sync` when
+                               # provisioning files (bootstrap/, util/, plugin
+                               # manifests) changed; a no-op otherwise
+$ ~/.dotfiles/init sync        # or run the reconcile by hand anytime
+```
+
+`./init sync` re-runs only the fast, idempotent link/plugin steps — it never
+prompts, sudos, or reinstalls toolchains/packages, so it's safe on every pull.
+The hook is wired per-machine via `core.hooksPath` on first `./init sync` (or any
+full `cli`/`all` provision); because the hook script itself is tracked under
+`util/git/hooks/`, it then stays current through git.
+
 ### MacOS
 
 TODO

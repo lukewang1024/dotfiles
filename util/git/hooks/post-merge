@@ -1,0 +1,21 @@
+#!/bin/sh
+# dotfiles post-merge hook — runs after `git pull` / `git merge` in the dotfiles
+# repo. Config *content* already takes effect through the existing symlinks, so a
+# reconcile is only needed when the provisioning machinery itself changed:
+# bootstrap steps, util wrappers, or the tmux/vim plugin manifests (which need a
+# fresh install step, not just a symlink). For anything else we exit quietly.
+#
+# Wired per-machine via `core.hooksPath` (see git_hooks_setup in bootstrap/env.sh),
+# so this tracked script propagates to every machine through git itself.
+
+# $1 is 1 for a squash merge; ORIG_HEAD is set by merge/pull to the pre-merge tip.
+changed=$(git diff --name-only ORIG_HEAD HEAD 2> /dev/null) || exit 0
+
+# No provisioning-relevant change -> nothing to do (content is already live via
+# the symlinks). Keep this pattern in sync with what needs an install step.
+printf '%s\n' "$changed" | grep -qE '^(bootstrap|util|config/tmux|config/vim)/' || exit 0
+
+repo_root=$(git rev-parse --show-toplevel 2> /dev/null) || exit 0
+
+echo '[dotfiles] provisioning files changed after pull — running `./init sync`...'
+"$repo_root/init" sync

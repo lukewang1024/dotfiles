@@ -67,6 +67,11 @@ case $1 in
     zinit_setup
     ;;
 
+  'sync')
+    source "$partial_dir/env.sh"
+    sync_setup
+    ;;
+
   'run')
     echo "Run '$3' in '$partial_dir/$2.sh'..."
     echo
