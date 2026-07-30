@@ -66,9 +66,14 @@ vim_setup()
   backup_then_symlink "$config_dir/vim" "$XDG_CONFIG_HOME/nvim"
   echo 'Done.'
 
-  echo 'Installing vim-plug...'
-  curl -fLo "$XDG_DATA_HOME/vim/autoload/plug.vim" --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  # Only fetch plug.vim when it's missing, so re-running this (e.g. from `./init
+  # sync` on every pull) doesn't re-download the bootstrap each time.
+  local plug="$XDG_DATA_HOME/vim/autoload/plug.vim"
+  if [ ! -f "$plug" ]; then
+    echo 'Installing vim-plug...'
+    curl -fLo "$plug" --create-dirs \
+      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  fi
   vim +PlugInstall +qa
   echo 'Done.'
 }

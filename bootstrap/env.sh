@@ -197,7 +197,57 @@ util_setup()
   # Seed Alacritty's theme-active.toml (gitignored) from the current macOS
   # appearance so a fresh checkout has a theme before the first light/dark switch.
   is_macos && "$util_dir/shell/alacritty-appearance" auto >/dev/null 2>&1 || true
+  # Wire the dotfiles repo's own git hooks so a plain `git pull` auto-reconciles
+  # this machine (post-merge -> ./init sync). See git_hooks_setup below.
+  git_hooks_setup
   echo 'Done.'
+}
+
+# Point the dotfiles repo's local core.hooksPath at the tracked hooks dir. Because
+# the hook scripts live under version control (util/git/hooks), they propagate to
+# every machine through git itself — only this one-line local config (per-machine,
+# not shared) has to be set, which util_setup does on both full provisioning and
+# `./init sync`. Idempotent: `git config` just overwrites the same value.
+git_hooks_setup()
+{
+  local hooks_dir="$util_dir/git/hooks"
+  [ -d "$hooks_dir" ] || return 0
+  printf 'Wiring dotfiles git hooks (post-merge auto-sync)... '
+  chmod +x "$hooks_dir/"* 2> /dev/null
+  git -C "$repo_path" config --local core.hooksPath "$hooks_dir"
+  echo 'Done.'
+}
+
+# Reconcile an ALREADY-PROVISIONED machine with newly-added setup steps after a
+# `git pull`. Runs only the fast, idempotent, non-interactive link/plugin steps:
+# NO interactive prompts (git identities), NO sudo (chsh / global zshenv), and NO
+# slow toolchain/package installs (anyenv, rustup, brew/apt). Safe to run on every
+# pull — the repo's post-merge hook calls it for you when provisioning files
+# change. A brand-new machine still runs the full `./init macos` first.
+sync_setup()
+{
+  ssh_setup
+  tmux_setup
+  tig_setup
+  vim_setup
+  npm_setup
+  pnpm_setup
+  python_setup
+
+  # Re-link the zsh rc files only. The one-time global-zshenv (sudo) and chsh
+  # steps belong to full provisioning, not to a per-pull reconcile, so they are
+  # deliberately left out here.
+  blank_lines
+  printf 'Re-linking zsh rc files... '
+  backup_then_symlink "$config_dir/zsh/zinit.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
+  backup_then_symlink "$config_dir/zsh/.zlogin" "$XDG_CONFIG_HOME/zsh/.zlogin"
+  backup_then_symlink "$config_dir/zsh/.zshenv" "$XDG_CONFIG_HOME/zsh/.zshenv"
+  backup_then_symlink "$config_dir/zsh/.zprofile" "$XDG_CONFIG_HOME/zsh/.zprofile"
+  backup_then_symlink "$config_dir/zsh/.p10k.zsh" "$XDG_CONFIG_HOME/zsh/.p10k.zsh"
+  echo 'Done.'
+
+  util_setup       # idempotent symlinks/wrappers + git-hooks wiring
+  xdg_dir_create
 }
 
 basic_env_setup()

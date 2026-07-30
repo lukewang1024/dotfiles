@@ -102,6 +102,9 @@ Luke's config bootstrap script
   basic - Only link rc files to $HOME
   npmg  - Install global npm packages (in case of version switch in nvm)
   zinit - Set zinit as the zsh plugin manager (symlinks .zshrc, etc.)
+  sync  - Reconcile an already-provisioned machine after `git pull`: re-run only
+          the fast, idempotent link/plugin steps (no prompts/sudo/heavy installs).
+          Auto-invoked by the repo's post-merge hook when provisioning files change.
   run   - Run arbitrary function in any bootstrap scripts
     `./init run [module] [task]`, below are tasks available:
     `macos backup_automator_stuff`: Backup Automator stuff to Dropbox
