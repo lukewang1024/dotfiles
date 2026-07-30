@@ -189,11 +189,14 @@ util_setup()
   backup_then_symlink "$util_dir/kerberos/kinit-auto-login" "$bin_dir/kinit-auto-login"
   # Apply shared Claude Code settings base, fetch the tmux-agent-sidebar binary
   # via its non-interactive downloader (so prefix+Tab binds without the manual
-  # install menu), and wire its Claude Code hooks (all idempotent; each skips
-  # cleanly if its deps are missing)
-  "$util_dir/agent/claude-settings-apply" >/dev/null 2>&1 || true
-  "$util_dir/agent/agent-sidebar-binary-install" >/dev/null 2>&1 || true
-  "$util_dir/agent/agent-sidebar-hooks-install" >/dev/null 2>&1 || true
+  # install menu), and wire its Claude Code hooks. All idempotent and best-effort
+  # (|| true so a failure never aborts the bootstrap); their output is left
+  # visible on purpose -- on a fresh machine the binary download is a multi-second
+  # network step, and swallowing it into /dev/null just looks like an unexplained
+  # hang (each also prints a clear "skipping" notice when a dep is missing).
+  "$util_dir/agent/claude-settings-apply" || true
+  "$util_dir/agent/agent-sidebar-binary-install" || true
+  "$util_dir/agent/agent-sidebar-hooks-install" || true
   # Seed Alacritty's theme-active.toml (gitignored) from the current macOS
   # appearance so a fresh checkout has a theme before the first light/dark switch.
   is_macos && "$util_dir/shell/alacritty-appearance" auto >/dev/null 2>&1 || true

@@ -10,9 +10,13 @@
 # non-interactive download-binary mode (prebuilt release binary, no Rust
 # needed), i.e. the upstream README's install flow minus the manual menu step.
 #
-# Idempotent; skips cleanly when curl or the plugin are missing.
+# Idempotent; skips cleanly when curl or the plugin are missing, and no-ops fast
+# when the binary is already present (the wizard's download-binary step re-fetches
+# the release asset over the network every call, so re-running e.g. from `./init
+# sync` on each pull would hang for seconds otherwise -- guard on it below).
 #
-# Usage: agent-sidebar-binary-install              download / refresh
+# Usage: agent-sidebar-binary-install              download if missing
+#        agent-sidebar-binary-install --force      re-download even if present
 #        agent-sidebar-binary-install --uninstall  remove the binary
 
 REPO="hiroppy/tmux-agent-sidebar"
@@ -20,9 +24,19 @@ PLUGIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tmux-agent-sidebar
 WIZARD="$PLUGIN_DIR/install-wizard.sh"
 BINARY="$PLUGIN_DIR/bin/tmux-agent-sidebar"
 
-if [ "$1" = "--uninstall" ]; then
-  rm -f "$BINARY"
-  echo "agent-sidebar binary removed from $BINARY"
+force=0
+case "$1" in
+  --uninstall)
+    rm -f "$BINARY"
+    echo "agent-sidebar binary removed from $BINARY"
+    exit 0
+    ;;
+  --force) force=1 ;;
+esac
+
+# Fast path: already installed -> skip the network round-trip entirely.
+if [ "$force" -eq 0 ] && [ -x "$BINARY" ]; then
+  echo "agent-sidebar binary already present at $BINARY (use --force to refresh)"
   exit 0
 fi
 
