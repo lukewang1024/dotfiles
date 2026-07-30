@@ -10,7 +10,7 @@
 #
 # Why the guard: dark-notify is OS-truth, but the native client-*-theme hooks are
 # terminal-truth (they follow the terminal's ACTUAL theme, which may be pinned
-# against the OS — this repo pins kitty to One Dark). If any attached client
+# against the OS). If any attached client
 # reports a native theme, that path is authoritative and we do nothing, so a
 # 2031-capable terminal is never double-driven / flip-flopped by the OS signal.
 # Only when no client reports a theme (all non-2031) do we apply the OS mode.
