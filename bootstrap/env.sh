@@ -182,6 +182,14 @@ util_setup()
   # appearance even with no tmux running. Install per-machine (non-interactive):
   #   appearance-daemon install
   backup_then_symlink "$util_dir/shell/appearance-daemon" "$bin_dir/appearance-daemon"
+  # Manual reconcile hammer (OSC 11) + its argument mode, which is also the entry
+  # point a pushed light/dark value is applied through on an SSH devbox; the
+  # local pusher that relays to every attached devbox; and the OS-appearance
+  # tmux fallback. Reconciled here (not only in a full provision) so `./init sync`
+  # sets up the whole light/dark relay on a plain pull.
+  backup_then_symlink "$util_dir/shell/theme-sync" "$bin_dir/theme-sync"
+  backup_then_symlink "$util_dir/shell/theme-push-remotes" "$bin_dir/theme-push-remotes"
+  backup_then_symlink "$util_dir/shell/tmux-appearance-fallback" "$bin_dir/tmux-appearance-fallback"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   # Kerberos ticket auto-renew (macOS keychain / Linux keytab). Install per-machine

@@ -74,7 +74,12 @@ vim_setup()
     curl -fLo "$plug" --create-dirs \
       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   fi
-  vim +PlugInstall +qa
+  # Batch/non-interactive: -es (Ex silent) never shows the 'Press ENTER' prompt,
+  # </dev/null gives no stdin to block on, --sync makes PlugInstall finish before
+  # we quit, and qa! forces the exit. Without these, a fresh checkout wedges here
+  # headless (over SSH, from `./init sync`) — vim sources the vimrc, and any
+  # not-yet-installed plugin referenced at load time would otherwise prompt.
+  vim -es -u "$XDG_CONFIG_HOME/vim/vimrc" -c 'PlugInstall --sync' -c 'qa!' </dev/null || true
   echo 'Done.'
 }
 
