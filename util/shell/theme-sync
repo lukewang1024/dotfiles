@@ -21,25 +21,38 @@
 # Needs a controlling tty for the OSC query; works with or without $TMUX. POSIX sh.
 set -u
 
-[ -t 1 ] || { echo "theme-sync: needs an interactive terminal (a tty)." >&2; exit 1; }
-
-# --- 1. detect appearance from the terminal's real background (OSC 11) --------
-old_stty=$(stty -g 2>/dev/null) || { echo "theme-sync: no tty." >&2; exit 1; }
-stty raw -echo min 0 time 2 2>/dev/null            # ~0.2s ceiling for the reply
-printf '\033]11;?\007' > /dev/tty                  # BEL-terminated query
-resp=$(head -c 48 < /dev/tty 2>/dev/null)
-stty "$old_stty" 2>/dev/null
-
-case "$resp" in
-   *rgb:*) hex=${resp#*rgb:} ;;
-   *) echo "theme-sync: terminal did not answer the OSC 11 query." >&2; exit 1 ;;
+# An explicit `light|dark` arg skips the OSC 11 probe (and the tty requirement)
+# and fans that value straight out. This is the apply-a-pushed-value path: the
+# remote end of the SSH theme relay runs `theme-sync <want>` from tmux run-shell,
+# which has no tty (see theme-push-remotes). No arg = probe the terminal's real
+# background, exactly as before.
+case "${1:-}" in
+   light|dark) want=$1 ;;
+   '')         want= ;;
+   *) echo "theme-sync: usage: ${0##*/} [light|dark]" >&2; exit 2 ;;
 esac
-# hex = RRRR/GGGG/BBBB (16-bit) or RR/GG/BB — take the high byte of each channel
-r=${hex%%/*}; rest=${hex#*/}; g=${rest%%/*}; rest=${rest#*/}; b=${rest%%[!0-9A-Fa-f]*}
-hibyte() { printf '%s' "$1" | cut -c1-2; }
-r=$(( 0x$(hibyte "$r") )); g=$(( 0x$(hibyte "$g") )); b=$(( 0x$(hibyte "$b") ))
-lum=$(( (r*2126 + g*7152 + b*722) / 10000 ))       # perceived luminance 0..255
-[ "$lum" -gt 128 ] && want=light || want=dark
+
+if [ -z "$want" ]; then
+   [ -t 1 ] || { echo "theme-sync: needs an interactive terminal (a tty), or pass light|dark." >&2; exit 1; }
+
+   # --- 1. detect appearance from the terminal's real background (OSC 11) -----
+   old_stty=$(stty -g 2>/dev/null) || { echo "theme-sync: no tty." >&2; exit 1; }
+   stty raw -echo min 0 time 2 2>/dev/null            # ~0.2s ceiling for the reply
+   printf '\033]11;?\007' > /dev/tty                  # BEL-terminated query
+   resp=$(head -c 48 < /dev/tty 2>/dev/null)
+   stty "$old_stty" 2>/dev/null
+
+   case "$resp" in
+      *rgb:*) hex=${resp#*rgb:} ;;
+      *) echo "theme-sync: terminal did not answer the OSC 11 query." >&2; exit 1 ;;
+   esac
+   # hex = RRRR/GGGG/BBBB (16-bit) or RR/GG/BB — take the high byte of each channel
+   r=${hex%%/*}; rest=${hex#*/}; g=${rest%%/*}; rest=${rest#*/}; b=${rest%%[!0-9A-Fa-f]*}
+   hibyte() { printf '%s' "$1" | cut -c1-2; }
+   r=$(( 0x$(hibyte "$r") )); g=$(( 0x$(hibyte "$g") )); b=$(( 0x$(hibyte "$b") ))
+   lum=$(( (r*2126 + g*7152 + b*722) / 10000 ))       # perceived luminance 0..255
+   [ "$lum" -gt 128 ] && want=light || want=dark
+fi
 
 # --- 2. publish the state file (nvim fs watchers + vim FocusGained) -----------
 state="${XDG_STATE_HOME:-$HOME/.local/state}/appearance"
@@ -52,18 +65,64 @@ printf '%s\n' "$want" > "$state.$$" 2>/dev/null && mv "$state.$$" "$state" 2>/de
 # channel still owns a listening socket, accepts the connection, and then never
 # answers — `--remote-expr` waits forever. Nothing here is worth stalling an
 # interactive prompt for, so every remote call gets a ceiling.
-if command -v timeout >/dev/null 2>&1; then
-   deadline() { timeout "$@"; }
-elif command -v gtimeout >/dev/null 2>&1; then      # macOS w/ coreutils, no gnubin
-   deadline() { gtimeout "$@"; }
+#
+# A ceiling has to mean SIGKILL. `timeout N` on its own is a polite request, not
+# a bound: it sends SIGTERM and then *waits for the child*, so a child that never
+# acts on SIGTERM keeps timeout — and this whole script — alive forever. Both
+# ways that happens here have been observed in the wild:
+#   * nvim installs its own SIGTERM handler (a libuv signal watcher), so the
+#     default "just die" action never applies. With its main thread parked in the
+#     remote-expr round trip the watcher isn't pumped, and the signal is noted
+#     but never acted on.
+#   * timeout(1) puts the child in a NEW process group unless --foreground is
+#     given. That group is not the terminal's foreground group, so the instant
+#     nvim touches the tty it takes SIGTTIN/SIGTTOU and stops — and a *stopped*
+#     process runs no handler at all, so SIGTERM merely queues. Racy by nature:
+#     the RPC round trip usually wins, which is why this hung only now and then.
+# So: --foreground to stay in the tty's foreground group and never be stopped,
+# -k to escalate to SIGKILL, and stdin from /dev/null so there is no reason to
+# touch the tty in the first place. None of these calls is interactive.
+#
+# busybox's timeout has neither flag, so probe for them rather than assume.
+dl_bin=''
+dl_flags=''
+for dl_try in timeout gtimeout; do                  # gtimeout: macOS coreutils, no gnubin
+   command -v "$dl_try" >/dev/null 2>&1 || continue
+   dl_bin=$dl_try
+   if "$dl_try" -k 1 --foreground 1 true >/dev/null 2>&1; then
+      dl_flags="-k 1 --foreground"
+   elif "$dl_try" -k 1 1 true >/dev/null 2>&1; then
+      dl_flags="-k 1"
+   fi
+   break
+done
+
+if [ -n "$dl_bin" ]; then
+   # $dl_flags must word-split: it is a deliberate flag list, not one argument.
+   # shellcheck disable=SC2086
+   deadline() { "$dl_bin" $dl_flags "$@" < /dev/null; }
 else
    deadline() {                                     # POSIX fallback: watchdog + kill
       dl_secs=$1; shift
-      "$@" & dl_cmd=$!
+      "$@" < /dev/null & dl_cmd=$!
       # exit 7 == "I fired": the victim's own exit status can't be trusted to
       # say it was killed (nvim traps SIGTERM and exits 1 on its own terms).
-      { sleep "$dl_secs"; kill -TERM "$dl_cmd" 2>/dev/null && exit 7; } & dl_watch=$!
+      # TERM first, then SIGKILL a second later for the deaf-or-stopped case.
+      {
+         sleep "$dl_secs"
+         kill -TERM "$dl_cmd" 2>/dev/null || exit 0
+         sleep 1
+         kill -KILL "$dl_cmd" 2>/dev/null
+         exit 7
+      } & dl_watch=$!
       wait "$dl_cmd" 2>/dev/null; dl_st=$?
+      # `wait` also returns when a job merely STOPS rather than exits, leaving it
+      # alive and parked forever. Don't mistake that for an exit: reap and report.
+      if kill -0 "$dl_cmd" 2>/dev/null; then
+         kill -CONT "$dl_cmd" 2>/dev/null
+         kill -KILL "$dl_cmd" 2>/dev/null
+         dl_st=124
+      fi
       kill -TERM "$dl_watch" 2>/dev/null
       wait "$dl_watch" 2>/dev/null; dl_wst=$?
       [ "$dl_wst" -eq 7 ] && dl_st=124
@@ -109,7 +168,7 @@ if command -v nvim >/dev/null 2>&1; then
          deadline 2 nvim --server "$sock" --remote-expr "$expr" >/dev/null 2>&1
          case $? in
             0) n_nvim=$((n_nvim + 1)) ;;
-            124|143) n_stuck=$((n_stuck + 1)) ;;   # timeout(1) / SIGTERM'd watchdog
+            124|137|143) n_stuck=$((n_stuck + 1)) ;;  # timed out / SIGKILL'd / TERM'd
          esac
       done
    done
@@ -117,3 +176,14 @@ fi
 
 [ "$n_stuck" -gt 0 ] && stuck="  (skipped $n_stuck unresponsive)" || stuck=
 echo "theme-sync: $want  (tmux servers: $n_tmux, nvim: $n_nvim)$stuck"
+
+# --- 5. relay to any SSH devbox we're attached to -----------------------------
+# The local terminal is the source of truth; hand the value we just decided to
+# each connected devbox so its tmux + nvim follow too. Skipped when THIS run is
+# itself an applied push (THEME_SYNC_NO_PUSH, set by theme-push-remotes) — that
+# both avoids doing the remote's work twice and breaks any A->B->A relay loop.
+# theme-push-remotes self-gates on ~/.ssh/tmux-*.sock, so with nothing attached
+# this is a cheap no-op.
+if [ -z "${THEME_SYNC_NO_PUSH:-}" ] && command -v theme-push-remotes >/dev/null 2>&1; then
+   theme-push-remotes "$want" || true
+fi
