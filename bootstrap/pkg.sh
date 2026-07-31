@@ -160,8 +160,9 @@ install_other_packages()
   backup_then_symlink "$util_dir/shell/md2resume" "$bin_dir/md2resume"
   backup_then_symlink "$util_dir/shell/npm-token" "$bin_dir/npm-token"
   backup_then_symlink "$util_dir/shell/pretty-csv" "$bin_dir/pretty-csv"
-  backup_then_symlink "$util_dir/shell/theme-sync" "$bin_dir/theme-sync"
-  backup_then_symlink "$util_dir/shell/tmux-appearance-fallback" "$bin_dir/tmux-appearance-fallback"
+  # theme-sync / theme-push-remotes / tmux-appearance-fallback moved to
+  # util_setup (bootstrap/env.sh) so `./init sync` reconciles the light/dark
+  # relay on a plain pull, not only on a full provision.
   backup_then_symlink "$util_dir/shell/vnc-connect" "$bin_dir/vnc-connect"
   install_any_script hls-fetch https://raw.githubusercontent.com/osklil/hls-fetch/master/hls-fetch
 }

@@ -80,7 +80,10 @@ endfunction
 " vim-one for the win — initial &background follows the terminal, not hardcoded,
 " so a light terminal loads light directly (no dark->light flash).
 let &background = s:AppearanceValue()
-colorscheme one
+" silent! so a fresh checkout (vim-plug not yet run, vim-one absent) doesn't
+" throw E185 and, headless, wedge on the 'Press ENTER' prompt during bootstrap's
+" PlugInstall. Once installed it loads normally.
+silent! colorscheme one
 
 " Apply a background value everywhere it needs to land: set &background, force
 " the colorscheme to regenerate its highlights (setting &background alone isn't
