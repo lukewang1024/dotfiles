@@ -1,0 +1,80 @@
+#!/bin/sh
+# theme-push-remotes light|dark — relay the local terminal's just-decided
+# light/dark appearance to every SSH devbox we're currently attached to, so a
+# remote tmux + nvim follow the local terminal theme without the human having to
+# re-run anything on the far side.
+#
+# Why push a decided value instead of letting the remote probe: inside a remote
+# tmux pane an OSC 11 query is answered by the remote tmux itself (its own pane
+# background), not forwarded to the real terminal, and `run-shell` has no tty
+# anyway. The LOCAL terminal is the one source of truth (read via OSC 11 in
+# theme-sync, or reported natively via mode 2031); we ship that answer over and
+# the remote just applies it — no macOS-appearance guessing on the remote.
+#
+# Transport reuses the peon-ping LocalForward: ~/.ssh/config.local forwards each
+# box's tmux control socket to ~/.ssh/tmux-<alias>.sock, and that same socket
+# lets the LOCAL tmux client drive the REMOTE tmux server in one round-trip (no
+# extra ssh). We ask the remote tmux to run its OWN `theme-sync <want>`, which
+# writes the remote state file and fans out remote tmux/nvim using the remote's
+# native binaries — so no cross-version / no-tty issues. If the forwarded socket
+# is stale or the tmux protocol is incompatible, we fall back to a short-lived
+# `ssh <alias> theme-sync <want>` (same spirit as peon-ping's ssh-focus).
+#
+# Best-effort and bounded: every remote call runs backgrounded under a deadline
+# so a wedged box never stalls the local theme switch. POSIX sh.
+set -u
+
+case "${1:-}" in
+   light|dark) want=$1 ;;
+   *) echo "theme-push-remotes: usage: ${0##*/} light|dark" >&2; exit 2 ;;
+esac
+
+# What the remote runs. THEME_SYNC_NO_PUSH stops the remote from trying to relay
+# onward (loop-breaker). The forwarded-socket path runs this in the remote tmux
+# SERVER's (login) environment, so tmux/nvim are already on PATH; the ssh
+# fallback runs a NON-login shell with a bare PATH, where the remote's tmux
+# (linuxbrew) would be invisible and theme-sync would fan out to "0 tmux
+# servers" — writing only the state file, so nvim follows but the tmux status
+# bar never repaints. Prepend the usual bin dirs so BOTH paths fan out fully;
+# $HOME/$PATH stay literal here and expand on the remote. Missing dirs are inert.
+remote_cmd='THEME_SYNC_NO_PUSH=1 PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:/opt/homebrew/bin:/usr/local/bin:$PATH" "$HOME"/.local/bin/theme-sync '"$want"
+
+# --- deadline: never let one wedged box block the fan-out ---------------------
+# The forwarded socket has hung before ("no server running" after a reconnect),
+# so bound every remote call. Prefer coreutils timeout; else a watchdog+kill.
+if command -v timeout >/dev/null 2>&1; then
+   deadline() { timeout "$@"; }
+elif command -v gtimeout >/dev/null 2>&1; then
+   deadline() { gtimeout "$@"; }
+else
+   deadline() {
+      dl_secs=$1; shift
+      "$@" & dl_cmd=$!
+      { sleep "$dl_secs"; kill -TERM "$dl_cmd" 2>/dev/null; } & dl_watch=$!
+      wait "$dl_cmd" 2>/dev/null; dl_st=$?
+      kill -TERM "$dl_watch" 2>/dev/null; wait "$dl_watch" 2>/dev/null
+      return "$dl_st"
+   }
+fi
+
+n=0
+for sock in "$HOME"/.ssh/tmux-*.sock; do
+   [ -S "$sock" ] || continue          # the glob itself when nothing matches
+   alias=${sock##*/tmux-}; alias=${alias%.sock}
+   n=$((n + 1))
+   (
+      # Preferred path: drive the remote tmux server over the forwarded socket.
+      # run-shell -b returns as soon as the remote has queued it, so this is one
+      # quick round-trip; the deadline only guards a stale/handshaking socket.
+      if deadline 6 tmux -S "$sock" run-shell -b "$remote_cmd" >/dev/null 2>&1; then
+         exit 0
+      fi
+      # Fallback: a fresh, short ssh exec. BatchMode so it never prompts.
+      deadline 8 ssh -o BatchMode=yes -o ConnectTimeout=5 "$alias" "$remote_cmd" \
+         >/dev/null 2>&1 || true
+   ) &
+done
+wait
+
+[ "$n" -gt 0 ] && echo "theme-push-remotes: $want -> $n devbox(es)" >&2
+exit 0

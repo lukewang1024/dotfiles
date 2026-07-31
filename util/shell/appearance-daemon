@@ -49,6 +49,17 @@ apply() {
    if command -v alacritty-appearance >/dev/null 2>&1; then
       alacritty-appearance "$want" || true
    fi
+   # Relay to any SSH devbox we're attached to. This is the RELIABLE trigger for
+   # remote sync: the terminal's native mode-2031 report reaches a remote tmux
+   # but its client-*-theme hook fires only intermittently (observed getting
+   # stuck one direction), and a local tmux hook is wiped by the theme plugin's
+   # re-register on every attach. dark-notify, by contrast, fires on every macOS
+   # switch — and since every terminal here follows the OS, OS-truth == terminal-
+   # truth. theme-push-remotes self-gates on ~/.ssh/tmux-*.sock (no-op with no
+   # devbox attached) and bounds each box, so this can't stall the daemon.
+   if command -v theme-push-remotes >/dev/null 2>&1; then
+      theme-push-remotes "$want" || true
+   fi
 }
 
 find_darknotify() {
