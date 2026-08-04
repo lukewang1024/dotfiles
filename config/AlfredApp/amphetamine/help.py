@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Script Filter behind `amphetamine help`.
+"""Script Filter behind `amp help`.
 
 The original workflow's help was an Open URL action pointing at a uservoice
 article that has been dead since 2016. This builds the reference inside Alfred
@@ -9,7 +9,7 @@ instead, and derives it from live data so it cannot drift:
     renaming or adding a keyword updates the help automatically;
   * each command is annotated with how often it has actually been used, read
     from the log the workflow writes on every invocation, and ordered by it;
-  * the current session state is the first row (see `amphetamine status` for the
+  * the current session state is the first row (see `amp status` for the
     full picture).
 
 Actioning a row copies that command to the clipboard.
@@ -19,12 +19,12 @@ import lib
 # Formats accepted by the AppleScript duration parser. These live in the parser
 # rather than in info.plist, so they are spelled out here.
 DURATION_EXAMPLES = (
-    ("amphetamine on", "Indefinite session (no duration given)"),
-    ("amphetamine on 30m", "30 minutes"),
-    ("amphetamine on 2h", "2 hours"),
-    ("amphetamine on 1h 30m", "1 hour 30 minutes"),
-    ("amphetamine on 90", "Bare number means minutes"),
-    ("amphetamine on 1 30", "Two bare numbers mean hours then minutes"),
+    ("amp on", "Indefinite session (no duration given)"),
+    ("amp on 30m", "30 minutes"),
+    ("amp on 2h", "2 hours"),
+    ("amp on 1h 30m", "1 hour 30 minutes"),
+    ("amp on 90", "Bare number means minutes"),
+    ("amp on 1 30", "Two bare numbers mean hours then minutes"),
 )
 
 

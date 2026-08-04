@@ -80,7 +80,7 @@
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>keyword</key>
-				<string>amphetamine on</string>
+				<string>amp on</string>
 				<key>subtext</key>
 				<string>Optional duration, e.g. 30m, 2h, 1h 30m</string>
 				<key>text</key>
@@ -194,7 +194,7 @@ end reportError
 				<key>argumenttype</key>
 				<integer>2</integer>
 				<key>keyword</key>
-				<string>amphetamine off</string>
+				<string>amp off</string>
 				<key>text</key>
 				<string>Turn Amphetamine Off</string>
 				<key>withspace</key>
@@ -318,7 +318,7 @@ end reportError
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>keyword</key>
-				<string>amphetamine help</string>
+				<string>amp help</string>
 				<key>queuedelaycustom</key>
 				<integer>1</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -357,7 +357,7 @@ end reportError
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>keyword</key>
-				<string>amphetamine toggle</string>
+				<string>amp toggle</string>
 				<key>subtext</key>
 				<string>Optional duration when starting, e.g. 30m, 2h</string>
 				<key>text</key>
@@ -511,7 +511,7 @@ end reportError
 				<key>escaping</key>
 				<integer>0</integer>
 				<key>keyword</key>
-				<string>amphetamine status</string>
+				<string>amp status</string>
 				<key>queuedelaycustom</key>
 				<integer>1</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -548,11 +548,11 @@ end reportError
 	<key>readme</key>
 	<string>Control Amphetamine from Alfred.
 
-  amphetamine on [duration]      start a session (indefinite if no duration)
-  amphetamine off                end the current session
-  amphetamine toggle [duration]  end if active, otherwise start
-  amphetamine status             session, sleep settings, Triggers (↩ toggles)
-  amphetamine help               command reference + usage stats
+  amp on [duration]      start a session (indefinite if no duration)
+  amp off                end the current session
+  amp toggle [duration]  end if active, otherwise start
+  amp status             session, sleep settings, Triggers (↩ toggles)
+  amp help               command reference + usage stats
 
 Durations accept 30m, 2h, 1h 30m, 90 (minutes) or 1 30 (hours minutes).
 

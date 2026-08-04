@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Script Filter behind `amphetamine status`.
+"""Script Filter behind `amp status`.
 
 Shows what Amphetamine is doing right now: the session headline first, then the
 sleep-related settings in force and the Trigger / Drive Alive switches. The view
