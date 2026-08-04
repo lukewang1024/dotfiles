@@ -17,13 +17,12 @@
 # The bundle is the live directory, so an ignored collection still works in
 # Alfred exactly as before — it just stays local.
 Alfred.alfredpreferences/snippets/*
-!Alfred.alfredpreferences/snippets/Ascii Art/
 !Alfred.alfredpreferences/snippets/Currency Symbols/
-!Alfred.alfredpreferences/snippets/Dynamic Content/
-!Alfred.alfredpreferences/snippets/Emoji Pack/
-!Alfred.alfredpreferences/snippets/Funny Quotes/
 !Alfred.alfredpreferences/snippets/Mac symbols/
 !Alfred.alfredpreferences/snippets/Pragma/
+# Deliberately NOT whitelisted, and staying that way:
+#   Work/   internal shortcuts, BOE URLs, an API key
+#   Email/  personal and corporate addresses
 
 # Per-machine settings, keyed by a hash of the machine. Alfred writes one
 # subdirectory per Mac that has ever opened this bundle — appearance, clipboard
