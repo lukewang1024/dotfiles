@@ -1,5 +1,29 @@
 # Alfred writes its live preferences bundle straight into this directory (its
-# sync folder points here), so a few paths are runtime state rather than config.
+# sync folder points here), so some of what appears is runtime state, and some of
+# it is content that must never reach a public repo.
+
+# --- snippets: deny by default, allow by name ---------------------------------
+#
+# Snippet collections are the highest-risk content in this bundle: they are free
+# text the human types into over years, and one of them turned out to hold a live
+# OpenAI API key (plus personal and corporate email addresses in another).
+#
+# A blacklist is the wrong shape here — it only protects against the collections
+# someone already thought of, so a collection created next month gets committed
+# before anyone looks at it. Deny everything and list the collections that have
+# been read and judged safe. Adding a line here is a deliberate act; forgetting to
+# add one costs nothing.
+#
+# The bundle is the live directory, so an ignored collection still works in
+# Alfred exactly as before — it just stays local.
+Alfred.alfredpreferences/snippets/*
+!Alfred.alfredpreferences/snippets/Ascii Art/
+!Alfred.alfredpreferences/snippets/Currency Symbols/
+!Alfred.alfredpreferences/snippets/Dynamic Content/
+!Alfred.alfredpreferences/snippets/Emoji Pack/
+!Alfred.alfredpreferences/snippets/Funny Quotes/
+!Alfred.alfredpreferences/snippets/Mac symbols/
+!Alfred.alfredpreferences/snippets/Pragma/
 
 # Per-machine settings, keyed by a hash of the machine. Alfred writes one
 # subdirectory per Mac that has ever opened this bundle — appearance, clipboard

@@ -39,6 +39,27 @@ Alfred needs to have launched once for `prefs.json` to exist, so on a brand-new
 Mac: install Alfred, open it, apply the Powerpack licence, then run
 `alfred-prefs-folder`.
 
+### Snippets are deny-by-default
+
+**This repo is public.** Snippet collections are free text typed in over years,
+and they are the one part of this bundle that reliably accumulates things that
+must not be published — the `Work` collection held a live OpenAI API key, and
+`Email` holds personal and corporate addresses.
+
+So `.gitignore` treats `snippets/` as a **whitelist**: everything under it is
+ignored, and each collection judged safe is re-included by name. A blacklist would
+only defend against the collections someone already thought of; a collection
+created next month would be committed before anyone looked at it.
+
+Because the bundle is the live directory, an ignored collection still works in
+Alfred exactly as before — it just stays local. Adding a collection to the
+whitelist means reading it first.
+
+The same caution applies to anything else free-form that Alfred stores here.
+`preferences/features/websearch/prefs.plist` is tracked and currently contains
+`code.byted.org` searches — internal, though not secret. Worth a look before
+sharing this repo more widely.
+
 ### Not tracked, on purpose
 
 Everything below is per-machine or regenerable, and lives outside the bundle in
@@ -50,6 +71,7 @@ Everything below is per-machine or regenerable, and lives outside the bundle in
 | `Databases/` | clipboard history, knowledge (usage ranking), file cache |
 | `Workflow Data/` | workflow runtime state |
 | `preferences/local/<machine-hash>/` | per-machine appearance / clipboard retention (gitignored *inside* the bundle) |
+| `snippets/<non-whitelisted>/` | see above |
 
 Alfred does not write to the bundle on launch, so the working tree stays clean —
 a diff here means a setting genuinely changed.
