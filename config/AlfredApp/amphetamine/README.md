@@ -8,11 +8,11 @@ Alfred. Originally "Amphetamine Control" by William C. Gustafson (2016, bundle i
 
 | Keyword | Effect |
 | --- | --- |
-| `amphetamine on [duration]` | Start a session; indefinite when no duration is given |
-| `amphetamine off` | End the current session |
-| `amphetamine toggle [duration]` | End the session if one is active, otherwise start one |
-| `amphetamine status` | Session state, sleep settings and Triggers; ↩ toggles the session |
-| `amphetamine help` | Command reference, duration formats and usage stats |
+| `amp on [duration]` | Start a session; indefinite when no duration is given |
+| `amp off` | End the current session |
+| `amp toggle [duration]` | End the session if one is active, otherwise start one |
+| `amp status` | Session state, sleep settings and Triggers; ↩ toggles the session |
+| `amp help` | Command reference, duration formats and usage stats |
 
 Durations accept `30m`, `2h`, `1h 30m`, `1h30m`, `1 hour 30 minutes`, a bare
 number as minutes (`90`), or two bare numbers as hours then minutes (`1 30`).
@@ -26,7 +26,7 @@ ones — plus the closed-display-mode, Triggers and Drive Alive switches. The vi
 sets `rerun: 2` so a timed session counts down in place.
 
 Only the headline row is actionable; it is wired to the same toggle action as
-`amphetamine toggle`, so ↩ flips the session. Detail rows are deliberately
+`amp toggle`, so ↩ flips the session. Detail rows are deliberately
 `valid: false` so they can't fire the toggle by accident (⌘C still copies them).
 
 If Amphetamine isn't running, `status` says so rather than querying it — asking
