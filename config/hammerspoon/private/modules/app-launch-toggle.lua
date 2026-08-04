@@ -77,7 +77,7 @@ setAppToggles(hyper, {
   ['['] = 'com.hnc.Discord',                      -- Discord
   [']'] = 'com.tinyspeck.slackmacgap',            -- Slack
   ['/'] = 'Marta',
-  ['\''] = 'Terminal',
+  ['\''] = 'kitty',
   ['\\'] = 'MacPass',
   ['`'] = 'Screen Sharing',
   ['1'] = 'Reminders',
@@ -127,7 +127,7 @@ setAppToggles(hyperAlt, {
   ['['] = 'com.larksuite.larkApp',                -- Lark
   -- [']'] = '',
   ['/'] = 'Commander One',
-  ['\''] = 'kitty',
+  ['\''] = 'Terminal',
   ['\\'] = 'cn.futu.Niuniu',                      -- Futubull
   ['`'] = 'Microsoft Remote Desktop',
   -- ['1'] = '',
