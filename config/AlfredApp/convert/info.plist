@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.lukew.convert</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>C0117E27-0001-4000-8000-000000000001</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C0117E27-0002-4000-8000-000000000002</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Luke Wang</string>
+	<key>description</key>
+	<string>Convert units and currencies, with live exchange rates.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Convert</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>conv</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Converting…</string>
+				<key>script</key>
+				<string>/usr/bin/python3 convert.py "$1"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>units and currencies — 100 usd cny, 10 km mi, 72 f c</string>
+				<key>title</key>
+				<string>Convert</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>C0117E27-0001-4000-8000-000000000001</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>C0117E27-0002-4000-8000-000000000002</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Free-form unit and currency conversion.
+
+  conv 100 usd cny      100 USD in yuan
+  conv 100 usd          100 USD in every favourite currency
+  conv 1200*3 hkd sgd   the amount may be arithmetic
+  conv $100 to jpy      currency symbols work ($ ¥ € £ HK$ S$ …)
+  conv 10 km mi         units, across 12 dimensions
+  conv 72 f c           temperature
+  conv 1 gb mib         decimal and binary byte ladders
+
+↩ copies the bare number, ⌘↩ copies it with the unit.
+
+Exchange rates are cached under $XDG_CACHE_HOME/alfred-convert and
+served stale-while-revalidate, so the filter never waits on the
+network. Sources: open.er-api.com, falling back to the ECB via
+api.frankfurter.dev. Fiat only. Refresh by hand with `rates.py`.
+
+Source of truth: ~/.dotfiles/config/AlfredApp/convert (this directory
+is a symlink into it).
+
+Replaces deanishe's alfred-convert 3.7, which needed Python 2, pint
+and Alfred-Workflow — none of which survive on a modern macOS.</string>
+	<key>uidata</key>
+	<dict>
+		<key>C0117E27-0001-4000-8000-000000000001</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>40</integer>
+		</dict>
+		<key>C0117E27-0002-4000-8000-000000000002</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>40</integer>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>CNY,USD,HKD,SGD,EUR,JPY,GBP</string>
+				<key>placeholder</key>
+				<string>CNY,USD,EUR</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Shown when no target is given, e.g. `conv 100 usd`. Comma-separated ISO codes.</string>
+			<key>label</key>
+			<string>Favourite currencies</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>CONVERT_CURRENCIES</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>4</string>
+				<key>placeholder</key>
+				<string>4</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Significant decimals for results between 1 and 1000. Large numbers always use 2.</string>
+			<key>label</key>
+			<string>Decimal places</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>CONVERT_DECIMALS</string>
+		</dict>
+	</array>
+	<key>variables</key>
+	<dict>
+		<key>CONVERT_CURRENCIES</key>
+		<string>CNY,USD,HKD,SGD,EUR,JPY,GBP</string>
+		<key>CONVERT_DECIMALS</key>
+		<string>4</string>
+	</dict>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
