@@ -356,6 +356,11 @@ def build(query):
 
 def main():
     query = sys.argv[1] if len(sys.argv) > 1 else ""
+    # Alfred substitutes {query} only in `scriptargtype: 0` mode; this filter is
+    # argv mode (1), so seeing the placeholder literally means the two disagree.
+    # Degrade to the help rows rather than trying to convert "{query}".
+    if query.strip() == "{query}":
+        query = ""
     try:
         items = build(query)
     except Exception as exc:  # a Script Filter that crashes just shows nothing

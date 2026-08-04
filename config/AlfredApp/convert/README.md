@@ -105,6 +105,10 @@ Also worth knowing:
 - `alfredfiltersresults` is **false**: `convert.py` produces the answer for the
   query, so letting Alfred re-filter the rows would hide the CNY result the
   moment you typed `cny`.
+- `scriptargtype` is **1** (input as argv → `"$1"`). `0` means `{query}`
+  substitution instead, and getting it backwards passes the literal string
+  `{query}` to the script — `main()` guards against that rather than trying to
+  convert it.
 - `¥` maps to CNY, not JPY. It is genuinely ambiguous; CNY is the one being typed
   day to day, and `conv 100 jpy …` is the unambiguous spelling.
 - Data units are matched case-insensitively (`gb` and `GB` are both gigabytes) —
