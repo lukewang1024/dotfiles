@@ -1,0 +1,164 @@
+#!/bin/sh
+# tmux-layout-keep-sidebar — apply a select-layout preset to the workspace panes
+# only, keeping the agent sidebar out of the layout computation.
+#
+# tmux has no sidebar primitive. A window's layout is a binary split tree and
+# every pane is a leaf of it, so select-layout re-tiles ALL panes; there is no
+# per-pane "exclude from layout" option to set. The fixed-width sidebar
+# (tmux-agent-sidebar, which tags its pane with @pane_role=sidebar) therefore
+# gets swallowed by even-vertical / tiled / main-* like any other pane. This
+# script fakes the missing primitive by taking the sidebar out of the tree for
+# the duration of the layout change:
+#
+#   break-pane -d  sidebar parks in a throwaway detached window
+#   select-layout  the preset sees only the workspace panes
+#   join-pane -f   sidebar returns as a full-height top-level column, -l wide
+#
+# `-f` is what makes it work: it splits the *window* instead of the target pane,
+# so the sidebar spans the full height no matter what the preset did inside.
+# The throwaway window closes itself the moment the sidebar leaves it (tmux
+# destroys a window with no panes), so it lives for a few milliseconds; with
+# renumber-windows on it takes the first free index — normally one past the last
+# window, where its removal renumbers nothing. break-pane/join-pane have no
+# after-hooks of their own, so none of the sidebar plugin's hooks see the trip.
+#
+# usage: tmux-layout-keep-sidebar <layout-name>|-n|-p|-E [pane-id]
+#
+#   pane-id is the pane to work from — key bindings pass `#{pane_id}`, which
+#   run-shell expands. Do NOT rely on $TMUX_PANE here: tmux only exports it to
+#   processes spawned *in* a pane, not to run-shell children, so from a binding
+#   it is either absent or a stale value inherited by the server (which would
+#   silently retarget "current" on some other server).
+#
+#   -n / -p cycle the preset list like next-layout / previous-layout. They can't
+#   delegate to tmux: bringing the sidebar back with join-pane clears the
+#   window's stored "last preset" index, so tmux's own next-layout would restart
+#   from even-horizontal every time. The position is tracked in the
+#   @keep_sidebar_preset window option instead. Order matches tmux's own preset
+#   table (layout_set_table), not the M-1..M-7 key order.
+#
+#   -E is `select-layout -E` (spread out). It is already subtree-scoped, so it
+#   leaves the sidebar alone in every case but one: when the workspace holds a
+#   single pane, that pane's only sibling IS the sidebar and the spread splits
+#   the window 50/50. Running it through the same trip fixes that case and
+#   changes nothing about the others.
+
+set -u
+
+PRESETS='even-horizontal even-vertical main-horizontal main-horizontal-mirrored
+         main-vertical main-vertical-mirrored tiled'
+PRESET_OPT='@keep_sidebar_preset'
+
+usage() {
+	printf 'usage: %s <layout-name>|-n|-p|-E [pane-id]\n' "${0##*/}" >&2
+	exit 2
+}
+
+[ $# -ge 1 ] && [ $# -le 2 ] || usage
+
+# The pane the key was pressed in, if we were given one. Resolving the window
+# from it (rather than from "current") keeps `run -b` correct when the key press
+# and this process are no longer in lockstep. An unusable id falls back to the
+# current window instead of letting tmux read `-t ''` as "current" by accident.
+pane=${2:-${TMUX_PANE:-}}
+win=
+[ -n "$pane" ] && win=$(tmux display-message -pt "$pane" '#{window_id}' 2>/dev/null)
+if [ -z "$win" ]; then
+	pane=$(tmux display-message -p '#{pane_id}' 2>/dev/null)
+	win=$(tmux display-message -p '#{window_id}' 2>/dev/null)
+fi
+[ -n "$win" ] && [ -n "$pane" ] || {
+	printf '%s: no target window\n' "${0##*/}" >&2
+	exit 1
+}
+
+case $1 in
+-n | -p)
+	cur=$(tmux display-message -t "$win" -p "#{$PRESET_OPT}")
+	idx=0
+	total=0
+	for p in $PRESETS; do
+		total=$((total + 1))
+		if [ "$p" = "$cur" ]; then idx=$total; fi
+	done
+	if [ "$1" = -n ]; then
+		idx=$((idx % total + 1))
+	else
+		idx=$((idx - 1))
+		if [ "$idx" -lt 1 ]; then idx=$total; fi
+	fi
+	n=0
+	layout=
+	for p in $PRESETS; do
+		n=$((n + 1))
+		if [ "$n" -eq "$idx" ]; then
+			layout=$p
+			break
+		fi
+	done
+	;;
+-E) layout=-E ;;
+-*) usage ;;
+*) layout=$1 ;;
+esac
+
+# -E is a relative nudge, not a preset — remembering it would derail -n/-p.
+if [ "$layout" != -E ]; then
+	tmux set -qw -t "$win" "$PRESET_OPT" "$layout"
+fi
+
+sidebar=$(tmux list-panes -t "$win" -f '#{==:#{@pane_role},sidebar}' \
+	-F '#{pane_id}' 2>/dev/null | sed -n 1p)
+panes=$(tmux list-panes -t "$win" -F . 2>/dev/null | wc -l)
+
+# Nothing to protect, or the sidebar is the window's only pane (breaking it out
+# would take the window with it) — let tmux do its normal thing.
+if [ -z "$sidebar" ] || [ "$panes" -lt 2 ]; then
+	exec tmux select-layout -t "$win" "$layout"
+fi
+
+# Same resolution order as the plugin: pane-scoped option, percentage against
+# the live window width, plugin default of 30 for anything unusable.
+width=$(tmux display-message -t "$sidebar" -p '#{@sidebar_width}')
+case $width in
+*%)
+	pct=${width%\%}
+	ww=$(tmux display-message -t "$win" -p '#{window_width}')
+	case $pct in '' | *[!0-9]*) pct=15 ;; esac
+	case $ww in '' | *[!0-9]*) ww=0 ;; esac
+	width=$((ww * pct / 100))
+	;;
+esac
+case $width in '' | 0 | *[!0-9]*) width=30 ;; esac
+
+# Only an explicit `right` moves it; @sidebar_position defaults to left.
+join_before=-b
+case $(tmux display-message -t "$win" -p '#{@sidebar_position}') in
+[Rr][Ii][Gg][Hh][Tt]) join_before= ;;
+esac
+
+tmux break-pane -d -s "$sidebar" || exit 1
+
+# The presets are window-wide; -E is scoped to the pane it is aimed at, which
+# must be the pane the key came from. Pressed inside the sidebar there is no
+# workspace subtree to spread, so the trip degrades to re-pinning the width.
+case $layout in
+-E) if [ "$pane" != "$sidebar" ]; then tmux select-layout -E -t "$pane"; fi ;;
+*) tmux select-layout -t "$win" "$layout" ;;
+esac
+
+# Retry without -l before giving up: a window too narrow for the configured
+# width makes join-pane fail outright, and a half-width sidebar beats one
+# stranded in a window of its own.
+# shellcheck disable=SC2086 # $join_before is a single flag or empty, by design
+tmux join-pane -f -h $join_before -l "$width" -s "$sidebar" -t "$win" 2>/dev/null ||
+	tmux join-pane -f -h $join_before -s "$sidebar" -t "$win" 2>/dev/null || {
+		tmux display-message "keep-sidebar: could not rejoin sidebar (window \
+too small?) — it is parked in window $(tmux display-message -t "$sidebar" \
+			-p '#{window_index}')"
+		exit 1
+	}
+
+# Tolerant: the pane may be gone by now (async `run -b`), and a nonzero exit
+# from a key binding only shows up as noise in tmux's message log.
+tmux select-pane -t "$pane" 2>/dev/null || true
