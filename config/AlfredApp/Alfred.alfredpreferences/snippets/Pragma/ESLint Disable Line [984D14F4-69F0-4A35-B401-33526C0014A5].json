@@ -1,0 +1,8 @@
+{
+  "alfredsnippet" : {
+    "snippet" : "\/\/ eslint-disable-line {cursor}",
+    "uid" : "984D14F4-69F0-4A35-B401-33526C0014A5",
+    "name" : "ESLint Disable Line",
+    "keyword" : "edl"
+  }
+}
