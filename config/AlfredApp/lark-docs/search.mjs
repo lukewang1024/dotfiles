@@ -51,12 +51,20 @@ function emit(items, rerun) {
   process.stdout.write(JSON.stringify(out));
 }
 
+// Alfred can fire one of its own workflow's External Triggers over its URL
+// scheme, and this filter's ↩ already feeds an Open URL action — so handing back
+// a runtrigger URL makes the row itself sign you in. That replaced the old `ll`
+// keyword outright: an entry point you have to remember, which does nothing on
+// 99% of days, and which the human could not find at the one moment it mattered.
+const LOGIN_URL = 'alfred://runtrigger/com.lukew.larkdocs/login/';
+
 function loginPrompt(detail) {
   emit([
     {
-      title: 'Lark session expired or not set up',
-      subtitle: `Type  ll  to sign in${detail ? `  ·  ${detail}` : ''}`,
-      valid: false,
+      title: 'Sign in to Lark',
+      subtitle: `↩ opens Chrome to refresh the session${detail ? `  ·  ${detail}` : ''}`,
+      valid: true,
+      arg: LOGIN_URL,
       icon: { path: join(ICON_DIR, 'login.png') },
     },
   ]);
@@ -121,11 +129,22 @@ async function main() {
 }
 
 main().catch((e) => {
+  // Signing in is the fix for most failures here, and since the `ll` keyword was
+  // retired this row is the only way in — so always offer it, even when the
+  // error was not recognised as an auth problem. Without this, one unclassified
+  // server message would leave the workflow with no login path at all.
   emit([
     {
       title: 'Lark Docs error',
       subtitle: String(e && e.message ? e.message : e),
       valid: false,
+    },
+    {
+      title: 'Sign in to Lark',
+      subtitle: '↩ opens Chrome to refresh the session',
+      valid: true,
+      arg: LOGIN_URL,
+      icon: { path: join(ICON_DIR, 'login.png') },
     },
   ]);
 });

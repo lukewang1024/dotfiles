@@ -8,6 +8,32 @@
 	<string>Tools</string>
 	<key>connections</key>
 	<dict>
+		<key>ET000000-0000-0000-0000-000000000007</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>RS000000-0000-0000-0000-000000000005</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>RS000000-0000-0000-0000-000000000005</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>NO000000-0000-0000-0000-000000000006</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>SF000000-0000-0000-0000-000000000001</key>
 		<array>
 			<dict>
@@ -37,32 +63,6 @@
 				<integer>524288</integer>
 				<key>modifiersubtext</key>
 				<string>Copy title + link</string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>KW000000-0000-0000-0000-000000000004</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>RS000000-0000-0000-0000-000000000005</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>RS000000-0000-0000-0000-000000000005</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>NO000000-0000-0000-0000-000000000006</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -173,27 +173,6 @@ exec node search.mjs "$1"</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>2</integer>
-				<key>keyword</key>
-				<string>ll</string>
-				<key>subtext</key>
-				<string>Sign in / refresh the Feishu session for Lark Docs</string>
-				<key>text</key>
-				<string>Sign in to Lark Docs</string>
-				<key>withspace</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>KW000000-0000-0000-0000-000000000004</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -236,63 +215,81 @@ node auth.mjs</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>passinputasargument</key>
+				<false/>
+				<key>triggerid</key>
+				<string>login</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>ET000000-0000-0000-0000-000000000007</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
-	<string>Lark Docs for Alfred
+	<string>Browse recent Lark/Feishu docs and search all docs.
 
-Keywords:
-  ld [query]   Browse recent Feishu docs; type to filter recents and search all of Lark.
-  ll           Sign in / refresh the Feishu session (opens Chrome; scan the QR the first time).
+  ld [query]   recent docs; 2+ chars also searches all of Lark
 
-Actions on a result:
-  ↩   Open in browser
-  ⌘↩  Copy link
-  ⌥↩  Copy title + link (Markdown)
+↩ open · ⌘↩ copy link · ⌥↩ copy title + link
 
-Requires Node (Homebrew) and Google Chrome. Logic lives in search.mjs / auth.mjs / lib.mjs.</string>
+When the session has expired, `ld` shows a 'Sign in to Lark' row — ↩ on it
+opens Chrome to refresh the cookie jar. There is no separate login keyword;
+the row appears exactly when it is needed. (It fires the `login` External
+Trigger, reachable as alfred://runtrigger/com.lukew.larkdocs/login/ .)
+
+Source of truth: ~/.dotfiles/config/AlfredApp/lark-docs (this directory is a
+symlink into it). Needs Homebrew node and Google Chrome.</string>
 	<key>uidata</key>
 	<dict>
 		<key>CP000000-0000-0000-0000-000000000003</key>
 		<dict>
 			<key>xpos</key>
-			<real>520</real>
+			<real>520.0</real>
 			<key>ypos</key>
-			<real>180</real>
+			<real>180.0</real>
 		</dict>
-		<key>KW000000-0000-0000-0000-000000000004</key>
+		<key>ET000000-0000-0000-0000-000000000007</key>
 		<dict>
 			<key>xpos</key>
-			<real>120</real>
+			<integer>40</integer>
 			<key>ypos</key>
-			<real>340</real>
+			<integer>300</integer>
 		</dict>
 		<key>NO000000-0000-0000-0000-000000000006</key>
 		<dict>
 			<key>xpos</key>
-			<real>520</real>
+			<real>520.0</real>
 			<key>ypos</key>
-			<real>340</real>
+			<real>340.0</real>
 		</dict>
 		<key>OU000000-0000-0000-0000-000000000002</key>
 		<dict>
 			<key>xpos</key>
-			<real>520</real>
+			<real>520.0</real>
 			<key>ypos</key>
-			<real>40</real>
+			<real>40.0</real>
 		</dict>
 		<key>RS000000-0000-0000-0000-000000000005</key>
 		<dict>
 			<key>xpos</key>
-			<real>320</real>
+			<real>320.0</real>
 			<key>ypos</key>
-			<real>340</real>
+			<real>340.0</real>
 		</dict>
 		<key>SF000000-0000-0000-0000-000000000001</key>
 		<dict>
 			<key>xpos</key>
-			<real>120</real>
+			<real>120.0</real>
 			<key>ypos</key>
-			<real>90</real>
+			<real>90.0</real>
 		</dict>
 	</dict>
 	<key>variables</key>

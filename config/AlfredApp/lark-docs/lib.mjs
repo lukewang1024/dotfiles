@@ -62,8 +62,21 @@ async function getJSON(url, cookie) {
     throw new AuthError('non-JSON response (likely a login page)');
   }
   if (body.code !== 0) {
-    // code 1 / login-required style errors → treat as auth problem.
-    if (body.code === 1 || /login|token|auth|permission/i.test(body.msg || '')) {
+    // Anything that smells like "your session is gone" must become an AuthError,
+    // because that is the only thing search.mjs turns into an actionable
+    // "sign in with ll" row — a generic Error there is a dead end for the human.
+    //
+    // The literal message an expired Feishu session returns is "Something went
+    // wrong, please log in again.", which the original /login/ pattern missed:
+    // the server writes "log in" with a space. Match both spellings, and the
+    // other phrasings seen from this API, rather than relying on the code alone
+    // (it is not 1 for this case).
+    if (
+      body.code === 1 ||
+      /log\s?in|logged|sign\s?[- ]?in|token|auth|permission|session|expired|credential/i.test(
+        body.msg || '',
+      )
+    ) {
       throw new AuthError(body.msg || `code ${body.code}`);
     }
     throw new Error(body.msg || `code ${body.code}`);
