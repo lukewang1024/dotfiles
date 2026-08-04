@@ -1,0 +1,105 @@
+#!/bin/sh
+# alfred-prefs-folder — point Alfred at the preferences bundle in this repo.
+#
+# Alfred keeps its entire configuration in one directory ("the sync folder"),
+# named in ~/Library/Application Support/Alfred/prefs.json. That indirection is
+# how Alfred supports Dropbox/iCloud sync — and it is equally how the bundle can
+# live in a dotfiles repo instead, which is what this does:
+#
+#   prefs.json .current      -> <repo>/config/AlfredApp/Alfred.alfredpreferences
+#   prefs.json .syncfolders  -> <repo>/config/AlfredApp
+#
+# Everything Alfred needs is then tracked in git — settings, snippets, web
+# searches, hotkeys — and the workflows are repo-relative symlinks that resolve
+# on any machine with no install step at all. What is NOT tracked lives in
+# ~/Library/Application Support/Alfred: the Powerpack licence, the clipboard and
+# knowledge databases, and preferences/local/<machine-hash>/ (gitignored),
+# because all of it is per-machine by nature.
+#
+# Idempotent: re-running with the path already set changes nothing.
+#
+# POSIX sh.
+set -u
+
+repo=${DOTFILES:-$HOME/.dotfiles}
+folder="$repo/config/AlfredApp"
+bundle="$folder/Alfred.alfredpreferences"
+prefs="$HOME/Library/Application Support/Alfred/prefs.json"
+
+if [ ! -d "$bundle/workflows" ]; then
+	printf 'alfred-prefs-folder: no bundle at %s\n' "$bundle" >&2
+	exit 1
+fi
+
+if [ ! -f "$prefs" ]; then
+	printf 'alfred-prefs-folder: %s not found — open Alfred once (with Powerpack) first.\n' "$prefs" >&2
+	exit 1
+fi
+
+# The rewrite is split from the check so that the common case — provisioning a
+# machine that is already pointed here — costs nothing. Quitting Alfred to
+# re-set a value it already holds would make every `init macos` run bounce the
+# launcher for no reason.
+apply() {
+	/usr/bin/python3 - "$prefs" "$bundle" "$folder" "$1" <<'PY'
+import json, os, sys
+
+path, bundle, folder, mode = sys.argv[1:5]
+home = os.path.expanduser("~")
+# Alfred writes syncfolders with a literal ~; match that so the file stays
+# byte-comparable with what Alfred itself would produce.
+tilde = folder.replace(home, "~", 1) if folder.startswith(home) else folder
+
+with open(path) as fh:
+    data = json.load(fh)
+
+before = (data.get("current"), (data.get("syncfolders") or {}).get("5"))
+if before == (bundle, tilde):
+    sys.exit(0)          # already correct
+if mode == "check":
+    sys.exit(10)         # needs a rewrite
+
+data["current"] = bundle
+data.setdefault("syncfolders", {})["5"] = tilde
+tmp = path + ".tmp"
+with open(tmp, "w") as fh:
+    json.dump(data, fh, indent=2)
+os.replace(tmp, path)
+print("alfred-prefs-folder: %s -> %s" % (before[0], bundle))
+PY
+}
+
+apply check
+case $? in
+0)
+	printf 'alfred-prefs-folder: already pointing at %s\n' "$bundle"
+	exit 0
+	;;
+10) ;;
+*)
+	printf 'alfred-prefs-folder: could not read %s\n' "$prefs" >&2
+	exit 1
+	;;
+esac
+
+# Alfred rewrites prefs.json when it quits, so a running instance would happily
+# stamp the old path back over ours. Ask it to quit first, then relaunch it — it
+# reads the new location on the way up.
+relaunch=0
+if pgrep -x Alfred >/dev/null 2>&1; then
+	osascript -e 'tell application id "com.runningwithcrayons.Alfred" to quit' >/dev/null 2>&1
+	# Give it a moment to finish writing before we edit the file underneath it.
+	n=0
+	while pgrep -x Alfred >/dev/null 2>&1 && [ "$n" -lt 20 ]; do
+		n=$((n + 1))
+		/bin/sleep 0.25
+	done
+	relaunch=1
+fi
+
+apply write
+status=$?
+
+[ "$relaunch" = 1 ] && open -a "Alfred 5" >/dev/null 2>&1
+
+exit "$status"

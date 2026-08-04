@@ -336,12 +336,29 @@ set_macos_configs()
   # Handy scripts
   backup_then_symlink "$util_dir/macos/setup-launchagent" "$bin_dir/setup-launchagent"
   backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
+  backup_then_symlink "$util_dir/macos/alfred-prefs-folder" "$bin_dir/alfred-prefs-folder"
 
+  setup_alfred_prefs
   setup_peon_relay_agent
 
   brew_multi_user_permission
   fix_battery_drain_over_sleep
   better_macos_defaults # This needs to be the last one, as Terminal will be killed when finish.
+}
+
+setup_alfred_prefs()
+{
+  # Alfred keeps its whole configuration in one "sync folder" whose location is
+  # named in prefs.json — the same indirection it offers for Dropbox/iCloud, used
+  # here to put the bundle in this repo instead. Workflows inside it are
+  # repo-relative symlinks that are themselves tracked, so there is nothing to
+  # link per workflow: pointing Alfred at the folder is the entire install.
+  #
+  # No-ops (without bouncing Alfred) when the path is already set, so this is
+  # safe on every provisioning run. Needs Alfred to have run once for prefs.json
+  # to exist at all, hence the tolerated failure.
+  "$util_dir/macos/alfred-prefs-folder" || \
+    echo 'Alfred preferences folder not set; open Alfred once and re-run `alfred-prefs-folder`.'
 }
 
 setup_peon_relay_agent()

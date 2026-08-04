@@ -1,0 +1,8 @@
+{
+  "alfredsnippet" : {
+    "snippet" : " --no-verify",
+    "uid" : "8F714064-63DF-4957-94C4-AD49231593D1",
+    "name" : "Git no hook verify",
+    "keyword" : "nf"
+  }
+}

@@ -1,0 +1,10 @@
+# Alfred writes its live preferences bundle straight into this directory (its
+# sync folder points here), so a few paths are runtime state rather than config.
+
+# Per-machine settings, keyed by a hash of the machine. Alfred writes one
+# subdirectory per Mac that has ever opened this bundle — appearance, clipboard
+# retention, per-machine hotkeys. Tracking them means every machine fights over
+# every other machine's file.
+Alfred.alfredpreferences/preferences/local/
+
+.DS_Store

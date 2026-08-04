@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.gustafson.william</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>23D44C18-E641-4CF3-B476-DFE823E5F9A7</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6AA02264-0003-4000-8000-000000000003</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>68DEE6E1-9F67-4CF3-8042-621F90399282</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>58D638D0-C097-4DDF-9156-3B7B39F39F26</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>6AA02264-0001-4000-8000-000000000001</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6AA02264-0002-4000-8000-000000000002</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>6AA02264-0004-4000-8000-000000000004</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6AA02264-0002-4000-8000-000000000002</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+		<key>BB20B8E7-6120-4FBE-9C6C-60AC9EBBE2D1</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C66D76B8-97C8-43D4-8D30-B00982C22EB2</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>William C. Gustafson</string>
+	<key>description</key>
+	<string>Keep your Mac awake with Amphetamine.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Amphetamine Control</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>amphetamine on</string>
+				<key>subtext</key>
+				<string>Optional duration, e.g. 30m, 2h, 1h 30m</string>
+				<key>text</key>
+				<string>Turn Amphetamine On</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>68DEE6E1-9F67-4CF3-8042-621F90399282</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>applescript</key>
+				<string>on alfred_script(q)
+	my logLine("[on] invoked q=[" &amp; (q as text) &amp; "]")
+	try
+		set mins to my startSession(q)
+		my logLine("[on] ok mins=" &amp; mins)
+	on error errMsg number errNum
+		my reportError("[on]", errMsg, errNum)
+	end try
+end alfred_script
+
+on logLine(msg)
+	try
+		do shell script "mkdir -p \"$HOME/.local/state\"; printf '%s %s\n' \"$(date +%FT%T)\" " &amp; quoted form of (msg as text) &amp; " &gt;&gt; \"$HOME/.local/state/amphetamine-alfred.log\""
+	end try
+end logLine
+
+on parseMinutes(q)
+	set total to 0
+	set numbuf to ""
+	set bareVals to {}
+	set sawUnit to false
+	repeat with i from 1 to (count of characters of q)
+		set c to character i of q
+		if c is in "0123456789" then
+			set numbuf to numbuf &amp; c
+		else if c is "h" then
+			if numbuf is not "" then
+				set total to total + ((numbuf as integer) * 60)
+				set numbuf to ""
+				set sawUnit to true
+			end if
+		else if c is "m" then
+			if numbuf is not "" then
+				set total to total + (numbuf as integer)
+				set numbuf to ""
+				set sawUnit to true
+			end if
+		else
+			if numbuf is not "" then
+				set end of bareVals to (numbuf as integer)
+				set numbuf to ""
+			end if
+		end if
+	end repeat
+	if numbuf is not "" then set end of bareVals to (numbuf as integer)
+
+	-- Two bare numbers with no unit letters means "hours minutes" (e.g. "1 30").
+	if sawUnit is false and (count of bareVals) is 2 then
+		return (item 1 of bareVals) * 60 + (item 2 of bareVals)
+	end if
+	repeat with v in bareVals
+		set total to total + (v as integer)
+	end repeat
+	return total
+end parseMinutes
+
+on startSession(q)
+	set mins to my parseMinutes(q as text)
+	with timeout of 10 seconds
+		tell application "Amphetamine"
+			-- displaySleepAllowed is NOT optional: omitting it makes the handler
+			-- fail with -10000, despite what Amphetamine.sdef implies. Carry the
+			-- current preference through so the session matches the app's setting.
+			set dsa to display sleep allowed
+			if mins &gt; 0 then
+				start new session with options {duration:mins, interval:minutes, displaySleepAllowed:dsa}
+			else
+				start new session with options {duration:0, interval:0, displaySleepAllowed:dsa}
+			end if
+		end tell
+	end timeout
+	return mins
+end startSession
+
+on reportError(label, errMsg, errNum)
+	my logLine(label &amp; " ERROR " &amp; errNum &amp; ": " &amp; errMsg)
+	display notification errMsg with title "Amphetamine workflow failed" subtitle ("AppleScript error " &amp; errNum)
+end reportError
+</string>
+				<key>cachescript</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.applescript</string>
+			<key>uid</key>
+			<string>58D638D0-C097-4DDF-9156-3B7B39F39F26</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>amphetamine off</string>
+				<key>text</key>
+				<string>Turn Amphetamine Off</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>BB20B8E7-6120-4FBE-9C6C-60AC9EBBE2D1</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>applescript</key>
+				<string>on alfred_script(q)
+	my logLine("[off] invoked")
+	try
+		with timeout of 10 seconds
+			tell application "Amphetamine" to end session
+		end timeout
+		my logLine("[off] ok")
+	on error errMsg number errNum
+		my reportError("[off]", errMsg, errNum)
+	end try
+end alfred_script
+
+on logLine(msg)
+	try
+		do shell script "mkdir -p \"$HOME/.local/state\"; printf '%s %s\n' \"$(date +%FT%T)\" " &amp; quoted form of (msg as text) &amp; " &gt;&gt; \"$HOME/.local/state/amphetamine-alfred.log\""
+	end try
+end logLine
+
+on parseMinutes(q)
+	set total to 0
+	set numbuf to ""
+	set bareVals to {}
+	set sawUnit to false
+	repeat with i from 1 to (count of characters of q)
+		set c to character i of q
+		if c is in "0123456789" then
+			set numbuf to numbuf &amp; c
+		else if c is "h" then
+			if numbuf is not "" then
+				set total to total + ((numbuf as integer) * 60)
+				set numbuf to ""
+				set sawUnit to true
+			end if
+		else if c is "m" then
+			if numbuf is not "" then
+				set total to total + (numbuf as integer)
+				set numbuf to ""
+				set sawUnit to true
+			end if
+		else
+			if numbuf is not "" then
+				set end of bareVals to (numbuf as integer)
+				set numbuf to ""
+			end if
+		end if
+	end repeat
+	if numbuf is not "" then set end of bareVals to (numbuf as integer)
+
+	-- Two bare numbers with no unit letters means "hours minutes" (e.g. "1 30").
+	if sawUnit is false and (count of bareVals) is 2 then
+		return (item 1 of bareVals) * 60 + (item 2 of bareVals)
+	end if
+	repeat with v in bareVals
+		set total to total + (v as integer)
+	end repeat
+	return total
+end parseMinutes
+
+on startSession(q)
+	set mins to my parseMinutes(q as text)
+	with timeout of 10 seconds
+		tell application "Amphetamine"
+			-- displaySleepAllowed is NOT optional: omitting it makes the handler
+			-- fail with -10000, despite what Amphetamine.sdef implies. Carry the
+			-- current preference through so the session matches the app's setting.
+			set dsa to display sleep allowed
+			if mins &gt; 0 then
+				start new session with options {duration:mins, interval:minutes, displaySleepAllowed:dsa}
+			else
+				start new session with options {duration:0, interval:0, displaySleepAllowed:dsa}
+			end if
+		end tell
+	end timeout
+	return mins
+end startSession
+
+on reportError(label, errMsg, errNum)
+	my logLine(label &amp; " ERROR " &amp; errNum &amp; ": " &amp; errMsg)
+	display notification errMsg with title "Amphetamine workflow failed" subtitle ("AppleScript error " &amp; errNum)
+end reportError
+</string>
+				<key>cachescript</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.applescript</string>
+			<key>uid</key>
+			<string>C66D76B8-97C8-43D4-8D30-B00982C22EB2</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>amphetamine help</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Reading current state…</string>
+				<key>script</key>
+				<string>/usr/bin/python3 help.py</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Commands, duration formats and current session state</string>
+				<key>title</key>
+				<string>Amphetamine workflow help</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>23D44C18-E641-4CF3-B476-DFE823E5F9A7</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>amphetamine toggle</string>
+				<key>subtext</key>
+				<string>Optional duration when starting, e.g. 30m, 2h</string>
+				<key>text</key>
+				<string>Toggle Amphetamine</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>6AA02264-0001-4000-8000-000000000001</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>applescript</key>
+				<string>on alfred_script(q)
+	my logLine("[toggle] invoked q=[" &amp; (q as text) &amp; "]")
+	try
+		with timeout of 10 seconds
+			tell application "Amphetamine" to set isOn to (session is active)
+		end timeout
+		my logLine("[toggle] session is active = " &amp; (isOn as text))
+		if isOn then
+			with timeout of 10 seconds
+				tell application "Amphetamine" to end session
+			end timeout
+			my logLine("[toggle] ended")
+		else
+			set mins to my startSession(q)
+			my logLine("[toggle] started mins=" &amp; mins)
+		end if
+	on error errMsg number errNum
+		my reportError("[toggle]", errMsg, errNum)
+	end try
+end alfred_script
+
+on logLine(msg)
+	try
+		do shell script "mkdir -p \"$HOME/.local/state\"; printf '%s %s\n' \"$(date +%FT%T)\" " &amp; quoted form of (msg as text) &amp; " &gt;&gt; \"$HOME/.local/state/amphetamine-alfred.log\""
+	end try
+end logLine
+
+on parseMinutes(q)
+	set total to 0
+	set numbuf to ""
+	set bareVals to {}
+	set sawUnit to false
+	repeat with i from 1 to (count of characters of q)
+		set c to character i of q
+		if c is in "0123456789" then
+			set numbuf to numbuf &amp; c
+		else if c is "h" then
+			if numbuf is not "" then
+				set total to total + ((numbuf as integer) * 60)
+				set numbuf to ""
+				set sawUnit to true
+			end if
+		else if c is "m" then
+			if numbuf is not "" then
+				set total to total + (numbuf as integer)
+				set numbuf to ""
+				set sawUnit to true
+			end if
+		else
+			if numbuf is not "" then
+				set end of bareVals to (numbuf as integer)
+				set numbuf to ""
+			end if
+		end if
+	end repeat
+	if numbuf is not "" then set end of bareVals to (numbuf as integer)
+
+	-- Two bare numbers with no unit letters means "hours minutes" (e.g. "1 30").
+	if sawUnit is false and (count of bareVals) is 2 then
+		return (item 1 of bareVals) * 60 + (item 2 of bareVals)
+	end if
+	repeat with v in bareVals
+		set total to total + (v as integer)
+	end repeat
+	return total
+end parseMinutes
+
+on startSession(q)
+	set mins to my parseMinutes(q as text)
+	with timeout of 10 seconds
+		tell application "Amphetamine"
+			-- displaySleepAllowed is NOT optional: omitting it makes the handler
+			-- fail with -10000, despite what Amphetamine.sdef implies. Carry the
+			-- current preference through so the session matches the app's setting.
+			set dsa to display sleep allowed
+			if mins &gt; 0 then
+				start new session with options {duration:mins, interval:minutes, displaySleepAllowed:dsa}
+			else
+				start new session with options {duration:0, interval:0, displaySleepAllowed:dsa}
+			end if
+		end tell
+	end timeout
+	return mins
+end startSession
+
+on reportError(label, errMsg, errNum)
+	my logLine(label &amp; " ERROR " &amp; errNum &amp; ": " &amp; errMsg)
+	display notification errMsg with title "Amphetamine workflow failed" subtitle ("AppleScript error " &amp; errNum)
+end reportError
+</string>
+				<key>cachescript</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.applescript</string>
+			<key>uid</key>
+			<string>6AA02264-0002-4000-8000-000000000002</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>6AA02264-0003-4000-8000-000000000003</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>amphetamine status</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Reading Amphetamine state…</string>
+				<key>script</key>
+				<string>/usr/bin/python3 status.py</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Session, sleep settings, Triggers — ↩ toggles the session</string>
+				<key>title</key>
+				<string>Amphetamine status</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>6AA02264-0004-4000-8000-000000000004</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Control Amphetamine from Alfred.
+
+  amphetamine on [duration]      start a session (indefinite if no duration)
+  amphetamine off                end the current session
+  amphetamine toggle [duration]  end if active, otherwise start
+  amphetamine status             session, sleep settings, Triggers (↩ toggles)
+  amphetamine help               command reference + usage stats
+
+Durations accept 30m, 2h, 1h 30m, 90 (minutes) or 1 30 (hours minutes).
+
+Source of truth: ~/.dotfiles/config/AlfredApp/amphetamine (this directory is
+a symlink into it; run install.sh to relink). Every invocation is logged to
+~/.local/state/amphetamine-alfred.log and failures raise a notification.
+
+Originally 'Amphetamine Control' by William C. Gustafson (2016); rewritten
+for the Amphetamine 5.x AppleScript dictionary.</string>
+	<key>uidata</key>
+	<dict>
+		<key>23D44C18-E641-4CF3-B476-DFE823E5F9A7</key>
+		<dict>
+			<key>ypos</key>
+			<real>250.0</real>
+		</dict>
+		<key>58D638D0-C097-4DDF-9156-3B7B39F39F26</key>
+		<dict>
+			<key>ypos</key>
+			<real>10.0</real>
+		</dict>
+		<key>68DEE6E1-9F67-4CF3-8042-621F90399282</key>
+		<dict>
+			<key>ypos</key>
+			<real>10.0</real>
+		</dict>
+		<key>6AA02264-0001-4000-8000-000000000001</key>
+		<dict>
+			<key>ypos</key>
+			<real>370.0</real>
+		</dict>
+		<key>6AA02264-0002-4000-8000-000000000002</key>
+		<dict>
+			<key>ypos</key>
+			<real>370.0</real>
+		</dict>
+		<key>6AA02264-0003-4000-8000-000000000003</key>
+		<dict>
+			<key>ypos</key>
+			<real>250.0</real>
+		</dict>
+		<key>6AA02264-0004-4000-8000-000000000004</key>
+		<dict>
+			<key>ypos</key>
+			<real>490.0</real>
+		</dict>
+		<key>BB20B8E7-6120-4FBE-9C6C-60AC9EBBE2D1</key>
+		<dict>
+			<key>ypos</key>
+			<real>130.0</real>
+		</dict>
+		<key>C66D76B8-97C8-43D4-8D30-B00982C22EB2</key>
+		<dict>
+			<key>ypos</key>
+			<real>130.0</real>
+		</dict>
+	</dict>
+	<key>webaddress</key>
+	<string>https://roaringapps.com/app/amphetamine</string>
+</dict>
+</plist>

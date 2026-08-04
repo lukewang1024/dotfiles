@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>customSites</key>
+	<dict>
+		<key>0A49D3C8-9210-4247-8A2A-2CE819428968</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>brew</string>
+			<key>text</key>
+			<string>Search Homebrew Formula for '{query}'</string>
+			<key>url</key>
+			<string>http://brewformulas.org/search?utf8=✓&amp;search[terms]={query}&amp;button=&amp;search[names]=0&amp;search[names]=1&amp;search[filenames]=0&amp;search[filenames]=1&amp;search[descriptions]=0&amp;search[descriptions]=1</string>
+			<key>utf8</key>
+			<true/>
+		</dict>
+		<key>390FE6E1-873E-4A6C-BE2C-E98B058F329B</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>code</string>
+			<key>text</key>
+			<string>Open {query} in code.byted.org</string>
+			<key>url</key>
+			<string>https://code.byted.org/{query}</string>
+		</dict>
+		<key>6548DB7F-C0C1-46E6-978C-934F9E510CDD</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>codebase</string>
+			<key>text</key>
+			<string>Search codebase for '{query}'</string>
+			<key>url</key>
+			<string>https://code.byted.org/search?query={query}+type:repo</string>
+		</dict>
+		<key>8241428A-FCBC-4E05-9CE9-94D6171A446C</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>rodoc</string>
+			<key>text</key>
+			<string>Roku SDK Doc for {query}</string>
+			<key>url</key>
+			<string>https://sdkdocs.roku.com/display/sdkdoc/{query}</string>
+			<key>utf8</key>
+			<true/>
+		</dict>
+		<key>85110FBE-5AD1-47B5-BDA5-4BBCB0950438</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>urlencode</string>
+			<key>text</key>
+			<string>URL Encode '{query}'</string>
+			<key>url</key>
+			<string>https://urldecode.org/?text={query}&amp;mode=encode</string>
+			<key>utf8</key>
+			<true/>
+		</dict>
+		<key>9A2A919F-4ABA-48E6-A2B9-073E8C2765B3</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>choco</string>
+			<key>text</key>
+			<string>Search Chocolatey Package for '{query}'</string>
+			<key>url</key>
+			<string>https://chocolatey.org/packages?q={query}</string>
+			<key>utf8</key>
+			<true/>
+		</dict>
+		<key>F9454E83-8D31-4527-BD7B-54B177EC4C06</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>urldecode</string>
+			<key>text</key>
+			<string>URL Decode '{query}'</string>
+			<key>url</key>
+			<string>https://urldecode.org/?text={query}&amp;mode=decode</string>
+			<key>utf8</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>
