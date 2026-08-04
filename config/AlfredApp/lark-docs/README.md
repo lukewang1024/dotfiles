@@ -4,12 +4,17 @@ Browse recent Lark/Feishu docs and search all of Lark from Alfred.
 
 ## Keywords
 
-| Keyword | What it does                                                           |
-| ------- | ---------------------------------------------------------------------- |
-| `ld`    | Show recent docs. Type to filter recents *and* search all of Lark.     |
-| `ll`    | Sign in / refresh the Feishu session (opens Chrome; scan the QR once).  |
+| Keyword | What it does                                                       |
+| ------- | ------------------------------------------------------------------ |
+| `ld`    | Show recent docs. Type to filter recents *and* search all of Lark. |
 
 On a result: `↩` open in browser · `⌘↩` copy link · `⌥↩` copy title + link (Markdown).
+
+There is **no login keyword**. When the session has expired, `ld` shows a
+*Sign in to Lark* row and `↩` on it opens Chrome to refresh the cookie jar — the
+entry point appears exactly when it is needed instead of being a keyword you have
+to remember. It fires the workflow's `login` External Trigger, also reachable as
+`alfred://runtrigger/com.lukew.larkdocs/login/` or by running `node auth.mjs`.
 
 ## How it works
 
@@ -24,7 +29,7 @@ incremental, case-insensitive, AND-of-words match. For queries of 2+ characters
 it also calls the server search and merges those results below the recent hits
 (deduped). Search responses are cached 1 min.
 
-`ll` launches a dedicated-profile Chrome (`~/.config/lark-alfred/chrome`)
+`auth.mjs` launches a dedicated-profile Chrome (`~/.config/lark-alfred/chrome`)
 on a CDP port, waits until the session authenticates, then extracts the cookie
 jar via the DevTools protocol and saves it to `~/.config/lark-alfred/cookies`
 (mode 600). The profile persists, so later refreshes are silent (no QR).
@@ -42,7 +47,7 @@ and `~/.cache/lark-alfred/` (recent/search caches).
 ## Requirements
 
 - Node ≥ 18 (Homebrew `node`; v18+ for global `fetch`).
-- Google Chrome (for `ll`).
+- Google Chrome (for the sign-in flow).
 - Alfred with Powerpack.
 
 ## Install
@@ -52,4 +57,4 @@ Nothing to run. Alfred's sync folder is `~/.dotfiles/config/AlfredApp`, and
 symlink back to this directory — both are tracked, so a fresh clone is already
 wired up. See `../README.md`.
 
-Run `ll` once to sign in.
+Run `ld` once; if there is no session yet it offers the *Sign in to Lark* row.
