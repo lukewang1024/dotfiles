@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.lukew.dark-mode</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>D48C1A20-0001-4000-8000-000000000001</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>D48C1A20-0002-4000-8000-000000000002</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Luke Wang</string>
+	<key>description</key>
+	<string>Toggle the macOS light/dark appearance.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Dark Mode</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>dark</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Reading current appearance…</string>
+				<key>script</key>
+				<string>/usr/bin/python3 filter.py</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Toggle the macOS light/dark appearance</string>
+				<key>title</key>
+				<string>Dark Mode</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>D48C1A20-0001-4000-8000-000000000001</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>./apply.sh "$1"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>D48C1A20-0002-4000-8000-000000000002</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Toggle the macOS system appearance.
+
+  dark          switch to the other appearance
+  dark light    force light
+  dark dark     force dark
+
+Setting the OS appearance is all this does. nvim, Alacritty, tmux and
+any attached SSH devbox already follow the OS switch through the
+appearance-daemon LaunchAgent (dark-notify) and tmux-dark-notify, so
+there is nothing extra to drive from here. If that daemon is not
+loaded, apply.sh falls back to running theme-sync directly.
+
+Source of truth: ~/.dotfiles/config/AlfredApp/dark-mode (this directory
+is a symlink into it).
+
+Replaces 'Dark Mode' by Sindre Sorhus (2017), which shipped 2.5 MB of
+unused node_modules to run four lines of AppleScript.</string>
+	<key>uidata</key>
+	<dict>
+		<key>D48C1A20-0001-4000-8000-000000000001</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>40</integer>
+		</dict>
+		<key>D48C1A20-0002-4000-8000-000000000002</key>
+		<dict>
+			<key>xpos</key>
+			<integer>250</integer>
+			<key>ypos</key>
+			<integer>40</integer>
+		</dict>
+	</dict>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
