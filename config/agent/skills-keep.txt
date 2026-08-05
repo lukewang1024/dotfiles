@@ -1,0 +1,54 @@
+# Public agent skill keep-list for ~/.agents/skills and ~/.claude/skills.
+#
+# Keep this file suitable for committing to a public dotfiles repository.
+# Put company-internal or machine-private skill names in:
+#   config/agent/skills-keep.local.txt
+#
+# agent-skills-prune reads both files by default. Each non-comment line is an
+# exact skill directory name to keep.
+
+# Codex built-in/system skills.
+.system
+
+# OpenAI official plugin skills (loaded from ~/.codex/plugins/cache/openai-*,
+# but keep these names if a runtime mirrors them into ~/.codex/skills).
+artifact-template-analytics-dashboard
+artifact-template-business-review
+artifact-template-design-report
+artifact-template-experiment-analysis
+artifact-template-financial-budget
+artifact-template-investment-committee-memo
+artifact-template-legal-memorandum
+artifact-template-market-trends-report
+artifact-template-minimal-letterhead
+artifact-template-operating-calendar
+artifact-template-operating-review
+artifact-template-project-kickoff
+artifact-template-project-tracker
+artifact-template-sales-pipeline
+artifact-template-simple-dark-mode
+artifact-template-simple-light-mode
+artifact-template-strategy-memorandum
+artifact-template-system-design
+artifact-template-team-alignment
+artifact-template-three-statement-forecast
+control-in-app-browser
+documents
+excel-live-control
+pdf
+presentations
+spreadsheets
+template-creator
+visualize
+
+# Public standalone skills.
+code-ship
+
+# Public lark-cli skills that are useful globally.
+lark-shared
+lark-sheets
+lark-drive
+lark-base
+lark-doc
+lark-im
+lark-whiteboard
