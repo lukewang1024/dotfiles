@@ -176,6 +176,7 @@ util_setup()
   backup_then_symlink "$util_dir/agent/claude-settings-apply" "$bin_dir/claude-settings-apply"
   backup_then_symlink "$util_dir/agent/agent-skills-install" "$bin_dir/agent-skills-install"
   backup_then_symlink "$util_dir/agent/agent-skills-prune" "$bin_dir/agent-skills-prune"
+  backup_then_symlink "$util_dir/agent/agent-hooks-prune" "$bin_dir/agent-hooks-prune"
   backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
   # Alacritty light/dark theme swap — driven on macOS appearance changes by
   # config/tmux/appearance-{light,dark}.conf; `auto` seeds theme-active.toml.
@@ -213,6 +214,7 @@ util_setup()
   "$util_dir/agent/agent-skills-prune" --apply || true
   "$util_dir/agent/agent-sidebar-binary-install" || true
   "$util_dir/agent/agent-sidebar-hooks-install" || true
+  "$util_dir/agent/agent-hooks-prune" --apply || true
   # Seed Alacritty's theme-active.toml (gitignored) from the current macOS
   # appearance so a fresh checkout has a theme before the first light/dark switch.
   is_macos && "$util_dir/shell/alacritty-appearance" auto >/dev/null 2>&1 || true

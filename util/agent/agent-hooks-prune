@@ -1,0 +1,278 @@
+#!/bin/sh
+# Keep global agent hooks intentionally small.
+#
+# Default is a dry run. Use --apply to archive and remove non-allowlisted
+# Claude Code, Codex, and OpenCode user hooks.
+
+set -u
+
+usage()
+{
+  cat <<'EOF'
+Usage: agent-hooks-prune [--apply] [--keep-file PATH] [--archive-dir PATH]
+
+Dry-runs by default. With --apply, prunes non-allowlisted hooks from:
+  ~/.claude/settings.json
+  ~/.codex/config.toml
+  $XDG_CONFIG_HOME/opencode/plugins
+
+Changed config files and removed OpenCode plugins are archived under:
+  $XDG_STATE_HOME/agent-hooks-prune/archive/<timestamp>/
+
+For Claude and Codex, each keep-list entry is a stable literal substring of a
+hook definition. For OpenCode it is an exact plugin filename. Blank lines and
+lines starting with # are ignored. The public keep-list and optional gitignored
+local keep-list are loaded by default. Repeating --keep-file overrides them.
+EOF
+}
+
+resolve_script_dir()
+{
+  path=$0
+  if [ -L "$path" ]; then
+    link=$(readlink "$path" 2>/dev/null || printf '%s\n' "$path")
+    case "$link" in
+      /*) path=$link ;;
+      *) path=$(dirname "$path")/$link ;;
+    esac
+  fi
+  dir=$(dirname "$path")
+  (CDPATH='' cd -- "$dir" 2>/dev/null && pwd) || pwd
+}
+
+print_default_keep_files()
+{
+  config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+  if [ -f "$config_home/agent/hooks-keep.txt" ]; then
+    printf '%s\n' "$config_home/agent/hooks-keep.txt"
+    [ -f "$config_home/agent/hooks-keep.local.txt" ] \
+      && printf '%s\n' "$config_home/agent/hooks-keep.local.txt"
+    return 0
+  fi
+
+  script_dir=$(resolve_script_dir)
+  repo_file=$script_dir/../../config/agent/hooks-keep.txt
+  if [ -f "$repo_file" ]; then
+    printf '%s\n' "$repo_file"
+    [ -f "$script_dir/../../config/agent/hooks-keep.local.txt" ] \
+      && printf '%s\n' "$script_dir/../../config/agent/hooks-keep.local.txt"
+    return 0
+  fi
+
+  printf '%s\n' "$config_home/agent/hooks-keep.txt"
+}
+
+apply=0
+keep_files=$(print_default_keep_files)
+custom_keep_files=0
+archive_root=${XDG_STATE_HOME:-"$HOME/.local/state"}/agent-hooks-prune/archive
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --apply) apply=1; shift ;;
+    --keep-file)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      if [ "$custom_keep_files" -eq 0 ]; then
+        keep_files=$2
+        custom_keep_files=1
+      else
+        keep_files=$keep_files"
+$2"
+      fi
+      shift 2
+      ;;
+    --archive-dir)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      archive_root=$2
+      shift 2
+      ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+  esac
+done
+
+old_ifs=$IFS
+IFS='
+'
+for keep_file in $keep_files; do
+  [ -n "$keep_file" ] || continue
+  if [ ! -f "$keep_file" ]; then
+    IFS=$old_ifs
+    echo "agent-hooks-prune: keep file not found: $keep_file" >&2
+    exit 1
+  fi
+done
+IFS=$old_ifs
+
+work_dir=$(mktemp -d "${TMPDIR:-/tmp}/agent-hooks-prune.XXXXXX") || exit 1
+trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
+markers=$work_dir/markers
+: > "$markers"
+old_ifs=$IFS
+IFS='
+'
+for keep_file in $keep_files; do
+  [ -n "$keep_file" ] || continue
+  awk '
+    /^[[:space:]]*($|#)/ { next }
+    {
+      line = $0
+      sub(/^[[:space:]]*/, "", line)
+      sub(/[[:space:]]*#.*/, "", line)
+      sub(/[[:space:]]*$/, "", line)
+      if (line != "") print line
+    }
+  ' "$keep_file" >> "$markers"
+done
+IFS=$old_ifs
+
+timestamp=$(date '+%Y%m%d-%H%M%S')
+archive_dir=$archive_root/$timestamp
+
+archive_config()
+{
+  source_file=$1
+  relative_file=$2
+  destination=$archive_dir/$relative_file
+  mkdir -p "$(dirname "$destination")" || return 1
+  cp "$source_file" "$destination"
+}
+
+claude_file=$HOME/.claude/settings.json
+if [ -f "$claude_file" ]; then
+  command -v jq >/dev/null 2>&1 || {
+    echo 'agent-hooks-prune: jq not found; cannot inspect Claude hooks' >&2
+    exit 1
+  }
+  keep_json=$(jq -Rsc 'split("\n") | map(select(length > 0))' "$markers") || exit 1
+  claude_tmp=$work_dir/claude.json
+  jq --argjson keep "$keep_json" '
+    if has("hooks") then
+      .hooks |= with_entries(
+        .value |= map(
+          .hooks = ((.hooks // []) | map(
+            select(. as $hook | any($keep[] as $marker |
+              ($hook | tojson | contains($marker))))
+          ))
+        )
+        | .value |= map(select((.hooks // []) | length > 0))
+      )
+      | .hooks |= with_entries(select(.value | length > 0))
+      | if (.hooks | length) == 0 then del(.hooks) else . end
+    else . end
+  ' "$claude_file" > "$claude_tmp" || exit 1
+
+  if cmp -s "$claude_file" "$claude_tmp"; then
+    printf 'keep %s (all Claude hooks)\n' "$claude_file"
+  else
+    claude_removed=$work_dir/claude-removed
+    jq -r --argjson keep "$keep_json" '
+      (.hooks // {}) | to_entries[] as $event
+      | $event.value[] | .matcher as $matcher | (.hooks // [])[]
+      | select(. as $hook | any($keep[] as $marker |
+          ($hook | tojson | contains($marker))) | not)
+      | "\($event.key) matcher=\($matcher // "") \(.command // .url // (. | tojson))"
+    ' "$claude_file" > "$claude_removed" || exit 1
+    while IFS= read -r hook; do
+      if [ "$apply" -eq 1 ]; then printf 'remove claude %s\n' "$hook"
+      else printf 'would remove claude %s\n' "$hook"; fi
+    done < "$claude_removed"
+    if [ "$apply" -eq 1 ]; then
+      archive_config "$claude_file" .claude/settings.json || exit 1
+      mv "$claude_tmp" "$claude_file" || exit 1
+    fi
+  fi
+fi
+
+codex_file=$HOME/.codex/config.toml
+if [ -f "$codex_file" ]; then
+  codex_tmp=$work_dir/codex.toml
+  codex_removed=$work_dir/codex-removed
+  : > "$codex_removed"
+  awk -v keep_file="$markers" -v removed_file="$codex_removed" '
+    BEGIN {
+      while ((getline marker < keep_file) > 0) keep[++keep_count] = marker
+      close(keep_file)
+    }
+    function allowed(text, i) {
+      for (i = 1; i <= keep_count; i++) if (index(text, keep[i])) return 1
+      return 0
+    }
+    function flush_group(    command) {
+      if (group == "") return
+      if (allowed(group)) printf "%s", group
+      else {
+        command = group
+        sub(/^.*command[[:space:]]*=[[:space:]]*/, "", command)
+        sub(/\n.*$/, "", command)
+        print event " " command >> removed_file
+      }
+      group = ""
+      event = ""
+    }
+    /^\[\[hooks\.[^.]+\]\]$/ {
+      flush_group()
+      group = $0 ORS
+      event = $0
+      sub(/^\[\[hooks\./, "", event)
+      sub(/\]\]$/, "", event)
+      next
+    }
+    /^\[/ && group != "" && $0 !~ /^\[\[hooks\.[^.]+\.hooks\]\]$/ {
+      flush_group()
+    }
+    {
+      if (group != "") group = group $0 ORS
+      else print
+    }
+    END { flush_group() }
+  ' "$codex_file" > "$codex_tmp" || exit 1
+
+  if cmp -s "$codex_file" "$codex_tmp"; then
+    printf 'keep %s (all Codex hooks)\n' "$codex_file"
+  else
+    while IFS= read -r hook; do
+      if [ "$apply" -eq 1 ]; then printf 'remove codex %s\n' "$hook"
+      else printf 'would remove codex %s\n' "$hook"; fi
+    done < "$codex_removed"
+    if [ "$apply" -eq 1 ]; then
+      archive_config "$codex_file" .codex/config.toml || exit 1
+      mv "$codex_tmp" "$codex_file" || exit 1
+    fi
+  fi
+fi
+
+is_exactly_kept()
+{
+  awk -v want="$1" '$0 == want { found = 1 } END { exit(found ? 0 : 1) }' "$markers"
+}
+
+opencode_root=${XDG_CONFIG_HOME:-"$HOME/.config"}/opencode/plugins
+if [ -d "$opencode_root" ]; then
+  find "$opencode_root" -mindepth 1 -maxdepth 1 \( -type f -o -type l \) | sort |
+  while IFS= read -r plugin; do
+    name=$(basename "$plugin")
+    if is_exactly_kept "$name"; then
+      printf 'keep %s\n' "$plugin"
+      continue
+    fi
+    if [ "$apply" -eq 1 ]; then
+      destination=$archive_dir/${plugin#"$HOME"/}
+      mkdir -p "$(dirname "$destination")" || exit 1
+      mv "$plugin" "$destination" || exit 1
+      printf 'move %s -> %s\n' "$plugin" "$destination"
+    else
+      printf 'would move %s\n' "$plugin"
+    fi
+  done
+fi
+
+if [ "$apply" -eq 1 ]; then
+  echo 'agent-hooks-prune: applied keep-lists:'
+  printf '%s\n' "$keep_files" | sed 's/^/  /'
+  echo "agent-hooks-prune: archive root $archive_root"
+else
+  echo 'agent-hooks-prune: dry run only; rerun with --apply to prune non-kept hooks'
+  echo 'agent-hooks-prune: keep-lists:'
+  printf '%s\n' "$keep_files" | sed 's/^/  /'
+fi

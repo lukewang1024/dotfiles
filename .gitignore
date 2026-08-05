@@ -28,6 +28,7 @@ Session.vim
 config/alacritty/local.toml
 config/alacritty/theme-active.toml
 config/agent/skills-keep.local.txt
+config/agent/hooks-keep.local.txt
 config/git/local
 config/gtk-3.0/bookmarks
 config/karabiner/automatic_backups
