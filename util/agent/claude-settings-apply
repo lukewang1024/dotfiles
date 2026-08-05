@@ -4,7 +4,9 @@
 #   - permissions.defaultMode      (auto)
 #   - skipDangerousModePermissionPrompt / skipAutoPermissionPrompt
 #   - disableClaudeAiConnectors
+#   - includeCoAuthoredBy (false — no AI attribution trailer in commit messages)
 #   - enabledPlugins + extraKnownMarketplaces  (claude-hud, ralph-loop)
+#   - theme (auto)
 #
 # Why a jq-merge and not a symlink: Claude rewrites settings.json at runtime
 # (effortLevel via /effort, model via /model, feedbackSurveyState, permission
@@ -23,11 +25,18 @@ SETTINGS_FILE="$HOME/.claude/settings.json"
 
 # The curated, machine-agnostic base. Deep-merged over existing settings so
 # our values win on conflict while sibling keys are preserved.
+# Note on "theme": `auto` is Claude Code's own preset, which already follows the
+# terminal's light/dark. A custom Catppuccin theme was tried and reverted -- the
+# documented token list is not exhaustive, so unlisted tokens keep inheriting the
+# stock palette no matter how many you override, and the result looked worse than
+# the theme Anthropic ships. The surrounding terminal is still Catppuccin.
 BASE='{
   "permissions": { "defaultMode": "auto" },
+  "theme": "auto",
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true,
   "disableClaudeAiConnectors": true,
+  "includeCoAuthoredBy": false,
   "enabledPlugins": {
     "claude-hud@claude-hud": true,
     "ralph-loop@claude-plugins-official": true
@@ -59,7 +68,9 @@ if [ "$mode" = "install" ]; then
 else
   # Remove only the keys we manage; leave permissions.allow and everything else.
   jq '
-    del(.skipDangerousModePermissionPrompt, .skipAutoPermissionPrompt, .disableClaudeAiConnectors)
+    del(.skipDangerousModePermissionPrompt, .skipAutoPermissionPrompt, .disableClaudeAiConnectors,
+        .includeCoAuthoredBy)
+    | if .theme == "auto" then del(.theme) else . end
     | if has("permissions") then .permissions |= del(.defaultMode)
         | (if (.permissions | length) == 0 then del(.permissions) else . end)
       else . end
