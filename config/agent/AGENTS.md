@@ -10,10 +10,10 @@ global instructions path (`~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`);
 Some tmux sessions are **task workbenches**: one session is one task, you (the
 agent) are the driver living in the `agent` window, and each repo the task
 touches gets its own inspection window (git/tig + shell). Such a session is
-launched via `mux-agent`, which stamps it with a `@workbench_task` marker. You may
-equally be running in an **ordinary** session (a bare agent the human started
-ad-hoc); there, this whole mechanism stays out of the way and you do nothing
-special for cross-repo work.
+marked with `@workbench_task` by the workbench launcher. You may equally be
+running in an **ordinary** session (a bare agent the human started ad-hoc);
+there, this whole mechanism stays out of the way and you do nothing special
+for cross-repo work.
 
 When your work starts touching a **local repo other than the one you started in**:
 
