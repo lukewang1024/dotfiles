@@ -1,0 +1,23 @@
+#!/bin/sh
+# Install the small public skill set managed by this dotfiles repository.
+
+set -u
+
+if [ -f "$HOME/.agents/skills/grill-me/SKILL.md" ] &&
+  [ -f "$HOME/.agents/skills/grill-with-docs/SKILL.md" ] &&
+  [ -f "$HOME/.claude/skills/grill-me/SKILL.md" ] &&
+  [ -f "$HOME/.claude/skills/grill-with-docs/SKILL.md" ]; then
+  echo 'agent-skills-install: grill-me and grill-with-docs already installed'
+  exit 0
+fi
+
+if ! command -v npx >/dev/null 2>&1; then
+  echo 'agent-skills-install: skipping; npx is not installed' >&2
+  exit 0
+fi
+
+npx --yes skills@latest add mattpocock/skills \
+  --global \
+  --agent claude-code codex opencode \
+  --skill grill-me grill-with-docs \
+  --yes

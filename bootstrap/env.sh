@@ -174,6 +174,7 @@ util_setup()
   backup_then_symlink "$util_dir/agent/agent-sidebar-hooks-install" "$bin_dir/agent-sidebar-hooks-install"
   backup_then_symlink "$util_dir/agent/agent-sidebar-binary-install" "$bin_dir/agent-sidebar-binary-install"
   backup_then_symlink "$util_dir/agent/claude-settings-apply" "$bin_dir/claude-settings-apply"
+  backup_then_symlink "$util_dir/agent/agent-skills-install" "$bin_dir/agent-skills-install"
   backup_then_symlink "$util_dir/agent/agent-skills-prune" "$bin_dir/agent-skills-prune"
   backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
   # Alacritty light/dark theme swap — driven on macOS appearance changes by
@@ -208,6 +209,7 @@ util_setup()
   # network step, and swallowing it into /dev/null just looks like an unexplained
   # hang (each also prints a clear "skipping" notice when a dep is missing).
   "$util_dir/agent/claude-settings-apply" || true
+  "$util_dir/agent/agent-skills-install" || true
   "$util_dir/agent/agent-skills-prune" --apply || true
   "$util_dir/agent/agent-sidebar-binary-install" || true
   "$util_dir/agent/agent-sidebar-hooks-install" || true
