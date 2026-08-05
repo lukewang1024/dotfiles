@@ -34,7 +34,8 @@
 #       codex → relaunch with `--add-dir <path>` if you must write there (reads
 #       already work); opencode → it will prompt on first external access.
 #
-# mux-agent picks the CLI from $MUX_AGENT (claude | codex | opencode; default claude).
+# mux-agent starts the CLI selected by @workbench-agent / $WORKBENCH_AGENT.
+# This dotfiles setup defaults it to codex in tmux.conf.
 
 name: REPLACE-ME              # session name (and sesh picker label) = the task
 root: .                       # repo-local: "." ; named config: absolute repo path
