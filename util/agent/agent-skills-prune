@@ -1,0 +1,184 @@
+#!/bin/sh
+# Keep global agent skills intentionally small.
+#
+# Default is a dry run. Use --apply to move non-allowlisted skills out of
+# global agent skill roots into an XDG state archive.
+
+set -u
+
+usage()
+{
+  cat <<'EOF'
+Usage: agent-skills-prune [--apply] [--keep-file PATH] [--archive-dir PATH]
+
+Dry-runs by default. With --apply, moves non-allowlisted direct child
+directories and symlinks from:
+  ~/.agents/skills
+  ~/.claude/skills
+  ~/.codex/skills
+
+to:
+  $XDG_STATE_HOME/agent-skills-prune/archive/<timestamp>/
+
+Keep files are newline-separated exact skill names; blank lines and lines
+starting with # are ignored. By default the public keep-list and the optional
+gitignored local keep-list are both loaded.
+Pass --keep-file more than once to override the defaults with an explicit stack.
+EOF
+}
+
+resolve_script_dir()
+{
+  path=$0
+  if [ -L "$path" ]; then
+    link=$(readlink "$path" 2>/dev/null || printf '%s\n' "$path")
+    case "$link" in
+      /*) path=$link ;;
+      *) path=$(dirname "$path")/$link ;;
+    esac
+  fi
+  dir=$(dirname "$path")
+  (CDPATH='' cd -- "$dir" 2>/dev/null && pwd) || pwd
+}
+
+print_default_keep_files()
+{
+  config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+  if [ -f "$config_home/agent/skills-keep.txt" ]; then
+    printf '%s\n' "$config_home/agent/skills-keep.txt"
+    [ -f "$config_home/agent/skills-keep.local.txt" ] \
+      && printf '%s\n' "$config_home/agent/skills-keep.local.txt"
+    return 0
+  fi
+
+  script_dir=$(resolve_script_dir)
+  repo_file=$script_dir/../../config/agent/skills-keep.txt
+  if [ -f "$repo_file" ]; then
+    printf '%s\n' "$repo_file"
+    [ -f "$script_dir/../../config/agent/skills-keep.local.txt" ] \
+      && printf '%s\n' "$script_dir/../../config/agent/skills-keep.local.txt"
+    return 0
+  fi
+
+  printf '%s\n' "$config_home/agent/skills-keep.txt"
+}
+
+apply=0
+keep_files=$(print_default_keep_files)
+custom_keep_files=0
+archive_root=${XDG_STATE_HOME:-"$HOME/.local/state"}/agent-skills-prune/archive
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --apply)
+      apply=1
+      shift
+      ;;
+    --keep-file)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      if [ "$custom_keep_files" -eq 0 ]; then
+        keep_files=$2
+        custom_keep_files=1
+      else
+        keep_files=$keep_files"
+$2"
+      fi
+      shift 2
+      ;;
+    --archive-dir)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      archive_root=$2
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+old_ifs=$IFS
+IFS='
+'
+for keep_file in $keep_files; do
+  [ -n "$keep_file" ] || continue
+  if [ ! -f "$keep_file" ]; then
+    IFS=$old_ifs
+    echo "agent-skills-prune: keep file not found: $keep_file" >&2
+    exit 1
+  fi
+done
+IFS=$old_ifs
+
+is_kept()
+{
+  name=$1
+  old_ifs=$IFS
+  IFS='
+'
+  for keep_file in $keep_files; do
+    [ -n "$keep_file" ] || continue
+    awk '
+      /^[[:space:]]*($|#)/ { next }
+      {
+        line = $0
+        sub(/^[[:space:]]*/, "", line)
+        sub(/[[:space:]]*#.*/, "", line)
+        sub(/[[:space:]]*$/, "", line)
+        if (line == want) found = 1
+      }
+      END { exit(found ? 0 : 1) }
+    ' want="$name" "$keep_file" && {
+      IFS=$old_ifs
+      return 0
+    }
+  done
+  IFS=$old_ifs
+  return 1
+}
+
+timestamp=$(date '+%Y%m%d-%H%M%S')
+archive_dir=$archive_root/$timestamp
+
+for root in "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.codex/skills"; do
+  [ -d "$root" ] || continue
+
+  find "$root" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | sort | while IFS= read -r path; do
+    name=$(basename "$path")
+    if is_kept "$name"; then
+      printf 'keep %s\n' "$path"
+      continue
+    fi
+
+    if [ "$apply" -eq 1 ]; then
+      dest=$archive_dir/${root#"$HOME"/}/$name
+      dest_dir=$(dirname "$dest")
+      mkdir -p "$dest_dir" || exit 1
+      if [ -e "$dest" ]; then
+        i=1
+        while [ -e "$dest.$i" ]; do
+          i=$((i + 1))
+        done
+        dest=$dest.$i
+      fi
+      mv "$path" "$dest" || exit 1
+      printf 'move %s -> %s\n' "$path" "$dest"
+    else
+      printf 'would move %s\n' "$path"
+    fi
+  done
+done
+
+if [ "$apply" -eq 1 ]; then
+  echo "agent-skills-prune: applied keep-lists:"
+  printf '%s\n' "$keep_files" | sed 's/^/  /'
+  echo "agent-skills-prune: archive root $archive_root"
+else
+  echo "agent-skills-prune: dry run only; rerun with --apply to move non-kept skills"
+  echo "agent-skills-prune: keep-lists:"
+  printf '%s\n' "$keep_files" | sed 's/^/  /'
+fi
