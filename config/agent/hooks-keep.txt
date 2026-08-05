@@ -1,0 +1,13 @@
+# Public Claude Code, Codex, and OpenCode user-hook keep-list.
+#
+# For Claude and Codex, each non-comment line is a stable literal substring of a
+# hook definition. For OpenCode it is an exact plugin filename. Keep paths
+# machine-agnostic: prefer a distinctive script/plugin path over an absolute
+# home directory. Put machine- or company-specific entries in the optional
+# gitignored hooks-keep.local.txt.
+
+peon-ping/
+tmux-agent-sidebar/hook.sh
+tmux-assistant-resurrect/hooks/
+session-tracker.js
+tmux-agent-sidebar.js
