@@ -43,6 +43,8 @@ visualize
 
 # Public standalone skills.
 code-ship
+grill-me
+grill-with-docs
 
 # Public lark-cli skills that are useful globally.
 lark-shared
