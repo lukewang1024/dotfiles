@@ -14,8 +14,10 @@ config/AlfredApp/
 │       ├── user.workflow.amphetamine -> ../../amphetamine
 │       ├── user.workflow.convert     -> ../../convert
 │       ├── user.workflow.dark-mode   -> ../../dark-mode
+│       ├── user.workflow.kill-process -> ../../kill-process
 │       └── user.workflow.lark-docs   -> ../../lark-docs
-├── amphetamine/   convert/   dark-mode/   lark-docs/     workflow sources
+├── amphetamine/   convert/   dark-mode/   kill-process/   lark-docs/
+│                                                       workflow sources
 └── .gitignore
 ```
 
