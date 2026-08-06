@@ -1,0 +1,21 @@
+{
+  "permissions": { "defaultMode": "auto" },
+  "theme": "auto",
+  "statusLine": {
+    "type": "command",
+    "command": "claude-statusline"
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
+  "disableClaudeAiConnectors": true,
+  "includeCoAuthoredBy": false,
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true,
+    "ralph-loop@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-hud": {
+      "source": { "source": "github", "repo": "jarrodwatts/claude-hud" }
+    }
+  }
+}

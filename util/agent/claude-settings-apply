@@ -6,7 +6,7 @@
 #   - disableClaudeAiConnectors
 #   - includeCoAuthoredBy (false — no AI attribution trailer in commit messages)
 #   - enabledPlugins + extraKnownMarketplaces  (claude-hud, ralph-loop)
-#   - theme (auto)
+#   - theme (auto) + the shared claude-hud statusline entrypoint
 #
 # Why a jq-merge and not a symlink: Claude rewrites settings.json at runtime
 # (effortLevel via /effort, model via /model, feedbackSurveyState, permission
@@ -23,28 +23,26 @@
 
 SETTINGS_FILE="$HOME/.claude/settings.json"
 
-# The curated, machine-agnostic base. Deep-merged over existing settings so
-# our values win on conflict while sibling keys are preserved.
-# Note on "theme": `auto` is Claude Code's own preset, which already follows the
-# terminal's light/dark. A custom Catppuccin theme was tried and reverted -- the
-# documented token list is not exhaustive, so unlisted tokens keep inheriting the
-# stock palette no matter how many you override, and the result looked worse than
-# the theme Anthropic ships. The surrounding terminal is still Catppuccin.
-BASE='{
-  "permissions": { "defaultMode": "auto" },
-  "theme": "auto",
-  "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
-  "disableClaudeAiConnectors": true,
-  "includeCoAuthoredBy": false,
-  "enabledPlugins": {
-    "claude-hud@claude-hud": true,
-    "ralph-loop@claude-plugins-official": true
-  },
-  "extraKnownMarketplaces": {
-    "claude-hud": { "source": { "source": "github", "repo": "jarrodwatts/claude-hud" } }
-  }
-}'
+resolve_script_dir()
+{
+  path=$0
+  if [ -L "$path" ]; then
+    link=$(readlink "$path" 2>/dev/null || printf '%s\n' "$path")
+    case $link in
+      /*) path=$link ;;
+      *) path=$(dirname "$path")/$link ;;
+    esac
+  fi
+  dir=$(dirname "$path")
+  (CDPATH='' cd -- "$dir" 2>/dev/null && pwd) || pwd
+}
+
+script_dir=$(resolve_script_dir)
+base_file=$script_dir/../../config/agent/claude-settings.json
+[ -f "$base_file" ] || {
+  echo "claude-settings-apply: shared config not found: $base_file" >&2
+  exit 1
+}
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "claude-settings-apply: jq not found, skipping" >&2
@@ -62,7 +60,7 @@ tmp="$SETTINGS_FILE.tmp"
 if [ "$mode" = "install" ]; then
   # Deep merge: `*` recursively merges objects and overwrites scalars, with the
   # right operand (our base) winning. permissions.allow / sibling plugins survive.
-  jq --argjson base "$BASE" '. * $base' "$SETTINGS_FILE" > "$tmp" \
+  jq --slurpfile base "$base_file" '. * $base[0]' "$SETTINGS_FILE" > "$tmp" \
     && mv "$tmp" "$SETTINGS_FILE"
   echo "claude settings base applied to $SETTINGS_FILE"
 else
@@ -70,6 +68,7 @@ else
   jq '
     del(.skipDangerousModePermissionPrompt, .skipAutoPermissionPrompt, .disableClaudeAiConnectors,
         .includeCoAuthoredBy)
+    | if .statusLine.command == "claude-statusline" then del(.statusLine) else . end
     | if .theme == "auto" then del(.theme) else . end
     | if has("permissions") then .permissions |= del(.defaultMode)
         | (if (.permissions | length) == 0 then del(.permissions) else . end)

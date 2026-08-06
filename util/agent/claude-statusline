@@ -1,0 +1,42 @@
+#!/bin/sh
+# Portable Claude Code statusline entrypoint for the claude-hud plugin.
+# Keep machine-specific runtime discovery out of ~/.claude/settings.json.
+
+cols=$( { stty size </dev/tty; } 2>/dev/null | awk '{print $2}')
+case $cols in
+  ''|*[!0-9]*) cols=120 ;;
+esac
+if [ "$cols" -gt 4 ]; then COLUMNS=$((cols - 4)); else COLUMNS=1; fi
+export COLUMNS
+
+node_bin=$(command -v node 2>/dev/null || true)
+if [ -z "$node_bin" ]; then
+  for candidate in \
+    "$HOME/.local/share/anyenv/envs/nodenv/shims/node" \
+    /opt/homebrew/bin/node \
+    /home/linuxbrew/.linuxbrew/bin/node \
+    /usr/local/bin/node \
+    /usr/bin/node
+  do
+    if [ -x "$candidate" ]; then node_bin=$candidate; break; fi
+  done
+fi
+[ -n "$node_bin" ] || exit 0
+
+plugin_root=${CLAUDE_CONFIG_DIR:-"$HOME/.claude"}/plugins/cache
+plugin_dir=$(
+  for dir in "$plugin_root"/*/claude-hud/*/; do
+    [ -f "${dir}dist/index.js" ] || continue
+    version=${dir%/}
+    version=${version##*/}
+    printf '%s\t%s\n' "$version" "$dir"
+  done | awk -F '\t' '
+    $1 ~ /^[0-9]+\.[0-9]+\.[0-9]+/ {
+      split($1, v, /[.-]/)
+      printf "%09d.%09d.%09d\t%s\n", v[1], v[2], v[3], $2
+    }
+  ' | sort | tail -n 1 | cut -f 2-
+)
+[ -n "$plugin_dir" ] || exit 0
+
+exec "$node_bin" "${plugin_dir}dist/index.js"
