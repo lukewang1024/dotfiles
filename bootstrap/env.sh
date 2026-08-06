@@ -174,6 +174,8 @@ util_setup()
   backup_then_symlink "$util_dir/agent/agent-sidebar-hooks-install" "$bin_dir/agent-sidebar-hooks-install"
   backup_then_symlink "$util_dir/agent/agent-sidebar-binary-install" "$bin_dir/agent-sidebar-binary-install"
   backup_then_symlink "$util_dir/agent/claude-settings-apply" "$bin_dir/claude-settings-apply"
+  backup_then_symlink "$util_dir/agent/claude-statusline" "$bin_dir/claude-statusline"
+  backup_then_symlink "$util_dir/agent/codex-settings-apply" "$bin_dir/codex-settings-apply"
   backup_then_symlink "$util_dir/agent/agent-skills-install" "$bin_dir/agent-skills-install"
   backup_then_symlink "$util_dir/agent/agent-skills-prune" "$bin_dir/agent-skills-prune"
   backup_then_symlink "$util_dir/agent/agent-hooks-prune" "$bin_dir/agent-hooks-prune"
@@ -197,6 +199,9 @@ util_setup()
   # bound to prefix + M-1..M-7 / Space / e by config/tmux/tmux.conf, so the keys
   # are dead without this link.
   backup_then_symlink "$util_dir/shell/tmux-layout-keep-sidebar" "$bin_dir/tmux-layout-keep-sidebar"
+  backup_then_symlink "$util_dir/shell/tmux-sidebar-resurrect" "$bin_dir/tmux-sidebar-resurrect-save"
+  backup_then_symlink "$util_dir/shell/tmux-sidebar-resurrect" "$bin_dir/tmux-sidebar-resurrect-restore"
+  backup_then_symlink "$util_dir/shell/tmux-sidebar-resurrect" "$bin_dir/tmux-sidebar-resurrect-pane"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   # Kerberos ticket auto-renew (macOS keychain / Linux keytab). Install per-machine
@@ -210,6 +215,7 @@ util_setup()
   # network step, and swallowing it into /dev/null just looks like an unexplained
   # hang (each also prints a clear "skipping" notice when a dep is missing).
   "$util_dir/agent/claude-settings-apply" || true
+  "$util_dir/agent/codex-settings-apply" || true
   "$util_dir/agent/agent-skills-install" || true
   "$util_dir/agent/agent-skills-prune" --apply || true
   "$util_dir/agent/agent-sidebar-binary-install" || true
