@@ -1,0 +1,71 @@
+#!/bin/sh
+# Apply the shared Codex TUI settings without replacing machine-local config.
+
+set -u
+
+resolve_script_dir()
+{
+  path=$0
+  if [ -L "$path" ]; then
+    link=$(readlink "$path" 2>/dev/null || printf '%s\n' "$path")
+    case $link in
+      /*) path=$link ;;
+      *) path=$(dirname "$path")/$link ;;
+    esac
+  fi
+  dir=$(dirname "$path")
+  (CDPATH='' cd -- "$dir" 2>/dev/null && pwd) || pwd
+}
+
+script_dir=$(resolve_script_dir)
+shared_file=$script_dir/../../config/agent/codex-tui.toml
+config_file=$HOME/.codex/config.toml
+[ -f "$shared_file" ] || {
+  echo "codex-settings-apply: shared config not found: $shared_file" >&2
+  exit 1
+}
+
+mkdir -p "$(dirname "$config_file")"
+[ -f "$config_file" ] || : > "$config_file"
+tmp=$config_file.tmp
+
+awk -v shared_file="$shared_file" '
+  function print_shared(    line) {
+    print "# >>> dotfiles-shared-tui"
+    while ((getline line < shared_file) > 0) print line
+    close(shared_file)
+    print "# <<< dotfiles-shared-tui"
+    print ""
+  }
+  function flush_pending() {
+    if (in_tui && !inserted) {
+      print_shared()
+      inserted = 1
+    }
+  }
+  BEGIN { in_tui = 0; inserted = 0; skipping = 0; found_tui = 0 }
+  /^# >>> dotfiles-shared-tui[[:space:]]*$/ { skipping = 1; next }
+  /^# <<< dotfiles-shared-tui[[:space:]]*$/ { skipping = 0; next }
+  skipping { next }
+  /^# <<< theme-active[[:space:]]*$/ { next }
+  /^\[/ {
+    flush_pending()
+    in_tui = ($0 == "[tui]")
+    if (in_tui) found_tui = 1
+    print
+    next
+  }
+  in_tui && /^[[:space:]]*(theme|status_line|status_line_use_colors)[[:space:]]*=/ { next }
+  in_tui && /^[[:space:]]*$/ { next }
+  { print }
+  END {
+    flush_pending()
+    if (!found_tui) {
+      print ""
+      print "[tui]"
+      print_shared()
+    }
+  }
+' "$config_file" > "$tmp" && mv "$tmp" "$config_file"
+
+echo "Codex shared TUI settings applied to $config_file"
