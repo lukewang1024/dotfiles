@@ -1,0 +1,162 @@
+#!/bin/sh
+# Restore tmux-agent-sidebar directly in its original resurrect pane.
+#
+# Installed under three names:
+#   tmux-sidebar-resurrect-save [quiet]
+#   tmux-sidebar-resurrect-restore
+#   tmux-sidebar-resurrect-pane
+#
+# The save wrapper leaves live panes untouched and rewrites each saved sidebar
+# process to the pane entrypoint. The restore wrapper suppresses sidebar
+# auto-creation while tmux-resurrect restores the exact saved pane tree. The
+# pane entrypoint marks that existing pane as the sidebar before execing it.
+
+set -u
+
+data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
+resurrect_dir=$data_home/tmux/plugins/tmux-resurrect
+sidebar_dir=$data_home/tmux/plugins/tmux-agent-sidebar
+save_script=$resurrect_dir/scripts/save.sh
+restore_script=$resurrect_dir/scripts/restore.sh
+sidebar_conf=$sidebar_dir/agent-sidebar.conf
+
+case ${0##*/} in
+  *-save) action=save ;;
+  *-restore) action=restore ;;
+  *-pane) action=pane ;;
+  *)
+    case ${1:-} in
+      save|restore) action=$1; shift ;;
+      *) printf 'usage: %s save [quiet] | restore\n' "${0##*/}" >&2; exit 2 ;;
+    esac
+    ;;
+esac
+
+command -v tmux >/dev/null 2>&1 || exit 0
+
+if [ "$action" = pane ]; then
+  pane=${TMUX_PANE:-}
+  [ -n "$pane" ] || {
+    printf 'tmux-sidebar-resurrect: TMUX_PANE is not set\n' >&2
+    exit 1
+  }
+  tmux set-option -p -t "$pane" @pane_role sidebar || exit 1
+  bin=$(tmux show-option -gqv @agent_sidebar_bin)
+  [ -x "$bin" ] || {
+    printf 'tmux-sidebar-resurrect: sidebar binary is unavailable: %s\n' "$bin" >&2
+    exit 1
+  }
+  exec "$bin"
+fi
+
+tmux has-session >/dev/null 2>&1 || exit 0
+
+server_pid=$(tmux display-message -p '#{pid}')
+lock=${TMPDIR:-/tmp}/tmux-sidebar-resurrect-$server_pid.lock
+if ! mkdir "$lock" 2>/dev/null; then
+  printf 'tmux-sidebar-resurrect: another save/restore is active\n' >&2
+  exit 1
+fi
+
+work_dir=$(mktemp -d "${TMPDIR:-/tmp}/tmux-sidebar-resurrect.XXXXXX") || {
+  rmdir "$lock" 2>/dev/null
+  exit 1
+}
+state_file=$work_dir/sidebars
+: > "$state_file"
+tab=$(printf '\t')
+
+cleanup()
+{
+  rm -rf "$work_dir"
+  rmdir "$lock" 2>/dev/null || true
+}
+
+record_sidebars()
+{
+  tmux list-panes -a -F "#{session_name}${tab}#{window_index}${tab}#{pane_index}${tab}#{@pane_role}" |
+  while IFS="$tab" read -r session window pane role; do
+    [ "$role" = sidebar ] || continue
+    printf '%s\t%s\t%s\n' "$session" "$window" "$pane" >> "$state_file"
+  done
+}
+
+latest_resurrect_file()
+{
+  last=$data_home/tmux/resurrect/last
+  [ -L "$last" ] || return 1
+  link=$(readlink "$last") || return 1
+  case "$link" in
+    /*) printf '%s\n' "$link" ;;
+    *) printf '%s/%s\n' "$(dirname "$last")" "$link" ;;
+  esac
+}
+
+rewrite_sidebar_processes()
+{
+  snapshot=$(latest_resurrect_file) || return 0
+  [ -f "$snapshot" ] || return 0
+  pane_entry=$(command -v tmux-sidebar-resurrect-pane 2>/dev/null) || {
+    printf 'tmux-sidebar-resurrect: pane entrypoint is unavailable\n' >&2
+    return 1
+  }
+  rewritten=$work_dir/snapshot
+  awk -F "$tab" -v OFS="$tab" -v pane_entry="$pane_entry" '
+    NR == FNR { sidebar[$1 FS $2 FS $3] = 1; next }
+    $1 == "pane" && (($2 FS $3 FS $6) in sidebar) {
+      $10 = "tmux-sidebar-resurrect-pane"
+      $11 = ":" pane_entry
+    }
+    { print }
+  ' "$state_file" "$snapshot" > "$rewritten" || return 1
+  mv "$rewritten" "$snapshot"
+}
+
+disable_auto_create()
+{
+  tmux show-hooks -g after-new-window 2>/dev/null |
+  awk '/@agent_sidebar_bin/ && /toggle --create-only/ { print $1 }' |
+  while IFS= read -r slot; do
+    [ -n "$slot" ] && tmux set-hook -gu "$slot"
+  done
+}
+
+restore_auto_create()
+{
+  [ -f "$sidebar_conf" ] && tmux source-file "$sidebar_conf"
+}
+
+save()
+{
+  [ -x "$save_script" ] || {
+    printf 'tmux-sidebar-resurrect: missing %s\n' "$save_script" >&2
+    return 1
+  }
+  record_sidebars || return 1
+  trap 'cleanup' EXIT
+  trap 'exit 1' HUP INT TERM
+  "$save_script" "$@" || return 1
+  rewrite_sidebar_processes || return 1
+  trap - EXIT HUP INT TERM
+  cleanup
+}
+
+restore()
+{
+  [ -x "$restore_script" ] || {
+    printf 'tmux-sidebar-resurrect: missing %s\n' "$restore_script" >&2
+    return 1
+  }
+  disable_auto_create
+  trap 'restore_auto_create; cleanup' EXIT
+  trap 'exit 1' HUP INT TERM
+  "$restore_script" "$@" || return 1
+  restore_auto_create
+  trap - EXIT HUP INT TERM
+  cleanup
+}
+
+case $action in
+  save) save "$@" ;;
+  restore) restore "$@" ;;
+esac
