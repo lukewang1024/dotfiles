@@ -1,5 +1,5 @@
 #!/bin/sh
-# tmux-appearance-fallback light|dark — OS-appearance fallback that drives
+# tmux-appearance-fallback light|dark|auto — OS-appearance fallback that drives
 # tmux-adaptive-theme for terminals WITHOUT native theme reporting (DEC mode
 # 2031), e.g. Apple Terminal.app and older clients.
 #
@@ -19,7 +19,28 @@
 set -u
 case "${1:-}" in
    light|dark) want=$1 ;;
-   *) printf 'usage: %s light|dark\n' "$0" >&2; exit 2 ;;
+   auto)
+      # At initial tmux startup dark-notify may publish its callback before the
+      # first session exists. Resolve macOS directly once session-created fires,
+      # avoiding that race. Elsewhere reuse the last published appearance.
+      if command -v defaults >/dev/null 2>&1; then
+         if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -qi dark; then
+            want=dark
+         else
+            want=light
+         fi
+      else
+         state=${XDG_STATE_HOME:-"$HOME/.local/state"}/appearance
+         want=$(sed -n '1p' "$state" 2>/dev/null || true)
+         case "$want" in
+            light|dark) ;;
+            *)
+               exec "$HOME/.local/share/tmux/plugins/tmux-adaptive-theme/tmux-adaptive-theme.tmux"
+               ;;
+         esac
+      fi
+      ;;
+   *) printf 'usage: %s light|dark|auto\n' "$0" >&2; exit 2 ;;
 esac
 command -v tmux >/dev/null 2>&1 || exit 0
 tmux has-session >/dev/null 2>&1 || exit 0
