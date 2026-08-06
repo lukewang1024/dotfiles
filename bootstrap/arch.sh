@@ -108,6 +108,7 @@ prepare_arch_env_cli_core()
 
   pkgs=(
     find-the-command                  # Find which package provides a command
+    lazyrsync                         # Terminal UI for rsync, written in Rust
     lf-bin                            # Terminal file manager
     navi                              # Interactive cheatsheet tool for the command-line
     sesh-bin                          # Smart tmux session manager built on top of zoxide

@@ -41,6 +41,7 @@ install_nix_brew_core_packages()
     jq                                # Lightweight and flexible command-line JSON processor
     lazydocker                        # Lazier way to manage everything docker
     lazygit                           # Simple terminal UI for git commands
+    lazyrsync                         # Terminal UI for rsync, written in Rust
     less                              # Pager program similar to more
     lf                                # Terminal file manager
     lsd                               # Clone of ls with colorful output, file type icons, and more
