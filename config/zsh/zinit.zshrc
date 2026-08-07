@@ -4,8 +4,7 @@ GIT_AUTO_FETCH_INTERVAL=1200 # 20min
 
 source "$config_dir/utils.sh";
 source "$config_dir/zsh/xdg-ninja-patch.zsh"
-# prepare.zsh enables p10k instant prompt, so it must run before the heavier rc.sh
-# (brew shellenv, docker, etc.) — the prompt then paints in ~1ms instead of ~90ms.
+# Keep lightweight shell preparation before the heavier shared rc.
 source "$config_dir/zsh/prepare.zsh"
 source "$config_dir/sh/rc.sh"
 
@@ -24,12 +23,6 @@ zinit light-mode for \
   zdharma-continuum/zinit-annex-bin-gem-node \
   zdharma-continuum/zinit-annex-patch-dl \
   zdharma-continuum/zinit-annex-rust
-
-# - - - - - - - - - - - - - - - - - - - -
-# Theme
-# - - - - - - - - - - - - - - - - - - - -
-
-zinit light romkatv/powerlevel10k
 
 # - - - - - - - - - - - - - - - - - - - -
 # Plugins

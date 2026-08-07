@@ -17,7 +17,7 @@ alias rrc='source "$ZDOTDIR/.zshrc" && rehash'
 alias ssh-agent-connect="source $config_dir/zsh/ssh-agent-connect.zsh"
 
 exists zoxide && eval "$(zoxide init zsh)"
-! exists p10k && exists starship && eval "$(starship init zsh)"
+exists starship && eval "$(starship init zsh)"
 
 # aliases to overwrite the ones defined in plugins
 exists lsd && alias ls='lsd'
