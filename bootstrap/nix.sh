@@ -274,7 +274,7 @@ apply_nix_app_configs()
   backup_then_symlink "$config_dir/kitty" ~/.config/kitty
   backup_then_symlink "$config_dir/lf" ~/.config/lf
   backup_then_symlink "$config_dir/percol" ~/.config/percol
-  backup_then_symlink "$config_dir/starship/starship.toml" ~/.config/starship.toml
+  backup_then_symlink "$config_dir/starship/starship.toml" "$XDG_CONFIG_HOME/starship.toml"
 }
 
 brew_cleanup()

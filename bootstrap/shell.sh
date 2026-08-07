@@ -151,7 +151,7 @@ zsh_common_setup()
   backup_then_symlink "$config_dir/zsh/.zlogin" "$XDG_CONFIG_HOME/zsh/.zlogin"
   backup_then_symlink "$config_dir/zsh/.zshenv" "$XDG_CONFIG_HOME/zsh/.zshenv"
   backup_then_symlink "$config_dir/zsh/.zprofile" "$XDG_CONFIG_HOME/zsh/.zprofile"
-  backup_then_symlink "$config_dir/zsh/.p10k.zsh" "$XDG_CONFIG_HOME/zsh/.p10k.zsh"
+  backup_then_symlink "$config_dir/starship/starship.toml" "$XDG_CONFIG_HOME/starship.toml"
 }
 
 # Set up the shell environment and make zsh the default login shell. zinit is the
