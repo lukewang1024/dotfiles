@@ -24,7 +24,7 @@ install_ai_agent_tools()
   # Code event (it supersedes any ad-hoc Stop notifier). Piping keeps it
   # non-interactive; --no-rc skips shell-rc edits since this repo owns those.
   # Idempotent: re-running upgrades in place and preserves config.json.
-  curl -fsSL https://raw.githubusercontent.com/PeonPing/peon-ping/main/install.sh | bash -s -- --no-rc
+  curl -fsSL https://raw.githubusercontent.com/lukewang1024/peon-ping/downstream/install.sh | bash -s -- --no-rc
 
   echo 'Done.'
 }
