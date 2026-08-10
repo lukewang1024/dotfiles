@@ -53,6 +53,14 @@ be decided up front — a workspace can start (`ws-new <feature>`) with zero
 repos attached and grow into whichever ones the task actually turns out to
 touch, one `ws-add` at a time.
 
+When a task needs a dev server or another long-running command, keep the default
+inspection window unchanged until the command is actually needed. Then run
+`mux-run-task --name <label> <absolute-repo-path> '<command>'`. It appends a
+detached task pane to that repo's inspection window, starts the command, and
+prints the pane id. Use that pane id with `tmux capture-pane` to inspect output
+or `tmux kill-pane` when the task is no longer needed. Do not run persistent
+project processes in the session-level agent pane.
+
 ## Where generated files go — keep `$HOME` clean, honour XDG
 
 The human keeps `$HOME` tidy: most tool state is redirected into XDG dirs via
