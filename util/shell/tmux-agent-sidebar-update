@@ -1,0 +1,86 @@
+#!/bin/sh
+# Update the local tmux-agent-sidebar downstream checkout, install the release
+# binary atomically, and restart its per-tmux-server snapshot daemons.
+set -u
+
+repo=${TMUX_AGENT_SIDEBAR_DIR:-"${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins/tmux-agent-sidebar"}
+binary="$repo/bin/tmux-agent-sidebar"
+built="$repo/target/release/tmux-agent-sidebar"
+staged="$repo/bin/.tmux-agent-sidebar.update.$$"
+
+die()
+{
+   printf 'tmux-agent-sidebar-update: %s\n' "$*" >&2
+   exit 1
+}
+
+cleanup()
+{
+   rm -f "$staged"
+}
+trap cleanup 0 HUP INT TERM
+
+[ -d "$repo/.git" ] || die "not a git checkout: $repo"
+[ -z "$(git -C "$repo" status --porcelain)" ] || die "checkout has uncommitted changes: $repo"
+command -v cargo >/dev/null 2>&1 || die "cargo is not installed"
+
+branch=$(git -C "$repo" symbolic-ref --quiet --short HEAD 2>/dev/null) ||
+   die "checkout is not on a branch"
+[ "$branch" = downstream ] || die "expected branch downstream, found $branch"
+
+printf 'Updating tmux-agent-sidebar...\n'
+git -C "$repo" fetch origin downstream || die "git fetch failed"
+git -C "$repo" merge --ff-only origin/downstream || die "fast-forward failed"
+cargo build --release --manifest-path "$repo/Cargo.toml" || die "release build failed"
+
+mkdir -p "$repo/bin" || die "cannot create $repo/bin"
+cp "$built" "$staged" || die "cannot stage release binary"
+case $(uname -s 2>/dev/null) in
+   Darwin) codesign --force --sign - "$staged" || die "code signing failed" ;;
+esac
+chmod 755 "$staged" || die "cannot make release binary executable"
+mv -f "$staged" "$binary" || die "cannot install release binary"
+
+# Existing frontends keep running, but query.rs is also used by the shared
+# snapshot daemon. Stop every daemon loaded from this checkout, then start one
+# in each live tmux server that currently has a sidebar pane.
+ps -axo pid=,command= 2>/dev/null |
+   awk -v command="$binary daemon" '$0 ~ /^[[:space:]]*[0-9]+[[:space:]]/ {
+      pid=$1
+      sub(/^[[:space:]]*[0-9]+[[:space:]]+/, "")
+      if ($0 == command) print pid
+   }' |
+   while IFS= read -r pid; do
+      [ -n "$pid" ] && kill -TERM "$pid" 2>/dev/null || true
+   done
+
+# A daemon launched as a tmux job can briefly remain a zombie after SIGTERM.
+# kill(pid, 0) considers zombies alive, so the daemon's own stale-lock recovery
+# cannot distinguish one from a live owner. Remove only locks whose recorded PID
+# no longer belongs to this binary; leave the similarly named create locks alone.
+runtime_dir=${TMPDIR:-/tmp}
+for lock in "$runtime_dir"/tmux-agent-sidebar-*.lock; do
+   [ -f "$lock" ] || continue
+   case ${lock##*/} in tmux-agent-sidebar-create-*) continue ;; esac
+   pid=$(sed -n '1p' "$lock" 2>/dev/null)
+   owner=$(ps -p "${pid:-0}" -o command= 2>/dev/null || true)
+   [ "$owner" = "$binary daemon" ] && continue
+   socket=${lock%.lock}.sock
+   rm -f "$lock" "$socket"
+done
+
+if command -v tmux >/dev/null 2>&1; then
+   socket_root=${TMUX_TMPDIR:-/tmp}/tmux-$(id -u)
+   if [ -d "$socket_root" ]; then
+      for socket in "$socket_root"/*; do
+         [ -S "$socket" ] || continue
+         tmux -S "$socket" list-panes -a -F '#{@pane_role}' 2>/dev/null |
+            grep -qx sidebar || continue
+         tmux -S "$socket" run-shell -b "exec $binary daemon" 2>/dev/null || true
+      done
+   fi
+fi
+
+version=$($binary version 2>/dev/null || printf unknown)
+printf 'tmux-agent-sidebar %s installed from %s.\n' "$version" \
+   "$(git -C "$repo" rev-parse --short HEAD)"

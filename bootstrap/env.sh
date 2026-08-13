@@ -195,6 +195,9 @@ util_setup()
   backup_then_symlink "$util_dir/shell/theme-sync" "$bin_dir/theme-sync"
   backup_then_symlink "$util_dir/shell/theme-push-remotes" "$bin_dir/theme-push-remotes"
   backup_then_symlink "$util_dir/shell/tmux-appearance-fallback" "$bin_dir/tmux-appearance-fallback"
+  # Pull, build, install, sign, and restart tmux-agent-sidebar without requiring
+  # an agent-driven update session.
+  backup_then_symlink "$util_dir/shell/tmux-agent-sidebar-update" "$bin_dir/tmux-agent-sidebar-update"
   # Layout presets that keep the agent sidebar out of the layout computation —
   # bound to prefix + M-1..M-7 / Space / e by config/tmux/tmux.conf, so the keys
   # are dead without this link.
