@@ -129,11 +129,11 @@ prepare_macos_env_gui_core()
     iterm2                                        # Terminal emulator as alternative to Apple's Terminal app
     jordanbaird-ice                               # Menu bar manager
     karabiner-elements                            # Keyboard customiser
-    keyboardholder                                # Switch input method per application
     macpass                                       # Open-source, KeePass-client and password manager
     maczip                                        # Utility to open, create and modify archive files
     mos                                           # Smooths scrolling and set mouse scroll directions independently
     obsidian                                      # Knowledge base that works on top of a local folder of plain text Markdown files
+    oomol-lab/tap/lockime                         # Menu-bar app that locks the keyboard input source
     pika                                          # Colour picker for colours onscreen
     rectangle                                     # Move and resize windows using keyboard shortcuts or snap areas
     shottr                                        # Screenshot measurement and annotation tool
