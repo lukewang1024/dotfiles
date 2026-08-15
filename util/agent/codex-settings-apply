@@ -43,10 +43,20 @@ awk -v shared_file="$shared_file" '
       inserted = 1
     }
   }
-  BEGIN { in_tui = 0; inserted = 0; skipping = 0; found_tui = 0 }
+  BEGIN {
+    in_tui = 0
+    inserted = 0
+    skipping = 0
+    skipping_tui_array = 0
+    found_tui = 0
+  }
   /^# >>> dotfiles-shared-tui[[:space:]]*$/ { skipping = 1; next }
   /^# <<< dotfiles-shared-tui[[:space:]]*$/ { skipping = 0; next }
   skipping { next }
+  skipping_tui_array {
+    if ($0 ~ /^[[:space:]]*\][[:space:]]*(#.*)?$/) skipping_tui_array = 0
+    next
+  }
   /^# <<< theme-active[[:space:]]*$/ { next }
   /^\[/ {
     flush_pending()
@@ -55,7 +65,10 @@ awk -v shared_file="$shared_file" '
     print
     next
   }
-  in_tui && /^[[:space:]]*(theme|status_line|status_line_use_colors)[[:space:]]*=/ { next }
+  in_tui && /^[[:space:]]*(theme|status_line|status_line_use_colors)[[:space:]]*=/ {
+    if ($0 ~ /=.*\[/ && $0 !~ /\]/) skipping_tui_array = 1
+    next
+  }
   in_tui && /^[[:space:]]*$/ { next }
   { print }
   END {
