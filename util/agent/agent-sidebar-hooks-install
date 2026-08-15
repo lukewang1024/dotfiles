@@ -1,8 +1,8 @@
 #!/bin/sh
-# Wire hiroppy/tmux-agent-sidebar's live-data hooks into Claude Code.
+# Wire tmux-agent-sidebar's live-data hooks into Claude Code and TraeX.
 #
 # The tmux plugin only detects assistant panes; the sidebar shows live
-# prompt/task/subagent data only when these Claude Code hooks forward
+# prompt/task/subagent data only when agent hooks forward
 # events to its hook.sh. The plugin does NOT self-install these (its only
 # auto-wire path is the `/plugin install` marketplace route, which assumes
 # a ~/.tmux/plugins layout we don't use), so we install them here.
@@ -14,12 +14,11 @@
 # Usage: agent-sidebar-hooks-install              install / refresh
 #        agent-sidebar-hooks-install --uninstall  remove
 
-SETTINGS_FILE="$HOME/.claude/settings.json"
 HOOK="$HOME/.local/share/tmux/plugins/tmux-agent-sidebar/hook.sh"
 MARKER="tmux-agent-sidebar/hook.sh"
 
 # Claude Code event : sidebar subcommand (mirrors the plugin's hooks/hooks.json)
-EVENTS="SessionStart:session-start
+CLAUDE_EVENTS="SessionStart:session-start
 SessionEnd:session-end
 UserPromptSubmit:user-prompt-submit
 Notification:notification
@@ -34,6 +33,14 @@ TaskCreated:task-created
 TaskCompleted:task-completed
 TeammateIdle:teammate-idle"
 
+# TraeX implements the Codex-compatible hook surface. These lifecycle events
+# are enough to distinguish actively working, stopped, and newly started
+# sessions; process discovery alone can only show an idle agent.
+TRAEX_EVENTS="SessionStart:session-start:startup|resume|clear|compact
+UserPromptSubmit:user-prompt-submit:
+Stop:stop:
+PostToolUse:activity-log:"
+
 if ! command -v jq >/dev/null 2>&1; then
   echo "agent-sidebar-hooks-install: jq not found, skipping" >&2
   exit 0
@@ -42,33 +49,42 @@ fi
 mode="install"
 [ "$1" = "--uninstall" ] && mode="uninstall"
 
-mkdir -p "$(dirname "$SETTINGS_FILE")"
-[ -f "$SETTINGS_FILE" ] || echo '{}' > "$SETTINGS_FILE"
+install_hooks() {
+  settings_file=$1
+  agent=$2
+  events=$3
 
-echo "$EVENTS" | while IFS=: read -r event sub; do
-  [ -n "$event" ] || continue
-  cmd="bash $HOOK claude $sub"
-  tmp="$SETTINGS_FILE.tmp"
+  mkdir -p "$(dirname "$settings_file")"
+  [ -f "$settings_file" ] || printf '%s\n' '{}' > "$settings_file"
 
-  # Strip any prior sidebar hook for this subcommand (any path), drop blocks
-  # left empty by the strip, then (install only) append the canonical command.
-  jq --arg ev "$event" --arg sub "$sub" --arg cmd "$cmd" --arg marker "$MARKER" --arg mode "$mode" '
+  printf '%s\n' "$events" | while IFS=: read -r event sub matcher; do
+    [ -n "$event" ] || continue
+    cmd="bash $HOOK $agent $sub"
+    tmp="$settings_file.tmp"
+
+    # Strip any prior sidebar hook for this subcommand (any path), drop blocks
+    # left empty by the strip, then (install only) append the canonical command.
+    jq --arg ev "$event" --arg sub "$sub" --arg cmd "$cmd" --arg marker "$MARKER" --arg mode "$mode" --arg agent "$agent" --arg matcher "$matcher" '
     .hooks //= {} |
     .hooks[$ev] //= [] |
     .hooks[$ev] |= map(.hooks = ((.hooks // []) | map(select(
-      (((.command // "") | contains($marker)) and ((.command // "") | endswith("claude " + $sub))) | not
+      (((.command // "") | contains($marker)) and ((.command // "") | endswith($agent + " " + $sub))) | not
     )))) |
     .hooks[$ev] |= map(select((.hooks // []) | length > 0)) |
     if $mode == "install" then
-      .hooks[$ev] += [{"matcher": "", "hooks": [{"type": "command", "command": $cmd}]}]
+      .hooks[$ev] += [{"matcher": $matcher, "hooks": [{"type": "command", "command": $cmd}]}]
     else . end |
     # Tidy: drop the event key entirely if it ended up empty
     if (.hooks[$ev] | length) == 0 then del(.hooks[$ev]) else . end
-  ' "$SETTINGS_FILE" > "$tmp" && mv "$tmp" "$SETTINGS_FILE"
-done
+    ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"
+  done
+}
+
+install_hooks "$HOME/.claude/settings.json" claude "$CLAUDE_EVENTS"
+install_hooks "$HOME/.trae/hooks.json" traex "$TRAEX_EVENTS"
 
 if [ "$mode" = "install" ]; then
-  echo "agent-sidebar hooks installed to $SETTINGS_FILE"
+  echo "agent-sidebar hooks installed for Claude Code and TraeX"
 else
-  echo "agent-sidebar hooks removed from $SETTINGS_FILE"
+  echo "agent-sidebar hooks removed for Claude Code and TraeX"
 fi
