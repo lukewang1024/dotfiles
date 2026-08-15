@@ -13,33 +13,27 @@
 #
 # Usage: agent-sidebar-hooks-install              install / refresh
 #        agent-sidebar-hooks-install --uninstall  remove
+#        SIDEBAR_HOOKS_CONFIG=/path/to/file agent-sidebar-hooks-install
 
 HOOK="$HOME/.local/share/tmux/plugins/tmux-agent-sidebar/hook.sh"
 MARKER="tmux-agent-sidebar/hook.sh"
 
-# Claude Code event : sidebar subcommand (mirrors the plugin's hooks/hooks.json)
-CLAUDE_EVENTS="SessionStart:session-start
-SessionEnd:session-end
-UserPromptSubmit:user-prompt-submit
-Notification:notification
-Stop:stop
-StopFailure:stop-failure
-PermissionDenied:permission-denied
-CwdChanged:cwd-changed
-SubagentStart:subagent-start
-SubagentStop:subagent-stop
-PostToolUse:activity-log
-TaskCreated:task-created
-TaskCompleted:task-completed
-TeammateIdle:teammate-idle"
+resolve_script_dir()
+{
+  path=$0
+  if [ -L "$path" ]; then
+    link=$(readlink "$path" 2>/dev/null || printf '%s\n' "$path")
+    case "$link" in
+      /*) path=$link ;;
+      *) path=$(dirname "$path")/$link ;;
+    esac
+  fi
+  dir=$(dirname "$path")
+  (CDPATH='' cd -- "$dir" 2>/dev/null && pwd) || pwd
+}
 
-# TraeX implements the Codex-compatible hook surface. These lifecycle events
-# are enough to distinguish actively working, stopped, and newly started
-# sessions; process discovery alone can only show an idle agent.
-TRAEX_EVENTS="SessionStart:session-start:startup|resume|clear|compact
-UserPromptSubmit:user-prompt-submit:
-Stop:stop:
-PostToolUse:activity-log:"
+script_dir=$(resolve_script_dir)
+CONFIG_FILE=${SIDEBAR_HOOKS_CONFIG:-"$script_dir/../../config/agent/sidebar-hooks.tsv"}
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "agent-sidebar-hooks-install: jq not found, skipping" >&2
@@ -49,22 +43,27 @@ fi
 mode="install"
 [ "$1" = "--uninstall" ] && mode="uninstall"
 
-install_hooks() {
-  settings_file=$1
-  agent=$2
-  events=$3
+[ -f "$CONFIG_FILE" ] || {
+  echo "agent-sidebar-hooks-install: config not found: $CONFIG_FILE" >&2
+  exit 1
+}
+
+tab=$(printf '\t')
+while IFS="$tab" read -r agent config_path event sub matcher; do
+  case "$agent" in ''|'#'*) continue ;; esac
+  case "$config_path" in
+    \~/*) settings_file=$HOME/${config_path#\~/} ;;
+    *) settings_file=$config_path ;;
+  esac
 
   mkdir -p "$(dirname "$settings_file")"
   [ -f "$settings_file" ] || printf '%s\n' '{}' > "$settings_file"
+  cmd="bash $HOOK $agent $sub"
+  tmp="$settings_file.tmp"
 
-  printf '%s\n' "$events" | while IFS=: read -r event sub matcher; do
-    [ -n "$event" ] || continue
-    cmd="bash $HOOK $agent $sub"
-    tmp="$settings_file.tmp"
-
-    # Strip any prior sidebar hook for this subcommand (any path), drop blocks
-    # left empty by the strip, then (install only) append the canonical command.
-    jq --arg ev "$event" --arg sub "$sub" --arg cmd "$cmd" --arg marker "$MARKER" --arg mode "$mode" --arg agent "$agent" --arg matcher "$matcher" '
+  # Strip any prior sidebar hook for this subcommand (any path), drop blocks
+  # left empty by the strip, then (install only) append the canonical command.
+  jq --arg ev "$event" --arg sub "$sub" --arg cmd "$cmd" --arg marker "$MARKER" --arg mode "$mode" --arg agent "$agent" --arg matcher "$matcher" '
     .hooks //= {} |
     .hooks[$ev] //= [] |
     .hooks[$ev] |= map(.hooks = ((.hooks // []) | map(select(
@@ -76,15 +75,11 @@ install_hooks() {
     else . end |
     # Tidy: drop the event key entirely if it ended up empty
     if (.hooks[$ev] | length) == 0 then del(.hooks[$ev]) else . end
-    ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"
-  done
-}
-
-install_hooks "$HOME/.claude/settings.json" claude "$CLAUDE_EVENTS"
-install_hooks "$HOME/.trae/hooks.json" traex "$TRAEX_EVENTS"
+  ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"
+done < "$CONFIG_FILE"
 
 if [ "$mode" = "install" ]; then
-  echo "agent-sidebar hooks installed for Claude Code and TraeX"
+  echo "agent-sidebar hooks installed from $CONFIG_FILE"
 else
-  echo "agent-sidebar hooks removed for Claude Code and TraeX"
+  echo "agent-sidebar hooks removed from $CONFIG_FILE"
 fi
