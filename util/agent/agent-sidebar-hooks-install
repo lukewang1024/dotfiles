@@ -1,5 +1,5 @@
 #!/bin/sh
-# Wire tmux-agent-sidebar's live-data hooks into Claude Code and TraeX.
+# Wire tmux-agent-sidebar's live-data hooks into configured coding agents.
 #
 # The tmux plugin only detects assistant panes; the sidebar shows live
 # prompt/task/subagent data only when agent hooks forward
