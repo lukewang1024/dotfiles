@@ -58,9 +58,9 @@ awk -v shared_file="$shared_file" '
     next
   }
   /^# <<< theme-active[[:space:]]*$/ { next }
-  /^\[/ {
+  /^[[:space:]]*\[/ {
     flush_pending()
-    in_tui = ($0 == "[tui]")
+    in_tui = ($0 ~ /^[[:space:]]*\[tui\][[:space:]]*$/)
     if (in_tui) found_tui = 1
     print
     next
