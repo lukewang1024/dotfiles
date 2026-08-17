@@ -58,6 +58,29 @@ replace_link_atomically() {
   esac
 }
 
+retarget_alfred_preferences() {
+  [ "$(uname -s)" = Darwin ] || return 0
+
+  alfred_prefs=$HOME/Library/Application\ Support/Alfred/prefs.json
+  [ -f "$alfred_prefs" ] || return 0
+
+  alfred_helper=$target_dir/util/macos/alfred-prefs-folder
+  if [ ! -x "$alfred_helper" ]; then
+    printf 'Cannot retarget Alfred preferences; helper not found: %s\n' "$alfred_helper" >&2
+    return 1
+  fi
+
+  if [ "$dry_run" = true ]; then
+    printf 'Would point Alfred preferences at %s/config/AlfredApp/Alfred.alfredpreferences\n' "$target_dir"
+    return 0
+  fi
+
+  # Alfred stores its sync location as JSON strings rather than filesystem
+  # symlinks, so the link scan below cannot discover it. Reconcile it before
+  # removing ~/.dotfiles or workflow resources (notably icons) disappear.
+  DOTFILES_HOME=$target_dir "$alfred_helper"
+}
+
 finalize_links() {
   links=$(legacy_links)
   if [ -n "$links" ]; then
@@ -78,6 +101,11 @@ finalize_links() {
         printf 'Retargeted %s -> %s\n' "$link_path" "$new_target"
       done || return 1
   fi
+
+  retarget_alfred_preferences || {
+    printf 'Failed to retarget Alfred preferences; keeping compatibility link.\n' >&2
+    return 1
+  }
 
   if [ "$dry_run" = true ]; then
     [ -L "$legacy_path" ] && printf 'Would remove compatibility link %s\n' "$legacy_path"

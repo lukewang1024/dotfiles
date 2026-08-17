@@ -84,9 +84,10 @@ an XDG migration in place:
 The migration refuses to overwrite an existing target, moves the repository to
 `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles`, temporarily creates a
 `~/.dotfiles` compatibility symlink, atomically retargets managed links, and
-then removes the compatibility path. If finalization fails, the compatibility
-link is kept so existing tools remain usable. Re-running the migration safely
-finishes an interrupted or older partial migration.
+updates Alfred's configured preferences folder before removing the compatibility
+path. If finalization fails, the compatibility link is kept so existing tools
+remain usable. Re-running the migration safely finishes an interrupted or older
+partial migration.
 
 ### Choose a provisioning mode
 
