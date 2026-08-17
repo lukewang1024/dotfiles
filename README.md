@@ -82,10 +82,11 @@ an XDG migration in place:
 ```
 
 The migration refuses to overwrite an existing target, moves the repository to
-`${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles`, and leaves `~/.dotfiles` as a
-compatibility symlink. Existing absolute links, running shells, and launchd or
-systemd jobs therefore keep resolving while `init sync` gradually rewrites
-managed links to the canonical path. Re-running the migration is a no-op.
+`${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles`, temporarily creates a
+`~/.dotfiles` compatibility symlink, atomically retargets managed links, and
+then removes the compatibility path. If finalization fails, the compatibility
+link is kept so existing tools remain usable. Re-running the migration safely
+finishes an interrupted or older partial migration.
 
 ### Choose a provisioning mode
 
