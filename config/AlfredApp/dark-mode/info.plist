@@ -118,7 +118,7 @@ appearance-daemon LaunchAgent (dark-notify) and tmux-dark-notify, so
 there is nothing extra to drive from here. If that daemon is not
 loaded, apply.sh falls back to running theme-sync directly.
 
-Source of truth: ~/.dotfiles/config/AlfredApp/dark-mode (this directory
+Source of truth: ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp/dark-mode (this directory
 is a symlink into it).
 
 Replaces 'Dark Mode' by Sindre Sorhus (2017), which shipped 2.5 MB of

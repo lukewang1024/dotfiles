@@ -7,10 +7,10 @@
 - init: Unix entrypoint; `init.ps1`: Windows entrypoint. See examples below.
 
 ## Build, Test, and Development Commands
-- Run on macOS: `~/.dotfiles/init macos [core|cli|gui|all]` — install runtimes, apps, and apply defaults.
-- Run on Linux: `~/.dotfiles/init debian|arch [core]` — install packages and set up configs for the distro.
-- Run package set: `~/.dotfiles/init npmg` — install common global npm packages.
-- Invoke a specific function: `~/.dotfiles/init run macos-defaults better_macos_defaults` — source a partial and run a function.
+- Run on macOS: `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init macos [core|cli|gui|all]` — install runtimes, apps, and apply defaults.
+- Run on Linux: `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init debian|arch [core]` — install packages and set up configs for the distro.
+- Run package set: `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init npmg` — install common global npm packages.
+- Invoke a specific function: `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init run macos-defaults better_macos_defaults` — source a partial and run a function.
 - Windows bootstrap: in PowerShell, `./init.ps1 core` from the repo root.
 
 ## Coding Style & Naming Conventions

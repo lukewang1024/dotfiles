@@ -245,7 +245,7 @@ opens Chrome to refresh the cookie jar. There is no separate login keyword;
 the row appears exactly when it is needed. (It fires the `login` External
 Trigger, reachable as alfred://runtrigger/com.lukew.larkdocs/login/ .)
 
-Source of truth: ~/.dotfiles/config/AlfredApp/lark-docs (this directory is a
+Source of truth: ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp/lark-docs (this directory is a
 symlink into it). Needs Homebrew node and Google Chrome.</string>
 	<key>uidata</key>
 	<dict>

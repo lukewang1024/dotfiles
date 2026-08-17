@@ -27,15 +27,15 @@ without reviewing `bootstrap/linux.sh`.
 Debian or Ubuntu family:
 
 ```sh
-git clone https://github.com/lukewang1024/dotfiles ~/.dotfiles
-~/.dotfiles/init debian core
+git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" debian core
 ```
 
 Arch family:
 
 ```sh
-git clone https://github.com/lukewang1024/dotfiles ~/.dotfiles
-~/.dotfiles/init arch core
+git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" arch core
 ```
 
 The distro bootstrap uses the native package manager and may invoke `sudo`.
@@ -45,7 +45,7 @@ Review package arrays and distro assumptions before the first run.
 ## Update and reconcile
 
 ```sh
-cd ~/.dotfiles
+cd "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
 git pull
 ./init sync
 ```
@@ -89,11 +89,11 @@ not be committed.
 ## Verify
 
 ```sh
-git -C ~/.dotfiles status --short
+git -C "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles" status --short
 test -L ~/.config/zsh/.zshrc
 test -L ~/.config/tmux
 test -x ~/.local/bin/theme-sync
-git -C ~/.dotfiles config --get core.hooksPath
+git -C "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles" config --get core.hooksPath
 ```
 
 For a GUI setup, also verify that user units appear under

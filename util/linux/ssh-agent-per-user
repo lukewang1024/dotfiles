@@ -1,4 +1,6 @@
 #!/bin/sh
 
-. "$HOME/.dotfiles/config/sh/ssh-agent-connect.sh"
+dotfiles_dir="${DOTFILES_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles}"
+[ -d "$dotfiles_dir" ] || dotfiles_dir="$HOME/.dotfiles"
+. "$dotfiles_dir/config/sh/ssh-agent-connect.sh"
 spawnPerUserSSHAgent

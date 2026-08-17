@@ -556,7 +556,7 @@ end reportError
 
 Durations accept 30m, 2h, 1h 30m, 90 (minutes) or 1 30 (hours minutes).
 
-Source of truth: ~/.dotfiles/config/AlfredApp/amphetamine (this directory is
+Source of truth: ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp/amphetamine (this directory is
 a symlink into it; run install.sh to relink). Every invocation is logged to
 ~/.local/state/amphetamine-alfred.log and failures raise a notification.
 

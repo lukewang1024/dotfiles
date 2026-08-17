@@ -14,7 +14,21 @@ tmux_setup()
     */.dotfiles/config/tmux/tmux.conf) rm -f "$HOME/.tmux.conf" ;;
   esac
   # sesh smart session manager (driven from tmux via `prefix + T`)
-  backup_then_symlink "$config_dir/sesh" "$XDG_CONFIG_HOME/sesh"
+  # sesh expands environment variables literally and turns an unset
+  # $XDG_CONFIG_HOME into an incorrect root-level path. Materialize its config
+  # from the resolved bootstrap paths so it also works in minimal environments.
+  sesh_dir="$XDG_CONFIG_HOME/sesh"
+  sesh_template="$config_dir/sesh/sesh.toml.in"
+  if [ -L "$sesh_dir" ]; then
+    backup "$sesh_dir"
+  fi
+  mkdir -p "$sesh_dir"
+  while IFS= read -r sesh_line || [ -n "$sesh_line" ]; do
+    sesh_line="${sesh_line//@DOTFILES_DIR@/$repo_path}"
+    sesh_line="${sesh_line//@XDG_CONFIG_HOME@/$XDG_CONFIG_HOME}"
+    printf '%s\n' "$sesh_line"
+  done < "$sesh_template" > "$sesh_dir/sesh.toml.tmp"
+  mv "$sesh_dir/sesh.toml.tmp" "$sesh_dir/sesh.toml"
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
   # tmux-autoreload launcher (deps-satisfied wrapper, sourced from tmux.conf)
   backup_then_symlink "$util_dir/shell/tmux-autoreload-launch" "$bin_dir/tmux-autoreload-launch"

@@ -1,9 +1,9 @@
 # sesh - smart tmux session manager (https://github.com/joshmedeski/sesh)
-# Symlinked to $XDG_CONFIG_HOME/sesh/sesh.toml by tmux_setup in bootstrap/shell.sh.
+# Materialized into $XDG_CONFIG_HOME/sesh/sesh.toml by tmux_setup in bootstrap/shell.sh.
 
 # Coding layouts are owned by tmuxinator (declarative, per-project):
 #   - repo-local ./.tmuxinator.yml   →  `tmuxinator local` / `mux start .`
-#   - named ~/.config/tmuxinator/*.yml → shown in this picker (sesh --tmuxinator),
+#   - named @XDG_CONFIG_HOME@/tmuxinator/*.yml → shown in this picker (sesh --tmuxinator),
 #     selecting one runs `tmuxinator start <name>`.
 # sesh stays the switcher; a bare-dir connect just drops you in a shell. Pop the
 # agent sidebar with prefix+Tab.
@@ -11,16 +11,16 @@
 
 [[session]]
 name = "dotfiles ⚙️"
-path = "~/.dotfiles"
+path = "@DOTFILES_DIR@"
 startup_command = "nvim"
-preview_command = "ls -la ~/.dotfiles"
+preview_command = "ls -la @DOTFILES_DIR@"
 
 [[session]]
 name = "tmux config 🪟"
-path = "~/.config/tmux"
+path = "@XDG_CONFIG_HOME@/tmux"
 startup_command = "nvim tmux.conf"
-preview_command = "bat --color=always --style=plain ~/.config/tmux/tmux.conf 2>/dev/null || cat ~/.config/tmux/tmux.conf"
+preview_command = "bat --color=always --style=plain @XDG_CONFIG_HOME@/tmux/tmux.conf 2>/dev/null || cat @XDG_CONFIG_HOME@/tmux/tmux.conf"
 
 # Per-machine repos are intentionally NOT listed here (dotfiles stay generic);
-# put them in machine-local ~/.config/tmuxinator/*.yml (repo names live there,
+# put them in machine-local @XDG_CONFIG_HOME@/tmuxinator/*.yml (repo names live there,
 # untracked) or a repo-local ./.tmuxinator.yml.

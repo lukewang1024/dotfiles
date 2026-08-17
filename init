@@ -72,6 +72,11 @@ case $1 in
     sync_setup
     ;;
 
+  'migrate-xdg')
+    shift
+    exec "$util_dir/dotfiles/migrate-xdg" "$@"
+    ;;
+
   'run')
     echo "Run '$3' in '$partial_dir/$2.sh'..."
     echo

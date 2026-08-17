@@ -21,7 +21,8 @@
 # POSIX sh.
 set -u
 
-repo=${DOTFILES:-$HOME/.dotfiles}
+repo=${DOTFILES_HOME:-${DOTFILES:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles}}
+[ -d "$repo" ] || repo=$HOME/.dotfiles
 folder="$repo/config/AlfredApp"
 bundle="$folder/Alfred.alfredpreferences"
 prefs="$HOME/Library/Application Support/Alfred/prefs.json"

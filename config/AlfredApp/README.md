@@ -28,8 +28,8 @@ Alfred stores the path of its sync folder in
 bundle can live in Dropbox or iCloud; here it points into this repo instead:
 
 ```
-prefs.json .current     -> ~/.dotfiles/config/AlfredApp/Alfred.alfredpreferences
-prefs.json .syncfolders -> ~/.dotfiles/config/AlfredApp
+prefs.json .current     -> ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp/Alfred.alfredpreferences
+prefs.json .syncfolders -> ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp
 ```
 
 `util/macos/alfred-prefs-folder` sets that (idempotently), and

@@ -105,6 +105,8 @@ Luke's config bootstrap script
   sync  - Reconcile an already-provisioned machine after `git pull`: re-run only
           the fast, idempotent link/plugin steps (no prompts/sudo/heavy installs).
           Auto-invoked by the repo's post-merge hook when provisioning files change.
+  migrate-xdg - Move ~/.dotfiles to $XDG_CONFIG_HOME/dotfiles while leaving a
+          compatibility symlink. Supports --dry-run and is safe to repeat.
   run   - Run arbitrary function in any bootstrap scripts
     `./init run [module] [task]`, below are tasks available:
     `macos backup_automator_stuff`: Backup Automator stuff to Dropbox

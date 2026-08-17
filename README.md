@@ -34,11 +34,11 @@ files.
 
 ## Quick start
 
-The Unix entrypoint expects the checkout at `~/.dotfiles`:
+The Unix entrypoint expects the checkout at `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles`:
 
 ```sh
-git clone https://github.com/lukewang1024/dotfiles ~/.dotfiles
-~/.dotfiles/init macos core
+git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" macos core
 ```
 
 Use `debian` or `arch` instead of `macos` on Linux. Omitting the mode selects
@@ -55,7 +55,7 @@ Platform-specific prerequisites, side effects, and verification:
 ### Update an existing machine
 
 ```sh
-cd ~/.dotfiles
+cd "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
 git pull
 ```
 
@@ -63,17 +63,34 @@ The tracked `post-merge` hook runs `./init sync` when provisioning files change.
 It can also be run explicitly:
 
 ```sh
-~/.dotfiles/init sync
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" sync
 ```
 
 `sync` refreshes links, wrappers, plugins, shared agent settings, and XDG
 directories. It deliberately avoids package/toolchain installation, prompts,
 and `sudo`.
 
+### Migrate a legacy checkout
+
+Machines that still have a real checkout at `~/.dotfiles` can preview and apply
+an XDG migration in place:
+
+```sh
+~/.dotfiles/init migrate-xdg --dry-run
+~/.dotfiles/init migrate-xdg
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" sync
+```
+
+The migration refuses to overwrite an existing target, moves the repository to
+`${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles`, and leaves `~/.dotfiles` as a
+compatibility symlink. Existing absolute links, running shells, and launchd or
+systemd jobs therefore keep resolving while `init sync` gradually rewrites
+managed links to the canonical path. Re-running the migration is a no-op.
+
 ### Choose a provisioning mode
 
 ```text
-~/.dotfiles/init <platform> [mode]
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" <platform> [mode]
 ```
 
 | Mode | Result |
@@ -94,6 +111,7 @@ Other entrypoint tasks:
 | --- | --- |
 | `./init basic` | Apply the shared shell and development baseline without a platform package flow. |
 | `./init sync` | Reconcile an already-provisioned checkout. |
+| `./init migrate-xdg [--dry-run]` | Move a legacy checkout to the XDG config root without breaking old links. |
 | `./init npmg` | Reinstall common global npm packages. |
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |
 | `./init run <module> <function>` | Run one function from a bootstrap module. |
@@ -101,7 +119,7 @@ Other entrypoint tasks:
 For example:
 
 ```sh
-~/.dotfiles/init run macos-defaults better_macos_defaults
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" run macos-defaults better_macos_defaults
 ```
 
 ### Add or change configuration
