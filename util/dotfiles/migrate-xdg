@@ -1,0 +1,90 @@
+#!/bin/sh
+# Move the dotfiles checkout to the XDG config root without breaking existing
+# absolute symlinks. The legacy ~/.dotfiles path remains as a compatibility link.
+
+set -u
+
+script_dir=$(CDPATH='' cd -P -- "$(dirname -- "$0")" && pwd)
+source_dir=$(CDPATH='' cd -P -- "$script_dir/../.." && pwd)
+config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+target_dir=$config_home/dotfiles
+legacy_path=$HOME/.dotfiles
+
+case $config_home in
+  /*) ;;
+  *) printf 'XDG_CONFIG_HOME must be an absolute path: %s\n' "$config_home" >&2; exit 1 ;;
+esac
+
+physical_dir() {
+  CDPATH='' cd -P -- "$1" 2>/dev/null && pwd
+}
+
+usage() {
+  printf '%s\n' "Usage: $(basename "$0") [--dry-run]"
+}
+
+dry_run=false
+case ${1:-} in
+  '') ;;
+  --dry-run) dry_run=true ;;
+  -h|--help) usage; exit 0 ;;
+  *) usage >&2; exit 2 ;;
+esac
+[ "$#" -le 1 ] || { usage >&2; exit 2; }
+
+target_physical=$(physical_dir "$target_dir" || true)
+if [ -n "$target_physical" ] && [ "$source_dir" = "$target_physical" ]; then
+    if [ -L "$legacy_path" ] && [ "$(physical_dir "$legacy_path")" = "$target_physical" ]; then
+      printf 'Already migrated: %s\n' "$target_dir"
+      exit 0
+    fi
+    if [ -e "$legacy_path" ] || [ -L "$legacy_path" ]; then
+      printf 'Refusing to replace existing legacy path: %s\n' "$legacy_path" >&2
+      exit 1
+    fi
+    if [ "$dry_run" = true ]; then
+      printf 'Would link %s -> %s\n' "$legacy_path" "$target_dir"
+    else
+      ln -s "$target_dir" "$legacy_path"
+      printf 'Linked %s -> %s\n' "$legacy_path" "$target_dir"
+    fi
+    exit 0
+fi
+
+if [ -e "$target_dir" ] || [ -L "$target_dir" ]; then
+  printf 'Refusing to overwrite migration target: %s\n' "$target_dir" >&2
+  exit 1
+fi
+
+if [ -L "$legacy_path" ]; then
+  printf 'Refusing to move a legacy path that is already a symlink: %s\n' "$legacy_path" >&2
+  exit 1
+fi
+
+if [ "$source_dir" != "$(physical_dir "$legacy_path")" ]; then
+  printf 'Refusing to move an unexpected checkout: %s\n' "$source_dir" >&2
+  printf 'Expected the checkout at: %s\n' "$legacy_path" >&2
+  exit 1
+fi
+
+if [ "$dry_run" = true ]; then
+  printf 'Would move %s -> %s\n' "$source_dir" "$target_dir"
+  printf 'Would link %s -> %s\n' "$legacy_path" "$target_dir"
+  exit 0
+fi
+
+mkdir -p "$config_home"
+mv "$source_dir" "$target_dir"
+if ! ln -s "$target_dir" "$legacy_path"; then
+  printf 'Failed to create compatibility link; rolling the checkout back.\n' >&2
+  if mv "$target_dir" "$source_dir"; then
+    printf 'Rolled back to %s\n' "$source_dir" >&2
+  else
+    printf 'Rollback failed; checkout remains at %s\n' "$target_dir" >&2
+  fi
+  exit 1
+fi
+
+printf 'Migrated dotfiles to %s\n' "$target_dir"
+printf 'Compatibility link: %s -> %s\n' "$legacy_path" "$target_dir"
+printf 'Run %s/init sync to rewrite managed links to the canonical path.\n' "$target_dir"

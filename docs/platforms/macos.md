@@ -29,8 +29,8 @@ Prerequisites are a macOS account that can authorize system changes, network
 access, and the Command Line Tools required by Git/Homebrew.
 
 ```sh
-git clone https://github.com/lukewang1024/dotfiles ~/.dotfiles
-~/.dotfiles/init macos core
+git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" macos core
 ```
 
 The script installs Homebrew when missing, installs the selected package set,
@@ -43,7 +43,7 @@ effect.
 ## Update and reconcile
 
 ```sh
-cd ~/.dotfiles
+cd "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
 git pull
 ./init sync
 ```
@@ -57,7 +57,7 @@ safe and useful when checking a newly added link.
 The maintenance entrypoint can source a module and run one function:
 
 ```sh
-~/.dotfiles/init run macos-defaults better_macos_defaults
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" run macos-defaults better_macos_defaults
 ```
 
 Inspect the function first: defaults commands mutate the current user or system
@@ -69,10 +69,10 @@ Check the parts relevant to the chosen mode:
 
 ```sh
 brew --version
-git -C ~/.dotfiles status --short
+git -C "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles" status --short
 test -L ~/.config/zsh/.zshrc
 test -x ~/.local/bin/theme-sync
-git -C ~/.dotfiles config --get core.hooksPath
+git -C "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles" config --get core.hooksPath
 ```
 
 Also confirm GUI configuration where applicable:

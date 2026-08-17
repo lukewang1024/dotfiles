@@ -1,4 +1,6 @@
-config_dir="$HOME/.dotfiles/config"
+dotfiles_dir="${DOTFILES_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles}"
+[ -d "$dotfiles_dir" ] || dotfiles_dir="$HOME/.dotfiles"
+config_dir="$dotfiles_dir/config"
 
 GIT_AUTO_FETCH_INTERVAL=1200 # 20min
 

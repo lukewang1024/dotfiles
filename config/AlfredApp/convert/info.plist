@@ -119,7 +119,7 @@ served stale-while-revalidate, so the filter never waits on the
 network. Sources: open.er-api.com, falling back to the ECB via
 api.frankfurter.dev. Fiat only. Refresh by hand with `rates.py`.
 
-Source of truth: ~/.dotfiles/config/AlfredApp/convert (this directory
+Source of truth: ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp/convert (this directory
 is a symlink into it).
 
 Replaces deanishe's alfred-convert 3.7, which needed Python 2, pint

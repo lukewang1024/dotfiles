@@ -1,7 +1,7 @@
 # Global agent conventions
 
 Single source of truth for every coding agent (Claude Code, Codex, opencode).
-Canonical file: `~/.dotfiles/config/agent/AGENTS.md`, symlinked to each tool's
+Canonical file: `$XDG_CONFIG_HOME/dotfiles/config/agent/AGENTS.md`, symlinked to each tool's
 global instructions path (`~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`);
 `~/.claude/CLAUDE.md` imports it. Keep it tool-agnostic — all three read this.
 
@@ -64,7 +64,7 @@ project processes in the session-level agent pane.
 ## Where generated files go — keep `$HOME` clean, honour XDG
 
 The human keeps `$HOME` tidy: most tool state is redirected into XDG dirs via
-`~/.dotfiles/config/sh/xdg-ninja-patch.sh` (`XDG_CONFIG_HOME=~/.config`,
+`$XDG_CONFIG_HOME/dotfiles/config/sh/xdg-ninja-patch.sh` (`XDG_CONFIG_HOME=~/.config`,
 `XDG_DATA_HOME=~/.local/share`, `XDG_STATE_HOME=~/.local/state`,
 `XDG_CACHE_HOME=~/.cache`). When you create files, follow the same rule:
 

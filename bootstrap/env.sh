@@ -170,6 +170,7 @@ util_setup()
   # global paths; CLAUDE.md imports it (Claude reads CLAUDE.md, not AGENTS.md).
   backup_then_symlink "$config_dir/agent/AGENTS.md" "$HOME/.codex/AGENTS.md"
   backup_then_symlink "$config_dir/agent/AGENTS.md" "$XDG_CONFIG_HOME/opencode/AGENTS.md"
+  backup_then_symlink "$config_dir/agent/AGENTS.md" "$HOME/.claude/AGENTS.md"
   backup_then_symlink "$config_dir/agent/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
   backup_then_symlink "$util_dir/agent/agent-sidebar-hooks-install" "$bin_dir/agent-sidebar-hooks-install"
   backup_then_symlink "$util_dir/agent/agent-sidebar-binary-install" "$bin_dir/agent-sidebar-binary-install"
@@ -210,6 +211,7 @@ util_setup()
   # Kerberos ticket auto-renew (macOS keychain / Linux keytab). Install per-machine
   # with: kinit-auto-login install  (not run here — it prompts for the SSO password).
   backup_then_symlink "$util_dir/kerberos/kinit-auto-login" "$bin_dir/kinit-auto-login"
+  backup_then_symlink "$util_dir/dotfiles/migrate-xdg" "$bin_dir/dotfiles-migrate-xdg"
   # Apply shared Claude Code settings base, fetch the tmux-agent-sidebar binary
   # via its non-interactive downloader (so prefix+Tab binds without the manual
   # install menu), and wire its Claude Code hooks. All idempotent and best-effort

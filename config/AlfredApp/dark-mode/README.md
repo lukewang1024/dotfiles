@@ -50,7 +50,7 @@ this stays off wherever the daemon *is* loaded.
 
 ## Install
 
-Nothing to run. Alfred's sync folder is `~/.dotfiles/config/AlfredApp`, and
+Nothing to run. Alfred's sync folder is `${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp`, and
 `Alfred.alfredpreferences/workflows/user.workflow.dark-mode` is a repo-relative
 symlink back to this directory — both are tracked, so a fresh clone is already
 wired up. See `../README.md`.
