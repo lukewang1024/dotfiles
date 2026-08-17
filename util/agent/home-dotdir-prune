@@ -1,0 +1,115 @@
+#!/bin/sh
+# Archive known-obsolete HOME dot directories and disposable tool state.
+#
+# Dry-run by default.  --apply moves entries into XDG_STATE_HOME so every
+# cleanup remains recoverable.  This list is intentionally explicit: unknown
+# dot directories are reported by xdg-ninja, not guessed at or deleted.
+
+set -u
+
+usage()
+{
+  cat <<'EOF'
+Usage: home-dotdir-prune [--apply] [--archive-dir PATH]
+
+Dry-runs by default. With --apply, moves known-obsolete HOME entries to:
+  $XDG_STATE_HOME/home-dotdir-prune/archive/<timestamp>/
+
+It also removes empty agent skill shells created by `skills --agent '*'`.
+Active skill roots and non-empty tool directories are never selected by that
+rule. Run xdg-ninja separately to discover new candidates.
+EOF
+}
+
+apply=0
+archive_root=${XDG_STATE_HOME:-"$HOME/.local/state"}/home-dotdir-prune/archive
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --apply) apply=1; shift ;;
+    --archive-dir)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      archive_root=$2
+      shift 2
+      ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+  esac
+done
+
+timestamp=$(date '+%Y%m%d-%H%M%S')
+archive_dir=$archive_root/$timestamp
+
+archive_path()
+{
+  path=$1
+  reason=$2
+  [ -e "$path" ] || [ -L "$path" ] || return 0
+
+  if [ "$apply" -eq 0 ]; then
+    printf 'would archive %-42s # %s\n' "$path" "$reason"
+    return 0
+  fi
+
+  relative=${path#"$HOME"/}
+  dest=$archive_dir/$relative
+  mkdir -p "$(dirname "$dest")" || exit 1
+  [ ! -e "$dest" ] && [ ! -L "$dest" ] || {
+    echo "home-dotdir-prune: archive collision: $dest" >&2
+    exit 1
+  }
+  mv "$path" "$dest" || exit 1
+  printf 'archived %-46s -> %s\n' "$path" "$dest"
+}
+
+# Superseded XDG-era locations or unused package-manager state.
+archive_path "$HOME/.cargo" 'CARGO_HOME is XDG_DATA_HOME/cargo'
+archive_path "$HOME/.docker" 'DOCKER_CONFIG is XDG_CONFIG_HOME/docker'
+archive_path "$HOME/.grip" 'unused Grip cache'
+archive_path "$HOME/.terminfo" 'TERMINFO is XDG_DATA_HOME/terminfo'
+archive_path "$HOME/.npm" 'npm cache/logs use XDG paths'
+archive_path "$HOME/.nvm" 'Node is managed by nodenv'
+archive_path "$HOME/.nodenv" 'nodenv is managed below XDG_DATA_HOME/anyenv'
+archive_path "$HOME/.pnpm-store" 'pnpm uses XDG_DATA_HOME/pnpm/store'
+
+# Explicitly retired applications and workspaces.
+archive_path "$HOME/.ccm-harness" 'retired CCM harness'
+archive_path "$HOME/.ccm-knowledge" 'retired CCM knowledge workspace'
+archive_path "$HOME/.ccm-knowledge.previous" 'retired CCM knowledge backup'
+archive_path "$HOME/.trae-cn" 'retired Trae CN'
+archive_path "$HOME/.trae-aicc-internal" 'retired Trae AICC'
+archive_path "$HOME/.V2rayU" 'retired V2rayU'
+
+# Disposable logs, caches, stale backups and lock files found in the audit.
+archive_path "$HOME/.ai-code-report" 'generated traces'
+archive_path "$HOME/.claude-swap-backup" 'old tool backup'
+archive_path "$HOME/.claude.json.backup" 'old configuration backup'
+archive_path "$HOME/.claude.json.tmp.80805.6cfa986ffe4b" 'stale temporary file'
+archive_path "$HOME/.claude.json.lock" 'stale lock file'
+archive_path "$HOME/.directory_history" 'generated directory history'
+archive_path "$HOME/.EventSDK" 'generated monitor logs'
+archive_path "$HOME/.bytesec-vscode" 'generated scan cache'
+archive_path "$HOME/.bytertc" 'generated monitor logs'
+archive_path "$HOME/.lemminx" 'generated HTTP cache'
+archive_path "$HOME/.lint" 'generated logs'
+archive_path "$HOME/.startingAppData" 'generated Whistle startup state'
+archive_path "$HOME/.tmux.conf~" 'editor backup'
+archive_path "$HOME/.vscode-react-native" 'obsolete extension state'
+archive_path "$HOME/.zsh_sessions" 'old terminal session history'
+
+# `skills --agent '*'` created these client roots on 2026-08-05. Archive only
+# roots whose skills directory is empty and which contain nothing else.
+empty_skill_clients='adal aider-desk augment autohand bob codeartsdoer codebuddy codemaker codestudio commandcode continue factory forge grok hermes iflow inferencesh jazz junie kilocode kiro kode lingma mcpjam moxby mux neovate ona openhands pochi qwen reasonix roo rovodev terramind tinycloud vibe zcode zencoder'
+for client in $empty_skill_clients; do
+  root=$HOME/.$client
+  [ -d "$root/skills" ] || continue
+  [ -z "$(find "$root/skills" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ] || continue
+  [ "$(find "$root" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l | tr -d ' ')" = 1 ] || continue
+  archive_path "$root" 'empty shell created by broad skills distribution'
+done
+
+if [ "$apply" -eq 0 ]; then
+  echo 'home-dotdir-prune: dry run only; rerun with --apply to archive candidates'
+else
+  echo "home-dotdir-prune: archive $archive_dir"
+fi
