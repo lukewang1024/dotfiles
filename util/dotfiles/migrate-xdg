@@ -1,6 +1,6 @@
 #!/bin/sh
-# Move the dotfiles checkout to the XDG config root without breaking existing
-# absolute symlinks. The legacy ~/.dotfiles path remains as a compatibility link.
+# Move the dotfiles checkout to the XDG config root, atomically retarget managed
+# symlinks, then remove the temporary ~/.dotfiles compatibility link.
 
 set -u
 
@@ -19,6 +19,83 @@ physical_dir() {
   CDPATH='' cd -P -- "$1" 2>/dev/null && pwd
 }
 
+list_legacy_links() {
+  for scan_root in \
+    "$HOME/.config" \
+    "$HOME/.local/bin" \
+    "$HOME/.codex" \
+    "$HOME/.claude" \
+    "$HOME/.ssh" \
+    "$HOME/Library/LaunchAgents" \
+    "$HOME/Library/Rime"
+  do
+    [ -e "$scan_root" ] || [ -L "$scan_root" ] || continue
+    find "$scan_root" -xdev -type l -print 2>/dev/null
+  done
+  find "$HOME" -xdev -maxdepth 1 -type l -print 2>/dev/null
+}
+
+legacy_links() {
+  list_legacy_links |
+    while IFS= read -r link_path; do
+      link_target=$(readlink "$link_path" 2>/dev/null || true)
+      case $link_target in
+        "$legacy_path"|"$legacy_path"/*) printf '%s\n' "$link_path" ;;
+      esac
+    done
+}
+
+replace_link_atomically() {
+  replacement=$1
+  destination=$2
+  case $(uname -s) in
+    Darwin) mv -fh "$replacement" "$destination" ;;
+    Linux) mv -fT "$replacement" "$destination" ;;
+    *)
+      printf 'Unsupported platform for atomic symlink replacement: %s\n' "$(uname -s)" >&2
+      return 1
+      ;;
+  esac
+}
+
+finalize_links() {
+  links=$(legacy_links)
+  if [ -n "$links" ]; then
+    printf '%s\n' "$links" |
+      while IFS= read -r link_path; do
+        old_target=$(readlink "$link_path") || exit 1
+        suffix=${old_target#"$legacy_path"}
+        new_target=$target_dir$suffix
+        if [ "$dry_run" = true ]; then
+          printf 'Would retarget %s -> %s\n' "$link_path" "$new_target"
+          continue
+        fi
+        temporary_link=$link_path.dotfiles-migrate.$$
+        if ! ln -s "$new_target" "$temporary_link" || ! replace_link_atomically "$temporary_link" "$link_path"; then
+          printf 'Failed to retarget %s; keeping compatibility link.\n' "$link_path" >&2
+          exit 1
+        fi
+        printf 'Retargeted %s -> %s\n' "$link_path" "$new_target"
+      done || return 1
+  fi
+
+  if [ "$dry_run" = true ]; then
+    [ -L "$legacy_path" ] && printf 'Would remove compatibility link %s\n' "$legacy_path"
+    return 0
+  fi
+
+  remaining=$(legacy_links)
+  if [ -n "$remaining" ]; then
+    printf 'Legacy symlink targets remain; keeping %s:\n%s\n' "$legacy_path" "$remaining" >&2
+    return 1
+  fi
+
+  if [ -L "$legacy_path" ]; then
+    rm -f "$legacy_path"
+    printf 'Removed compatibility link %s\n' "$legacy_path"
+  fi
+}
+
 usage() {
   printf '%s\n' "Usage: $(basename "$0") [--dry-run]"
 }
@@ -34,21 +111,17 @@ esac
 
 target_physical=$(physical_dir "$target_dir" || true)
 if [ -n "$target_physical" ] && [ "$source_dir" = "$target_physical" ]; then
-    if [ -L "$legacy_path" ] && [ "$(physical_dir "$legacy_path")" = "$target_physical" ]; then
-      printf 'Already migrated: %s\n' "$target_dir"
-      exit 0
-    fi
-    if [ -e "$legacy_path" ] || [ -L "$legacy_path" ]; then
-      printf 'Refusing to replace existing legacy path: %s\n' "$legacy_path" >&2
-      exit 1
-    fi
-    if [ "$dry_run" = true ]; then
-      printf 'Would link %s -> %s\n' "$legacy_path" "$target_dir"
-    else
-      ln -s "$target_dir" "$legacy_path"
-      printf 'Linked %s -> %s\n' "$legacy_path" "$target_dir"
-    fi
-    exit 0
+  if [ -L "$legacy_path" ] && [ "$(physical_dir "$legacy_path")" != "$target_physical" ]; then
+    printf 'Refusing to remove unrelated legacy symlink: %s\n' "$legacy_path" >&2
+    exit 1
+  fi
+  if [ -e "$legacy_path" ] && [ ! -L "$legacy_path" ]; then
+    printf 'Refusing to replace existing legacy path: %s\n' "$legacy_path" >&2
+    exit 1
+  fi
+  finalize_links || exit 1
+  printf 'Migration complete: %s\n' "$target_dir"
+  exit 0
 fi
 
 if [ -e "$target_dir" ] || [ -L "$target_dir" ]; then
@@ -69,7 +142,7 @@ fi
 
 if [ "$dry_run" = true ]; then
   printf 'Would move %s -> %s\n' "$source_dir" "$target_dir"
-  printf 'Would link %s -> %s\n' "$legacy_path" "$target_dir"
+  finalize_links || exit 1
   exit 0
 fi
 
@@ -86,5 +159,6 @@ if ! ln -s "$target_dir" "$legacy_path"; then
 fi
 
 printf 'Migrated dotfiles to %s\n' "$target_dir"
-printf 'Compatibility link: %s -> %s\n' "$legacy_path" "$target_dir"
-printf 'Run %s/init sync to rewrite managed links to the canonical path.\n' "$target_dir"
+printf 'Temporary compatibility link: %s -> %s\n' "$legacy_path" "$target_dir"
+finalize_links || exit 1
+printf 'Migration complete: %s\n' "$target_dir"
