@@ -1,103 +1,166 @@
-# Dotfiles and Bootstrap Scripts
+# Dotfiles
 
-## Linux / macOS
+Personal development-environment configuration and bootstrap scripts for
+macOS, Linux, and Windows.
 
-### Usage
+This is an executable record of one environment, not a general-purpose
+installer. Read the relevant platform guide before running it: provisioning can
+install packages, invoke `sudo`, and change operating-system preferences.
 
-```bash
-$ cd ~
-$ git clone https://github.com/lukewang1024/dotfiles .dotfiles # it has to be `.dotfiles`
-$ ~/.dotfiles/init macos # bootstrap macOS core environment
+## How it works
+
+The repository separates desired configuration from the code that applies it:
+
+```text
+tracked source
+├── config/      application and shell configuration
+├── util/        commands installed into ~/.local/bin
+└── bootstrap/   package installation, linking, and OS setup
+        │
+        ├── symlink ───────> application reads the tracked file directly
+        ├── merge script ──> shared block inside a machine-local config
+        └── setup action ──> package, directory, plugin, or OS state
 ```
 
-- Create a file in `$XDG_CONFIG_HOME/.rc.local` to override configs from `~/.dotfiles/config/sh/rc.sh`.
-- Create a file in `$XDG_CONFIG_HOME/.zshrc.local` to override configs from `$XDG_CONFIG_HOME/zsh/.zshrc`.
+Most application configuration is symlinked. This makes the repository the
+source of truth and means a pulled content edit takes effect immediately.
+Settings that must coexist with application-generated or machine-local state
+are merged instead. Provisioning steps remain explicit and idempotent so they
+can be reconciled safely.
 
-### Keeping already-provisioned machines in sync
+Existing destinations are normally moved to a sibling ending in `~` before a
+link replaces them. Secrets and machine-specific values stay outside tracked
+files.
 
-Config *content* is symlinked into the repo, so editing a file and pushing means
-every machine picks it up on the next `git pull` — no extra step. Only *new setup
-steps* (new symlinks, tmux/vim plugins, wrappers, XDG dirs) need re-running:
+## Quick start
 
-```bash
-$ cd ~/.dotfiles && git pull   # post-merge hook auto-runs `./init sync` when
-                               # provisioning files (bootstrap/, util/, plugin
-                               # manifests) changed; a no-op otherwise
-$ ~/.dotfiles/init sync        # or run the reconcile by hand anytime
+The Unix entrypoint expects the checkout at `~/.dotfiles`:
+
+```sh
+git clone https://github.com/lukewang1024/dotfiles ~/.dotfiles
+~/.dotfiles/init macos core
 ```
 
-`./init sync` re-runs only the fast, idempotent link/plugin steps — it never
-prompts, sudos, or reinstalls toolchains/packages, so it's safe on every pull.
-The hook is wired per-machine via `core.hooksPath` on first `./init sync` (or any
-full `cli`/`all` provision); because the hook script itself is tracked under
-`util/git/hooks/`, it then stays current through git.
+Use `debian` or `arch` instead of `macos` on Linux. Omitting the mode selects
+`core`.
 
-### MacOS
+Platform-specific prerequisites, side effects, and verification:
 
-TODO
+- [macOS setup](docs/platforms/macos.md)
+- [Linux setup](docs/platforms/linux.md)
+- [Windows setup](docs/platforms/windows.md)
 
-### Linux
+## Day-to-day operations
 
-#### Keyboard modifications
+### Update an existing machine
 
-##### vim-style navigation with `xmodmap`
-
-Init script will create a symbolic link from `~/.Xmodmap` to `~/.dotfiles/config/x/.Xmodmap`, which provides vim-style cursor / mouse pointer navigation:
-
-From | To
---- | ---
-`Caps_Lock` | `Mode_switch`
-`Shift + Caps_Lock` | `Caps_Lock`
-`Caps_Lock + 4` | line end
-`Caps_Lock + 0` | line start
-`Caps_Lock + h` | cursor left
-`Caps_Lock + j` | cursor down
-`Caps_Lock + k` | cursor up
-`Caps_Lock + l` | cursor right
-`Caps_Lock + x` | delete
-
-Some modifications require accessibility feature to work:
-
-From | To
---- | ---
-`Caps_Lock + s` | mouse pointer left
-`Caps_Lock + d` | mouse pointer down
-`Caps_Lock + f` | mouse pointer up
-`Caps_Lock + g` | mouse pointer right
-`Caps_Lock + v` | mouse button 1
-`Caps_Lock + b` | mouse button 2
-`Caps_Lock + n` | mouse button 3
-
-##### More escapes with `xcape`
-
-Drop the below line to `.xinitrc`, after `xmodmap ~/.Xmodmap` line to have short press of `Caps_Lock` and `Control_L` to dispatch `Esc` key instead.
-
-```
-xcape -e 'Control_L=Escape;Mode_switch=Escape'
+```sh
+cd ~/.dotfiles
+git pull
 ```
 
-#### i3 setup
+The tracked `post-merge` hook runs `./init sync` when provisioning files change.
+It can also be run explicitly:
 
-##### Launch arbitrary website with keyboard shortcut
-
-- Create shortcut for the website:
-  - Click `...` -> `More tools` -> `Create shortcut...`.
-  - Check `Open as window` and create.
-  - The shortcut is created at `~/Desktop` by default.
-- Open the web app window and find its instance identifier with `xprop`:
-  - e.g. `crx_cblkndcnkihlfpikpeedddgaecggkbcm`
-- Add the instance identifier to `~/.Xresources.d/custom` as a variable.
-- Read the variable in i3 config and use it to identify the exact app window.
-- Current list of configured web apps:
-  - `web_app.lark`
-  - ...
-
-## Windows
-
-### Usage
-
+```sh
+~/.dotfiles/init sync
 ```
-cd "$env:USERPROFILE"
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/lukewang1024/dotfiles/master/init.ps1 -OutFile "$env:USERPROFILE\init.ps1"
-.\init.ps1 core
+
+`sync` refreshes links, wrappers, plugins, shared agent settings, and XDG
+directories. It deliberately avoids package/toolchain installation, prompts,
+and `sudo`.
+
+### Choose a provisioning mode
+
+```text
+~/.dotfiles/init <platform> [mode]
 ```
+
+| Mode | Result |
+| --- | --- |
+| `core` | Baseline CLI and GUI environment; the default. |
+| `cli` | Baseline plus the extended CLI toolset. |
+| `gui` | Baseline plus the extended desktop-app set. |
+| `all` | Both extended CLI and GUI flows. |
+| `game` | Platform-specific gaming tools where supported. |
+
+Unix-like selectors are `macos` (`osx`), `debian`, `arch`, `chromeos`, and
+`cygwin`. ChromeOS and Cygwin have dedicated flows rather than the complete mode
+matrix.
+
+Other entrypoint tasks:
+
+| Command | Result |
+| --- | --- |
+| `./init basic` | Apply the shared shell and development baseline without a platform package flow. |
+| `./init sync` | Reconcile an already-provisioned checkout. |
+| `./init npmg` | Reinstall common global npm packages. |
+| `./init zinit` | Configure zinit and the tracked zsh startup files. |
+| `./init run <module> <function>` | Run one function from a bootstrap module. |
+
+For example:
+
+```sh
+~/.dotfiles/init run macos-defaults better_macos_defaults
+```
+
+### Add or change configuration
+
+1. Put application configuration in `config/<tool>/` or a reusable command in
+   `util/`.
+2. Add its linking or apply step to the appropriate `bootstrap/` module.
+3. Include it in `sync_setup` when existing machines need the new step.
+4. Run `./init sync` and verify the destination link or merged block.
+5. Confirm any replaced local file was preserved as `<path>~`.
+6. Keep package-list changes separate from configuration changes in Git.
+
+For shell changes, use `/bin/sh -n` for POSIX scripts and `bash -n` for the Bash
+bootstrap modules. Run ShellCheck when available.
+
+### Override a setting locally
+
+These ignored files provide machine-local extension points:
+
+- `$XDG_CONFIG_HOME/.rc.local` extends `config/sh/rc.sh`;
+- `$XDG_CONFIG_HOME/.zshrc.local` extends `config/zsh/.zshrc`;
+- `config/git/local` adds local Git configuration;
+- `config/agent/hooks-keep.local.txt` retains private agent hooks.
+
+Do not commit tokens, SSH keys, workplace credentials, or per-machine paths.
+
+## Storage model
+
+The shell setup follows the XDG base-directory convention:
+
+| Location | Ownership |
+| --- | --- |
+| `~/.config` | Configuration |
+| `~/.local/share` | Persistent application data |
+| `~/.local/state` | Logs, history, and state |
+| `~/.cache` | Re-downloadable or disposable caches |
+| `~/.local/bin` | User executables |
+
+`config/sh/xdg-ninja-patch.sh` relocates tools that would otherwise put state at
+the top level of `$HOME`.
+
+## Repository map
+
+| Path | Responsibility |
+| --- | --- |
+| `init`, `init.ps1` | Unix-like and Windows entrypoints |
+| `bootstrap/` | Package sets, setup functions, and platform defaults |
+| `config/` | Tracked source-of-truth configuration |
+| `util/` | Reusable commands linked into `~/.local/bin` |
+| `shell/` | Standalone shell support files |
+| `docs/platforms/` | Platform prerequisites and operating procedures |
+
+Tool-level documentation is intentionally selective. A tool gets its own
+README when it has generated/merged state, multiple cooperating components, or
+a non-obvious install and recovery workflow. Plain upstream configuration does
+not need a second description that can drift from the file itself.
+
+Current subsystem guides include:
+
+- [shared coding-agent configuration](config/agent/README.md)
+- [Alfred workflows](config/AlfredApp/README.md)
+- [Rime configuration](config/Rime/README.md)
