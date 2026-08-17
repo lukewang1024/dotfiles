@@ -13,10 +13,10 @@ claude	~/.claude/settings.json	PostToolUse	activity-log
 claude	~/.claude/settings.json	TaskCreated	task-created
 claude	~/.claude/settings.json	TaskCompleted	task-completed
 claude	~/.claude/settings.json	TeammateIdle	teammate-idle
-codex	~/.codex/hooks.json	SessionStart	session-start	startup|resume|clear|compact
-codex	~/.codex/hooks.json	UserPromptSubmit	user-prompt-submit
-codex	~/.codex/hooks.json	Stop	stop
-codex	~/.codex/hooks.json	PostToolUse	activity-log
+codex	~/.codex/config.toml	SessionStart	session-start	startup|resume|clear|compact
+codex	~/.codex/config.toml	UserPromptSubmit	user-prompt-submit
+codex	~/.codex/config.toml	Stop	stop
+codex	~/.codex/config.toml	PostToolUse	activity-log
 traex	~/.trae/hooks.json	SessionStart	session-start	startup|resume|clear|compact
 traex	~/.trae/hooks.json	UserPromptSubmit	user-prompt-submit
 traex	~/.trae/hooks.json	Stop	stop
