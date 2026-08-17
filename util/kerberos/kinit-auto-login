@@ -37,6 +37,8 @@ ENV_FILE="$CONFIG_DIR/kinit.env"
 STATE_DIR="$CONFIG_DIR/krb5"
 LOG_FILE="$STATE_DIR/kinit.log"
 PID_FILE="$STATE_DIR/kinit-daemon.pid"
+CACHE_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kinit-auto-login"
+MACOS_CCACHE="FILE:$CACHE_STATE_DIR/krb5cc"
 
 REALM_DEFAULT="BYTEDANCE.COM"
 # Tickets usually last 10~24h; renewing every 6h leaves ample slack (a renewal
@@ -157,12 +159,30 @@ load_interval() {
 # macOS: kinit --keychain + LaunchAgent
 # ---------------------------------------------------------------------------
 
+macos_publish_cache() {
+  domain="gui/$(id -u)"
+  old_cache="$(launchctl getenv KRB5CCNAME 2>/dev/null || true)"
+  [ "$old_cache" = "$MACOS_CCACHE" ] && return 0
+
+  launchctl setenv KRB5CCNAME "$MACOS_CCACHE" || return 1
+
+  # Long-running peers inherit launchd's environment only when they start. If
+  # they won the login race and started before this agent, restart them once so
+  # subsequent GSSAPI reconnects read the shared cache. Ignore absent peers.
+  launchctl list 2>/dev/null |
+    awk '$3 ~ /^dev[.]distributed-workbench[.]peer[.]/ { print $3 }' |
+    while IFS= read -r label; do
+      launchctl kickstart -k "$domain/$label" >/dev/null 2>&1 || true
+    done
+}
+
 macos_renew() {
   principal="$(resolve_principal)" || return 1
-  mkdir -p "$STATE_DIR"
+  mkdir -p "$STATE_DIR" "$CACHE_STATE_DIR"
   # --keychain: the first time prompts for the password and stores it in the login
   # keychain; after that, unattended renewals read straight from the keychain.
-  if kinit --keychain "$principal" >>"$LOG_FILE" 2>&1; then
+  if kinit -c "$MACOS_CCACHE" --keychain "$principal" >>"$LOG_FILE" 2>&1; then
+    macos_publish_cache || log_line "warning: failed to publish KRB5CCNAME to launchd"
     log_line "kinit ok ($principal)"
     return 0
   fi
@@ -172,32 +192,36 @@ macos_renew() {
 
 macos_install() {
   principal="$(resolve_principal)" || return 1
-  mkdir -p "$STATE_DIR"
+  mkdir -p "$STATE_DIR" "$CACHE_STATE_DIR"
   echo "principal: $principal"
 
   # First renewal: if the keychain has no password yet, this step prompts for it once.
   echo "• Initializing the ticket (first run prompts for the SSO password; later renewals are automatic)"
-  if ! kinit --keychain "$principal"; then
+  if ! kinit -c "$MACOS_CCACHE" --keychain "$principal"; then
     echo "kinit failed. Confirm the principal is correct and the KDC is reachable (VPN), then retry." >&2
     return 1
   fi
   persist_principal "$principal"  # persist so background renew can still resolve it after the cache is cleared
-  klist || true
+  macos_publish_cache || true
+  KRB5CCNAME="$MACOS_CCACHE" klist || true
 
   # Write the LaunchAgent: ProgramArguments points at this script's `renew`, so Login
   # Items show the readable kinit-auto-login (rather than bash).
   mkdir -p "$(dirname "$LAUNCHD_PLIST")"
   interval="$(load_interval)"
   /usr/bin/python3 - "$LAUNCHD_PLIST" "$LAUNCHD_LABEL" "$SELF" "$interval" \
-    "$STATE_DIR/kinit.out.log" "$STATE_DIR/kinit.err.log" <<'PY'
+    "$STATE_DIR/kinit.out.log" "$STATE_DIR/kinit.err.log" "$MACOS_CCACHE" <<'PY'
 import os, plistlib, sys
-plist_path, label, self_path, interval, out_path, err_path = sys.argv[1:]
+plist_path, label, self_path, interval, out_path, err_path, ccache = sys.argv[1:]
 # launchd does not inherit the login shell's PATH; kinit/klist are addressed by
 # absolute dir, and this provides a safe fallback PATH.
 payload = {
     "Label": label,
     "ProgramArguments": [self_path, "renew"],
-    "EnvironmentVariables": {"PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"},
+    "EnvironmentVariables": {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+        "KRB5CCNAME": ccache,
+    },
     "RunAtLoad": True,
     "StartInterval": int(interval),
     "StandardOutPath": out_path,
@@ -236,7 +260,8 @@ macos_status() {
   fi
   [ -f "$LAUNCHD_PLIST" ] && echo "plist: $LAUNCHD_PLIST"
   echo "== klist =="
-  klist 2>&1 || echo "(no valid ticket)"
+  echo "cache: $MACOS_CCACHE"
+  KRB5CCNAME="$MACOS_CCACHE" klist 2>&1 || echo "(no valid ticket)"
   [ -f "$LOG_FILE" ] && { echo "== recent log =="; tail -5 "$LOG_FILE"; }
 }
 
