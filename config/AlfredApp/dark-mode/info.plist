@@ -114,7 +114,7 @@
 
 Setting the OS appearance is all this does. nvim, Alacritty, tmux and
 any attached SSH devbox already follow the OS switch through the
-appearance-daemon LaunchAgent (dark-notify) and tmux-dark-notify, so
+appearance-daemon LaunchAgent (dark-notify), so
 there is nothing extra to drive from here. If that daemon is not
 loaded, apply.sh falls back to running theme-sync directly.
 

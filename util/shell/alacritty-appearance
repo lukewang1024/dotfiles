@@ -6,12 +6,12 @@
 # from the tracked theme-{light,dark}.toml.
 #
 # Wiring: config/tmux/appearance-{light,dark}.conf call this on every macOS
-# light/dark switch (sourced by tmux-dark-notify's dark-notify), so Alacritty
+# light/dark switch (driven by the login-scoped appearance-daemon), so Alacritty
 # rides the same OS signal that already drives tmux + nvim. `auto` (used at
 # install / first run, and on tmux start) reads the current macOS appearance.
 #
 # Note: the push signal only fires while a tmux server is running (dark-notify
-# lives inside tmux-dark-notify). That covers the normal workflow; run
+# is shared with tmux). That covers the normal workflow; run
 # `alacritty-appearance auto` by hand otherwise.
 #
 # POSIX sh — may run from dark-notify's minimal environment.
