@@ -4,7 +4,7 @@
 # That is deliberately ALL it does. Everything downstream — the shared state file
 # nvim watches, Alacritty's imported theme, tmux, and any SSH devbox we're
 # attached to — already hangs off the OS appearance via the `appearance-daemon`
-# LaunchAgent (dark-notify) and tmux-dark-notify. Flipping the OS switch is the
+# LaunchAgent (dark-notify). Flipping the OS switch is the
 # one event those watchers exist to observe, so re-implementing the fan-out here
 # would give the Alfred path its own private, second-best copy of a chain that is
 # already correct for every OTHER way the appearance changes (Control Centre,

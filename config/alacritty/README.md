@@ -18,7 +18,7 @@ helper instead of hardcoded:
   `dark-notify` signal that drives tmux + nvim, so all three stay in sync.
 
 The push signal fires while a tmux server is running (dark-notify lives inside
-tmux-dark-notify). Outside that, run `alacritty-appearance auto` by hand. Font
+the login-scoped appearance-daemon). Outside that, run `alacritty-appearance auto` by hand. Font
 family etc. still belong in `local.toml`.
 
 ## Font

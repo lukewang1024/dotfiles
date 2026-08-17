@@ -3,10 +3,10 @@
 # tmux-adaptive-theme for terminals WITHOUT native theme reporting (DEC mode
 # 2031), e.g. Apple Terminal.app and older clients.
 #
-# Wiring: tmux-dark-notify runs `dark-notify -c tmux-theme-mode.sh`, which
-# source-file's the conf pointed at by @dark-notify-theme-path-{light,dark};
-# those confs (config/tmux/appearance-{light,dark}.conf) run-shell this script
-# with the new mode on every macOS light/dark switch.
+# Wiring: the login-scoped appearance-daemon invokes this with `all` on every
+# macOS light/dark switch. That replaces the old permanent watcher per tmux
+# server. tmux's session-created hook invokes the single-server form for a
+# server that starts after the most recent appearance change.
 #
 # Why the guard: dark-notify is OS-truth, but the native client-*-theme hooks are
 # terminal-truth (they follow the terminal's ACTUAL theme, which may be pinned
@@ -15,7 +15,7 @@
 # 2031-capable terminal is never double-driven / flip-flopped by the OS signal.
 # Only when no client reports a theme (all non-2031) do we apply the OS mode.
 #
-# POSIX sh — dark-notify's callback runs in a minimal environment.
+# POSIX sh — appearance-daemon's callback runs in a minimal environment.
 set -u
 case "${1:-}" in
    light|dark) want=$1 ;;
@@ -43,6 +43,25 @@ case "${1:-}" in
    *) printf 'usage: %s light|dark|auto\n' "$0" >&2; exit 2 ;;
 esac
 command -v tmux >/dev/null 2>&1 || exit 0
+
+if [ "${2:-}" = all ]; then
+   # launchd has no TMUX environment. Discover every standard local socket and
+   # run the guarded single-server path against each one. The synthetic TMUX
+   # value makes all nested tmux calls, including set-appearance.sh, use that
+   # socket without teaching those helpers a second -S calling convention.
+   for dir in "${TMUX_TMPDIR:-}" /tmp; do
+      [ -n "$dir" ] || continue
+      socket_dir=$dir/tmux-$(id -u)
+      [ -d "$socket_dir" ] || continue
+      for socket in "$socket_dir"/*; do
+         [ -S "$socket" ] || continue
+         TMUX="$socket,0,0" "$0" "$want" || true
+      done
+      break
+   done
+   exit 0
+fi
+
 tmux has-session >/dev/null 2>&1 || exit 0
 
 # Defer to native mode-2031 reporting when present.

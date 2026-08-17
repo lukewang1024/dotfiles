@@ -1,19 +1,19 @@
 #!/bin/sh
 # appearance-daemon — make light/dark follow the macOS system appearance even
-# when no tmux server is running, so nvim and Alacritty update everywhere and not
-# only inside tmux (where tmux-dark-notify drives them).
+# when no tmux server is running, so tmux, nvim, and Alacritty update from one
+# login-scoped watcher rather than one permanent watcher per tmux server.
 #
 # It runs `dark-notify` as a login-scoped LaunchAgent; on every macOS light/dark
 # switch (and once at load) it writes the shared state file
-# ($XDG_STATE_HOME/appearance) and swaps Alacritty's theme — the same two effects
-# tmux's dark-notify fallback produces, but not gated on a tmux server:
+# ($XDG_STATE_HOME/appearance), updates tmux's guarded fallback, and swaps
+# Alacritty's theme:
 #   - state file  -> nvim's libuv watcher flips &background live; plain vim on
 #                    its next FocusGained (see config/vim/lua/appearance.lua)
 #   - Alacritty   -> alacritty-appearance swaps the imported theme (live reload)
 #
-# This is OS-truth: a terminal pinned against the OS (rather than following it,
-# as kitty now does) will have its nvim follow the OS too. Inside tmux the existing tmux path also
-# runs; both are idempotent, so the overlap is harmless.
+# This is OS-truth for nvim and Alacritty. tmux-appearance-fallback separately
+# checks native mode-2031 client reports, so a terminal pinned against the OS is
+# still authoritative for its tmux server.
 #
 # Subcommands: apply | run | install | uninstall | status
 # Install is per-machine and non-interactive: `appearance-daemon install`.
@@ -48,6 +48,11 @@ apply() {
    # Alacritty has no native OS-theme following.
    if command -v alacritty-appearance >/dev/null 2>&1; then
       alacritty-appearance "$want" || true
+   fi
+   # One login-scoped watcher covers every server. The helper self-gates when a
+   # server has a client with native mode-2031 theme reporting.
+   if command -v tmux-appearance-fallback >/dev/null 2>&1; then
+      tmux-appearance-fallback "$want" all || true
    fi
    # Relay to any SSH devbox we're attached to. This is the RELIABLE trigger for
    # remote sync: the terminal's native mode-2031 report reaches a remote tmux

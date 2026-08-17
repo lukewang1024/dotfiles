@@ -29,7 +29,7 @@ Alfred's to own:
   `$XDG_STATE_HOME/appearance` (nvim's libuv watcher flips `&background` live;
   plain vim on its next `FocusGained`), swaps Alacritty's imported theme, and
   relays to every attached SSH devbox via `theme-push-remotes`.
-- **tmux-dark-notify** drives the tmux side through
+- **appearance-daemon** drives the tmux side through
   `config/tmux/appearance-{light,dark}.conf`.
 
 Both hang off the OS appearance, which is the one thing every *other* way of
