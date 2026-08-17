@@ -8,8 +8,9 @@
 # a ~/.tmux/plugins layout we don't use), so we install them here.
 #
 # Idempotent + self-healing: re-running refreshes stale plugin paths and
-# never duplicates entries or clobbers unrelated hooks. Mirrors the
-# approach in util/agent/claude-notify-stop and the plugin's own installer.
+# never duplicates entries or clobbers unrelated hooks. JSON agents use jq;
+# Codex uses its canonical config.toml and migrates sidebar entries out of the
+# legacy hooks.json compatibility layer.
 #
 # Usage: agent-sidebar-hooks-install              install / refresh
 #        agent-sidebar-hooks-install --uninstall  remove
@@ -57,9 +58,72 @@ while IFS="$tab" read -r agent config_path event sub matcher; do
   esac
 
   mkdir -p "$(dirname "$settings_file")"
-  [ -f "$settings_file" ] || printf '%s\n' '{}' > "$settings_file"
   cmd="bash $HOOK $agent $sub"
   tmp="$settings_file.tmp"
+
+  if [ "$agent" = "codex" ]; then
+    [ -f "$settings_file" ] || : > "$settings_file"
+
+    # A hook group starts at [[hooks.Event]] and includes its nested
+    # [[hooks.Event.hooks]] entries. Remove only the matching sidebar command.
+    awk -v want_event="$event" -v want_sub="$sub" -v marker="$MARKER" '
+      function flush() {
+        if (group == "") return
+        if (!(group_event == want_event && index(group, marker) &&
+              index(group, "codex " want_sub "\"") )) printf "%s", group
+        group = ""
+        group_event = ""
+      }
+      /^\[\[hooks\.[^.]+\]\]$/ {
+        flush()
+        group = $0 ORS
+        group_event = $0
+        sub(/^\[\[hooks\./, "", group_event)
+        sub(/\]\]$/, "", group_event)
+        next
+      }
+      /^\[/ && group != "" && $0 !~ /^\[\[hooks\.[^.]+\.hooks\]\]$/ { flush() }
+      { if (group != "") group = group $0 ORS; else print }
+      END { flush() }
+    ' "$settings_file" > "$tmp" || exit 1
+
+    if [ "$mode" = "install" ]; then
+      {
+        printf '\n[[hooks.%s]]\n' "$event"
+        [ -n "$matcher" ] && printf 'matcher = "%s"\n' "$matcher"
+        printf '\n  [[hooks.%s.hooks]]\n' "$event"
+        printf '  type = "command"\n'
+        printf '  command = "%s"\n' "$cmd"
+      } >> "$tmp"
+    fi
+    mv "$tmp" "$settings_file"
+
+    # Remove the same managed entry from the legacy compatibility file. Keep
+    # unrelated hooks, and remove the file only when nothing remains in it.
+    legacy_file=$HOME/.codex/hooks.json
+    if [ -f "$legacy_file" ]; then
+      legacy_tmp=$legacy_file.tmp
+      jq --arg ev "$event" --arg sub "$sub" --arg marker "$MARKER" '
+        if (.hooks[$ev] // null) != null then
+          .hooks[$ev] |= map(.hooks = ((.hooks // []) | map(select(
+            ((((.command // "") | contains($marker)) and
+              ((.command // "") | endswith("codex " + $sub)))) | not
+          )))) |
+          .hooks[$ev] |= map(select((.hooks // []) | length > 0)) |
+          if (.hooks[$ev] | length) == 0 then del(.hooks[$ev]) else . end
+        else . end |
+        if ((.hooks // {}) | length) == 0 then del(.hooks) else . end
+      ' "$legacy_file" > "$legacy_tmp" || exit 1
+      if jq -e 'length == 0' "$legacy_tmp" >/dev/null; then
+        rm "$legacy_file" "$legacy_tmp"
+      else
+        mv "$legacy_tmp" "$legacy_file"
+      fi
+    fi
+    continue
+  fi
+
+  [ -f "$settings_file" ] || printf '%s\n' '{}' > "$settings_file"
 
   # Strip any prior sidebar hook for this subcommand (any path), drop blocks
   # left empty by the strip, then (install only) append the canonical command.
