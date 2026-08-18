@@ -16,6 +16,8 @@ bindkey -M vicmd 'j' history-substring-search-down
 alias rrc='source "$ZDOTDIR/.zshrc" && rehash'
 alias ssh-agent-connect="source $config_dir/zsh/ssh-agent-connect.zsh"
 
+source "$config_dir/zsh/agent-resume-history.zsh"
+
 exists zoxide && eval "$(zoxide init zsh)"
 exists starship && eval "$(starship init zsh)"
 
