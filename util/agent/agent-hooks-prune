@@ -13,6 +13,7 @@ Usage: agent-hooks-prune [--apply] [--keep-file PATH] [--archive-dir PATH]
 
 Dry-runs by default. With --apply, prunes non-allowlisted hooks from:
   ~/.claude/settings.json
+  ~/.codex/hooks.json
   ~/.codex/config.toml
   $XDG_CONFIG_HOME/opencode/plugins
 
@@ -138,6 +139,28 @@ archive_config()
   cp "$source_file" "$destination"
 }
 
+validate_toml()
+{
+  file=$1
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "$file" <<'PY'
+import sys
+import tomllib
+
+path = sys.argv[1]
+try:
+    with open(path, "rb") as stream:
+        tomllib.load(stream)
+except (OSError, tomllib.TOMLDecodeError) as error:
+    print(f"{path}: {error}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+    return
+  fi
+  echo 'agent-hooks-prune: python3 with tomllib is required to validate Codex TOML' >&2
+  return 1
+}
+
 claude_file=$HOME/.claude/settings.json
 if [ -f "$claude_file" ]; then
   command -v jq >/dev/null 2>&1 || {
@@ -184,8 +207,58 @@ if [ -f "$claude_file" ]; then
   fi
 fi
 
+codex_hooks_file=$HOME/.codex/hooks.json
+if [ -f "$codex_hooks_file" ]; then
+  command -v jq >/dev/null 2>&1 || {
+    echo 'agent-hooks-prune: jq not found; cannot inspect Codex JSON hooks' >&2
+    exit 1
+  }
+  keep_json=$(jq -Rsc 'split("\n") | map(select(length > 0))' "$markers") || exit 1
+  codex_hooks_tmp=$work_dir/codex-hooks.json
+  jq --argjson keep "$keep_json" '
+    if has("hooks") then
+      .hooks |= with_entries(
+        .value |= map(
+          .hooks = ((.hooks // []) | map(
+            select(. as $hook | any($keep[] as $marker |
+              ($hook | tojson | contains($marker))))
+          ))
+        )
+        | .value |= map(select((.hooks // []) | length > 0))
+      )
+      | .hooks |= with_entries(select(.value | length > 0))
+      | if (.hooks | length) == 0 then del(.hooks) else . end
+    else . end
+  ' "$codex_hooks_file" > "$codex_hooks_tmp" || exit 1
+
+  if cmp -s "$codex_hooks_file" "$codex_hooks_tmp"; then
+    printf 'keep %s (all Codex JSON hooks)\n' "$codex_hooks_file"
+  else
+    codex_hooks_removed=$work_dir/codex-hooks-removed
+    jq -r --argjson keep "$keep_json" '
+      (.hooks // {}) | to_entries[] as $event
+      | $event.value[] | .matcher as $matcher | (.hooks // [])[]
+      | select(. as $hook | any($keep[] as $marker |
+          ($hook | tojson | contains($marker))) | not)
+      | "\($event.key) matcher=\($matcher // "") \(.command // .url // (. | tojson))"
+    ' "$codex_hooks_file" > "$codex_hooks_removed" || exit 1
+    while IFS= read -r hook; do
+      if [ "$apply" -eq 1 ]; then printf 'remove codex %s\n' "$hook"
+      else printf 'would remove codex %s\n' "$hook"; fi
+    done < "$codex_hooks_removed"
+    if [ "$apply" -eq 1 ]; then
+      archive_config "$codex_hooks_file" .codex/hooks.json || exit 1
+      mv "$codex_hooks_tmp" "$codex_hooks_file" || exit 1
+    fi
+  fi
+fi
+
 codex_file=$HOME/.codex/config.toml
 if [ -f "$codex_file" ]; then
+  if ! validate_toml "$codex_file"; then
+    echo "agent-hooks-prune: refusing to inspect invalid TOML: $codex_file" >&2
+    exit 1
+  fi
   codex_tmp=$work_dir/codex.toml
   codex_removed=$work_dir/codex-removed
   : > "$codex_removed"
@@ -227,6 +300,11 @@ if [ -f "$codex_file" ]; then
     }
     END { flush_group() }
   ' "$codex_file" > "$codex_tmp" || exit 1
+
+  if ! validate_toml "$codex_tmp"; then
+    echo 'agent-hooks-prune: generated invalid TOML; leaving config.toml unchanged' >&2
+    exit 1
+  fi
 
   if cmp -s "$codex_file" "$codex_tmp"; then
     printf 'keep %s (all Codex hooks)\n' "$codex_file"
