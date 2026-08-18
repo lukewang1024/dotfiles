@@ -20,5 +20,6 @@ codex	~/.codex/config.toml	Stop	stop
 codex	~/.codex/config.toml	PostToolUse	activity-log
 traex	~/.trae/hooks.json	SessionStart	session-start	startup|resume|clear|compact
 traex	~/.trae/hooks.json	UserPromptSubmit	user-prompt-submit
+traex	~/.trae/hooks.json	PermissionRequest	notification
 traex	~/.trae/hooks.json	Stop	stop
 traex	~/.trae/hooks.json	PostToolUse	activity-log
