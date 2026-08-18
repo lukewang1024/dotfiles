@@ -12,8 +12,8 @@ __SCHEDULE__
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/tmp/__LABEL_SHORT__.log</string>
+    <string>__LOG_DIR__/__LABEL_SHORT__.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/__LABEL_SHORT__.err</string>
+    <string>__LOG_DIR__/__LABEL_SHORT__.err</string>
 </dict>
 </plist>

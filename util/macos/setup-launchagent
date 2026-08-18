@@ -19,6 +19,7 @@
 set -e
 
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
+LOG_DIR=${XDG_STATE_HOME:-"$HOME/.local/state"}/launchd
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || readlink "$0" 2>/dev/null || echo "$0")")" && pwd)"
 TEMPLATE_DIR="$(cd "$SCRIPT_DIR/../../config/launchd" && pwd)"
 TEMPLATE="$TEMPLATE_DIR/launchagent.plist.template"
@@ -156,7 +157,7 @@ ENTRY
 LABEL_SHORT="${LABEL##*.}"
 
 # --- generate plist ---
-mkdir -p "$LAUNCH_AGENTS_DIR"
+mkdir -p "$LAUNCH_AGENTS_DIR" "$LOG_DIR"
 
 CMD_FILE=$(mktemp)
 SCHED_FILE=$(mktemp)
@@ -168,7 +169,9 @@ build_schedule > "$SCHED_FILE"
   echo "$MANAGED_TAG"
   while IFS= read -r line; do
     case "$line" in
-      *__LABEL_SHORT__*) echo "$line" | sed "s|__LABEL_SHORT__|$LABEL_SHORT|g" ;;
+      *__LABEL_SHORT__*|*__LOG_DIR__*)
+        echo "$line" | sed -e "s|__LABEL_SHORT__|$LABEL_SHORT|g" -e "s|__LOG_DIR__|$LOG_DIR|g"
+        ;;
       *__LABEL__*)       echo "$line" | sed "s|__LABEL__|$LABEL|g" ;;
       *__COMMAND_ARGS__*) cat "$CMD_FILE" ;;
       *__SCHEDULE__*)    cat "$SCHED_FILE" ;;
@@ -188,4 +191,4 @@ mv "$PLIST_PATH.tmp" "$PLIST_PATH"
 launchctl load "$PLIST_PATH"
 echo "Installed and loaded: $LABEL"
 echo "  Plist: $PLIST_PATH"
-echo "  Logs:  /tmp/$LABEL_SHORT.log, /tmp/$LABEL_SHORT.err"
+echo "  Logs:  $LOG_DIR/$LABEL_SHORT.log, $LOG_DIR/$LABEL_SHORT.err"

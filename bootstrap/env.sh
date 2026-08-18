@@ -181,6 +181,7 @@ util_setup()
   backup_then_symlink "$util_dir/agent/agent-skills-prune" "$bin_dir/agent-skills-prune"
   backup_then_symlink "$util_dir/agent/home-dotdir-prune" "$bin_dir/home-dotdir-prune"
   backup_then_symlink "$util_dir/agent/agent-hooks-prune" "$bin_dir/agent-hooks-prune"
+  backup_then_symlink "$util_dir/agent/rust-target-prune" "$bin_dir/rust-target-prune"
   backup_then_symlink "$util_dir/agent/mcp-sync" "$bin_dir/mcp-sync"
   # Alacritty light/dark theme swap — driven on macOS appearance changes by
   # config/tmux/appearance-{light,dark}.conf; `auto` seeds theme-active.toml.
