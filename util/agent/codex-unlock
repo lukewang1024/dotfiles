@@ -1,0 +1,117 @@
+#!/bin/sh
+# Release a Codex session's active writer by stopping the process holding its rollout file.
+
+set -u
+
+say()
+{
+  printf '%s\r\n' "$*"
+}
+
+fail()
+{
+  printf '%s\r\n' "$*" >&2
+}
+
+usage()
+{
+  cat <<'EOF'
+Usage: codex-unlock [-y] [-k] SESSION_ID
+
+  -y  do not ask for confirmation
+  -k  send KILL instead of TERM
+
+Example:
+  codex-unlock 019ffe5e-053b-7a41-b039-f741f6dfdec0
+EOF
+}
+
+assume_yes=false
+signal=TERM
+
+while getopts 'ykh' flag; do
+  case $flag in
+    y) assume_yes=true ;;
+    k) signal=KILL ;;
+    h) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+[ "$#" -eq 1 ] || {
+  usage >&2
+  exit 2
+}
+
+session_id=$1
+case $session_id in
+  *[!0-9A-Fa-f-]*|'')
+    fail "codex-unlock: invalid session ID: $session_id"
+    exit 2
+    ;;
+esac
+
+command -v lsof >/dev/null 2>&1 || {
+  fail 'codex-unlock: lsof is required'
+  exit 1
+}
+
+codex_dir=${CODEX_HOME:-"$HOME/.codex"}
+session_file=$(find "$codex_dir/sessions" -type f \
+  -name "*-$session_id.jsonl" -print 2>/dev/null | head -n 1)
+
+[ -n "$session_file" ] || {
+  fail "codex-unlock: session not found: $session_id"
+  exit 1
+}
+
+pids=$(lsof -t -- "$session_file" 2>/dev/null | sort -u)
+[ -n "$pids" ] || {
+  say "codex-unlock: session is already unlocked: $session_id"
+  exit 0
+}
+
+for pid in $pids; do
+  command_name=$(ps -p "$pid" -o comm= 2>/dev/null | awk '{ print $1 }')
+  case $command_name in
+    codex|codex-*) ;;
+    *)
+      fail "codex-unlock: refusing to stop non-Codex process $pid ($command_name)"
+      exit 1
+      ;;
+  esac
+done
+
+say "Session: $session_id"
+say "File:    $session_file"
+for pid in $pids; do
+  process=$(ps -p "$pid" -o pid=,ppid=,etime=,args=)
+  say "$process"
+done
+
+if [ "$assume_yes" = false ]; then
+  printf 'Send %s to the active writer(s)? [y/N] ' "$signal"
+  IFS= read -r answer || answer=
+  case $answer in
+    y|Y|yes|YES) ;;
+    *) say 'Cancelled.'; exit 0 ;;
+  esac
+fi
+
+for pid in $pids; do
+  kill -"$signal" "$pid" || exit 1
+done
+
+attempt=0
+while [ "$attempt" -lt 5 ]; do
+  if ! lsof -t -- "$session_file" >/dev/null 2>&1; then
+    say "Unlocked: $session_id"
+    exit 0
+  fi
+  sleep 1
+  attempt=$((attempt + 1))
+done
+
+fail "codex-unlock: writer is still active; retry with -k: codex-unlock -k $session_id"
+exit 1
