@@ -15,6 +15,7 @@ claude	~/.claude/settings.json	TaskCompleted	task-completed
 claude	~/.claude/settings.json	TeammateIdle	teammate-idle
 codex	~/.codex/config.toml	SessionStart	session-start	startup|resume|clear|compact
 codex	~/.codex/config.toml	UserPromptSubmit	user-prompt-submit
+codex	~/.codex/config.toml	PermissionRequest	notification
 codex	~/.codex/config.toml	Stop	stop
 codex	~/.codex/config.toml	PostToolUse	activity-log
 traex	~/.trae/hooks.json	SessionStart	session-start	startup|resume|clear|compact
