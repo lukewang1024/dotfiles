@@ -27,7 +27,30 @@ config_file=$HOME/.codex/config.toml
 
 mkdir -p "$(dirname "$config_file")"
 [ -f "$config_file" ] || : > "$config_file"
-tmp=$config_file.tmp
+tmp=$(mktemp "$config_file.tmp.XXXXXX") || exit 1
+trap 'rm -f "$tmp"' EXIT HUP INT TERM
+
+validate_toml()
+{
+  file=$1
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "$file" <<'PY'
+import sys
+import tomllib
+
+path = sys.argv[1]
+try:
+    with open(path, "rb") as stream:
+        tomllib.load(stream)
+except (OSError, tomllib.TOMLDecodeError) as error:
+    print(f"{path}: {error}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+    return
+  fi
+  echo 'codex-settings-apply: python3 with tomllib is required to validate config.toml' >&2
+  return 1
+}
 
 awk -v shared_file="$shared_file" '
   function print_shared(    line) {
@@ -79,6 +102,17 @@ awk -v shared_file="$shared_file" '
       print_shared()
     }
   }
-' "$config_file" > "$tmp" && mv "$tmp" "$config_file"
+' "$config_file" > "$tmp" || {
+  rm -f "$tmp"
+  exit 1
+}
+
+if ! validate_toml "$tmp"; then
+  echo 'codex-settings-apply: generated invalid TOML; leaving config.toml unchanged' >&2
+  rm -f "$tmp"
+  exit 1
+fi
+
+mv "$tmp" "$config_file"
 
 echo "Codex shared TUI settings applied to $config_file"
