@@ -1,0 +1,111 @@
+#!/bin/sh
+set -eu
+
+apply=0
+idle_days=${RUST_TARGET_PRUNE_IDLE_DAYS:-7}
+pressure_days=${RUST_TARGET_PRUNE_PRESSURE_DAYS:-1}
+threshold_gib=${RUST_TARGET_PRUNE_THRESHOLD_GIB:-30}
+scan_roots=${RUST_TARGET_PRUNE_ROOTS:-"$HOME/Code:$HOME/Workspace:${XDG_DATA_HOME:-$HOME/.local/share}/tmux/plugins"}
+
+usage() {
+  printf '%s\n' 'Usage: rust-target-prune [--apply] [--days DAYS] [--threshold-gib GIB]'
+  printf '%s\n' 'Default: dry-run; prune Rust target directories idle for 7 days.'
+}
+
+while [ "$#" -gt 0 ]; do
+  case $1 in
+    --apply) apply=1; shift ;;
+    --days)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      idle_days=$2
+      shift 2
+      ;;
+    --threshold-gib)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      threshold_gib=$2
+      shift 2
+      ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 2 ;;
+  esac
+done
+
+case $idle_days:$pressure_days:$threshold_gib in
+  *[!0-9:]*|:*|*:) printf '%s\n' 'rust-target-prune: day and threshold values must be non-negative integers' >&2; exit 2 ;;
+esac
+
+lock_dir=${XDG_STATE_HOME:-"$HOME/.local/state"}/rust-target-prune/lock
+mkdir -p "${lock_dir%/lock}"
+if ! mkdir "$lock_dir" 2>/dev/null; then
+  lock_pid=$(sed -n '1p' "$lock_dir/pid" 2>/dev/null || true)
+  case $lock_pid in
+    ''|*[!0-9]*) lock_pid= ;;
+  esac
+  if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+    printf '%s\n' 'rust-target-prune: another prune is active; skipping this run.'
+    exit 0
+  fi
+  rm -f "$lock_dir/pid"
+  rmdir "$lock_dir" 2>/dev/null || {
+    printf '%s\n' 'rust-target-prune: cannot recover stale lock; skipping this run.' >&2
+    exit 0
+  }
+  mkdir "$lock_dir"
+fi
+printf '%s\n' "$$" > "$lock_dir/pid"
+trap 'rm -f "$lock_dir/pid"; rmdir "$lock_dir" 2>/dev/null || true' EXIT HUP INT TERM
+
+if ps ax -o command= | grep -E '(^|/)(cargo|rustc)([[:space:]]|$)' | grep -v '[g]rep' >/dev/null 2>&1; then
+  printf '%s\n' 'rust-target-prune: cargo or rustc is active; skipping this run.'
+  exit 0
+fi
+
+available_kb=$(df -Pk "$HOME" | awk 'NR == 2 {print $4}')
+available_kb=${available_kb:-0}
+mode=normal
+if [ "$available_kb" -lt $((threshold_gib * 1048576)) ]; then
+  idle_days=$pressure_days
+  mode=pressure
+fi
+
+temporary=$(mktemp -d "${TMPDIR:-/tmp}/rust-target-prune.XXXXXX")
+trap 'rm -rf "$temporary"; rm -f "$lock_dir/pid"; rmdir "$lock_dir" 2>/dev/null || true' EXIT HUP INT TERM
+candidates=$temporary/candidates
+: > "$candidates"
+
+old_ifs=$IFS
+IFS=:
+for scan_root in $scan_roots; do
+  [ -d "$scan_root" ] || continue
+  find "$scan_root" -type d \( \
+    -name .git -o -name node_modules -o -name .venv -o -name vendor \
+  \) -prune -o -type d -name target -print
+done > "$candidates"
+IFS=$old_ifs
+sort -u "$candidates" -o "$candidates"
+
+count=0
+total_kb=0
+printf 'Mode: %s; prune target directories idle for %s day(s).\n' "$mode" "$idle_days"
+while IFS= read -r target_dir; do
+  [ -d "$target_dir" ] || continue
+  project_root=${target_dir%/target}
+  [ "$project_root" != "$target_dir" ] || continue
+  [ -f "$project_root/Cargo.toml" ] || continue
+  if find "$target_dir" -type f -mtime "-$idle_days" -print -quit 2>/dev/null | grep -q .; then
+    continue
+  fi
+  size_kb=$(du -sk "$target_dir" 2>/dev/null | awk '{print $1}')
+  size_kb=${size_kb:-0}
+  count=$((count + 1))
+  total_kb=$((total_kb + size_kb))
+  awk -v kb="$size_kb" -v path="$target_dir" 'BEGIN {printf "  DELETE  %8.2f GiB  %s\n", kb / 1048576, path}'
+  if [ "$apply" -eq 1 ]; then rm -rf -- "$target_dir"; fi
+done < "$candidates"
+
+awk -v count="$count" -v kb="$total_kb" 'BEGIN {printf "Summary: %d target directories, approximately %.2f GiB.\n", count, kb / 1048576}'
+if [ "$apply" -eq 1 ]; then
+  printf '%s\n' 'Selected build artifacts were permanently removed.'
+else
+  printf '%s\n' 'Dry-run only. Re-run with --apply to permanently delete selected build artifacts.'
+fi

@@ -338,6 +338,10 @@ set_macos_configs()
   backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
   backup_then_symlink "$util_dir/macos/alfred-prefs-folder" "$bin_dir/alfred-prefs-folder"
 
+  "$util_dir/macos/setup-launchagent" --label com.lukew.rust-target-prune \
+                    --command "$bin_dir/rust-target-prune --apply" \
+                    --hours "3"
+
   setup_alfred_prefs
   setup_peon_relay_agent
 
