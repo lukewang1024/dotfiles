@@ -144,7 +144,11 @@ These ignored files provide machine-local extension points:
 - `$XDG_CONFIG_HOME/.rc.local` extends `config/sh/rc.sh`;
 - `$XDG_CONFIG_HOME/.zshrc.local` extends `config/zsh/.zshrc`;
 - `config/git/local` adds local Git configuration;
-- `config/agent/hooks-keep.local.txt` retains private agent hooks.
+- `config/agent/hooks-keep.local.txt` retains private agent hooks;
+- `config/agent/hooks-deny.local.txt` removes private hooks even when a keep
+  rule also matches them;
+- `config/agent/home-prune.local.tsv` lists private top-level HOME entries for
+  `home-dotdir-prune` to archive.
 
 Do not commit tokens, SSH keys, workplace credentials, or per-machine paths.
 
