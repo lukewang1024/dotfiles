@@ -36,18 +36,49 @@ autoload -Uz add-zsh-hook
 add-zsh-hook precmd _agent_bind_history_up
 _agent_bind_history_up
 
+_agent_stat_time() {
+  local kind=$1 file=$2 value= bsd_format= gnu_format=
+
+  case "$kind" in
+    birth)
+      bsd_format='%B'
+      gnu_format='%W'
+      ;;
+    mtime)
+      bsd_format='%m'
+      gnu_format='%Y'
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  value=$(stat -f "$bsd_format" "$file" 2>/dev/null)
+  case "$value" in
+    ''|*[!0-9]*) value=$(stat -c "$gnu_format" "$file" 2>/dev/null) ;;
+  esac
+  case "$value" in
+    ''|*[!0-9]*) return 1 ;;
+  esac
+  if [ "$kind" = birth ] && [ "$value" -eq 0 ]; then
+    _agent_stat_time mtime "$file"
+    return
+  fi
+  printf '%s\n' "$value"
+}
+
 _agent_session_id_from_jsonl() {
   local root=$1 marker=$2 session_cwd=$3 file file_cwd birth marker_mtime newest_birth=0 newest=
   local -a files
 
   [ -d "$root" ] || return 1
-  marker_mtime=$(stat -f '%m' "$marker" 2>/dev/null || stat -c '%Y' "$marker" 2>/dev/null) || return 1
+  marker_mtime=$(_agent_stat_time mtime "$marker") || return 1
   files=("${(@f)$(find "$root" -type f -name 'rollout-*.jsonl' -newer "$marker" -print 2>/dev/null)}")
   for file in "${files[@]}"; do
     [ -n "$file" ] || continue
     file_cwd=$(head -n 1 "$file" | jq -r '.payload.cwd // empty' 2>/dev/null)
     [ "$file_cwd" = "$session_cwd" ] || continue
-    birth=$(stat -f '%B' "$file" 2>/dev/null || stat -c '%W' "$file" 2>/dev/null) || continue
+    birth=$(_agent_stat_time birth "$file") || continue
     [ "$birth" -ge "$marker_mtime" ] || continue
     if [ "$birth" -ge "$newest_birth" ]; then
       newest_birth=$birth
@@ -65,13 +96,13 @@ _agent_claude_session_id() {
   local -a files
 
   [ -d "$HOME/.claude/projects" ] || return 1
-  marker_mtime=$(stat -f '%m' "$marker" 2>/dev/null || stat -c '%Y' "$marker" 2>/dev/null) || return 1
+  marker_mtime=$(_agent_stat_time mtime "$marker") || return 1
   files=("${(@f)$(find "$HOME/.claude/projects" -mindepth 2 -maxdepth 2 -type f -name '*.jsonl' -newer "$marker" -print 2>/dev/null)}")
   for file in "${files[@]}"; do
     [ -n "$file" ] || continue
     file_cwd=$(tail -n 40 "$file" | jq -r 'select(.cwd != null) | .cwd' 2>/dev/null | tail -n 1)
     [ "$file_cwd" = "$session_cwd" ] || continue
-    birth=$(stat -f '%B' "$file" 2>/dev/null || stat -c '%W' "$file" 2>/dev/null) || continue
+    birth=$(_agent_stat_time birth "$file") || continue
     [ "$birth" -ge "$marker_mtime" ] || continue
     if [ "$birth" -ge "$newest_birth" ]; then
       newest_birth=$birth
@@ -101,7 +132,7 @@ _agent_run_and_remember() {
       session_id=$(_agent_claude_session_id "$marker" "$session_cwd")
       ;;
     opencode)
-      marker_mtime=$(stat -f '%m' "$marker" 2>/dev/null || stat -c '%Y' "$marker" 2>/dev/null)
+      marker_mtime=$(_agent_stat_time mtime "$marker")
       escaped_cwd=$(printf '%s' "$session_cwd" | sed "s/'/''/g")
       opencode_db="${XDG_DATA_HOME:-$HOME/.local/share}/opencode/opencode.db"
       session_id=$(sqlite3 "$opencode_db" \
