@@ -2,14 +2,16 @@
 # Keep global agent hooks intentionally small.
 #
 # Default is a dry run. Use --apply to archive and remove non-allowlisted
-# Claude Code, Codex, and OpenCode user hooks.
+# Claude Code, Codex, and OpenCode user hooks. Explicitly denied hooks are
+# always removed, even if a local keep-list accidentally names them.
 
 set -u
 
 usage()
 {
   cat <<'EOF'
-Usage: agent-hooks-prune [--apply] [--keep-file PATH] [--archive-dir PATH]
+Usage: agent-hooks-prune [--apply] [--keep-file PATH] [--deny-file PATH]
+                         [--archive-dir PATH]
 
 Dry-runs by default. With --apply, prunes non-allowlisted hooks from:
   ~/.claude/settings.json
@@ -24,6 +26,9 @@ For Claude and Codex, each keep-list entry is a stable literal substring of a
 hook definition. For OpenCode it is an exact plugin filename. Blank lines and
 lines starting with # are ignored. The public keep-list and optional gitignored
 local keep-list are loaded by default. Repeating --keep-file overrides them.
+
+The optional gitignored hooks-deny.local.txt contains literal substrings that
+must always be removed. Repeating --deny-file overrides the default deny-list.
 EOF
 }
 
@@ -63,9 +68,24 @@ print_default_keep_files()
   printf '%s\n' "$config_home/agent/hooks-keep.txt"
 }
 
+print_default_deny_files()
+{
+  config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+  if [ -f "$config_home/agent/hooks-deny.local.txt" ]; then
+    printf '%s\n' "$config_home/agent/hooks-deny.local.txt"
+    return 0
+  fi
+
+  script_dir=$(resolve_script_dir)
+  repo_file=$script_dir/../../config/agent/hooks-deny.local.txt
+  [ -f "$repo_file" ] && printf '%s\n' "$repo_file"
+}
+
 apply=0
 keep_files=$(print_default_keep_files)
 custom_keep_files=0
+deny_files=$(print_default_deny_files)
+custom_deny_files=0
 archive_root=${XDG_STATE_HOME:-"$HOME/.local/state"}/agent-hooks-prune/archive
 
 while [ "$#" -gt 0 ]; do
@@ -78,6 +98,17 @@ while [ "$#" -gt 0 ]; do
         custom_keep_files=1
       else
         keep_files=$keep_files"
+$2"
+      fi
+      shift 2
+      ;;
+    --deny-file)
+      [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+      if [ "$custom_deny_files" -eq 0 ]; then
+        deny_files=$2
+        custom_deny_files=1
+      else
+        deny_files=$deny_files"
 $2"
       fi
       shift 2
@@ -105,10 +136,25 @@ for keep_file in $keep_files; do
 done
 IFS=$old_ifs
 
+old_ifs=$IFS
+IFS='
+'
+for deny_file in $deny_files; do
+  [ -n "$deny_file" ] || continue
+  if [ ! -f "$deny_file" ]; then
+    IFS=$old_ifs
+    echo "agent-hooks-prune: deny file not found: $deny_file" >&2
+    exit 1
+  fi
+done
+IFS=$old_ifs
+
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/agent-hooks-prune.XXXXXX") || exit 1
 trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
 markers=$work_dir/markers
 : > "$markers"
+deny_markers=$work_dir/deny-markers
+: > "$deny_markers"
 old_ifs=$IFS
 IFS='
 '
@@ -124,6 +170,23 @@ for keep_file in $keep_files; do
       if (line != "") print line
     }
   ' "$keep_file" >> "$markers"
+done
+IFS=$old_ifs
+old_ifs=$IFS
+IFS='
+'
+for deny_file in $deny_files; do
+  [ -n "$deny_file" ] || continue
+  awk '
+    /^[[:space:]]*($|#)/ { next }
+    {
+      line = $0
+      sub(/^[[:space:]]*/, "", line)
+      sub(/[[:space:]]*#.*/, "", line)
+      sub(/[[:space:]]*$/, "", line)
+      if (line != "") print line
+    }
+  ' "$deny_file" >> "$deny_markers"
 done
 IFS=$old_ifs
 
@@ -168,14 +231,16 @@ if [ -f "$claude_file" ]; then
     exit 1
   }
   keep_json=$(jq -Rsc 'split("\n") | map(select(length > 0))' "$markers") || exit 1
+  deny_json=$(jq -Rsc 'split("\n") | map(select(length > 0))' "$deny_markers") || exit 1
   claude_tmp=$work_dir/claude.json
-  jq --argjson keep "$keep_json" '
+  jq --argjson keep "$keep_json" --argjson deny "$deny_json" '
     if has("hooks") then
       .hooks |= with_entries(
         .value |= map(
           .hooks = ((.hooks // []) | map(
-            select(. as $hook | any($keep[] as $marker |
-              ($hook | tojson | contains($marker))))
+            select(. as $hook |
+              (any($deny[] as $marker | ($hook | tojson | contains($marker))) | not)
+              and any($keep[] as $marker | ($hook | tojson | contains($marker))))
           ))
         )
         | .value |= map(select((.hooks // []) | length > 0))
@@ -189,11 +254,12 @@ if [ -f "$claude_file" ]; then
     printf 'keep %s (all Claude hooks)\n' "$claude_file"
   else
     claude_removed=$work_dir/claude-removed
-    jq -r --argjson keep "$keep_json" '
+    jq -r --argjson keep "$keep_json" --argjson deny "$deny_json" '
       (.hooks // {}) | to_entries[] as $event
       | $event.value[] | .matcher as $matcher | (.hooks // [])[]
-      | select(. as $hook | any($keep[] as $marker |
-          ($hook | tojson | contains($marker))) | not)
+      | select(. as $hook |
+          any($deny[] as $marker | ($hook | tojson | contains($marker)))
+          or (any($keep[] as $marker | ($hook | tojson | contains($marker))) | not))
       | "\($event.key) matcher=\($matcher // "") \(.command // .url // (. | tojson))"
     ' "$claude_file" > "$claude_removed" || exit 1
     while IFS= read -r hook; do
@@ -214,14 +280,16 @@ if [ -f "$codex_hooks_file" ]; then
     exit 1
   }
   keep_json=$(jq -Rsc 'split("\n") | map(select(length > 0))' "$markers") || exit 1
+  deny_json=$(jq -Rsc 'split("\n") | map(select(length > 0))' "$deny_markers") || exit 1
   codex_hooks_tmp=$work_dir/codex-hooks.json
-  jq --argjson keep "$keep_json" '
+  jq --argjson keep "$keep_json" --argjson deny "$deny_json" '
     if has("hooks") then
       .hooks |= with_entries(
         .value |= map(
           .hooks = ((.hooks // []) | map(
-            select(. as $hook | any($keep[] as $marker |
-              ($hook | tojson | contains($marker))))
+            select(. as $hook |
+              (any($deny[] as $marker | ($hook | tojson | contains($marker))) | not)
+              and any($keep[] as $marker | ($hook | tojson | contains($marker))))
           ))
         )
         | .value |= map(select((.hooks // []) | length > 0))
@@ -235,11 +303,12 @@ if [ -f "$codex_hooks_file" ]; then
     printf 'keep %s (all Codex JSON hooks)\n' "$codex_hooks_file"
   else
     codex_hooks_removed=$work_dir/codex-hooks-removed
-    jq -r --argjson keep "$keep_json" '
+    jq -r --argjson keep "$keep_json" --argjson deny "$deny_json" '
       (.hooks // {}) | to_entries[] as $event
       | $event.value[] | .matcher as $matcher | (.hooks // [])[]
-      | select(. as $hook | any($keep[] as $marker |
-          ($hook | tojson | contains($marker))) | not)
+      | select(. as $hook |
+          any($deny[] as $marker | ($hook | tojson | contains($marker)))
+          or (any($keep[] as $marker | ($hook | tojson | contains($marker))) | not))
       | "\($event.key) matcher=\($matcher // "") \(.command // .url // (. | tojson))"
     ' "$codex_hooks_file" > "$codex_hooks_removed" || exit 1
     while IFS= read -r hook; do
@@ -262,12 +331,15 @@ if [ -f "$codex_file" ]; then
   codex_tmp=$work_dir/codex.toml
   codex_removed=$work_dir/codex-removed
   : > "$codex_removed"
-  awk -v keep_file="$markers" -v removed_file="$codex_removed" '
+  awk -v keep_file="$markers" -v deny_file="$deny_markers" -v removed_file="$codex_removed" '
     BEGIN {
       while ((getline marker < keep_file) > 0) keep[++keep_count] = marker
       close(keep_file)
+      while ((getline marker < deny_file) > 0) deny[++deny_count] = marker
+      close(deny_file)
     }
     function allowed(text, i) {
+      for (i = 1; i <= deny_count; i++) if (index(text, deny[i])) return 0
       for (i = 1; i <= keep_count; i++) if (index(text, keep[i])) return 1
       return 0
     }
@@ -348,9 +420,17 @@ fi
 if [ "$apply" -eq 1 ]; then
   echo 'agent-hooks-prune: applied keep-lists:'
   printf '%s\n' "$keep_files" | sed 's/^/  /'
+  [ -z "$deny_files" ] || {
+    echo 'agent-hooks-prune: applied deny-lists:'
+    printf '%s\n' "$deny_files" | sed 's/^/  /'
+  }
   echo "agent-hooks-prune: archive root $archive_root"
 else
   echo 'agent-hooks-prune: dry run only; rerun with --apply to prune non-kept hooks'
   echo 'agent-hooks-prune: keep-lists:'
   printf '%s\n' "$keep_files" | sed 's/^/  /'
+  [ -z "$deny_files" ] || {
+    echo 'agent-hooks-prune: deny-lists:'
+    printf '%s\n' "$deny_files" | sed 's/^/  /'
+  }
 fi

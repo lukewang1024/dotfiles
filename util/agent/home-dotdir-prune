@@ -18,7 +18,36 @@ Dry-runs by default. With --apply, moves known-obsolete HOME entries to:
 It also removes empty agent skill shells created by `skills --agent '*'`.
 Active skill roots and non-empty tool directories are never selected by that
 rule. Run xdg-ninja separately to discover new candidates.
+
+Optional machine-private candidates are read from the gitignored
+config/agent/home-prune.local.tsv as: <HOME-relative-name><TAB><reason>.
 EOF
+}
+
+resolve_script_dir()
+{
+  path=$0
+  if [ -L "$path" ]; then
+    link=$(readlink "$path" 2>/dev/null || printf '%s\n' "$path")
+    case "$link" in
+      /*) path=$link ;;
+      *) path=$(dirname "$path")/$link ;;
+    esac
+  fi
+  dir=$(dirname "$path")
+  (CDPATH='' cd -- "$dir" 2>/dev/null && pwd) || pwd
+}
+
+find_local_candidates_file()
+{
+  config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+  if [ -f "$config_home/agent/home-prune.local.tsv" ]; then
+    printf '%s\n' "$config_home/agent/home-prune.local.tsv"
+    return 0
+  fi
+  script_dir=$(resolve_script_dir)
+  candidate=$script_dir/../../config/agent/home-prune.local.tsv
+  [ -f "$candidate" ] && printf '%s\n' "$candidate"
 }
 
 apply=0
@@ -81,7 +110,6 @@ archive_path "$HOME/.trae-aicc-internal" 'retired Trae AICC'
 archive_path "$HOME/.V2rayU" 'retired V2rayU'
 
 # Disposable logs, caches, stale backups and lock files found in the audit.
-archive_path "$HOME/.ai-code-report" 'generated traces'
 archive_path "$HOME/.claude-swap-backup" 'old tool backup'
 archive_path "$HOME/.claude.json.backup" 'old configuration backup'
 archive_path "$HOME/.claude.json.tmp.80805.6cfa986ffe4b" 'stale temporary file'
@@ -96,6 +124,28 @@ archive_path "$HOME/.startingAppData" 'generated Whistle startup state'
 archive_path "$HOME/.tmux.conf~" 'editor backup'
 archive_path "$HOME/.vscode-react-native" 'obsolete extension state'
 archive_path "$HOME/.zsh_sessions" 'old terminal session history'
+
+local_candidates_file=$(find_local_candidates_file)
+if [ -n "$local_candidates_file" ]; then
+  tab=$(printf '\t')
+  while IFS="$tab" read -r relative reason; do
+    case "$relative" in
+      ''|'#'*) continue ;;
+      .*) ;;
+      *)
+        echo "home-dotdir-prune: invalid local HOME entry: $relative" >&2
+        exit 1
+        ;;
+    esac
+    case "$relative" in
+      */*)
+        echo "home-dotdir-prune: local entry must be a top-level HOME name: $relative" >&2
+        exit 1
+        ;;
+    esac
+    archive_path "$HOME/$relative" "${reason:-machine-local candidate}"
+  done < "$local_candidates_file"
+fi
 
 # `skills --agent '*'` created these client roots on 2026-08-05. Archive only
 # roots whose skills directory is empty and which contain nothing else.
