@@ -89,6 +89,7 @@ install_npm_packages()
     npm-quick-run                     # Quickly run NPM script by prefix without typing the full name
     nrm                               # npm registry manager can help you switch different npm registries easily and quickly
     open-cli                          # Open stuff like URLs, files, executables. Cross-platform
+    open-computer-use                 # Open-source Computer Use MCP server for Codex and other agents
     pangu                             # Paranoid text spacing for good readability, to automatically insert whitespace between CJK and half-width characters
     pm2                               # Production process manager for Node.JS applications with a built-in load balancer
     pnpm                              # Fast, disk space efficient package manager

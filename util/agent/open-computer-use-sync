@@ -1,0 +1,43 @@
+#!/bin/sh
+# open-computer-use-sync - Register open-computer-use MCP entries for local agents.
+
+set -eu
+
+info()
+{
+  printf '%s\n' "$1"
+}
+
+if ! command -v open-computer-use >/dev/null 2>&1; then
+  info 'open-computer-use-sync: open-computer-use not found, skipping'
+  exit 0
+fi
+
+if command -v opencode >/dev/null 2>&1; then
+  if open-computer-use install-opencode-mcp; then
+    info 'open-computer-use-sync: OpenCode MCP configured'
+  else
+    info 'open-computer-use-sync: failed to configure OpenCode MCP'
+  fi
+else
+  info 'open-computer-use-sync: opencode not found, skipping OpenCode MCP'
+fi
+
+traex_bin=''
+if command -v traex >/dev/null 2>&1; then
+  traex_bin=$(command -v traex)
+elif command -v traecli >/dev/null 2>&1; then
+  traex_bin=$(command -v traecli)
+fi
+
+if [ -n "$traex_bin" ]; then
+  if "$traex_bin" mcp get open-computer-use >/dev/null 2>&1; then
+    info 'open-computer-use-sync: TraeX MCP already configured'
+  elif "$traex_bin" mcp add open-computer-use -- open-computer-use mcp; then
+    info 'open-computer-use-sync: TraeX MCP configured'
+  else
+    info 'open-computer-use-sync: failed to configure TraeX MCP'
+  fi
+else
+  info 'open-computer-use-sync: traex not found, skipping TraeX MCP'
+fi
