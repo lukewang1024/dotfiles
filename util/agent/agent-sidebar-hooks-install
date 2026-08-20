@@ -10,7 +10,9 @@
 # Idempotent + self-healing: re-running refreshes stale plugin paths and
 # never duplicates entries or clobbers unrelated hooks. JSON agents use jq;
 # Codex uses its canonical config.toml and migrates sidebar entries out of the
-# legacy hooks.json compatibility layer.
+# legacy hooks.json compatibility layer. TraeX uses ~/.trae/cli/hooks.json;
+# the old ~/.trae/hooks.json is cleaned so an apparently installed but
+# inactive legacy entry cannot leave the setup half-finished.
 #
 # Usage: agent-sidebar-hooks-install              install / refresh
 #        agent-sidebar-hooks-install --uninstall  remove
@@ -140,6 +142,26 @@ while IFS="$tab" read -r agent config_path event sub matcher; do
     # Tidy: drop the event key entirely if it ended up empty
     if (.hooks[$ev] | length) == 0 then del(.hooks[$ev]) else . end
   ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"
+
+  if [ "$agent" = "traex" ]; then
+    # TraeX 0.20x reads ~/.trae/cli/hooks.json. Remove only our old root-level
+    # entries; preserve unrelated legacy hooks and keep the file valid JSON.
+    legacy_file=$HOME/.trae/hooks.json
+    if [ -f "$legacy_file" ]; then
+      legacy_tmp=$legacy_file.tmp
+      jq --arg ev "$event" --arg sub "$sub" --arg marker "$MARKER" '
+        if (.hooks[$ev] // null) != null then
+          .hooks[$ev] |= map(.hooks = ((.hooks // []) | map(select(
+            ((((.command // "") | contains($marker)) and
+              ((.command // "") | endswith("traex " + $sub)))) | not
+          )))) |
+          .hooks[$ev] |= map(select((.hooks // []) | length > 0)) |
+          if (.hooks[$ev] | length) == 0 then del(.hooks[$ev]) else . end
+        else . end
+      ' "$legacy_file" > "$legacy_tmp" || exit 1
+      mv "$legacy_tmp" "$legacy_file"
+    fi
+  fi
 done < "$CONFIG_FILE"
 
 if [ "$mode" = "install" ]; then
