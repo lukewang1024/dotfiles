@@ -335,6 +335,7 @@ set_macos_configs()
 
   # Handy scripts
   backup_then_symlink "$util_dir/macos/setup-launchagent" "$bin_dir/setup-launchagent"
+  backup_then_symlink "$util_dir/macos/launchservices-prune" "$bin_dir/launchservices-prune"
   backup_then_symlink "$util_dir/macos/virtualbox-kext" "$bin_dir/virtualbox-kext"
   backup_then_symlink "$util_dir/macos/alfred-prefs-folder" "$bin_dir/alfred-prefs-folder"
 

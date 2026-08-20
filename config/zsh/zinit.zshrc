@@ -149,3 +149,11 @@ source "$config_dir/zsh/rc.zsh"
 [ -f "$XDG_CONFIG_HOME/.zshrc.local" ] && source "$XDG_CONFIG_HOME/.zshrc.local"
 
 source "$config_dir/zsh/finish.zsh"
+
+# pnpm
+export PNPM_HOME="${PNPM_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/pnpm}"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end

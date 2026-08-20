@@ -1,0 +1,232 @@
+#!/bin/sh
+# launchservices-prune - Unregister transient macOS app bundles from LaunchServices
+#
+# The common cause for a slow "Open With" menu on a development machine is not a
+# normal /Applications install, but piles of generated or runtime-only .app
+# bundles that LaunchServices has indexed over time. This tool targets those
+# transient bundles, unregisters them with lsregister, and optionally rebuilds
+# LaunchServices afterwards.
+#
+# By default it dry-runs against two local troublemakers seen on this machine:
+#   - codex-libreoffice-runtime: LibreOfficeDev.app under ~/.cache/codex-runtimes
+#   - doubao-office-dev: generated Doubao.app bundles under ~/.local/state/doubao-office-dev
+#
+# Usage examples:
+#   launchservices-prune
+#   launchservices-prune --apply --rebuild --kill-finder
+#   launchservices-prune --rule doubao-office-dev --apply
+#   launchservices-prune --regex '/Users/.*/Desktop/Doubao.*\\.app' --apply
+#   launchservices-prune --path '/tmp/Foo.app' --apply
+
+set -eu
+
+LSREGISTER='/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister'
+
+usage() {
+  cat <<'EOF'
+Usage:
+  launchservices-prune [options]
+
+Options:
+  --apply           Actually unregister matched app bundles. Default is dry-run.
+  --rebuild         Rebuild LaunchServices after unregistering.
+  --kill-finder     Restart Finder after the run.
+  --rule NAME       Add a built-in rule. May be repeated.
+  --path PATH       Unregister one explicit app bundle path. May be repeated.
+  --regex REGEX     Match LaunchServices-registered paths by regex. May be repeated.
+  --no-defaults     Do not include the built-in default rules.
+  --list-rules      Show built-in rules and exit.
+  -h, --help        Show this help.
+
+Built-in rules:
+  codex-libreoffice-runtime
+    Match LibreOfficeDev.app under ~/.cache/codex-runtimes.
+  doubao-office-dev
+    Match generated Doubao.app and Doubao.app.adhoc-* bundles under
+    ~/.local/state/doubao-office-dev.
+
+Notes:
+  - This only unregisters bundles from LaunchServices. It does not delete files.
+  - Use --rebuild to force a LaunchServices refresh after unregistering.
+  - Use --kill-finder if you want Finder menus to refresh immediately.
+EOF
+}
+
+list_rules() {
+  cat <<'EOF'
+codex-libreoffice-runtime  Match LibreOfficeDev.app under ~/.cache/codex-runtimes
+doubao-office-dev          Match generated Doubao.app bundles under ~/.local/state/doubao-office-dev
+EOF
+}
+
+append_line() {
+  printf '%s\n' "$2" >> "$1"
+}
+
+find_rule_paths() {
+  case "$1" in
+    codex-libreoffice-runtime)
+      find "$HOME/.cache/codex-runtimes" -type d -name 'LibreOfficeDev.app' 2>/dev/null || true
+      ;;
+    doubao-office-dev)
+      find "$HOME/.local/state/doubao-office-dev" -type d \( -name 'Doubao.app' -o -name 'Doubao.app.adhoc-*' \) 2>/dev/null || true
+      ;;
+    *)
+      printf 'launchservices-prune: unknown rule: %s\n' "$1" >&2
+      exit 1
+      ;;
+  esac
+}
+
+extract_ls_paths() {
+  awk '/^path:[[:space:]]*/ { sub(/^path:[[:space:]]*/, ""); print }' "$1"
+}
+
+APPLY=0
+REBUILD=0
+KILL_FINDER=0
+USE_DEFAULTS=1
+SELECTORS_GIVEN=0
+
+RULES_FILE=$(mktemp)
+PATHS_FILE=$(mktemp)
+REGEX_FILE=$(mktemp)
+CANDIDATES_FILE=$(mktemp)
+UNIQUE_FILE=$(mktemp)
+LSDUMP_FILE=$(mktemp)
+trap 'rm -f "$RULES_FILE" "$PATHS_FILE" "$REGEX_FILE" "$CANDIDATES_FILE" "$UNIQUE_FILE" "$LSDUMP_FILE"' EXIT HUP INT TERM
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --apply)
+      APPLY=1
+      shift
+      ;;
+    --rebuild)
+      REBUILD=1
+      shift
+      ;;
+    --kill-finder)
+      KILL_FINDER=1
+      shift
+      ;;
+    --rule)
+      [ $# -ge 2 ] || { printf 'launchservices-prune: --rule requires a value\n' >&2; usage >&2; exit 1; }
+      append_line "$RULES_FILE" "$2"
+      SELECTORS_GIVEN=1
+      shift 2
+      ;;
+    --path)
+      [ $# -ge 2 ] || { printf 'launchservices-prune: --path requires a value\n' >&2; usage >&2; exit 1; }
+      append_line "$PATHS_FILE" "$2"
+      SELECTORS_GIVEN=1
+      shift 2
+      ;;
+    --regex)
+      [ $# -ge 2 ] || { printf 'launchservices-prune: --regex requires a value\n' >&2; usage >&2; exit 1; }
+      append_line "$REGEX_FILE" "$2"
+      SELECTORS_GIVEN=1
+      shift 2
+      ;;
+    --no-defaults)
+      USE_DEFAULTS=0
+      shift
+      ;;
+    --list-rules)
+      list_rules
+      exit 0
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      printf 'launchservices-prune: unknown option: %s\n' "$1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ ! -x "$LSREGISTER" ]; then
+  printf 'launchservices-prune: lsregister not found at %s\n' "$LSREGISTER" >&2
+  exit 1
+fi
+
+if [ "$USE_DEFAULTS" -eq 1 ] && [ "$SELECTORS_GIVEN" -eq 0 ]; then
+  append_line "$RULES_FILE" 'codex-libreoffice-runtime'
+  append_line "$RULES_FILE" 'doubao-office-dev'
+fi
+
+while IFS= read -r rule; do
+  [ -n "$rule" ] || continue
+  find_rule_paths "$rule" >> "$CANDIDATES_FILE"
+done < "$RULES_FILE"
+
+cat "$PATHS_FILE" >> "$CANDIDATES_FILE"
+
+if [ -s "$REGEX_FILE" ]; then
+  "$LSREGISTER" -dump > "$LSDUMP_FILE"
+  while IFS= read -r regex; do
+    [ -n "$regex" ] || continue
+    extract_ls_paths "$LSDUMP_FILE" | grep -E "$regex" || true
+  done < "$REGEX_FILE" >> "$CANDIDATES_FILE"
+fi
+
+sort -u "$CANDIDATES_FILE" | awk 'NF' > "$UNIQUE_FILE"
+
+MATCH_COUNT=$(wc -l < "$UNIQUE_FILE" | tr -d ' ')
+if [ "$MATCH_COUNT" -eq 0 ]; then
+  echo 'launchservices-prune: no matching app bundles found.'
+  if [ "$REBUILD" -eq 1 ]; then
+    echo 'launchservices-prune: rebuilding LaunchServices anyway.'
+    "$LSREGISTER" -kill -r -domain local -domain system -domain user
+  fi
+  if [ "$KILL_FINDER" -eq 1 ]; then
+    killall Finder >/dev/null 2>&1 || true
+  fi
+  exit 0
+fi
+
+if [ "$APPLY" -eq 1 ]; then
+  echo 'launchservices-prune: unregistering matched app bundles:'
+else
+  echo 'launchservices-prune: dry-run, matched app bundles:'
+fi
+
+STATUS=0
+while IFS= read -r path; do
+  [ -n "$path" ] || continue
+  if [ -e "$path" ]; then
+    state='present'
+  else
+    state='missing'
+  fi
+
+  if [ "$APPLY" -eq 1 ]; then
+    if "$LSREGISTER" -u "$path" >/dev/null 2>&1; then
+      printf '  unregistered [%s] %s\n' "$state" "$path"
+    else
+      printf '  failed       [%s] %s\n' "$state" "$path" >&2
+      STATUS=1
+    fi
+  else
+    printf '  would unregister [%s] %s\n' "$state" "$path"
+  fi
+done < "$UNIQUE_FILE"
+
+if [ "$REBUILD" -eq 1 ]; then
+  echo 'launchservices-prune: rebuilding LaunchServices database...'
+  "$LSREGISTER" -kill -r -domain local -domain system -domain user
+fi
+
+if [ "$KILL_FINDER" -eq 1 ]; then
+  echo 'launchservices-prune: restarting Finder...'
+  killall Finder >/dev/null 2>&1 || true
+fi
+
+if [ "$APPLY" -eq 0 ]; then
+  echo 'launchservices-prune: dry-run only; re-run with --apply to make changes.'
+fi
+
+exit "$STATUS"
