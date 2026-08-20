@@ -10,14 +10,20 @@ config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
 target_dir=$config_home/dotfiles
 legacy_path=$HOME/.dotfiles
 
+physical_dir() {
+  CDPATH='' cd -P -- "$1" 2>/dev/null && pwd
+}
+
+# `$HOME` may itself be a symlink (for example, /home/user -> /data/home/user),
+# while old managed links may have been created using either spelling.  Keep
+# both forms so migration does not miss links whose targets use the physical
+# checkout path.
+legacy_physical=$(physical_dir "$legacy_path" 2>/dev/null || true)
+
 case $config_home in
   /*) ;;
   *) printf 'XDG_CONFIG_HOME must be an absolute path: %s\n' "$config_home" >&2; exit 1 ;;
 esac
-
-physical_dir() {
-  CDPATH='' cd -P -- "$1" 2>/dev/null && pwd
-}
 
 list_legacy_links() {
   for scan_root in \
@@ -40,7 +46,15 @@ legacy_links() {
     while IFS= read -r link_path; do
       link_target=$(readlink "$link_path" 2>/dev/null || true)
       case $link_target in
-        "$legacy_path"|"$legacy_path"/*) printf '%s\n' "$link_path" ;;
+        "$legacy_path"|"$legacy_path"/*)
+          printf '%s\t%s\n' "$link_path" "$link_target" ;;
+        *)
+          [ -n "$legacy_physical" ] || continue
+          case $link_target in
+            "$legacy_physical"|"$legacy_physical"/*)
+              printf '%s\t%s\n' "$link_path" "$link_target" ;;
+          esac
+          ;;
       esac
     done
 }
@@ -85,9 +99,29 @@ finalize_links() {
   links=$(legacy_links)
   if [ -n "$links" ]; then
     printf '%s\n' "$links" |
-      while IFS= read -r link_path; do
-        old_target=$(readlink "$link_path") || exit 1
-        suffix=${old_target#"$legacy_path"}
+      while IFS='	' read -r link_path old_target; do
+        [ -n "$link_path" ] || continue
+        case $old_target in
+          "$legacy_path"|"$legacy_path"/*)
+            suffix=${old_target#"$legacy_path"}
+            ;;
+          *)
+            if [ -n "$legacy_physical" ]; then
+              case $old_target in
+                "$legacy_physical"|"$legacy_physical"/*)
+                  suffix=${old_target#"$legacy_physical"}
+                  ;;
+                *)
+                  printf 'Skipping link with unexpected target: %s -> %s\n' "$link_path" "$old_target" >&2
+                  continue
+                  ;;
+              esac
+            else
+              printf 'Skipping link with unexpected target: %s -> %s\n' "$link_path" "$old_target" >&2
+              continue
+            fi
+            ;;
+        esac
         new_target=$target_dir$suffix
         if [ "$dry_run" = true ]; then
           printf 'Would retarget %s -> %s\n' "$link_path" "$new_target"
