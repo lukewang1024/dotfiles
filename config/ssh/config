@@ -22,6 +22,7 @@ Host github.com
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
 
 # Multiple account support
 
@@ -29,16 +30,19 @@ Host github.com-geek
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_ed25519-geek
+  IdentitiesOnly yes
 
 Host github.com-work
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_ed25519-work
+  IdentitiesOnly yes
 
 Host github.com-misc
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_ed25519-misc
+  IdentitiesOnly yes
 
 Host *
   Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
