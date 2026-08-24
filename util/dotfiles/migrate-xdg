@@ -49,6 +49,14 @@ legacy_links() {
         "$legacy_path"|"$legacy_path"/*)
           printf '%s\t%s\n' "$link_path" "$link_target" ;;
         *)
+          # Also recognize stale links to the old physical checkout after
+          # ~/.dotfiles has already become the new compatibility symlink.
+          case $link_target in
+            */.dotfiles|*/.dotfiles/*)
+              printf '%s\t%s\n' "$link_path" "$link_target"
+              continue
+              ;;
+          esac
           [ -n "$legacy_physical" ] || continue
           case $link_target in
             "$legacy_physical"|"$legacy_physical"/*)
@@ -106,6 +114,11 @@ finalize_links() {
             suffix=${old_target#"$legacy_path"}
             ;;
           *)
+            case $old_target in
+              */.dotfiles|*/.dotfiles/*)
+                suffix=${old_target#*'/.dotfiles'}
+                ;;
+              *)
             if [ -n "$legacy_physical" ]; then
               case $old_target in
                 "$legacy_physical"|"$legacy_physical"/*)
@@ -120,6 +133,8 @@ finalize_links() {
               printf 'Skipping link with unexpected target: %s -> %s\n' "$link_path" "$old_target" >&2
               continue
             fi
+                ;;
+            esac
             ;;
         esac
         new_target=$target_dir$suffix
