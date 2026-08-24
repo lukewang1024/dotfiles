@@ -26,7 +26,20 @@ install_ai_agent_tools()
   # Idempotent: re-running upgrades in place and preserves config.json.
   curl -fsSL https://raw.githubusercontent.com/lukewang1024/peon-ping/downstream/install.sh | bash -s -- --no-rc
 
+  install_peon_ping_opencode
+
   echo 'Done.'
+}
+
+install_peon_ping_opencode()
+{
+  local opencode_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+  local opencode_plugin_dir="$opencode_config_dir/plugins"
+  local plugin_url='https://raw.githubusercontent.com/lukewang1024/peon-ping/downstream/adapters/opencode/peon-ping.ts'
+
+  mkdir -p "$opencode_plugin_dir"
+  curl -fsSL "$plugin_url" -o "$opencode_plugin_dir/peon-ping.ts"
+  echo "Installed peon-ping OpenCode plugin at $opencode_plugin_dir/peon-ping.ts"
 }
 
 install_cargo_packages()
