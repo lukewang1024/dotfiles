@@ -6,7 +6,6 @@ install_nix_brew_runtimes()
     go                                # Open source programming language to build simple/reliable/efficient software
     node                              # Platform built on V8 to build network applications
     php                               # General-purpose scripting language
-    pipx                              # Execute binaries from Python packages in isolated environments
     pnpm                              # Fast, disk space efficient package manager
     python                            # Interpreted, interactive, object-oriented programming language
     python-tk                         # Python interface to Tcl/Tk
@@ -99,7 +98,6 @@ install_nix_brew_extra_packages()
     cmus                              # Music player with an ncurses based interface
     coreutils                         # GNU File, Shell, and Text utilities
     cowsay                            # Apjanke's fork of the classic cowsay project
-    cpanminus                         # Get, unpack, build, and install modules from CPAN
     cpulimit                          # CPU usage limiter
     csvlens                           # Command-line csv viewer
     ddgr                              # DuckDuckGo from the terminal

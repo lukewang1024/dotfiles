@@ -1,0 +1,6 @@
+# Keep pnpm's global packages and content-addressable store independent of the
+# active Node.js version manager. The paths are XDG-friendly and work across
+# machines because pnpm expands environment variables in this config.
+global-bin-dir=${HOME}/.local/bin
+global-dir=${HOME}/.local/share/pnpm/global
+store-dir=${HOME}/.local/share/pnpm/store

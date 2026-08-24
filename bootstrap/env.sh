@@ -126,6 +126,12 @@ rustup_setup()
   echo 'Done.'
 }
 
+uv_setup()
+{
+  blank_lines
+  install_uv
+}
+
 python_setup()
 {
   blank_lines
@@ -138,6 +144,7 @@ python_setup()
 pnpm_setup()
 {
   blank_lines
+  install_pnpm
   printf 'Symlinking pnpm config... '
   backup_then_symlink "$config_dir/pnpm" "$XDG_CONFIG_HOME/pnpm"
   echo 'Done.'
@@ -268,6 +275,7 @@ sync_setup()
   tig_setup
   vim_setup
   npm_setup
+  uv_setup
   pnpm_setup
   python_setup
 
@@ -298,6 +306,7 @@ basic_env_setup()
   anyenv_setup
   rustup_setup
   npm_setup
+  uv_setup
   pnpm_setup
   python_setup
   vim_setup

@@ -144,7 +144,6 @@ prepare_arch_env_cli_extra()
     cmatrix                           # Console Matrix
     cmus                              # Music player with an ncurses based interface
     cowsay                            # Configurable speaking/thinking cow
-    cpanminus                         # Get, unpack, build, and install modules from CPAN
     cpulimit                          # CPU usage limiter
     csvlens                           # Command line csv viewer
     dnsmasq                           # Lightweight DNS forwarder and DHCP server
