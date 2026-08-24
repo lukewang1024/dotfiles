@@ -56,6 +56,8 @@ fi
 
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PNPM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 # Prepend goenv shims to PATH instead of appending
 export GOENV_PATH_ORDER=front
 
