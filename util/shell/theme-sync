@@ -27,7 +27,7 @@ set -u
 # which has no tty (see theme-push-remotes). No arg = probe the terminal's real
 # background, exactly as before.
 case "${1:-}" in
-   light|dark) want=$1 ;;
+   light|dark) want=$1; detect_source=argument ;;
    '')         want= ;;
    *) echo "theme-sync: usage: ${0##*/} [light|dark]" >&2; exit 2 ;;
 esac
@@ -52,7 +52,16 @@ if [ -z "$want" ]; then
    r=$(( 0x$(hibyte "$r") )); g=$(( 0x$(hibyte "$g") )); b=$(( 0x$(hibyte "$b") ))
    lum=$(( (r*2126 + g*7152 + b*722) / 10000 ))       # perceived luminance 0..255
    [ "$lum" -gt 128 ] && want=light || want=dark
+   detect_source=osc11
 fi
+
+# Keep a small forensic trail: this script is also the SSH relay's remote entry
+# point, so a later unexpected flip can be distinguished from a local OSC probe.
+trace="${XDG_STATE_HOME:-$HOME/.local/state}/tmux/appearance.log"
+mkdir -p "$(dirname "$trace")" 2>/dev/null || true
+printf '%s pid=%s ppid=%s source=theme-sync detect=%s want=%s tmux=%s ssh=%s\n' \
+   "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$$" "$PPID" "$detect_source" "$want" \
+   "${TMUX:-none}" "${SSH_CONNECTION:-none}" >> "$trace" 2>/dev/null || true
 
 # --- 2. publish the state file (nvim fs watchers + vim FocusGained) -----------
 state="${XDG_STATE_HOME:-$HOME/.local/state}/appearance"

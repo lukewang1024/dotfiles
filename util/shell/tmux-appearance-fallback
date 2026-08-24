@@ -23,7 +23,10 @@ case "${1:-}" in
       # At initial tmux startup dark-notify may publish its callback before the
       # first session exists. Resolve macOS directly once session-created fires,
       # avoiding that race. Elsewhere reuse the last published appearance.
-      if command -v defaults >/dev/null 2>&1; then
+      # Some Linux environments also have an unrelated `defaults` executable;
+      # command presence alone would misclassify them and resolve every failed
+      # AppleInterfaceStyle read as light.
+      if [ "$(uname -s 2>/dev/null)" = Darwin ] && command -v defaults >/dev/null 2>&1; then
          if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -qi dark; then
             want=dark
          else
@@ -44,11 +47,20 @@ case "${1:-}" in
 esac
 command -v tmux >/dev/null 2>&1 || exit 0
 
+trace="${XDG_STATE_HOME:-$HOME/.local/state}/tmux/appearance.log"
+trace_event() {
+   mkdir -p "$(dirname "$trace")" 2>/dev/null || true
+   printf '%s pid=%s ppid=%s source=fallback input=%s want=%s scope=%s result=%s tmux=%s\n' \
+      "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$$" "$PPID" "${1:-}" "$want" \
+      "${2:-single}" "${3:-apply}" "${TMUX:-none}" >> "$trace" 2>/dev/null || true
+}
+
 if [ "${2:-}" = all ]; then
    # launchd has no TMUX environment. Discover every standard local socket and
    # run the guarded single-server path against each one. The synthetic TMUX
    # value makes all nested tmux calls, including set-appearance.sh, use that
    # socket without teaching those helpers a second -S calling convention.
+   trace_event "${1:-}" all dispatch
    for dir in "${TMUX_TMPDIR:-}" /tmp; do
       [ -n "$dir" ] || continue
       socket_dir=$dir/tmux-$(id -u)
@@ -66,7 +78,9 @@ tmux has-session >/dev/null 2>&1 || exit 0
 
 # Defer to native mode-2031 reporting when present.
 if [ -n "$(tmux list-clients -F '#{client_theme}' 2>/dev/null | tr -d '[:space:]')" ]; then
+   trace_event "${1:-}" single native-client-skip
    exit 0
 fi
 
+trace_event "${1:-}" single apply
 exec "$HOME/.local/share/tmux/plugins/tmux-adaptive-theme/set-appearance.sh" "$want"
