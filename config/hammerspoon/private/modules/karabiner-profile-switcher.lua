@@ -1,21 +1,21 @@
-function selectKarabinerProfile(idx)
-  hs.osascript.applescript([[
-    tell application "System Events" to tell process "Karabiner-Menu"
-      ignoring application responses
-        click menu bar item 1 of menu bar 1
-      end ignoring
-    end tell
-    do shell script "killall System\\ Events"
-    delay 0.1
-    tell application "System Events" to tell process "Karabiner-Menu"
-      click menu item ]] .. (idx + 1) .. [[ of menu 1 of menu bar item 1 of menu bar 1
-    end tell
-  ]])
+local hotkey = require 'hs.hotkey'
+local task = require 'hs.task'
+
+local nomachine_f18_workaround = hs.settings.get('nomachine_f18_workaround') or false
+
+local function toggle_nomachine_f18_workaround()
+  nomachine_f18_workaround = not nomachine_f18_workaround
+  hs.settings.set('nomachine_f18_workaround', nomachine_f18_workaround)
+  local value = nomachine_f18_workaround and 1 or 0
+  local variables = string.format('{"nomachine_f18_workaround":%d}', value)
+
+  task.new('/opt/homebrew/bin/karabiner_cli', function(exit_code)
+    if exit_code == 0 then
+      hs.alert.show('NoMachine F18 workaround: ' .. (nomachine_f18_workaround and 'ON' or 'OFF'))
+    else
+      hs.alert.show('Failed to update NoMachine F18 workaround')
+    end
+  end, {'--set-variables', variables}):start()
 end
 
-local hotkey = require 'hs.hotkey'
-
-hotkey.bind(hyper, 'f9', function() selectKarabinerProfile(0) end)
-hotkey.bind(hyper, 'f10', function() selectKarabinerProfile(1) end)
-hotkey.bind(hyper, 'f11', function() selectKarabinerProfile(2) end)
-hotkey.bind(hyper, 'f12', function() selectKarabinerProfile(3) end)
+hotkey.bind(hyper, 'f12', toggle_nomachine_f18_workaround)
