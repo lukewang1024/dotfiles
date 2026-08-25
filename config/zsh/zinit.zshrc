@@ -26,6 +26,12 @@ zinit light-mode for \
   zdharma-continuum/zinit-annex-patch-dl \
   zdharma-continuum/zinit-annex-rust
 
+# History state must be established before the first prompt/command. Loading
+# this in the Turbo `wait` batch below can miss early commands and directory
+# changes before its fc stack and hooks exist.
+zinit snippet OMZP::per-directory-history/per-directory-history.zsh/
+source "$config_dir/zsh/per-directory-history-fix.zsh"
+
 # - - - - - - - - - - - - - - - - - - - -
 # Plugins
 # - - - - - - - - - - - - - - - - - - - -
@@ -61,7 +67,6 @@ zinit wait lucid for \
   OMZP::history/history.plugin.zsh \
   as'completion' OMZP::httpie/_httpie \
   OMZP::npm/npm.plugin.zsh \
-  OMZP::per-directory-history/per-directory-history.zsh/ \
   OMZP::rsync/rsync.plugin.zsh \
   OMZP::sudo/sudo.plugin.zsh \
   OMZP::systemadmin/systemadmin.plugin.zsh \

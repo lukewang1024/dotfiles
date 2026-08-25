@@ -107,7 +107,7 @@ setAppToggles(hyperAlt, {
   -- j: for mouse move
   -- k: for mouse move
   -- l: for mouse move
-  m = 'cn.wenyu.bodian.bodianPc',                 -- 波点音乐
+  m = 'com.tencent.QQMusicMac',                   -- QQ 音乐
   n = 'NoMachine',
   -- o = '',
   p = 'IINA',
