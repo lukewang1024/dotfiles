@@ -1,6 +1,8 @@
 # Compatibility fixes for Oh My Zsh's per-directory-history plugin.
 # Keep this separate from Zinit's cache so plugin updates cannot overwrite it.
 
+zmodload zsh/datetime
+
 _per-directory-history-addhistory() {
   # A zshaddhistory hook returning non-zero tells zsh that the hook has handled
   # the entry. This prevents zsh from adding it a second time after print -Sr.
@@ -14,9 +16,10 @@ _per-directory-history-addhistory() {
   # independently, while print -Sr keeps the live history list in sync.
   local serialized=${entry//$'\n'/$'\\\n'}
   if [[ -o extended_history ]]; then
-    serialized=": ${EPOCHSECONDS:-$(printf '%(%s)T' -1)}:0;$serialized"
+    serialized=": $EPOCHSECONDS:0;$serialized"
   fi
-  print -r -- "$serialized" >> "$_per_directory_history_global"
+  mkdir -p "${HISTFILE:h}" "${_per_directory_history_directory:h}"
+  print -r -- "$serialized" >> "$HISTFILE"
   print -r -- "$serialized" >> "$_per_directory_history_directory"
   print -Sr -- "$entry"
   return 1
@@ -51,12 +54,12 @@ _per-directory-history-change-directory() {
 }
 
 _per-directory-history-set-global-history() {
-  mkdir -p "${_per_directory_history_global:h}"
-  : >> "$_per_directory_history_global"
+  mkdir -p "${HISTFILE:h}"
+  : >> "$HISTFILE"
 
   local original_histsize=$HISTSIZE
   HISTSIZE=0
   HISTSIZE=$original_histsize
-  fc -R "$_per_directory_history_global"
-  fc -p "$_per_directory_history_global"
+  fc -R "$HISTFILE"
+  fc -p "$HISTFILE"
 }
