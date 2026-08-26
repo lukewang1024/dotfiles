@@ -3,6 +3,8 @@
 Host *
   AddKeysToAgent yes
   IgnoreUnknown UseKeychain
+  ServerAliveInterval 30
+  ServerAliveCountMax 3
   UseKeychain yes
 
 # Machine-specific hosts live in ~/.ssh/config.local (untracked; bootstrap
