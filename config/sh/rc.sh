@@ -88,6 +88,18 @@ alias sap='source ~/.agent-profile'
 alias sshp='ssh -o PasswordAuthentication=yes'
 alias sshcp='ssh-copy-id -o PasswordAuthentication=yes'
 
+# A remote TUI can leave xterm's modifyOtherKeys mode enabled when SSH drops,
+# making keys such as Ctrl-C arrive as literal escape sequences (27;5;99~).
+# Run in a subshell so the saved state does not leak variables into the caller.
+ssh() (
+  ssh_tty_state=$(stty -g 2>/dev/null)
+  command ssh "$@"
+  ssh_status=$?
+  printf '\033[>4;0m' 2>/dev/null >/dev/tty
+  [ -n "$ssh_tty_state" ] && stty "$ssh_tty_state" 2>/dev/null
+  exit "$ssh_status"
+)
+
 ## Proxy related
 alias ap="all_proxy=socks5://${LOCAL_PROXY_IP}:1080"
 alias apd='unset all_proxy'
@@ -108,6 +120,7 @@ export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
 alias claude-yolo='claude --dangerously-skip-permissions'
 alias codex-yolo='codex --yolo'
 alias opencode-yolo='opencode --auto'
+alias traex-yolo='traex --yolo'
 
 ## Tools from npm
 alias create-react-app='npx create-react-app'
