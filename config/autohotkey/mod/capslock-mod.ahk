@@ -4,9 +4,11 @@
 
 ; Press Capslock -> Esc
 Capslock Up::handleCapslockUp()
+F18 Up::handleCapslockUp()
 
 ; Make Win Key + Capslock work like Capslock
 #Capslock::
+#F18::
 if GetKeyState("CapsLock", "T") = 1
   SetCapsLockState, AlwaysOff
 else
