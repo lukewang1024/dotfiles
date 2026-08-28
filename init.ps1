@@ -68,6 +68,7 @@ function prepare_windows_env_cli_core()
     'ripgrep',                        # Recursively searches directories for a regex pattern
     'runat',                          # Windows utility for running commands at specific times
     'say',                            # Text-to-speech command that converts text input into spoken audio
+    'starship',                       # Cross-platform shell prompt that is fast, customizable, and feature-rich
     'sudo',                           # Allows users to run commands with elevated privileges
     'touch',                          # Unix-like utility for creating empty files or updating timestamps
     'vim',                            # Highly configurable text editor with modal editing
@@ -139,7 +140,6 @@ function prepare_windows_env_cli_extra()
     'scrcpy',                         # Tool for displaying and controlling Android devices connected via USB or wireless
     'shasum',                         # Command-line utility for calculating and verifying SHA checksums of files
     'sniffnet',                       # Network traffic monitor with a graphical interface
-    'starship',                       # Cross-platform shell prompt that is fast, customizable, and feature-rich
     'uv',                             # Ultra-fast Python package installer and resolver written in Rust
     'vagrant',                        # Tool for building and managing virtual machine environments for development
     'xan',                            # Fast CSV processing tool with various data manipulation and analysis capabilities
@@ -363,6 +363,8 @@ function set_windows_configs()
   backup_then_symlink "$configPath\Rime" "$env:APPDATA\Rime"
   backup_then_symlink "$configPath\ssh\config" "$env:USERPROFILE\.ssh\config"
   backup_then_symlink "$configPath\tig" "$env:USERPROFILE\.config\tig"
+  backup_then_symlink "$configPath\windows-terminal\settings.json" "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+  backup_then_symlink "$configPath\windows-terminal\ubuntu.png" "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\ubuntu.png"
 
   # Make git work with openssh
   [environment]::setenvironmentvariable('GIT_SSH', (resolve-path (scoop which ssh)), 'USER')

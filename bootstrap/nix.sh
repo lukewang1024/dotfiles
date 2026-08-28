@@ -52,6 +52,7 @@ install_nix_brew_core_packages()
     ripgrep                           # Search tool like grep and The Silver Searcher
     rsync                             # Utility that provides fast incremental file transfer
     sesh                              # Smart tmux session manager built on top of zoxide
+    starship                          # Cross-shell prompt for astronauts
     tealdeer                          # Very fast implementation of tldr in Rust
     the_silver_searcher               # Code-search similar to ack
     tig                               # Text interface for Git repositories
@@ -224,7 +225,6 @@ install_nix_brew_extra_packages()
     spark                             # Sparklines for the shell
     speedtest-cli                     # Command-line interface for https://speedtest.net bandwidth tests
     anhoder/go-musicfox/spotifox      # Spotify player (special tap)
-    starship                          # Cross-shell prompt for astronauts
     abhimanyu003/sttr/sttr            # CLI to perform various operations on string
     gromgit/brewtils/taproom          # Interactive TUI for Homebrew
     tesseract                         # OCR (Optical Character Recognition) engine
