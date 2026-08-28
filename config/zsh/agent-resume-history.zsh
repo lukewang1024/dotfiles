@@ -68,7 +68,7 @@ _agent_stat_time() {
 }
 
 _agent_session_id_from_jsonl() {
-  local root=$1 marker=$2 session_cwd=$3 file file_cwd birth marker_mtime newest_birth=0 newest=
+  local root=$1 marker=$2 session_cwd=$3 file file_cwd mtime marker_mtime newest_mtime=0 newest=
   local -a files
 
   [ -d "$root" ] || return 1
@@ -78,10 +78,14 @@ _agent_session_id_from_jsonl() {
     [ -n "$file" ] || continue
     file_cwd=$(head -n 1 "$file" | jq -r '.payload.cwd // empty' 2>/dev/null)
     [ "$file_cwd" = "$session_cwd" ] || continue
-    birth=$(_agent_stat_time birth "$file") || continue
-    [ "$birth" -ge "$marker_mtime" ] || continue
-    if [ "$birth" -ge "$newest_birth" ]; then
-      newest_birth=$birth
+    # Resuming an existing session updates its rollout in place, so its birth
+    # time can predate the marker by hours or days. `find -newer` above already
+    # proves that this invocation touched it; use mtime only to choose between
+    # multiple matching rollouts.
+    mtime=$(_agent_stat_time mtime "$file") || continue
+    [ "$mtime" -ge "$marker_mtime" ] || continue
+    if [ "$mtime" -ge "$newest_mtime" ]; then
+      newest_mtime=$mtime
       newest=${file:t:r}
       newest=${newest##*-}
       # A UUID contains hyphens, so take it from the session metadata instead.
@@ -92,7 +96,7 @@ _agent_session_id_from_jsonl() {
 }
 
 _agent_claude_session_id() {
-  local marker=$1 session_cwd=$2 file file_cwd birth marker_mtime newest_birth=0 newest=
+  local marker=$1 session_cwd=$2 file file_cwd mtime marker_mtime newest_mtime=0 newest=
   local -a files
 
   [ -d "$HOME/.claude/projects" ] || return 1
@@ -102,10 +106,10 @@ _agent_claude_session_id() {
     [ -n "$file" ] || continue
     file_cwd=$(tail -n 40 "$file" | jq -r 'select(.cwd != null) | .cwd' 2>/dev/null | tail -n 1)
     [ "$file_cwd" = "$session_cwd" ] || continue
-    birth=$(_agent_stat_time birth "$file") || continue
-    [ "$birth" -ge "$marker_mtime" ] || continue
-    if [ "$birth" -ge "$newest_birth" ]; then
-      newest_birth=$birth
+    mtime=$(_agent_stat_time mtime "$file") || continue
+    [ "$mtime" -ge "$marker_mtime" ] || continue
+    if [ "$mtime" -ge "$newest_mtime" ]; then
+      newest_mtime=$mtime
       newest=${file:t:r}
     fi
   done
