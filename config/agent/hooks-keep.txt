@@ -7,7 +7,5 @@
 # gitignored hooks-keep.local.txt.
 
 peon-ping/
-tmux-agent-sidebar/hook.sh
 tmux-assistant-resurrect/hooks/
 session-tracker.js
-tmux-agent-sidebar.js
