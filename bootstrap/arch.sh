@@ -88,6 +88,7 @@ prepare_arch_env_cli_core()
     procs                             # Modern replacement for ps written in Rust
     ripgrep                           # Search tool like grep and The Silver Searcher
     rsync                             # Utility that provides fast incremental file transfer
+    starship                          # Cross-shell prompt for astronauts
     tealdeer                          # Very fast implementation of tldr in Rust
     the_silver_searcher               # Code-search similar to ack
     tig                               # Text interface for Git repositories
@@ -229,7 +230,6 @@ prepare_arch_env_cli_extra()
     sl                                # Prints a steam locomotive if you type sl instead of ls
     snapd                             # Service and tools for management of snap packages
     sniffnet                          # Cross-platform application to monitor your network traffic
-    starship                          # Cross-shell prompt for astronauts
     toolong                           # Terminal log file viewer
     translate-shell                   # Command-line translator using Google Translate and more
     transmission-cli                  # Command-line BitTorrent client

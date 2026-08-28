@@ -61,6 +61,7 @@ Get-Command scoop
 Get-Command winget
 Get-Item $env:APPDATA\alacritty
 Get-Item $env:USERPROFILE\Documents\PowerShell
+Get-Item $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
 Get-Service ssh-agent
 ```
 
