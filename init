@@ -19,9 +19,54 @@ bin_dir="$HOME/.local/bin"
 
 source "$partial_dir/util.sh"
 
-if [ $# = 0 ]; then
+detect_platform() {
+  if [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = '/data/data/com.termux/files/usr' ]; then
+    echo termux
+    return
+  fi
+
+  case $(uname -s 2>/dev/null) in
+    Darwin) echo macos ;;
+    CYGWIN*|MINGW*|MSYS*) echo cygwin ;;
+    Linux)
+      if [ -f /etc/arch-release ]; then
+        echo arch
+      elif [ -f /etc/lsb-release ] && grep -q '^CHROMEOS_RELEASE_' /etc/lsb-release; then
+        echo chromeos
+      elif [ -f /etc/debian_version ]; then
+        echo debian
+      else
+        echo unknown
+      fi
+      ;;
+    *) echo unknown ;;
+  esac
+}
+
+# A named platform remains valid for compatibility. Otherwise infer it and
+# treat core/all/game as the detected full-system platform's option.
+case ${1:-} in
+  macos|osx|debian|arch|chromeos|cygwin|termux) ;;
+  '') set -- "$(detect_platform)" ;;
+  core|all|game) set -- "$(detect_platform)" "$1" ;;
+esac
+
+if [ "$1" = unknown ]; then
+  echo 'Could not detect this platform. Pass one explicitly.' >&2
   print_usage
 fi
+
+case "$1:${2:-}" in
+  termux:core|termux:all|termux:game)
+    echo 'Termux does not use setup modes; run ./init with no arguments.' >&2
+    exit 2
+    ;;
+  macos:|osx:|debian:|arch:|macos:core|osx:core|debian:core|arch:core|macos:all|osx:all|debian:all|arch:all|macos:game|osx:game|arch:game) ;;
+  macos:*|osx:*|debian:*|arch:*)
+    echo 'Unsupported mode for this platform; use core or all (game is available on macOS/Arch).' >&2
+    exit 2
+    ;;
+esac
 
 case $1 in
   'basic')
@@ -49,6 +94,11 @@ case $1 in
     prepare_chromeos
     ;;
 
+  'termux')
+    shift
+    exec "$partial_dir/termux.sh" "$@"
+    ;;
+
   'cygwin')
     source "$partial_dir/cygwin.sh"
     check_admin
@@ -65,6 +115,11 @@ case $1 in
   'zinit')
     source "$partial_dir/shell.sh"
     zinit_setup
+    ;;
+
+  'kerberos')
+    shift
+    exec "$partial_dir/kerberos.sh" "$@"
     ;;
 
   'sync')

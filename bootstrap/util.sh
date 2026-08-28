@@ -81,27 +81,31 @@ Luke's config bootstrap script
 ./init [platform] [option]
 ./init [task]
 
+The platform is normally detected. Use `./init` for the core setup or
+`./init all` for the full setup. These modes apply only to a full macOS/Linux
+environment; Termux always uses interactive `./init` without a mode.
+
 [Platforms]
 
   macos | osx - macOS
   debian      - Debian
   arch        - Arch Linux
   chromeos    - ChromeOS (requires developer mode)
+  termux      - Termux on Android; remaining arguments go to termux.sh
   cygwin      - Cygwin
 
 [Options]
 
-  core - Prepare core environment only (default)
-  cli  - Prepare CLI environment only
-  gui  - Prepare GUI environment only
-  all  - Prepare both environments
-  game - Setup some games
+  core - Prepare the core environment (default; full macOS/Linux only)
+  all  - Prepare the complete environment (full macOS/Linux only)
+  game - Install the gaming setup (macOS and Arch Linux only)
 
 [Tasks]
 
   basic - Only link rc files to $HOME
   npmg  - Install global npm packages (in case of version switch in nvm)
   zinit - Set zinit as the zsh plugin manager (symlinks .zshrc, etc.)
+  kerberos - Interactively configure krb5.conf for an internal realm
   sync  - Reconcile an already-provisioned machine after `git pull`: re-run only
           the fast, idempotent link/plugin steps (no prompts/sudo/heavy installs).
           Auto-invoked by the repo's post-merge hook when provisioning files change.
