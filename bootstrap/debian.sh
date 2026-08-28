@@ -45,12 +45,6 @@ prepare_debian_env()
     'core')
       prepare_debian_env_core
       ;;
-    'cli')
-      prepare_debian_env_cli
-      ;;
-    'gui')
-      prepare_debian_env_gui
-      ;;
     'all')
       prepare_debian_env_cli
       prepare_debian_env_gui

@@ -28,12 +28,6 @@ prepare_arch_env()
     'core')
       prepare_arch_env_core
       ;;
-    'cli')
-      prepare_arch_env_cli
-      ;;
-    'gui')
-      prepare_arch_env_gui
-      ;;
     'game')
       setup_arch_gaming
       ;;

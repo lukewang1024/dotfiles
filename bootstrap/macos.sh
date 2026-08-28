@@ -8,12 +8,6 @@ prepare_macos_env()
     'core')
       prepare_macos_env_core
       ;;
-    'cli')
-      prepare_macos_env_cli
-      ;;
-    'gui')
-      prepare_macos_env_gui
-      ;;
     'game')
       setup_macos_gaming
       ;;

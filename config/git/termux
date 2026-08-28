@@ -1,0 +1,5 @@
+# Termux-safe composition of the shared Git configuration. Relative include
+# paths are resolved from this file in config/git.
+[include]
+  path = alias
+  path = common
