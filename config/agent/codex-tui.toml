@@ -1,3 +1,3 @@
 theme = "catppuccin-mocha"
-status_line = ["model-with-reasoning", "approval-mode", "current-dir", "context-remaining", "weekly-limit"]
+status_line = ["model-with-reasoning", "current-dir", "context-remaining", "weekly-limit"]
 status_line_use_colors = true
