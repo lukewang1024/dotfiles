@@ -6,6 +6,5 @@
 # home directory. Put machine- or company-specific entries in the optional
 # gitignored hooks-keep.local.txt.
 
-peon-ping/
 tmux-assistant-resurrect/hooks/
 session-tracker.js
