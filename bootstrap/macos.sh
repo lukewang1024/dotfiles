@@ -338,7 +338,7 @@ set_macos_configs()
                     --hours "3"
 
   setup_alfred_prefs
-  setup_peon_relay_agent
+  retire_peon_relay_agent
 
   brew_multi_user_permission
   fix_battery_drain_over_sleep
@@ -360,24 +360,30 @@ setup_alfred_prefs()
     echo 'Alfred preferences folder not set; open Alfred once and re-run `alfred-prefs-folder`.'
 }
 
-setup_peon_relay_agent()
+retire_peon_relay_agent()
 {
-  # peon-ping's audio relay (`peon relay`) is a local HTTP server that plays
-  # sounds on this Mac so SSH / remote / container Claude sessions can ring it.
-  # Run it as a KeepAlive LaunchAgent — starts at login, restarts if it dies —
-  # instead of a hand-started `peon relay --daemon`. peon-ping lives outside this
-  # repo (~/.claude/hooks/peon-ping), so this no-ops when it isn't installed.
-  local peon="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/peon-ping/peon.sh"
-  if [ ! -f "$peon" ]; then
-    echo 'peon-ping not installed; skipping relay LaunchAgent.'
-    return 0
+  # Notifications now belong to tmux-agent-workbench. Remove the old 19998
+  # relay on the next macOS provision so a previous install cannot come back.
+  if [ -f "$HOME/Library/LaunchAgents/com.lukew.peon-relay.plist" ]; then
+    "$util_dir/macos/setup-launchagent" --uninstall \
+      --label com.lukew.peon-relay
   fi
-  # A launchd (foreground) relay and a manual `--daemon` both bind port 19998,
-  # so retire any hand-started daemon first (no-op if none is running).
-  bash "$peon" relay --stop >/dev/null 2>&1 || true
-  "$util_dir/macos/setup-launchagent" --label com.lukew.peon-relay \
-                    --command "/bin/bash $peon relay" \
-                    --keepalive
+
+  # Retire the matching SSH reverse forward as well. It lives in the
+  # machine-local include rather than this repository, so clean it explicitly.
+  ssh_local=$HOME/.ssh/config.local
+  if [ -f "$ssh_local" ] &&
+     grep -Eq '^[[:space:]]*RemoteForward[[:space:]]+(localhost:)?19998([[:space:]]|$)' "$ssh_local"; then
+    ssh_tmp=$(mktemp) || return 1
+    sed '/^[[:space:]]*RemoteForward[[:space:]]\{1,\}\(localhost:\)\{0,1\}19998\([[:space:]]\|$\)/d' \
+      "$ssh_local" > "$ssh_tmp" || {
+        rm -f "$ssh_tmp"
+        return 1
+      }
+    cp "$ssh_tmp" "$ssh_local"
+    rm -f "$ssh_tmp"
+    echo 'Removed retired peon-ping RemoteForward 19998 from ~/.ssh/config.local.'
+  fi
 }
 
 brew_multi_user_permission()

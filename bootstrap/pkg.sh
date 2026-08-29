@@ -36,27 +36,7 @@ install_ai_agent_tools()
   # Codex CLI - standalone installer (recommended; rerun to upgrade)
   curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
 
-  # peon-ping - Claude Code audio/desktop notifier; installs to
-  # ~/.claude/hooks/peon-ping and self-registers its hooks across every Claude
-  # Code event (it supersedes any ad-hoc Stop notifier). Piping keeps it
-  # non-interactive; --no-rc skips shell-rc edits since this repo owns those.
-  # Idempotent: re-running upgrades in place and preserves config.json.
-  curl -fsSL https://raw.githubusercontent.com/lukewang1024/peon-ping/downstream/install.sh | bash -s -- --no-rc
-
-  install_peon_ping_opencode
-
   echo 'Done.'
-}
-
-install_peon_ping_opencode()
-{
-  local opencode_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
-  local opencode_plugin_dir="$opencode_config_dir/plugins"
-  local plugin_url='https://raw.githubusercontent.com/lukewang1024/peon-ping/downstream/adapters/opencode/peon-ping.ts'
-
-  mkdir -p "$opencode_plugin_dir"
-  curl -fsSL "$plugin_url" -o "$opencode_plugin_dir/peon-ping.ts"
-  echo "Installed peon-ping OpenCode plugin at $opencode_plugin_dir/peon-ping.ts"
 }
 
 install_cargo_packages()

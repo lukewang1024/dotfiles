@@ -164,40 +164,6 @@ while IFS="$tab" read -r agent config_path event sub matcher; do
   fi
 done < "$CONFIG_FILE"
 
-# peon-ping used to register Codex hooks in ~/.codex/hooks.json, while current
-# releases use config.toml. Its updater can therefore leave both formats behind
-# across an upgrade. Migrate with peon-ping's own config editor, then remove the
-# legacy file only when every remaining command is peon-ping-owned.
-codex_legacy=$HOME/.codex/hooks.json
-codex_config=$HOME/.codex/config.toml
-if [ "$mode" = "install" ] && [ -f "$codex_legacy" ] && [ -f "$codex_config" ]; then
-  if jq -e '
-       [.hooks // {} | to_entries[] | .value[] | (.hooks // [])[]]
-       | length > 0
-       and all(
-         (.type == "command") and
-         (((.command // "") | contains("peon-ping/adapters/codex.")) or
-          ((.command_windows // "") | contains("peon-ping/adapters/codex.")))
-       )
-     ' "$codex_legacy" >/dev/null 2>&1; then
-    peon_dir=$HOME/.claude/hooks/peon-ping
-    peon_editor=$peon_dir/scripts/codex-config.py
-    peon_adapter=$peon_dir/adapters/codex.sh
-    if command -v python3 >/dev/null 2>&1 &&
-       [ -f "$peon_editor" ] && [ -f "$peon_adapter" ] &&
-       python3 "$peon_editor" install --config "$codex_config" \
-         --install-dir "$peon_dir" --adapter "$peon_adapter" &&
-       grep -F 'peon-ping/adapters/codex.' "$codex_config" >/dev/null 2>&1; then
-      state_root=${XDG_STATE_HOME:-"$HOME/.local/state"}
-      archive_dir=$state_root/agent-sidebar-hooks-install/archive
-      mkdir -p "$archive_dir"
-      stamp=$(date '+%Y%m%d-%H%M%S')
-      mv "$codex_legacy" "$archive_dir/codex-hooks-legacy-$stamp.json"
-      echo "migrated peon-ping Codex hooks; archived legacy JSON in $archive_dir"
-    fi
-  fi
-fi
-
 if [ "$mode" = "install" ]; then
   echo "agent-sidebar hooks installed from $CONFIG_FILE"
 else
