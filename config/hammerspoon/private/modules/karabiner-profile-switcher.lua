@@ -8,7 +8,6 @@ local module = {}
 
 local nomachine_f18_workaround = hs.settings.get('nomachine_f18_workaround') or false
 local remote_desktop_window_focused = nil
-local nomachine_player_pids = {}
 
 local function set_karabiner_variables(variables)
   local json = hs.json.encode(variables)
@@ -16,26 +15,28 @@ local function set_karabiner_variables(variables)
   return status
 end
 
-local function is_nomachine_player(application)
-  if not application or application:bundleID() ~= 'com.nomachine.nxdock' then
-    return false
+local function is_nomachine_remote_window_focused()
+  -- Both NoMachine's library window and remote sessions are owned by nxplayer
+  -- and share a bundle ID. Ignore its untitled helper/content windows and use
+  -- the foremost titled window: the library is titled exactly "NoMachine".
+  for _, cg_window in ipairs(window.list()) do
+    if cg_window.kCGWindowLayer == 0
+        and cg_window.kCGWindowName
+        and cg_window.kCGWindowName ~= '' then
+      local pid = cg_window.kCGWindowOwnerPID
+      local application = pid and hs.application.applicationForPID(pid)
+      if application and application:bundleID() == 'com.nomachine.nxdock' then
+        return cg_window.kCGWindowName ~= 'NoMachine'
+      end
+    end
   end
 
-  local pid = application:pid()
-  if nomachine_player_pids[pid] ~= nil then
-    return nomachine_player_pids[pid]
-  end
-
-  local command = string.format('/bin/ps -p %d -o comm=', pid)
-  local executable = hs.execute(command, false) or ''
-  nomachine_player_pids[pid] = executable:match('/nxplayer%s*$') ~= nil
-  return nomachine_player_pids[pid]
+  return false
 end
 
 local function frontmost_cg_window_title(application)
-  -- Windows App's remote desktop surface is a CoreGraphics window but is not
-  -- exposed through Accessibility, so hs.window.focusedWindow() sees only the
-  -- main library window. hs.window.list() preserves front-to-back CG ordering.
+  -- Remote desktop surfaces may not be exposed through Accessibility, so use
+  -- the front-to-back CoreGraphics window order instead of focusedWindow().
   for _, cg_window in ipairs(window.list()) do
     if cg_window.kCGWindowOwnerPID == application:pid()
         and cg_window.kCGWindowLayer == 0
@@ -54,12 +55,13 @@ local function is_remote_desktop_window_focused()
     return false
   end
 
-  if is_nomachine_player(application) then
-    return true
+  if application:bundleID() == 'com.nomachine.nxdock' then
+    return is_nomachine_remote_window_focused()
   end
 
   if application:bundleID() == 'com.microsoft.rdc.macos' then
-    return frontmost_cg_window_title(application):match('^%[RDP%]') ~= nil
+    local title = frontmost_cg_window_title(application)
+    return title ~= '' and title ~= 'Windows App'
   end
 
   return false
@@ -115,6 +117,10 @@ module.remote_desktop_mouse_watcher = eventtap.new({
   return false
 end)
 module.remote_desktop_mouse_watcher:start()
+
+-- NoMachine does not consistently emit Accessibility/application events when
+-- focus moves between its library and remote-session windows.
+module.remote_desktop_poll_timer = timer.doEvery(0.5, update_remote_desktop_state)
 
 update_remote_desktop_state()
 
