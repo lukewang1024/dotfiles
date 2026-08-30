@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# Connect stdin/stdout to the first reachable SSH endpoint. Intended for use as
+# an OpenSSH ProxyCommand when one device has different addresses on each LAN.
+
+port=${1:-}
+[ "$#" -ge 2 ] || {
+  printf '%s\n' 'usage: ssh-first-reachable <port> <host> [host ...]' >&2
+  exit 2
+}
+case $port in
+  ''|*[!0-9]*)
+    printf 'ssh-first-reachable: invalid port: %s\n' "$port" >&2
+    exit 2
+    ;;
+esac
+shift
+
+command -v nc >/dev/null 2>&1 || {
+  printf '%s\n' 'ssh-first-reachable: nc is required' >&2
+  exit 127
+}
+
+probe_timeout=${SSH_FIRST_REACHABLE_TIMEOUT:-3}
+case $probe_timeout in
+  ''|*[!0-9]*) probe_timeout=3 ;;
+esac
+
+# Apple's nc separates its connection timeout (-G) from the generic timeout;
+# OpenBSD/Linux variants generally use -w for both.
+if nc -h 2>&1 | grep -q -- '-G conntimo'; then
+  probe()
+  {
+    nc -z -G "$probe_timeout" -w "$probe_timeout" "$1" "$port" >/dev/null 2>&1
+  }
+else
+  probe()
+  {
+    nc -z -w "$probe_timeout" "$1" "$port" >/dev/null 2>&1
+  }
+fi
+
+for candidate do
+  case $candidate in
+    ''|-*) continue ;;
+  esac
+  if probe "$candidate"; then
+    exec nc "$candidate" "$port"
+  fi
+done
+
+printf 'ssh-first-reachable: no endpoint reachable on port %s: %s\n' \
+  "$port" "$*" >&2
+exit 1

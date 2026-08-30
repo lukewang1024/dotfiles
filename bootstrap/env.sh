@@ -205,6 +205,7 @@ util_setup()
   backup_then_symlink "$util_dir/shell/theme-sync" "$bin_dir/theme-sync"
   backup_then_symlink "$util_dir/shell/theme-push-remotes" "$bin_dir/theme-push-remotes"
   backup_then_symlink "$util_dir/shell/tmux-appearance-fallback" "$bin_dir/tmux-appearance-fallback"
+  backup_then_symlink "$util_dir/shell/ssh-first-reachable" "$bin_dir/ssh-first-reachable"
   # Layout presets that keep the agent sidebar out of the layout computation —
   # bound to prefix + M-1..M-7 / Space / e by config/tmux/tmux.conf, so the keys
   # are dead without this link.
