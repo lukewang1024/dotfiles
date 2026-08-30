@@ -76,9 +76,9 @@ if [ -f "$termux_properties" ] && [ ! -f "$termux_properties.pre-bootstrap" ]; t
   cp "$termux_properties" "$termux_properties.pre-bootstrap"
 fi
 cat >"$termux_properties" <<'EOF'
-# Two tmux-friendly rows. Tap CTRL then b for the tmux prefix; long-press keys
-# with popup labels for their alternate action.
-extra-keys = [['ESC','TAB','CTRL','ALT',{key: '-', popup: '|'},'HOME','UP','END'], [{key: 'KEYBOARD', popup: {macro: 'CTRL d', display: 'exit'}},{macro: 'CTRL b', display: 'tmux'},'LEFT','DOWN','RIGHT','PGUP','PGDN','ENTER']]
+# Keep Termux's default two-row ordering, adding keyboard/Enter at the right.
+# The third row is tmux-only; swipe up on P›/W› for the previous pane/window.
+extra-keys = [[{key: 'ESC', display: '⎋'},'/',{key: '-', popup: '|'},{key: 'HOME', display: '↤'},'UP',{key: 'END', display: '↦'},{key: 'PGUP', display: '⇞'},{key: 'KEYBOARD', display: '⌨', popup: {macro: 'CTRL d', display: 'exit'}}], [{key: 'TAB', display: '⇥'},{key: 'CTRL', display: '⌃'},{key: 'ALT', display: '⌥'},'LEFT','DOWN','RIGHT',{key: 'PGDN', display: '⇟'},{key: 'ENTER', display: '↵'}], [{key: '`', display: '`'},{macro: '` TAB', display: '▤'},{macro: '` o', display: 'P›', popup: {macro: '` O', display: 'P‹'}},{macro: '` .', display: 'W›', popup: {macro: '` ,', display: 'W‹'}},{macro: '` n', display: 'A›'},{macro: '` v', display: '`v'},{macro: '` p', display: '`p'}]]
 extra-keys-style = arrows-all
 terminal-onclick-url-open = true
 EOF
