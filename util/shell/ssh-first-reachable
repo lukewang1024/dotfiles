@@ -26,26 +26,32 @@ case $probe_timeout in
   ''|*[!0-9]*) probe_timeout=3 ;;
 esac
 
-# Apple's nc separates its connection timeout (-G) from the generic timeout;
-# OpenBSD/Linux variants generally use -w for both.
+# Apple's nc separates its connection timeout (-G) from the generic timeout.
+# Do not also pass -w there: it remains active after connect and tears down an
+# otherwise healthy but briefly idle SSH stream. OpenBSD/Linux variants without
+# -G use -w as their available connection-timeout control.
 if nc -h 2>&1 | grep -q -- '-G conntimo'; then
-  probe()
+  connect()
   {
-    nc -z -G "$probe_timeout" -w "$probe_timeout" "$1" "$port" >/dev/null 2>&1
+    nc -G "$probe_timeout" "$1" "$port"
   }
 else
-  probe()
+  connect()
   {
-    nc -z -w "$probe_timeout" "$1" "$port" >/dev/null 2>&1
+    nc -w "$probe_timeout" "$1" "$port"
   }
 fi
 
+# Do not probe with `nc -z` and reconnect: that wakes the phone/sshd with a
+# connection that immediately disappears and can make the real connection race
+# Wi-Fi wake-up or per-source unauthenticated-connection penalties. Let the
+# first successful nc invocation carry the SSH byte stream itself.
 for candidate do
   case $candidate in
     ''|-*) continue ;;
   esac
-  if probe "$candidate"; then
-    exec nc "$candidate" "$port"
+  if connect "$candidate"; then
+    exit 0
   fi
 done
 
