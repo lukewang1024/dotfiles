@@ -25,7 +25,7 @@ command -v pkg >/dev/null 2>&1 || {
 
 printf '%s\n' 'Updating Termux packages and installing the devbox toolset...'
 pkg update -y
-pkg install -y ca-certificates diff-so-fancy fzf git krb5 less nano openssh \
+pkg install -y ca-certificates curl diff-so-fancy fzf git krb5 less nano openssh \
   python ripgrep tig tmux vim which zsh
 
 repo_dir=$(unset CDPATH; cd "$(dirname "$0")/.." && pwd)
@@ -97,20 +97,28 @@ link_config "$repo_dir/util/shell/tmux-layout-keep-sidebar" "$HOME/.local/bin/tm
 link_config "$repo_dir/util/kerberos/kinit-auto-login" "$HOME/.local/bin/kinit-auto-login"
 link_config "$repo_dir/util/kerberos/termux-kinit-shortcut" "$HOME/.local/bin/termux-kinit-shortcut"
 
-termux_properties=$HOME/.termux/termux.properties
-if [ -f "$termux_properties" ] && [ ! -f "$termux_properties.pre-bootstrap" ]; then
-  cp "$termux_properties" "$termux_properties.pre-bootstrap"
+link_config "$config_dir/termux/termux.properties" "$HOME/.termux/termux.properties"
+link_config "$config_dir/termux/colors.properties" "$HOME/.termux/colors.properties"
+
+# Termux supports one custom font at ~/.termux/font.ttf. Keep the large binary
+# out of git: cache a pinned MesloLGS Nerd Font release and link only the path
+# Termux hard-codes. The checksum makes a partial or changed download fail
+# closed instead of leaving the terminal with a corrupt font.
+font_dir=$XDG_CACHE_HOME/termux/fonts
+font_file=$font_dir/MesloLGS-NF-Regular.ttf
+font_sha256=d97946186e97f8d7c0139e8983abf40a1d2d086924f2c5dbf1c29bd8f2c6e57d
+font_url=https://raw.githubusercontent.com/romkatv/powerlevel10k-media/145eb9fbc2f42ee408dacd9b22d8e6e0e553f83d/MesloLGS%20NF%20Regular.ttf
+mkdir -p "$font_dir"
+if ! printf '%s  %s\n' "$font_sha256" "$font_file" | sha256sum -c - >/dev/null 2>&1; then
+  font_tmp=$font_file.tmp.$$
+  trap 'rm -f "$font_tmp"' EXIT HUP INT TERM
+  printf '%s\n' 'Downloading MesloLGS Nerd Font for Termux...'
+  curl --proto '=https' --tlsv1.2 -fL --retry 3 -o "$font_tmp" "$font_url"
+  printf '%s  %s\n' "$font_sha256" "$font_tmp" | sha256sum -c - >/dev/null
+  mv "$font_tmp" "$font_file"
+  trap - EXIT HUP INT TERM
 fi
-cat >"$termux_properties" <<'EOF'
-# Termux does not support orientation-specific layouts, so stay at two rows in
-# both portrait and landscape. Taps retain the default keys; swipe-up popups
-# carry the remote tmux controls. The last key directly opens the SSH alias
-# `termux-ssh-shortcut`, whose destination remains machine-local SSH config;
-# swipe that key up to repair/renew the local Kerberos session.
-extra-keys = [[{key: 'ESC', display: '⎋', popup: {key: '`', display: '`'}},'/',{key: '-', popup: '|'},{key: 'HOME', display: '↤', popup: {macro: '` ,', display: 'W‹'}},{key: 'UP', popup: {macro: '` n', display: 'A›'}},{key: 'END', display: '↦', popup: {macro: '` .', display: 'W›'}},{key: 'PGUP', display: '⇞', popup: {macro: '` v', display: '`v'}},{key: 'KEYBOARD', display: '⌨', popup: {macro: 'CTRL d', display: 'exit'}}], [{key: 'TAB', display: '⇥', popup: {macro: '` TAB', display: '▤'}},{key: 'CTRL', display: '⌃'},{key: 'ALT', display: '⌥'},{key: 'LEFT', popup: {macro: '` O', display: 'P‹'}},'DOWN',{key: 'RIGHT', popup: {macro: '` o', display: 'P›'}},{key: 'PGDN', display: '⇟', popup: {macro: '` p', display: '`p'}},{macro: 'ssh SPACE termux-ssh-shortcut ENTER', display: '▣', popup: {macro: 'termux-kinit-shortcut ENTER', display: 'K↻'}}]]
-extra-keys-style = arrows-all
-terminal-onclick-url-open = true
-EOF
+link_config "$font_file" "$HOME/.termux/font.ttf"
 if command -v termux-reload-settings >/dev/null 2>&1; then
   termux-reload-settings
 fi
