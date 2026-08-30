@@ -37,6 +37,30 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
 mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_STATE_HOME" \
   "$XDG_CACHE_HOME" "$HOME/.local/bin"
+case :$PATH: in
+  *:"$HOME/.local/bin":*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
+ensure_local_bin_path()
+{
+  shell_rc=$1
+  marker='# >>> dotfiles Termux local bin >>>'
+  touch "$shell_rc"
+  grep -qF "$marker" "$shell_rc" 2>/dev/null && return
+  cat >>"$shell_rc" <<'EOF'
+
+# >>> dotfiles Termux local bin >>>
+case ":$PATH:" in
+  *:"$HOME/.local/bin":*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+# <<< dotfiles Termux local bin <<<
+EOF
+}
+
+ensure_local_bin_path "$HOME/.bashrc"
+ensure_local_bin_path "$HOME/.zshrc"
 
 link_config()
 {
