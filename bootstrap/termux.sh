@@ -26,7 +26,7 @@ command -v pkg >/dev/null 2>&1 || {
 printf '%s\n' 'Updating Termux packages and installing the devbox toolset...'
 pkg update -y
 pkg install -y ca-certificates diff-so-fancy fzf git krb5 less nano openssh \
-  ripgrep tig tmux vim which zsh
+  python ripgrep tig tmux vim which zsh
 
 repo_dir=$(unset CDPATH; cd "$(dirname "$0")/.." && pwd)
 config_dir=$repo_dir/config
@@ -70,15 +70,18 @@ link_config "$config_dir/git/termux" "$XDG_CONFIG_HOME/git/config"
 link_config "$repo_dir/util/shell/tmux-autoreload-launch" "$HOME/.local/bin/tmux-autoreload-launch"
 link_config "$repo_dir/util/shell/tmux-appearance-fallback" "$HOME/.local/bin/tmux-appearance-fallback"
 link_config "$repo_dir/util/shell/tmux-layout-keep-sidebar" "$HOME/.local/bin/tmux-layout-keep-sidebar"
+link_config "$repo_dir/util/kerberos/kinit-auto-login" "$HOME/.local/bin/kinit-auto-login"
 
 termux_properties=$HOME/.termux/termux.properties
 if [ -f "$termux_properties" ] && [ ! -f "$termux_properties.pre-bootstrap" ]; then
   cp "$termux_properties" "$termux_properties.pre-bootstrap"
 fi
 cat >"$termux_properties" <<'EOF'
-# Keep Termux's default two-row ordering, adding keyboard/Enter at the right.
-# The third row is tmux-only; swipe up on P›/W› for the previous pane/window.
-extra-keys = [[{key: 'ESC', display: '⎋'},'/',{key: '-', popup: '|'},{key: 'HOME', display: '↤'},'UP',{key: 'END', display: '↦'},{key: 'PGUP', display: '⇞'},{key: 'KEYBOARD', display: '⌨', popup: {macro: 'CTRL d', display: 'exit'}}], [{key: 'TAB', display: '⇥'},{key: 'CTRL', display: '⌃'},{key: 'ALT', display: '⌥'},'LEFT','DOWN','RIGHT',{key: 'PGDN', display: '⇟'},{key: 'ENTER', display: '↵'}], [{key: '`', display: '`'},{macro: '` TAB', display: '▤'},{macro: '` o', display: 'P›', popup: {macro: '` O', display: 'P‹'}},{macro: '` .', display: 'W›', popup: {macro: '` ,', display: 'W‹'}},{macro: '` n', display: 'A›'},{macro: '` v', display: '`v'},{macro: '` p', display: '`p'}]]
+# Termux does not support orientation-specific layouts, so stay at two rows in
+# both portrait and landscape. Taps retain the default keys; swipe-up popups
+# carry the remote tmux controls. The last key directly opens the SSH alias
+# `termux-ssh-shortcut`, whose destination remains machine-local SSH config.
+extra-keys = [[{key: 'ESC', display: '⎋', popup: {key: '`', display: '`'}},'/',{key: '-', popup: '|'},{key: 'HOME', display: '↤', popup: {macro: '` ,', display: 'W‹'}},{key: 'UP', popup: {macro: '` n', display: 'A›'}},{key: 'END', display: '↦', popup: {macro: '` .', display: 'W›'}},{key: 'PGUP', display: '⇞', popup: {macro: '` v', display: '`v'}},{key: 'KEYBOARD', display: '⌨', popup: {macro: 'CTRL d', display: 'exit'}}], [{key: 'TAB', display: '⇥', popup: {macro: '` TAB', display: '▤'}},{key: 'CTRL', display: '⌃'},{key: 'ALT', display: '⌥'},{key: 'LEFT', popup: {macro: '` O', display: 'P‹'}},'DOWN',{key: 'RIGHT', popup: {macro: '` o', display: 'P›'}},{key: 'PGDN', display: '⇟', popup: {macro: '` p', display: '`p'}},{macro: 'ssh SPACE termux-ssh-shortcut ENTER', display: '▣'}]]
 extra-keys-style = arrows-all
 terminal-onclick-url-open = true
 EOF
@@ -94,4 +97,5 @@ printf '\n%s\n' 'Termux bootstrap complete. Add this public key to the devbox:'
 cat "$HOME/.ssh/id_ed25519.pub"
 printf '\n%s\n' 'Next steps:'
 printf '%s\n' '  ./init kerberos'
+printf '%s\n' '  kinit-auto-login install --principal USER@BYTEDANCE.COM'
 printf '%s\n' "  ssh -t USER@HOST 'tmux new-session -A -s main'"
