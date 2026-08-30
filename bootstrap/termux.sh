@@ -71,6 +71,7 @@ link_config "$repo_dir/util/shell/tmux-autoreload-launch" "$HOME/.local/bin/tmux
 link_config "$repo_dir/util/shell/tmux-appearance-fallback" "$HOME/.local/bin/tmux-appearance-fallback"
 link_config "$repo_dir/util/shell/tmux-layout-keep-sidebar" "$HOME/.local/bin/tmux-layout-keep-sidebar"
 link_config "$repo_dir/util/kerberos/kinit-auto-login" "$HOME/.local/bin/kinit-auto-login"
+link_config "$repo_dir/util/kerberos/termux-kinit-shortcut" "$HOME/.local/bin/termux-kinit-shortcut"
 
 termux_properties=$HOME/.termux/termux.properties
 if [ -f "$termux_properties" ] && [ ! -f "$termux_properties.pre-bootstrap" ]; then
@@ -80,8 +81,9 @@ cat >"$termux_properties" <<'EOF'
 # Termux does not support orientation-specific layouts, so stay at two rows in
 # both portrait and landscape. Taps retain the default keys; swipe-up popups
 # carry the remote tmux controls. The last key directly opens the SSH alias
-# `termux-ssh-shortcut`, whose destination remains machine-local SSH config.
-extra-keys = [[{key: 'ESC', display: '⎋', popup: {key: '`', display: '`'}},'/',{key: '-', popup: '|'},{key: 'HOME', display: '↤', popup: {macro: '` ,', display: 'W‹'}},{key: 'UP', popup: {macro: '` n', display: 'A›'}},{key: 'END', display: '↦', popup: {macro: '` .', display: 'W›'}},{key: 'PGUP', display: '⇞', popup: {macro: '` v', display: '`v'}},{key: 'KEYBOARD', display: '⌨', popup: {macro: 'CTRL d', display: 'exit'}}], [{key: 'TAB', display: '⇥', popup: {macro: '` TAB', display: '▤'}},{key: 'CTRL', display: '⌃'},{key: 'ALT', display: '⌥'},{key: 'LEFT', popup: {macro: '` O', display: 'P‹'}},'DOWN',{key: 'RIGHT', popup: {macro: '` o', display: 'P›'}},{key: 'PGDN', display: '⇟', popup: {macro: '` p', display: '`p'}},{macro: 'ssh SPACE termux-ssh-shortcut ENTER', display: '▣'}]]
+# `termux-ssh-shortcut`, whose destination remains machine-local SSH config;
+# swipe that key up to repair/renew the local Kerberos session.
+extra-keys = [[{key: 'ESC', display: '⎋', popup: {key: '`', display: '`'}},'/',{key: '-', popup: '|'},{key: 'HOME', display: '↤', popup: {macro: '` ,', display: 'W‹'}},{key: 'UP', popup: {macro: '` n', display: 'A›'}},{key: 'END', display: '↦', popup: {macro: '` .', display: 'W›'}},{key: 'PGUP', display: '⇞', popup: {macro: '` v', display: '`v'}},{key: 'KEYBOARD', display: '⌨', popup: {macro: 'CTRL d', display: 'exit'}}], [{key: 'TAB', display: '⇥', popup: {macro: '` TAB', display: '▤'}},{key: 'CTRL', display: '⌃'},{key: 'ALT', display: '⌥'},{key: 'LEFT', popup: {macro: '` O', display: 'P‹'}},'DOWN',{key: 'RIGHT', popup: {macro: '` o', display: 'P›'}},{key: 'PGDN', display: '⇟', popup: {macro: '` p', display: '`p'}},{macro: 'ssh SPACE termux-ssh-shortcut ENTER', display: '▣', popup: {macro: 'termux-kinit-shortcut ENTER', display: 'K↻'}}]]
 extra-keys-style = arrows-all
 terminal-onclick-url-open = true
 EOF

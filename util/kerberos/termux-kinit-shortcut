@@ -1,0 +1,15 @@
+#!/bin/sh
+# Repair the Termux Kerberos session from the extra-keys popup. The normal path
+# is passwordless; a stale/missing keytab falls back to the existing interactive
+# generator so one password entry also repairs future background renewals.
+
+set -u
+
+if kinit-auto-login renew; then
+  printf '%s\n' 'Kerberos ticket renewed.'
+  exec klist
+fi
+
+printf '%s\n' 'Kerberos auto-renew failed; regenerating the keytab interactively...' >&2
+kinit-auto-login gen-keytab || exit $?
+exec klist
