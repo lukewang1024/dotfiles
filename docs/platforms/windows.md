@@ -29,7 +29,7 @@ Download the entrypoint into the user profile and run it from PowerShell:
 ```powershell
 Set-Location $env:USERPROFILE
 Invoke-WebRequest `
-  -Uri https://raw.githubusercontent.com/lukewang1024/dotfiles/master/init.ps1 `
+  -Uri https://raw.githubusercontent.com/lukewang1024/dotfiles/main/init.ps1 `
   -OutFile $env:USERPROFILE\init.ps1
 .\init.ps1 core
 ```
