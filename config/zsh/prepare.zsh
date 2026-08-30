@@ -1,5 +1,6 @@
-# Config ssh-agent on local machine
-! is_ssh && source "$config_dir/zsh/ssh-agent-connect.zsh"
+# Reuse agent forwarding in SSH sessions; otherwise connect to the machine's
+# stable per-user agent socket (creating the underlying agent when necessary).
+source "$config_dir/zsh/ssh-agent-connect.zsh"
 
 # The default `pyenv virtualenv-init -` in pyenv plugin could slow down prompt
 # drastically. Disable it.

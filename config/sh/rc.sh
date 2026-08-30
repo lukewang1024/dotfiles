@@ -136,9 +136,6 @@ if is_linux; then
   alias vnc-xfce='VNC_DESKTOP_SESSION=xfce vncserver'
 fi
 
-# attempt to connect to existing ssh-agent instance on remote sessions
-is_ssh && [ -f ~/.agent-profile ] && source ~/.agent-profile
-
 # docker host patch for tools not respecting the current `docker context`
 if exists docker; then
   alias dh="DOCKER_HOST=$(docker context inspect --format='{{.Endpoints.docker.Host}}')"
