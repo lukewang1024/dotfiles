@@ -7,4 +7,5 @@
 # gitignored hooks-keep.local.txt.
 
 tmux-assistant-resurrect/hooks/
+tmux-agent-workbench hook ingest
 session-tracker.js
