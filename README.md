@@ -118,6 +118,19 @@ Other entrypoint tasks:
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |
 | `./init run <module> <function>` | Run one function from a bootstrap module. |
 
+Frequently changing tmux workbench modules can be updated and re-applied as a
+single clean-stack operation:
+
+```sh
+tmux-workbench-update --check
+tmux-workbench-update
+```
+
+This fast-forwards `dotfiles`, `tmux-agent-workbench`, and
+`tmux-adaptive-theme`, runs the dotfiles sync and workbench command installer,
+then reloads a running tmux server. It refuses to start when any checkout has
+local changes, avoiding a partially updated stack.
+
 For example:
 
 ```sh
