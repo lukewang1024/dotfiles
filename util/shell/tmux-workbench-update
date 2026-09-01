@@ -110,12 +110,35 @@ update_repo "$theme_dir"
 # by the workbench plugin. Both operations are idempotent.
 "$dotfiles_dir/init" sync
 if [ -x "$workbench_dir/install" ]; then
+  # A source update does not necessarily bump Cargo.toml's version. Build first
+  # when Cargo is available so install cannot mistake an older same-version
+  # binary for the current checkout.
+  if command -v cargo >/dev/null 2>&1; then
+    cargo build --quiet --manifest-path "$workbench_dir/Cargo.toml" \
+      --release --bin tmux-agent-workbench
+  fi
   "$workbench_dir/install" "$bin_dir"
 fi
 
-# Existing servers do not automatically re-source updated plugin files.
+# Existing daemon and sidebar processes keep the old executable mapped after
+# it is replaced. Stop the daemon, reload the plugin, and respawn sidebar panes
+# in place so their layout and window membership are preserved.
 if command -v tmux >/dev/null 2>&1 && tmux list-sessions >/dev/null 2>&1; then
+  workbench_command=$bin_dir/tmux-agent-workbench
+  if [ -x "$workbench_command" ]; then
+    "$workbench_command" daemon stop >/dev/null 2>&1 || true
+    sleep 1
+  fi
   tmux source-file "$xdg_config_home/tmux/tmux.conf"
+  if [ -x "$workbench_command" ]; then
+    "$workbench_command" daemon ensure
+    tmux list-panes -a -f '#{==:#{@pane_role},sidebar}' -F '#{pane_id}' |
+      while IFS= read -r sidebar_pane; do
+        [ -n "$sidebar_pane" ] || continue
+        tmux respawn-pane -k -t "$sidebar_pane"
+      done
+    "$workbench_command" sidebar-control ensure-all
+  fi
   if [ -x "$theme_dir/tmux-adaptive-theme.tmux" ]; then
     "$theme_dir/tmux-adaptive-theme.tmux"
   fi
