@@ -32,6 +32,7 @@ tmux_setup()
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
   # tmux-autoreload launcher (deps-satisfied wrapper, sourced from tmux.conf)
   backup_then_symlink "$util_dir/shell/tmux-autoreload-launch" "$bin_dir/tmux-autoreload-launch"
+  backup_then_symlink "$util_dir/shell/tmux-workbench-update" "$bin_dir/tmux-workbench-update"
   echo 'Done.'
 
   # Install TPM + all plugins non-interactively so a fresh machine never depends
