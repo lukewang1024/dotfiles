@@ -128,8 +128,9 @@ tmux-workbench-update
 
 This fast-forwards `dotfiles`, `tmux-agent-workbench`, and
 `tmux-adaptive-theme`, runs the dotfiles sync and workbench command installer,
-then reloads a running tmux server. It refuses to start when any checkout has
-local changes, avoiding a partially updated stack.
+then restarts the Workbench daemon and existing sidebar panes before reloading
+a running tmux server. It refuses to start when any checkout has local changes,
+avoiding a partially updated stack.
 
 For example:
 
