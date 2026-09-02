@@ -92,6 +92,7 @@ case "$mode" in
         prepare_chromeos
         ;;
       termux)
+        source "$partial_dir/env.sh"
         source "$partial_dir/termux.sh"
         prepare_termux_env "$mode"
         ;;
