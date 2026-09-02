@@ -1,5 +1,11 @@
 tmux_setup()
 {
+  tmux_config_setup
+  tmux_plugins_setup
+}
+
+tmux_config_setup()
+{
   blank_lines
   printf 'Symlinking tmux config files... '
   backup_then_symlink "$config_dir/tmux" "$XDG_CONFIG_HOME/tmux"
@@ -35,6 +41,10 @@ tmux_setup()
   backup_then_symlink "$util_dir/shell/tmux-workbench-update" "$bin_dir/tmux-workbench-update"
   echo 'Done.'
 
+}
+
+tmux_plugins_setup()
+{
   # Install TPM + all plugins non-interactively so a fresh machine never depends
   # on the user pressing prefix+I. tmux.conf only auto-clones TPM when tmux
   # starts interactively, so clone it here first; bin/install_plugins then starts
@@ -76,11 +86,20 @@ tig_setup()
 
 vim_setup()
 {
+  vim_config_setup
+  vim_plugins_setup
+}
+
+vim_config_setup()
+{
   printf 'Symlinking vim/nvim config (XDG)... '
   backup_then_symlink "$config_dir/vim" "$XDG_CONFIG_HOME/vim"
   backup_then_symlink "$config_dir/vim" "$XDG_CONFIG_HOME/nvim"
   echo 'Done.'
+}
 
+vim_plugins_setup()
+{
   # Only fetch plug.vim when it's missing, so re-running this (e.g. from `./init
   # sync` on every pull) doesn't re-download the bootstrap each time.
   local plug="$XDG_DATA_HOME/vim/autoload/plug.vim"
@@ -105,20 +124,40 @@ ssh_setup()
   backup_then_symlink "$config_dir/ssh/config" ~/.ssh/config
   local localConfig="$HOME/.ssh/config.local"
   touch "$localConfig"
-  chmod 644 "$localConfig"
+  chmod 600 "$localConfig"
   echo 'Done.'
 }
 
 zinit_setup()
 {
+  zinit_install
+  printf 'Symlinking .zprofile and .zshrc... '
+  backup_then_symlink "$config_dir/zsh/zinit.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
+  zsh_common_setup
+  echo 'Done.'
+}
+
+zinit_install()
+{
   blank_lines
   echo 'Setup zinit...'
   sync_config_repo "$XDG_DATA_HOME/zinit/zinit.git" https://github.com/zdharma-continuum/zinit.git
   echo 'Done.'
+}
 
-  printf 'Symlinking .zprofile and .zshrc... '
-  backup_then_symlink "$config_dir/zsh/zinit.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
-  zsh_common_setup
+zsh_config_setup()
+{
+  blank_lines
+  printf 'Symlinking zsh config files... '
+  if [ -d "$XDG_DATA_HOME/zinit/zinit.git" ]; then
+    backup_then_symlink "$config_dir/zsh/zinit.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
+  else
+    echo 'zinit is not installed; leaving .zshrc unchanged.'
+  fi
+  backup_then_symlink "$config_dir/zsh/.zlogin" "$XDG_CONFIG_HOME/zsh/.zlogin"
+  backup_then_symlink "$config_dir/zsh/.zshenv" "$XDG_CONFIG_HOME/zsh/.zshenv"
+  backup_then_symlink "$config_dir/zsh/.zprofile" "$XDG_CONFIG_HOME/zsh/.zprofile"
+  backup_then_symlink "$config_dir/starship/starship.toml" "$XDG_CONFIG_HOME/starship.toml"
   echo 'Done.'
 }
 

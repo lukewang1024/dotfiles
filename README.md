@@ -38,11 +38,10 @@ The Unix entrypoint expects the checkout at `${XDG_CONFIG_HOME:-$HOME/.config}/d
 
 ```sh
 git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
-"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" macos core
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" core
 ```
 
-Use `debian` or `arch` instead of `macos` on Linux. Omitting the mode selects
-`core`.
+The platform is detected automatically. A mode is required.
 
 Platform-specific prerequisites, side effects, and verification:
 
@@ -66,9 +65,8 @@ It can also be run explicitly:
 "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" sync
 ```
 
-`sync` refreshes links, wrappers, plugins, shared agent settings, and XDG
-directories. It deliberately avoids package/toolchain installation, prompts,
-and `sudo`.
+`sync` refreshes links, wrappers, and XDG directories. It deliberately avoids
+package/toolchain and plugin installation, prompts, network access, and `sudo`.
 
 ### Migrate a legacy checkout
 
@@ -92,26 +90,22 @@ partial migration.
 ### Choose a provisioning mode
 
 ```text
-"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" <platform> [mode]
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" <mode>
 ```
 
 | Mode | Result |
 | --- | --- |
-| `core` | Baseline CLI and GUI environment; the default. |
-| `cli` | Baseline plus the extended CLI toolset. |
-| `gui` | Baseline plus the extended desktop-app set. |
-| `all` | Both extended CLI and GUI flows. |
-| `game` | Platform-specific gaming tools where supported. |
+| `basic` | Configure already-installed tools without installing platform packages. |
+| `core` | Install the platform's baseline CLI and GUI environment, then configure it. |
+| `all` | Install core plus platform extras, then configure it. |
 
-Unix-like selectors are `macos` (`osx`), `debian`, `arch`, `chromeos`, and
-`cygwin`. ChromeOS and Cygwin have dedicated flows rather than the complete mode
-matrix.
+Termux, ChromeOS, and Cygwin currently have no additional `all` package set;
+they warn and use their platform-specific core flow.
 
 Other entrypoint tasks:
 
 | Command | Result |
 | --- | --- |
-| `./init basic` | Apply the shared shell and development baseline without a platform package flow. |
 | `./init sync` | Reconcile an already-provisioned checkout. |
 | `./init migrate-xdg [--dry-run]` | Move a legacy checkout to the XDG config root without breaking old links. |
 | `./init npmg` | Reinstall common global npm packages. |

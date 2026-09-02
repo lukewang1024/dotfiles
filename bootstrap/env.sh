@@ -4,6 +4,7 @@ source "$config_dir/sh/xdg-ninja-patch.sh"
 
 git_setup()
 {
+  local configure_only=${1:-}
   blank_lines
   echo 'Applying global git configs...'
 
@@ -18,9 +19,15 @@ git_setup()
   fi
 
   echo 'Applying new git configs...'
-  cat "$config_dir/git/alias" > "$XDG_CONFIG_HOME/git/config"
-  cat "$config_dir/git/common" >> "$XDG_CONFIG_HOME/git/config"
-  [ -f "$config_dir/git/local" ] && cat "$config_dir/git/local" >> "$XDG_CONFIG_HOME/git/config"
+  if [ "${DOTFILES_PLATFORM:-}" = termux ]; then
+    backup_then_symlink "$config_dir/git/alias" "$XDG_CONFIG_HOME/git/alias"
+    backup_then_symlink "$config_dir/git/common" "$XDG_CONFIG_HOME/git/common"
+    cat "$config_dir/git/termux" > "$XDG_CONFIG_HOME/git/config"
+  else
+    cat "$config_dir/git/alias" > "$XDG_CONFIG_HOME/git/config"
+    cat "$config_dir/git/common" >> "$XDG_CONFIG_HOME/git/config"
+    [ -f "$config_dir/git/local" ] && cat "$config_dir/git/local" >> "$XDG_CONFIG_HOME/git/config"
+  fi
 
   backup_then_symlink "$util_dir/shell/git-branch-cleanup" "$bin_dir/git-branch-cleanup"
   backup_then_symlink "$util_dir/shell/git-clone-bare" "$bin_dir/git-clone-bare"
@@ -28,15 +35,26 @@ git_setup()
   backup_then_symlink "$util_dir/shell/git-set-identity" "$bin_dir/git-set-identity"
 
   # MacOS
-  if is_macos; then
+  if [ "${DOTFILES_PLATFORM:-}" = macos ]; then
     git config --global credential.helper osxkeychain
   fi
 
   # WSL & Cygwin
   uname -r | grep Microsoft &> /dev/null # returns 0 on WSL
-  if [[ $? == 0 ]] || is_cygwin; then
+  if [ "${DOTFILES_PLATFORM:-}" != termux ] && { [[ $? == 0 ]] || is_cygwin; }; then
     git config --global core.autocrlf input
     git config --global core.fileMode false
+  fi
+
+  if [ "$configure_only" = configure-only ]; then
+    if [ "${DOTFILES_PLATFORM:-}" != termux ] && [ -n "$git_user_identities" ]; then
+      while IFS= read -r identity_line; do
+        identity_key=${identity_line%%=*}
+        identity_value=${identity_line#*=}
+        git config --global "$identity_key" "$identity_value"
+      done <<< "$git_user_identities"
+    fi
+    return 0
   fi
 
   # Git user identities
@@ -145,6 +163,11 @@ pnpm_setup()
 {
   blank_lines
   install_pnpm
+  pnpm_config_setup
+}
+
+pnpm_config_setup()
+{
   printf 'Symlinking pnpm config... '
   backup_then_symlink "$config_dir/pnpm" "$XDG_CONFIG_HOME/pnpm"
   echo 'Done.'
@@ -170,8 +193,9 @@ npm_setup()
 
 util_setup()
 {
+  local configure_only=${1:-}
   blank_lines
-  printf 'Installing handy configs and wrappers... '
+  printf 'Applying handy configs and wrappers... '
   backup_then_symlink "$config_dir/proxychains/proxychains.conf" "$XDG_CONFIG_HOME/proxychains.conf"
   # Shared, tool-agnostic agent conventions (SSOT): AGENTS.md → codex/opencode
   # global paths; CLAUDE.md imports it (Claude reads CLAUDE.md, not AGENTS.md).
@@ -213,6 +237,11 @@ util_setup()
   # with: kinit-auto-login install  (not run here — it prompts for the SSO password).
   backup_then_symlink "$util_dir/kerberos/kinit-auto-login" "$bin_dir/kinit-auto-login"
   backup_then_symlink "$util_dir/dotfiles/migrate-xdg" "$bin_dir/dotfiles-migrate-xdg"
+  if [ "$configure_only" = configure-only ]; then
+    git_hooks_setup
+    echo 'Done.'
+    return 0
+  fi
   # Apply shared agent settings and prune obsolete hooks. Workbench discovers
   # agent panes directly and does not modify individual agent configurations.
   "$util_dir/agent/claude-settings-apply" || true
@@ -250,50 +279,38 @@ git_hooks_setup()
 # NO interactive prompts (git identities), NO sudo (chsh / global zshenv), and NO
 # slow toolchain/package installs (anyenv, rustup, brew/apt). Safe to run on every
 # pull — the repo's post-merge hook calls it for you when provisioning files
-# change. A brand-new machine still runs the full `./init macos` first.
+# change. A brand-new machine still runs `./init core` first.
 sync_setup()
 {
-  ssh_setup
-  tmux_setup
-  tig_setup
-  vim_setup
-  npm_setup
-  uv_setup
-  pnpm_setup
-  python_setup
-
-  # Re-link the zsh rc files only. The one-time global-zshenv (sudo) and chsh
-  # steps belong to full provisioning, not to a per-pull reconcile, so they are
-  # deliberately left out here.
-  blank_lines
-  printf 'Re-linking zsh rc files... '
-  backup_then_symlink "$config_dir/zsh/zinit.zshrc" "$XDG_CONFIG_HOME/zsh/.zshrc"
-  backup_then_symlink "$config_dir/zsh/.zlogin" "$XDG_CONFIG_HOME/zsh/.zlogin"
-  backup_then_symlink "$config_dir/zsh/.zshenv" "$XDG_CONFIG_HOME/zsh/.zshenv"
-  backup_then_symlink "$config_dir/zsh/.zprofile" "$XDG_CONFIG_HOME/zsh/.zprofile"
-  backup_then_symlink "$config_dir/starship/starship.toml" "$XDG_CONFIG_HOME/starship.toml"
-  echo 'Done.'
-
-  util_setup       # idempotent symlinks/wrappers + git-hooks wiring
-  xdg_dir_create
+  basic_env_setup
 }
 
 basic_env_setup()
 {
+  xdg_dir_create
   profile_setup
-  shell_setup # zgen by default; set DOTFILES_SHELL=zinit|bash_it to override
+  zsh_config_setup
   ssh_setup
-  tmux_setup
-  git_setup
+  tmux_config_setup
+  git_setup configure-only
   tig_setup
+  npm_setup
+  pnpm_config_setup
+  python_setup
+  vim_config_setup
+  util_setup configure-only
+}
+
+core_env_setup()
+{
+  basic_env_setup
+  shell_setup
+  tmux_plugins_setup
+  vim_plugins_setup
   anyenv_setup
   rustup_setup
-  npm_setup
   uv_setup
   pnpm_setup
-  python_setup
-  vim_setup
-  xdg_dir_create
 }
 
 xdg_dir_create()
@@ -331,7 +348,7 @@ extra_env_setup()
 
 env_setup()
 {
-  basic_env_setup
+  core_env_setup
   extra_env_setup
 }
 

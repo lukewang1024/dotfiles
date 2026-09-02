@@ -30,7 +30,7 @@ access, and the Command Line Tools required by Git/Homebrew.
 
 ```sh
 git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
-"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" macos core
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" core
 ```
 
 The script installs Homebrew when missing, installs the selected package set,
@@ -93,4 +93,3 @@ ls -ld ~/.config/zsh/.zshrc ~/.config/zsh/.zshrc~
 
 Remove the managed symlink and move the backup into place only when you have
 confirmed the exact target.
-

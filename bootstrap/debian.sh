@@ -99,7 +99,7 @@ prepare_debian_env_cli_core()
 
   install_linuxbrew
   install_linux_brew_core_packages
-  basic_env_setup
+  core_env_setup
   apply_linux_app_configs
   fix_ENOSPC
   fix_locale
