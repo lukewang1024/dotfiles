@@ -58,6 +58,23 @@ termux_ssh_setup()
   sv-enable ssh-agent
 }
 
+termux_default_shell_setup()
+{
+  termux_zsh=$(command -v zsh 2>/dev/null || true)
+  [ -n "$termux_zsh" ] || {
+    printf '%s\n' 'termux: zsh is unavailable; cannot change the default shell' >&2
+    return 1
+  }
+
+  if [ "${SHELL:-}" = "$termux_zsh" ]; then
+    printf 'Default shell is already %s\n' "$termux_zsh"
+    return 0
+  fi
+
+  printf 'Changing default shell to %s...\n' "$termux_zsh"
+  chsh -s "$termux_zsh"
+}
+
 termux_basic_setup()
 {
   basic_env_setup
@@ -78,6 +95,7 @@ prepare_termux_env()
   }
 
   install_termux_core_packages
+  termux_default_shell_setup
   zinit_install
   termux_basic_setup
   tmux_plugins_setup
