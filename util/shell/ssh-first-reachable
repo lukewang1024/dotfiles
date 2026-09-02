@@ -26,34 +26,112 @@ case $probe_timeout in
   ''|*[!0-9]*) probe_timeout=3 ;;
 esac
 
+parallel=${SSH_FIRST_REACHABLE_PARALLEL:-3}
+case $parallel in
+  ''|*[!0-9]*|0) parallel=3 ;;
+esac
+# Avoid accidentally forking an unreasonable number of probes from a typo.
+[ "$parallel" -le 32 ] 2>/dev/null || parallel=32
+
 # Apple's nc separates its connection timeout (-G) from the generic timeout.
 # Do not also pass -w there: it remains active after connect and tears down an
 # otherwise healthy but briefly idle SSH stream. OpenBSD/Linux variants without
 # -G use -w as their available connection-timeout control.
 if nc -h 2>&1 | grep -q -- '-G conntimo'; then
+  probe()
+  {
+    nc -z -G "$probe_timeout" "$1" "$port" </dev/null >/dev/null 2>&1
+  }
   connect()
   {
     nc -G "$probe_timeout" "$1" "$port"
   }
 else
+  probe()
+  {
+    nc -z -w "$probe_timeout" "$1" "$port" </dev/null >/dev/null 2>&1
+  }
   connect()
   {
     nc -w "$probe_timeout" "$1" "$port"
   }
 fi
 
-# Do not probe with `nc -z` and reconnect: that wakes the phone/sshd with a
-# connection that immediately disappears and can make the real connection race
-# Wi-Fi wake-up or per-source unauthenticated-connection penalties. Let the
-# first successful nc invocation carry the SSH byte stream itself.
+# A POSIX shell cannot adopt a socket opened by a background nc process. Race
+# short `nc -z` probes in bounded batches, then give the winning endpoint the
+# sole stdin/stdout connection used by ProxyCommand.
+race_dir=$(mktemp -d "${TMPDIR:-/tmp}/ssh-first-reachable.XXXXXX") || exit 1
+race_fifo=$race_dir/results
+mkfifo "$race_fifo" || {
+  rmdir "$race_dir"
+  exit 1
+}
+probe_pids=
+
+cleanup()
+{
+  for probe_pid in $probe_pids; do
+    kill "$probe_pid" 2>/dev/null || :
+  done
+  for probe_pid in $probe_pids; do
+    wait "$probe_pid" 2>/dev/null || :
+  done
+  rm -f "$race_fifo"
+  rmdir "$race_dir" 2>/dev/null || :
+}
+trap 'cleanup; exit 129' HUP
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 143' TERM
+
+batch_count=0
 for candidate do
   case $candidate in
     ''|-*) continue ;;
   esac
-  if connect "$candidate"; then
-    exit 0
+  (
+    if probe "$candidate"; then
+      result=ok
+    else
+      result=fail
+    fi
+    printf '%s\t%s\n' "$result" "$candidate" >"$race_fifo"
+  ) &
+  probe_pids="$probe_pids $!"
+  batch_count=$((batch_count + 1))
+
+  if [ "$batch_count" -ge "$parallel" ]; then
+    received=0
+    while [ "$received" -lt "$batch_count" ]; do
+      IFS='	' read -r result winner <"$race_fifo"
+      received=$((received + 1))
+      if [ "$result" = ok ]; then
+        cleanup
+        trap - HUP INT TERM
+        connect "$winner"
+        exit $?
+      fi
+    done
+    for probe_pid in $probe_pids; do
+      wait "$probe_pid" 2>/dev/null || :
+    done
+    probe_pids=
+    batch_count=0
   fi
 done
+
+received=0
+while [ "$received" -lt "$batch_count" ]; do
+  IFS='	' read -r result winner <"$race_fifo"
+  received=$((received + 1))
+  if [ "$result" = ok ]; then
+    cleanup
+    trap - HUP INT TERM
+    connect "$winner"
+    exit $?
+  fi
+done
+cleanup
+trap - HUP INT TERM
 
 printf 'ssh-first-reachable: no endpoint reachable on port %s: %s\n' \
   "$port" "$*" >&2
