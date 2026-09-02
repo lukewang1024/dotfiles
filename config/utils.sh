@@ -20,6 +20,7 @@ is_nix() {
 
 is_macos() { is_os darwin; }
 is_linux() { is_os linux; }
+is_termux() { [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = '/data/data/com.termux/files/usr' ]; }
 is_wsl2() { [[ "$(uname -r | sed -n 's/.*\(WSL2\).*/\1/p')" == 'WSL2' ]]; }
 is_cygwin() { is_os cygwin; }
 

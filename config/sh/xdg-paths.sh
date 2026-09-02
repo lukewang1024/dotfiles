@@ -4,4 +4,8 @@ export XDG_STATE_HOME="$HOME/.local/state"
 export XDG_CACHE_HOME="$HOME/.cache"
 
 is_macos && export XDG_RUNTIME_DIR="$HOME/.cache/run"
-is_linux && export XDG_RUNTIME_DIR="/run/user/$UID"
+if is_termux; then
+  export XDG_RUNTIME_DIR="$PREFIX/var/run"
+elif is_linux; then
+  export XDG_RUNTIME_DIR="/run/user/$UID"
+fi

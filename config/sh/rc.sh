@@ -2,11 +2,17 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export EDITOR='vim'
 
-# Reset PATH to system default to avoid duplication from inherited environments (e.g. tmux)
-PATH='/usr/bin:/bin:/usr/sbin:/sbin'
+# Reset PATH to the platform default to avoid duplication from inherited
+# environments (e.g. tmux). Android has no usable /usr/bin; Termux keeps all
+# packaged commands under $PREFIX/bin.
+if is_termux; then
+  PATH="$PREFIX/bin"
+else
+  PATH='/usr/bin:/bin:/usr/sbin:/sbin'
+fi
 
 # Add flatpak directories to XDG_DATA_DIRS (user path takes precedence)
-if is_linux; then
+if is_linux && ! is_termux; then
   export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 fi
 
@@ -15,9 +21,9 @@ is_ssh && ! is_tmux && export TERM='xterm-256color'
 
 # Set ANDROID_HOME per platform
 is_macos && export ANDROID_HOME=$HOME/Library/Android/sdk
-is_linux && export ANDROID_HOME=$HOME/android-sdk
+is_linux && ! is_termux && export ANDROID_HOME=$HOME/android-sdk
 
-is_linux && export I3FYRA_WS=1
+is_linux && ! is_termux && export I3FYRA_WS=1
 
 # Use ripgrep with fzf
 export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
@@ -25,7 +31,7 @@ export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
 # PATH
 export PATH="/usr/bin/core_perl:$PATH"
 export PATH="/usr/local/bin:$PATH"
-if is_linux; then
+if is_linux && ! is_termux; then
   [ -d ~/.linuxbrew ] && eval "$(~/.linuxbrew/bin/brew shellenv)"
   [ -d /home/linuxbrew/.linuxbrew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
   # nodenv cannot control global npm packages installed with linuxbrew node. Though `brew unlink node && brew link node`
@@ -128,7 +134,7 @@ alias react-native='npx react-native'
 alias sb='npx -p @storybook/cli sb'
 alias semantic-release-cli='npx semantic-release-cli'
 
-if is_linux; then
+if is_linux && ! is_termux; then
   alias spath="PATH="$(echo ${PATH} | awk -v RS=: -v ORS=: '/home/ {next} {print}' | sed 's/:*$//')""
   alias audio-hdmi='pacmd set-card-profile 0 output:hdmi-stereo+input:analog-stereo'
   alias audio-laptop='pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo'
