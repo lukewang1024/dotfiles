@@ -207,11 +207,6 @@ util_setup()
   backup_then_symlink "$util_dir/shell/tmux-appearance-fallback" "$bin_dir/tmux-appearance-fallback"
   backup_then_symlink "$util_dir/shell/ssh-first-reachable" "$bin_dir/ssh-first-reachable"
   backup_then_symlink "$util_dir/shell/ssh-connect" "$bin_dir/ssh-connect"
-  # Layout presets that keep the agent sidebar out of the layout computation —
-  # bound to prefix + M-1..M-7 / Space / e by config/tmux/tmux.conf, so the keys
-  # are dead without this link.
-  backup_then_symlink "$util_dir/shell/tmux-layout-keep-sidebar" "$bin_dir/tmux-layout-keep-sidebar"
-  backup_then_symlink "$util_dir/shell/tmux-responsive-zoom" "$bin_dir/tmux-responsive-zoom"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter-public" "$bin_dir/pyspark-jupyter-public"
   # Kerberos ticket auto-renew (macOS keychain / Linux keytab). Install per-machine
