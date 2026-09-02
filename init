@@ -43,68 +43,67 @@ detect_platform() {
   esac
 }
 
-# A named platform remains valid for compatibility. Otherwise infer it and
-# treat core/all/game as the detected full-system platform's option.
-case ${1:-} in
-  macos|osx|debian|arch|chromeos|cygwin|termux) ;;
-  '') set -- "$(detect_platform)" ;;
-  core|all|game) set -- "$(detect_platform)" "$1" ;;
+mode=${1:-}
+[ -n "$mode" ] || print_usage 2
+
+case "$mode" in
+  basic|core|all|sync|npmg|zinit|kerberos|migrate-xdg|run) ;;
+  *)
+    echo "Unknown mode or task: $mode" >&2
+    print_usage 2
+    ;;
 esac
 
-if [ "$1" = unknown ]; then
-  echo 'Could not detect this platform. Pass one explicitly.' >&2
-  print_usage
+platform=$(detect_platform)
+if [ "$platform" = unknown ]; then
+  echo 'Could not detect this platform.' >&2
+  print_usage 2
 fi
+export DOTFILES_PLATFORM="$platform"
 
-case "$1:${2:-}" in
-  termux:core|termux:all|termux:game)
-    echo 'Termux does not use setup modes; run ./init with no arguments.' >&2
-    exit 2
-    ;;
-  macos:|osx:|debian:|arch:|macos:core|osx:core|debian:core|arch:core|macos:all|osx:all|debian:all|arch:all|macos:game|osx:game|arch:game) ;;
-  macos:*|osx:*|debian:*|arch:*)
-    echo 'Unsupported mode for this platform; use core or all (game is available on macOS/Arch).' >&2
-    exit 2
-    ;;
-esac
-
-case $1 in
+case "$mode" in
   'basic')
     source "$partial_dir/env.sh"
-    basic_env_setup
+    if [ "$platform" = termux ]; then
+      source "$partial_dir/termux.sh"
+      termux_basic_setup
+    else
+      basic_env_setup
+    fi
     ;;
 
-  'macos' | 'osx')
-    source "$partial_dir/macos.sh"
-    prepare_macos_env "$2"
-    ;;
-
-  'debian')
-    source "$partial_dir/debian.sh"
-    prepare_debian_env "$2"
-    ;;
-
-  'arch')
-    source "$partial_dir/arch.sh"
-    prepare_arch_env "$2"
-    ;;
-
-  'chromeos')
-    source "$partial_dir/chromeos.sh"
-    prepare_chromeos
-    ;;
-
-  'termux')
-    shift
-    exec "$partial_dir/termux.sh" "$@"
-    ;;
-
-  'cygwin')
-    source "$partial_dir/cygwin.sh"
-    check_admin
-    setup_cygwin_env
-    install_sage
-    install_cygwin_packages
+  'core' | 'all')
+    case "$platform" in
+      macos)
+        source "$partial_dir/macos.sh"
+        prepare_macos_env "$mode"
+        ;;
+      debian)
+        source "$partial_dir/debian.sh"
+        prepare_debian_env "$mode"
+        ;;
+      arch)
+        source "$partial_dir/arch.sh"
+        prepare_arch_env "$mode"
+        ;;
+      chromeos)
+        [ "$mode" = core ] || echo 'Warning: ChromeOS has no additional all package set; using core.' >&2
+        source "$partial_dir/chromeos.sh"
+        prepare_chromeos
+        ;;
+      termux)
+        source "$partial_dir/termux.sh"
+        prepare_termux_env "$mode"
+        ;;
+      cygwin)
+        [ "$mode" = core ] || echo 'Warning: Cygwin has no additional all package set; using core.' >&2
+        source "$partial_dir/cygwin.sh"
+        check_admin
+        setup_cygwin_env
+        install_sage
+        install_cygwin_packages
+        ;;
+    esac
     ;;
 
   'npmg')

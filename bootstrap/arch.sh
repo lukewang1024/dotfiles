@@ -116,7 +116,7 @@ prepare_arch_env_cli_core()
   install_linuxbrew
   install_nix_brew_runtimes
 
-  basic_env_setup
+  core_env_setup
   apply_linux_app_configs
   fix_ENOSPC
 }

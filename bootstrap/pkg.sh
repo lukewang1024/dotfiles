@@ -139,24 +139,25 @@ install_pnpm()
 
 install_npm_packages()
 {
+  install_npm_cli_packages "${1:-all}"
+  install_npm_gui_packages "${1:-all}"
+}
+
+install_npm_cli_packages()
+{
   local level=${1:-all}
   install_pnpm
   echo "Installing global pnpm packages ($level)..."
 
   local extra_pkgs=(
-    @electron/asar                    # Creating Electron app packages
-    @mermaid-js/mermaid-cli           # Command-line interface for Mermaid, the diagramming and charting tool
     commitizen                        # Git commit, but play nice with conventions
-    create-dmg                        # Create a good-looking DMG for your macOS app in seconds
     depcheck                          # Check dependencies in your node module
     hexo-cli                          # Command-line interface for Hexo, the fast and simple static blog framework
     is-website-vulnerable             # Security tool that checks if a website has known vulnerabilities in its frontend JavaScript libraries
     madge                             # Dependency graph visualization tool for JavaScript projects
-    nativefier                        # Wrap web apps natively
     npm-check                         # Check for outdated, incorrect, and unused dependencies
     npm-check-updates                 # Find newer versions of dependencies than what your package.json allows
     npm-quick-run                     # Quickly run NPM script by prefix without typing the full name
-    open-computer-use                 # Open-source Computer Use MCP server for Codex and other agents
     pm2                               # Production process manager for Node.JS applications with a built-in load balancer
     svgexport                         # Command-line utility for converting SVG files to PNG, JPEG, PDF and other formats
     terminalizer                      # Tool for recording and sharing terminal sessions as animated GIF files or web players
@@ -167,8 +168,6 @@ install_npm_packages()
   )
 
   local core_pkgs=(
-    brightness-cli                    # Change the screen brightness
-    clipboard-cli                     # Access the system clipboard (copy/paste)
     git-file-history                  # Browse the git history of a specific file
     happy                             # Mobile and Web client for Claude Code and Codex
     http-server                       # Simple static file server
@@ -199,6 +198,37 @@ install_npm_packages()
 
   pnpm add -g `join ' ' "${pkgs[@]}"`
 
+  echo 'Done.'
+}
+
+install_npm_gui_packages()
+{
+  local level=${1:-all}
+  install_pnpm
+  echo "Installing global GUI/desktop pnpm packages ($level)..."
+
+  local core_pkgs=(
+    brightness-cli
+    clipboard-cli
+  )
+  local extra_pkgs=(
+    @electron/asar
+    @mermaid-js/mermaid-cli
+    create-dmg
+    nativefier
+    open-computer-use
+  )
+  local pkgs=()
+  case $level in
+    core) pkgs=("${core_pkgs[@]}") ;;
+    all) pkgs=("${core_pkgs[@]}" "${extra_pkgs[@]}") ;;
+    *)
+      echo "Unknown GUI Node package level: $level" >&2
+      return 1
+      ;;
+  esac
+
+  pnpm add -g `join ' ' "${pkgs[@]}"`
   echo 'Done.'
 }
 

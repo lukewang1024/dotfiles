@@ -73,36 +73,26 @@ blank_lines() { echo; echo; }
 # Print the usage of the script and exit
 print_usage()
 {
+  usage_status=${1:-0}
   cat << 'EOB' >&2
 Luke's config bootstrap script
 
 [Synopsis]
 
-./init [platform] [option]
+./init basic | core | all
 ./init [task]
 
-The platform is normally detected. Use `./init` for the core setup or
-`./init all` for the full setup. These modes apply only to a full macOS/Linux
-environment; Termux always uses interactive `./init` without a mode.
-
-[Platforms]
-
-  macos | osx - macOS
-  debian      - Debian
-  arch        - Arch Linux
-  chromeos    - ChromeOS (requires developer mode)
-  termux      - Termux on Android; remaining arguments go to termux.sh
-  cygwin      - Cygwin
+The platform is always detected; platform arguments are not accepted.
 
 [Options]
 
-  core - Prepare the core environment (default; full macOS/Linux only)
-  all  - Prepare the complete environment (full macOS/Linux only)
-  game - Install the gaming setup (macOS and Arch Linux only)
+  basic - Configure already-installed tools; install no platform packages
+  core  - Install this platform's daily environment, then run basic
+  all   - Install core plus platform extras, then run basic. On platforms with
+          no extra set (including Termux), warn and use core.
 
 [Tasks]
 
-  basic - Only link rc files to $HOME
   npmg  - Install global npm packages (in case of version switch in nvm)
   zinit - Set zinit as the zsh plugin manager (symlinks .zshrc, etc.)
   kerberos - Interactively configure krb5.conf for an internal realm
@@ -117,5 +107,5 @@ environment; Termux always uses interactive `./init` without a mode.
     `macos backup_automator_stuff`: Backup Automator stuff to Dropbox
     `macos install_mac_wechat_plugin`: Tweak WeChat to save login session
 EOB
-  exit 0
+  exit "$usage_status"
 }

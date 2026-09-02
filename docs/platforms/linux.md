@@ -28,14 +28,14 @@ Debian or Ubuntu family:
 
 ```sh
 git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
-"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" debian core
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" core
 ```
 
 Arch family:
 
 ```sh
 git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
-"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" arch core
+"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" core
 ```
 
 The distro bootstrap uses the native package manager and may invoke `sudo`.
@@ -102,4 +102,3 @@ available. Run `systemctl --user daemon-reload` when testing newly added units.
 
 Existing managed destinations are normally preserved with a `~` suffix. Inspect
 that backup before removing or restoring a link.
-

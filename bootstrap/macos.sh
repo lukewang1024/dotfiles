@@ -70,7 +70,7 @@ prepare_macos_env_cli_core()
   # )
   # brew services start `join ' ' "${pkgs[@]}"`
 
-  basic_env_setup
+  core_env_setup
 }
 
 prepare_macos_env_cli_extra()
