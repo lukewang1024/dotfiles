@@ -1,0 +1,191 @@
+#!/bin/sh
+
+# Pick a concrete OpenSSH Host alias and connect to it. The optional inventory
+# is intentionally only a list of aliases; connection details remain in the
+# standard SSH config.
+
+set -eu
+
+xdg_config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
+ssh_dir=${SSH_CONNECT_SSH_DIR:-"$HOME/.ssh"}
+hosts_file=${SSH_CONNECT_HOSTS_FILE:-"$xdg_config_home/ssh/hosts"}
+
+usage()
+{
+  cat <<'EOF'
+usage: ssh-connect [--print] [--tmux] [-- SSH_OPTIONS...]
+       ssh-connect hosts path
+       ssh-connect hosts discover
+       ssh-connect hosts edit [--discover]
+
+Pick an alias from the SSH host inventory and connect. `hosts edit --discover`
+merges concrete Host aliases found in SSH config files before opening $EDITOR.
+EOF
+}
+
+discover_hosts()
+{
+  [ -d "$ssh_dir" ] || return 0
+  find "$ssh_dir" -type f \( \
+    -name config -o -name config.local -o -name '*.conf' \
+  \) -print 2>/dev/null |
+    while IFS= read -r config_file; do
+      awk '
+        tolower($1) == "host" {
+          for (field = 2; field <= NF; field++) {
+            host = $field
+            if (host !~ /^!/ && host !~ /^-/ && host !~ /[*!?]/) print host
+          }
+        }
+      ' "$config_file"
+    done |
+    awk '!seen[$0]++'
+}
+
+inventory_hosts()
+{
+  source_file=$1
+  awk '
+    {
+      sub(/[[:space:]]*#.*/, "")
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+      if ($0 != "" && NF == 1) print
+    }
+  ' "$source_file"
+}
+
+validate_inventory()
+{
+  awk '
+    {
+      line = $0
+      sub(/[[:space:]]*#.*/, "", line)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+      if (line == "") next
+      if (line ~ /^-/ || line ~ /[*!?]/ || split(line, fields, /[[:space:]]+/) != 1) {
+        printf "ssh-connect: invalid host alias on line %d: %s\n", NR, $0 > "/dev/stderr"
+        invalid = 1
+      }
+    }
+    END { exit invalid ? 1 : 0 }
+  ' "$1"
+}
+
+edit_hosts()
+{
+  merge_discovered=${1:-0}
+  hosts_dir=$(dirname "$hosts_file")
+  mkdir -p "$hosts_dir"
+  edit_file=$(mktemp "$hosts_dir/.hosts.edit.XXXXXX")
+  aliases_file=$(mktemp "$hosts_dir/.hosts.aliases.XXXXXX")
+  discovered_file=$(mktemp "$hosts_dir/.hosts.discovered.XXXXXX")
+  trap 'rm -f "$edit_file" "$aliases_file" "$discovered_file"' EXIT HUP INT TERM
+
+  if [ -f "$hosts_file" ]; then
+    cp "$hosts_file" "$edit_file"
+  else
+    cat >"$edit_file" <<'EOF'
+# SSH picker hosts. One concrete Host alias per line; order is preserved.
+# Connection details belong in ~/.ssh/config or ~/.ssh/config.local.
+EOF
+  fi
+
+  if [ "$merge_discovered" -eq 1 ] || [ ! -f "$hosts_file" ]; then
+    inventory_hosts "$edit_file" >"$aliases_file"
+    discover_hosts >"$discovered_file"
+    while IFS= read -r host; do
+      grep -Fxq "$host" "$aliases_file" 2>/dev/null && continue
+      printf '%s\n' "$host" >>"$edit_file"
+      printf '%s\n' "$host" >>"$aliases_file"
+    done <"$discovered_file"
+  fi
+
+  editor=${VISUAL:-${EDITOR:-vi}}
+  command -v "$editor" >/dev/null 2>&1 || {
+    printf 'ssh-connect: editor not found: %s\n' "$editor" >&2
+    exit 127
+  }
+  "$editor" "$edit_file"
+  validate_inventory "$edit_file"
+  chmod 600 "$edit_file"
+  mv "$edit_file" "$hosts_file"
+  trap - EXIT HUP INT TERM
+  rm -f "$aliases_file" "$discovered_file"
+  printf 'ssh-connect: saved %s\n' "$hosts_file" >&2
+}
+
+choose_host()
+{
+  choices_file=$1
+  if command -v fzf >/dev/null 2>&1; then
+    fzf --prompt='SSH host> ' --reverse <"$choices_file"
+    return
+  fi
+
+  awk '{ printf "%d) %s\n", NR, $0 }' "$choices_file" >&2
+  printf '%s' 'SSH host number: ' >&2
+  IFS= read -r choice </dev/tty || return 1
+  case $choice in
+    ''|*[!0-9]*) return 1 ;;
+  esac
+  sed -n "${choice}p" "$choices_file"
+}
+
+if [ "${1:-}" = hosts ]; then
+  shift
+  case ${1:-} in
+    path)
+      [ "$#" -eq 1 ] || { usage >&2; exit 2; }
+      printf '%s\n' "$hosts_file"
+      ;;
+    discover)
+      [ "$#" -eq 1 ] || { usage >&2; exit 2; }
+      discover_hosts
+      ;;
+    edit)
+      shift
+      case ${1:-} in
+        '') edit_hosts 0 ;;
+        --discover) [ "$#" -eq 1 ] || { usage >&2; exit 2; }; edit_hosts 1 ;;
+        *) usage >&2; exit 2 ;;
+      esac
+      ;;
+    *) usage >&2; exit 2 ;;
+  esac
+  exit 0
+fi
+
+print_only=0
+attach_tmux=0
+while [ "$#" -gt 0 ]; do
+  case $1 in
+    --print) print_only=1; shift ;;
+    --tmux) attach_tmux=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    --) shift; break ;;
+    *) break ;;
+  esac
+done
+
+choices_file=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.XXXXXX")
+trap 'rm -f "$choices_file"' EXIT HUP INT TERM
+if [ -f "$hosts_file" ]; then
+  validate_inventory "$hosts_file"
+  inventory_hosts "$hosts_file" >"$choices_file"
+else
+  discover_hosts >"$choices_file"
+fi
+[ -s "$choices_file" ] || {
+  printf '%s\n' 'ssh-connect: no hosts found; run: ssh-connect hosts edit --discover' >&2
+  exit 1
+}
+
+host=$(choose_host "$choices_file") || exit 1
+[ -n "$host" ] || exit 1
+if [ "$print_only" -eq 1 ]; then
+  printf '%s\n' "$host"
+elif [ "$attach_tmux" -eq 1 ]; then
+  exec ssh "$@" -t "$host" 'tmux new-session -A -s main'
+else
+  exec ssh "$@" "$host"
+fi

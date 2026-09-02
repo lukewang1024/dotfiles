@@ -94,6 +94,7 @@ link_config "$config_dir/git/termux" "$XDG_CONFIG_HOME/git/config"
 link_config "$repo_dir/util/shell/tmux-autoreload-launch" "$HOME/.local/bin/tmux-autoreload-launch"
 link_config "$repo_dir/util/shell/tmux-appearance-fallback" "$HOME/.local/bin/tmux-appearance-fallback"
 link_config "$repo_dir/util/shell/tmux-layout-keep-sidebar" "$HOME/.local/bin/tmux-layout-keep-sidebar"
+link_config "$repo_dir/util/shell/ssh-connect" "$HOME/.local/bin/ssh-connect"
 link_config "$repo_dir/util/kerberos/kinit-auto-login" "$HOME/.local/bin/kinit-auto-login"
 link_config "$repo_dir/util/kerberos/termux-kinit-shortcut" "$HOME/.local/bin/termux-kinit-shortcut"
 
@@ -132,4 +133,5 @@ cat "$HOME/.ssh/id_ed25519.pub"
 printf '\n%s\n' 'Next steps:'
 printf '%s\n' '  ./init kerberos'
 printf '%s\n' '  kinit-auto-login install --principal USER@BYTEDANCE.COM'
-printf '%s\n' "  ssh -t USER@HOST 'tmux new-session -A -s main'"
+printf '%s\n' '  ssh-connect hosts edit --discover'
+printf '%s\n' '  ssh-connect'
