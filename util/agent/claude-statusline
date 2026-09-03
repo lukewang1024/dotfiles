@@ -39,4 +39,20 @@ plugin_dir=$(
 )
 [ -n "$plugin_dir" ] || exit 0
 
-exec "$node_bin" "${plugin_dir}dist/index.js"
+# Claude includes current 5h/7d plan utilization in the statusline payload.
+# Preserve a small, credential-free snapshot for the tmux usage badge.
+input=$(cat)
+usage_dir=${XDG_STATE_HOME:-$HOME/.local/state}/tmux/agent-usage
+if command -v jq >/dev/null 2>&1 && [ -n "$input" ]; then
+  limits=$(printf '%s\n' "$input" | jq -c '
+    select(.rate_limits != null)
+    | {updated_at: now, rate_limits: .rate_limits}
+  ' 2>/dev/null)
+  if [ -n "$limits" ]; then
+    mkdir -p "$usage_dir" 2>/dev/null || true
+    printf '%s\n' "$limits" > "$usage_dir/claude-limits.$$" 2>/dev/null &&
+      mv "$usage_dir/claude-limits.$$" "$usage_dir/claude-limits"
+  fi
+fi
+
+printf '%s\n' "$input" | exec "$node_bin" "${plugin_dir}dist/index.js"

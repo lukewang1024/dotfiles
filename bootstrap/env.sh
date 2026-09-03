@@ -229,6 +229,7 @@ util_setup()
   backup_then_symlink "$util_dir/shell/theme-sync" "$bin_dir/theme-sync"
   backup_then_symlink "$util_dir/shell/theme-push-remotes" "$bin_dir/theme-push-remotes"
   backup_then_symlink "$util_dir/shell/tmux-appearance-fallback" "$bin_dir/tmux-appearance-fallback"
+  backup_then_symlink "$util_dir/shell/tmux-agent-usage" "$bin_dir/tmux-agent-usage"
   backup_then_symlink "$util_dir/shell/ssh-first-reachable" "$bin_dir/ssh-first-reachable"
   backup_then_symlink "$util_dir/shell/ssh-connect" "$bin_dir/ssh-connect"
   backup_then_symlink "$util_dir/spark/pyspark-jupyter" "$bin_dir/pyspark-jupyter"
