@@ -155,38 +155,72 @@ _agent_run_and_remember() {
 
 unalias codex claude traex opencode 2>/dev/null
 codex() {
-  local arg has_yolo=0
+  local arg permission_mode=auto resume_prefix='codex --approve-for-me resume'
   for arg in "$@"; do
-    [ "$arg" = "--yolo" ] && has_yolo=1
+    case "$arg" in
+      --yolo|--dangerously-bypass-approvals-and-sandbox)
+        permission_mode=explicit
+        resume_prefix='codex --yolo resume'
+        ;;
+      --approve-for-me)
+        permission_mode=explicit
+        ;;
+      -a|--ask-for-approval|--ask-for-approval=*)
+        permission_mode=explicit
+        resume_prefix='codex resume'
+        ;;
+    esac
   done
-  if [ "$has_yolo" -eq 1 ]; then
-    _agent_run_and_remember codex "$HOME/.local/bin/codex" 'codex --yolo resume' "$HOME/.codex/sessions" "$@"
-  else
-    _agent_run_and_remember codex "$HOME/.local/bin/codex" 'codex resume' "$HOME/.codex/sessions" "$@"
+  if [ "$permission_mode" = auto ]; then
+    set -- --approve-for-me "$@"
   fi
+  _agent_run_and_remember codex "$HOME/.local/bin/codex" "$resume_prefix" "$HOME/.codex/sessions" "$@"
 }
 claude() {
-  local arg has_bypass=0
+  local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'
   for arg in "$@"; do
-    [ "$arg" = "--dangerously-skip-permissions" ] && has_bypass=1
+    case "$arg" in
+      --dangerously-skip-permissions)
+        permission_mode=explicit
+        resume_prefix='claude --dangerously-skip-permissions --resume'
+        ;;
+      --permission-mode|--permission-mode=*)
+        permission_mode=explicit
+        resume_prefix='claude --resume'
+        ;;
+    esac
   done
-  if [ "$has_bypass" -eq 1 ]; then
-    _agent_run_and_remember claude "$HOME/.local/bin/claude" 'claude --dangerously-skip-permissions --resume' '' "$@"
-  else
-    _agent_run_and_remember claude "$HOME/.local/bin/claude" 'claude --resume' '' "$@"
+  if [ "$permission_mode" = auto ]; then
+    set -- --permission-mode auto "$@"
   fi
+  _agent_run_and_remember claude "$HOME/.local/bin/claude" "$resume_prefix" '' "$@"
 }
 traex() {
-  _agent_run_and_remember traex "$HOME/.local/bin/traex" 'traex resume' "$HOME/.trae/cli/sessions" "$@"
+  local arg permission_mode=auto resume_prefix='traex --permission-mode auto resume'
+  for arg in "$@"; do
+    case "$arg" in
+      -y|--yolo|--dangerously-bypass-approvals-and-sandbox)
+        permission_mode=explicit
+        resume_prefix='traex --yolo resume'
+        ;;
+      --permission-mode|--permission-mode=*)
+        permission_mode=explicit
+        resume_prefix='traex resume'
+        ;;
+    esac
+  done
+  if [ "$permission_mode" = auto ]; then
+    set -- --permission-mode auto "$@"
+  fi
+  _agent_run_and_remember traex "$HOME/.local/bin/traex" "$resume_prefix" "$HOME/.trae/cli/sessions" "$@"
 }
 opencode() {
   local arg has_auto=0
   for arg in "$@"; do
     [ "$arg" = "--auto" ] && has_auto=1
   done
-  if [ "$has_auto" -eq 1 ]; then
-    _agent_run_and_remember opencode /opt/homebrew/bin/opencode 'opencode --auto --session' '' "$@"
-  else
-    _agent_run_and_remember opencode /opt/homebrew/bin/opencode 'opencode --session' '' "$@"
+  if [ "$has_auto" -eq 0 ]; then
+    set -- --auto "$@"
   fi
+  _agent_run_and_remember opencode /opt/homebrew/bin/opencode 'opencode --auto --session' '' "$@"
 }
