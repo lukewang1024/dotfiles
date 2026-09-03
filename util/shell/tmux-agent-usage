@@ -1,0 +1,330 @@
+#!/bin/sh
+# Clickable tmux widget for per-agent token usage and plan limits.
+
+state_dir=${XDG_STATE_HOME:-$HOME/.local/state}/tmux/agent-usage
+ttl=300
+
+source_name() {
+  value=$(tmux show-option -gqv @agent_usage_source 2>/dev/null)
+  case $value in
+    codex|claude|trae|opencode) printf '%s\n' "$value" ;;
+    *) printf '%s\n' codex ;;
+  esac
+}
+
+compact() {
+  awk -v n="${1:-0}" 'BEGIN {
+    if (n >= 1000000000) printf "%.1fB", n / 1000000000
+    else if (n >= 1000000) printf "%.1fM", n / 1000000
+    else if (n >= 1000) printf "%.1fK", n / 1000
+    else printf "%d", n
+  }'
+}
+
+period_start() {
+  case $1 in
+    day) date +%Y-%m-%d ;;
+    month) date +%Y-%m-01 ;;
+    week)
+      weekday=$(date +%u)
+      ago=$((weekday - 1))
+      date -d "$ago days ago" +%Y-%m-%d 2>/dev/null ||
+        date -v-"${ago}"d +%Y-%m-%d 2>/dev/null || date +%Y-%m-%d
+      ;;
+  esac
+}
+
+latest_limits() {
+  root=$1
+  [ -d "$root" ] || return
+  line=
+  for file in $(find "$root" -type f -name '*.jsonl' -mtime -8 -print 2>/dev/null | sort -r); do
+    line=$(awk '/"rate_limits"/ { value = $0 } END { print value }' "$file")
+    [ -n "$line" ] && break
+  done
+  [ -n "$line" ] || return
+  printf '%s\n' "$line" | jq -r '
+    .payload.rate_limits as $limits
+    | [$limits.primary, $limits.secondary, $limits.individual_limit]
+    | map(select(. != null and .used_percent != null and .window_minutes != null))
+    | map((if .window_minutes == 300 then "5h"
+           elif .window_minutes == 10080 then "7d"
+           elif .window_minutes % 1440 == 0 then ((.window_minutes / 1440 | tostring) + "d")
+           elif .window_minutes % 60 == 0 then ((.window_minutes / 60 | tostring) + "h")
+           else ((.window_minutes | tostring) + "m") end)
+          + " " + (100 - .used_percent | if . < 0 then 0 else . end | round | tostring) + "%L")
+    | unique | join("/")
+    | if . == "" then empty
+      elif ($limits.plan_type // "") == "" then .
+      else ($limits.plan_type + ":" + .) end
+  ' 2>/dev/null
+}
+
+build_cache() {
+  agent=$1
+  cache=$state_dir/$agent
+  tmp=$cache.$$
+  json=$state_dir/$agent.json.$$
+  day=$(period_start day)
+  week=$(period_start week)
+  month=$(period_start month)
+  command_agent=$agent
+
+  mkdir -p "$state_dir" 2>/dev/null || return
+  case $agent in
+    trae)
+      command_agent=codex
+      CODEX_HOME=${TRAE_HOME:-$HOME/.trae}/cli \
+        ccusage codex daily --json --offline > "$json" 2>/dev/null || printf '{"daily":[]}' > "$json"
+      ;;
+    *)
+      ccusage "$command_agent" daily --json --offline > "$json" 2>/dev/null || printf '{"daily":[]}' > "$json"
+      ;;
+  esac
+
+  values=$(jq -r --arg day "$day" --arg week "$week" --arg month "$month" '
+    def sum_since($start): [.daily[]? | select((.date // "") >= $start) | (.totalTokens // 0)] | add // 0;
+    [sum_since($day), sum_since($week), sum_since($month)] | @tsv
+  ' "$json" 2>/dev/null)
+  rm -f "$json"
+  daily=$(compact "$(printf '%s\n' "$values" | cut -f 1)")
+  weekly=$(compact "$(printf '%s\n' "$values" | cut -f 2)")
+  monthly=$(compact "$(printf '%s\n' "$values" | cut -f 3)")
+
+  case $agent in
+    codex)
+      label=Cdx
+      limit=$(latest_limits "${CODEX_HOME:-$HOME/.codex}/sessions")
+      ;;
+    claude)
+      label=Cl
+      plan=$(jq -r '.claudeAiOauth.subscriptionType // empty' "$HOME/.claude/.credentials.json" 2>/dev/null)
+      used=$(jq -r '
+        [.rate_limits.five_hour.used_percentage, .rate_limits.seven_day.used_percentage]
+        | map(select(. != null)) | max // empty | round
+      ' "$state_dir/claude-limits" 2>/dev/null)
+      case $used in
+        ''|*[!0-9]*) [ -n "$plan" ] && limit="$plan —" || limit=— ;;
+        *) limit="${plan:+$plan:}$((100 - used))%L" ;;
+      esac
+      ;;
+    trae)
+      label=Tr
+      limit=$(latest_limits "${TRAE_HOME:-$HOME/.trae}/cli/sessions")
+      ;;
+    opencode)
+      label=OC
+      limit=—
+      ;;
+  esac
+  [ -n "$limit" ] || limit=—
+  printf '%s D%s W%s M%s | L%s\n' "$label" "$daily" "$weekly" "$monthly" "$limit" > "$tmp" && mv "$tmp" "$cache"
+}
+
+render() {
+  agent=${1:-$(source_name)}
+  cache=$state_dir/$agent
+  now=$(date +%s)
+  modified=0
+  if [ -f "$cache" ]; then
+    modified=$(stat -c %Y "$cache" 2>/dev/null || stat -f %m "$cache" 2>/dev/null || printf 0)
+    case $modified in ''|*[!0-9]*) modified=0 ;; esac
+  fi
+  [ $((now - modified)) -lt "$ttl" ] || build_cache "$agent"
+  [ -s "$cache" ] || return
+  cat "$cache"
+}
+
+badge() {
+  width=${1:-9999}
+  agent=$(source_name)
+  detail=$(render)
+  daily=$(printf '%s\n' "$detail" | sed -n 's/^[^ ]* D\([^ ]*\).*/\1/p')
+  left=$(printf '%s\n' "$detail" | sed -n 's/.* \([0-9][0-9]*\)%L.*/\1/p' | head -n 1)
+  case $left in
+    ''|*[!0-9]*) return ;;
+    *) used=$((100 - left)) ;;
+  esac
+  # Font Awesome battery glyphs are visually smaller than the Material set and
+  # inherit the surrounding Agent Status capsule's foreground/background. Fill
+  # represents remaining plan capacity; the number remains "used".
+  if [ "$left" -ge 88 ]; then
+    icon=''
+  elif [ "$left" -ge 63 ]; then
+    icon=''
+  elif [ "$left" -ge 35 ]; then
+    icon=''
+  else
+    icon=''
+  fi
+  compact_min=$(tmux show-option -gqv @adaptive_compact_min_width 2>/dev/null)
+  case $compact_min in ''|*[!0-9]*) compact_min=70 ;; esac
+  case $width in ''|*[!0-9]*) width=9999 ;; esac
+  if [ "$width" -lt "$compact_min" ]; then
+    printf ' %s ' "$icon"
+  else
+    printf ' %s %s%% · T %s ' "$icon" "$used" "${daily:-0}"
+  fi
+}
+
+detail() {
+  while :; do
+    agent=$(source_name)
+    value=$(render)
+    case $agent in
+      codex) name=Codex ;;
+      claude) name='Claude Code' ;;
+      trae) name=Trae ;;
+      opencode) name=OpenCode ;;
+    esac
+    # Intentional field splitting: remaining words form the plan-limit label.
+    # shellcheck disable=SC2046
+    set -- $(printf '%s\n' "$value" | sed -n 's/^[^ ]* D\([^ ]*\) W\([^ ]*\) M\([^ ]*\) | L\(.*\)$/\1 \2 \3 \4/p')
+    printf '\033[2J\033[H\n  %s usage\n\n' "$name"
+    printf '  Today       %s tokens\n' "${1:-0}"
+    printf '  This week   %s tokens\n' "${2:-0}"
+    printf '  This month  %s tokens\n' "${3:-0}"
+    shift 3 2>/dev/null || true
+    printf '  Plan limit  %s\n' "${*:-—}"
+    printf '\n  Source: [c] Codex  [l] Claude  [t] Trae  [o] OpenCode\n'
+    printf '  Enter: close  ·  choose a source then press Enter: '
+    IFS= read -r answer || return
+    case $answer in
+      c|C) next=codex ;;
+      l|L) next=claude ;;
+      t|T) next=trae ;;
+      o|O) next=opencode ;;
+      '') return ;;
+      *) continue ;;
+    esac
+    tmux set-option -g @agent_usage_source "$next"
+    tmux refresh-client -S
+  done
+}
+
+menu() {
+  agent=$(source_name)
+  value=$(render "$agent")
+  case $agent in
+    codex) name=Codex ;;
+    claude) name='Claude Code' ;;
+    trae) name=Trae ;;
+    opencode) name=OpenCode ;;
+  esac
+  daily=$(printf '%s\n' "$value" | sed -n 's/^[^ ]* D\([^ ]*\).*/\1/p')
+  weekly=$(printf '%s\n' "$value" | sed -n 's/.* W\([^ ]*\).*/\1/p')
+  monthly=$(printf '%s\n' "$value" | sed -n 's/.* M\([^ ]*\).*/\1/p')
+  limit=$(printf '%s\n' "$value" | sed -n 's/.* | L//p')
+  [ -n "$daily" ] || daily=0
+  [ -n "$weekly" ] || weekly=0
+  [ -n "$monthly" ] || monthly=0
+  [ -n "$limit" ] || limit=—
+  daily_line=$(printf '%-10s %15s' 'Daily' "$daily tokens")
+  weekly_line=$(printf '%-10s %15s' 'Weekly' "$weekly tokens")
+  monthly_line=$(printf '%-10s %15s' 'Monthly' "$monthly tokens")
+  limit_line=$(printf '%-10s %15s' 'Plan limit' "$limit")
+
+  codex_mark='  '; claude_mark='  '; trae_mark='  '; opencode_mark='  '
+  case $agent in
+    codex) codex_mark='✓ ' ;;
+    claude) claude_mark='✓ ' ;;
+    trae) trae_mark='✓ ' ;;
+    opencode) opencode_mark='✓ ' ;;
+  esac
+
+  # -M handles subsequent mouse events; -O ignores the opening click's release,
+  # so the menu remains visible after the user lets go of the left button.
+  tmux display-menu -M -O -b rounded -T " Usage · $name " -x C -y C \
+    "#{?#{==:1,1},-,}$daily_line" '' '' \
+    "#{?#{==:1,1},-,}$weekly_line" '' '' \
+    "#{?#{==:1,1},-,}$monthly_line" '' '' \
+    "#{?#{==:1,1},-,}$limit_line" '' '' \
+    '' \
+    "${codex_mark}Codex" c 'run-shell -b "tmux-agent-usage choose codex"' \
+    "${claude_mark}Claude Code" l 'run-shell -b "tmux-agent-usage choose claude"' \
+    "${trae_mark}Trae" t 'run-shell -b "tmux-agent-usage choose trae"' \
+    "${opencode_mark}OpenCode" o 'run-shell -b "tmux-agent-usage choose opencode"'
+}
+
+select_source() {
+  case ${1:-} in codex|claude|trae|opencode) ;; *) return 2 ;; esac
+  tmux set-option -g @agent_usage_source "$1"
+  tmux refresh-client -S
+}
+
+choose_source() {
+  select_source "${1:-}" || return
+  # The old menu closes after executing its item. Reopen after that close has
+  # completed so selection behaves like an in-place source switch.
+  sleep 0.1
+  menu
+}
+
+install() {
+  current=$(tmux show-option -gv status-right 2>/dev/null) || return
+  # Remove the previous standalone tail during migration.
+  case $current in
+    *'#(tmux-agent-usage badge)')
+      tmux set-option -g status-right "${current%'#(tmux-agent-usage badge)'}"
+      ;;
+  esac
+  for option in @adaptive_status_agent @adaptive_status_agent_standalone @adaptive_status_host_close; do
+    value=$(tmux show-option -gqv "$option")
+    [ -n "$value" ] || continue
+    case $value in *'range=user|agent_status'*) continue ;; esac
+    tmux set-option -gq "$option" "#[range=user|agent_status]${value}#(tmux-agent-usage badge #{client_width})#[range=]"
+  done
+  tmux refresh-client -S
+}
+
+focus() {
+  window=$(tmux display-message -p '#{window_id}') || return
+  pane=
+  workbench=$(tmux show-option -gqv @workbench_attention_bin)
+  if [ -x "$workbench" ] && command -v jq >/dev/null 2>&1; then
+    pane=$("$workbench" snapshot --json 2>/dev/null | jq -r --arg window "$window" '
+      [.agents[] | select(.target.window_id == $window and (.exited | not))]
+      | sort_by(if .display_state == "working" then 0
+                elif .display_state == "blocked" then 1
+                elif .display_state == "done" then 2 else 3 end)
+      | .[0].target.pane_id // empty
+    ')
+  fi
+  if [ -z "$pane" ]; then
+    pane=$(tmux list-panes -t "$window" -F '#{pane_id} #{pane_current_command} #{@pane_role}' |
+      awk '$3 != "sidebar" && $2 ~ /^(codex|claude|trae|traex|opencode)$/ { print $1; exit }')
+  fi
+  [ -n "$pane" ] && tmux select-pane -t "$pane"
+}
+
+cycle() {
+  case $(source_name) in
+    codex) candidates='claude trae opencode codex' ;;
+    claude) candidates='trae opencode codex claude' ;;
+    trae) candidates='opencode codex claude trae' ;;
+    opencode) candidates='codex claude trae opencode' ;;
+  esac
+  next=$(source_name)
+  for candidate in $candidates; do
+    value=$(render "$candidate")
+    left=$(printf '%s\n' "$value" | sed -n 's/.* \([0-9][0-9]*\)%L.*/\1/p' | head -n 1)
+    case $left in ''|*[!0-9]*) continue ;; esac
+    next=$candidate
+    break
+  done
+  tmux set-option -g @agent_usage_source "$next"
+  tmux refresh-client -S
+}
+
+case ${1:-badge} in
+  badge) badge "${2:-}" ;;
+  choose) choose_source "${2:-}" ;;
+  render) render "${2:-}" ;;
+  detail) detail ;;
+  focus) focus ;;
+  install) install ;;
+  menu) menu ;;
+  cycle) cycle ;;
+  select) select_source "${2:-}" ;;
+  *) printf 'usage: %s [badge|choose|detail|focus|install|menu|render|cycle|select]\n' "${0##*/}" >&2; exit 2 ;;
+esac
