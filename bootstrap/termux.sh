@@ -31,7 +31,7 @@ install_termux_core_packages()
   pkg update -y
   pkg install -y \
     ca-certificates curl diff-so-fancy fd file fzf git jq krb5 less nano \
-    openssh python ripgrep rsync starship termux-services tig tmux tree unzip \
+    openssh python ripgrep rsync rust starship termux-api termux-services tig tmux tree unzip \
     vim which zip zoxide zsh
 }
 
@@ -100,6 +100,11 @@ prepare_termux_env()
   zinit_install
   termux_basic_setup
   tmux_plugins_setup
+  if command -v tmux-agent-workbench >/dev/null 2>&1; then
+    tmux-agent-workbench client setup termux
+  else
+    printf '%s\n' 'termux: tmux-agent-workbench unavailable; mobile notifications are not configured' >&2
+  fi
   vim_plugins_setup
   termux_ssh_setup
 
