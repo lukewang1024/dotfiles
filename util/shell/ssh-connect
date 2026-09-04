@@ -13,13 +13,15 @@ hosts_file=${SSH_CONNECT_HOSTS_FILE:-"$xdg_config_home/ssh/hosts"}
 usage()
 {
   cat <<'EOF'
-usage: ssh-connect [--print] [--tmux] [-- SSH_OPTIONS...]
+usage: ssh-connect [--print] [--tmux | --workbench] [-- SSH_OPTIONS...]
        ssh-connect hosts path
        ssh-connect hosts discover
        ssh-connect hosts edit [--discover]
 
-Pick an alias from the SSH host inventory and connect. `hosts edit --discover`
-merges concrete Host aliases found in SSH config files before opening $EDITOR.
+Pick an alias from the SSH host inventory and connect. `--workbench` uses the
+client-aware tmux-agent-workbench SSH transport so mobile completion and input
+notifications return to this device. `hosts edit --discover` merges concrete
+Host aliases found in SSH config files before opening $EDITOR.
 EOF
 }
 
@@ -157,15 +159,22 @@ fi
 
 print_only=0
 attach_tmux=0
+attach_workbench=0
 while [ "$#" -gt 0 ]; do
   case $1 in
     --print) print_only=1; shift ;;
     --tmux) attach_tmux=1; shift ;;
+    --workbench) attach_workbench=1; shift ;;
     -h|--help) usage; exit 0 ;;
     --) shift; break ;;
     *) break ;;
   esac
 done
+
+[ "$attach_tmux" -eq 0 ] || [ "$attach_workbench" -eq 0 ] || {
+  printf '%s\n' 'ssh-connect: --tmux and --workbench are mutually exclusive' >&2
+  exit 2
+}
 
 choices_file=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.XXXXXX")
 trap 'rm -f "$choices_file"' EXIT HUP INT TERM
@@ -186,6 +195,16 @@ if [ "$print_only" -eq 1 ]; then
   printf '%s\n' "$host"
 elif [ "$attach_tmux" -eq 1 ]; then
   exec ssh "$@" -t "$host" 'tmux new-session -A -s main'
+elif [ "$attach_workbench" -eq 1 ]; then
+  [ "$#" -eq 0 ] || {
+    printf '%s\n' 'ssh-connect: SSH_OPTIONS are not supported with --workbench; put them in SSH config' >&2
+    exit 2
+  }
+  command -v tmux-agent-workbench >/dev/null 2>&1 || {
+    printf '%s\n' 'ssh-connect: tmux-agent-workbench is not installed' >&2
+    exit 127
+  }
+  exec tmux-agent-workbench client attach "$host"
 else
   exec ssh "$@" "$host"
 fi
