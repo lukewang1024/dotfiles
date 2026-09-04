@@ -70,6 +70,13 @@ tmux_plugins_setup()
   # Run it from the TPM clone once that clone exists.
   local workbench_dir="$plugins_dir/tmux-agent-workbench"
   if [ -x "$workbench_dir/install" ]; then
+    printf 'Updating tmux-agent-workbench... '
+    if ! git -C "$workbench_dir" pull --ff-only; then
+      printf '%s\n' 'Failed.' >&2
+      printf '%s\n' 'tmux-agent-workbench has local changes or cannot reach its remote; refusing to install a stale build.' >&2
+      return 1
+    fi
+    echo 'Done.'
     printf 'Installing tmux-agent-workbench commands... '
     "$workbench_dir/install" "$bin_dir"
     echo 'Done.'
