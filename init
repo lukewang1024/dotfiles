@@ -137,6 +137,11 @@ case "$mode" in
     echo
     source "$partial_dir/$2.sh"
     eval "$3"
+    run_status=$?
+    if [ "$run_status" -ne 0 ]; then
+      echo "Task '$3' failed with status $run_status." >&2
+      exit "$run_status"
+    fi
     ;;
 
   *)

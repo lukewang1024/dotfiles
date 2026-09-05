@@ -133,8 +133,13 @@ termux_distributed_workbench_setup()
     DISTRIBUTED_WORKBENCH_EXECUTOR_ID=$termux_workbench_node_id-rust \
     "$termux_workbench_installer" "$termux_workbench_version" "$HOME"; then
     printf '%s\n' 'termux: published Android release unavailable; trying the authenticated peer bootstrap cache' >&2
-    termux_workbench_remote_version=$(ssh -o BatchMode=yes -o ClearAllForwardings=yes \
-      "$termux_workbench_host" '"$HOME/.local/bin/workbench" --version' | awk 'NR == 1 {print $2}')
+    termux_workbench_remote_version_output=$(ssh -o BatchMode=yes -o ClearAllForwardings=yes \
+      "$termux_workbench_host" '"$HOME/.local/bin/workbench" --version') || {
+      printf '%s\n' 'termux: could not read distributed-workbench version from peer' >&2
+      return 1
+    }
+    termux_workbench_remote_version=$(printf '%s\n' "$termux_workbench_remote_version_output" |
+      awk 'NR == 1 {print $2}')
     case $termux_workbench_remote_version in
       ''|*[!0-9A-Za-z._-]*)
         printf '%s\n' 'termux: peer returned an invalid distributed-workbench version' >&2
@@ -144,16 +149,21 @@ termux_distributed_workbench_setup()
     termux_workbench_archive=$termux_workbench_cache/termux-current.tar.gz
     ssh -o BatchMode=yes -o ClearAllForwardings=yes "$termux_workbench_host" \
       'cat "${XDG_CACHE_HOME:-$HOME/.cache}/distributed-workbench-bootstrap/termux-current.tar.gz"' \
-      >"$termux_workbench_archive"
+      >"$termux_workbench_archive" || {
+        printf '%s\n' 'termux: peer bootstrap artifact is unavailable' >&2
+        return 1
+      }
     termux_workbench_unpack=$termux_workbench_cache/bootstrap
     mkdir -p "$termux_workbench_unpack"
-    tar -C "$termux_workbench_unpack" -xzf "$termux_workbench_archive"
+    tar -C "$termux_workbench_unpack" -xzf "$termux_workbench_archive" || return 1
     termux_workbench_root=$termux_workbench_unpack/distributed-workbench-$termux_workbench_remote_version-aarch64-linux-android
     DISTRIBUTED_WORKBENCH_CONTROLLER_ID=$termux_workbench_node_id \
       "$termux_workbench_root/scripts/install-termux-user.sh" \
-      "$termux_workbench_root/bin/workbench" "$termux_workbench_node_id-rust" "$HOME"
+      "$termux_workbench_root/bin/workbench" "$termux_workbench_node_id-rust" "$HOME" || return 1
   fi
-  "$HOME/.local/bin/connect-termux-peer" "$termux_workbench_host" "$termux_workbench_node_id"
+  "$HOME/.local/bin/connect-termux-peer" "$termux_workbench_host" "$termux_workbench_node_id" || return 1
+  printf 'termux: distributed-workbench node %s is connected through %s\n' \
+    "$termux_workbench_node_id" "$termux_workbench_host"
 }
 
 termux_default_shell_setup()
