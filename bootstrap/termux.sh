@@ -58,6 +58,104 @@ termux_ssh_setup()
   sv-enable ssh-agent
 }
 
+termux_workbench_default_node_id()
+{
+  termux_model=$(getprop ro.product.model 2>/dev/null || printf '%s' termux)
+  termux_model=$(printf '%s' "$termux_model" |
+    tr '[:upper:]' '[:lower:]' |
+    sed 's/[^a-z0-9._-][^a-z0-9._-]*/-/g; s/^-//; s/-$//')
+  [ -n "$termux_model" ] || termux_model=termux
+  printf '%s-termux\n' "$termux_model"
+}
+
+termux_workbench_local_config()
+{
+  termux_workbench_config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}/distributed-workbench
+  termux_workbench_config=$termux_workbench_config_home/termux-peer.conf
+  if [ -f "$termux_workbench_config" ]; then
+    return 0
+  fi
+  if [ ! -t 0 ]; then
+    printf '%s\n' \
+      "termux: skipping distributed-workbench peer setup; create $termux_workbench_config or run ./init core interactively" >&2
+    return 1
+  fi
+
+  printf '%s' 'SSH alias for the workbench node (empty to skip): '
+  IFS= read -r termux_workbench_host
+  [ -n "$termux_workbench_host" ] || return 1
+  case $termux_workbench_host in
+    *[!0-9A-Za-z._-]*)
+      printf 'termux: invalid SSH alias: %s\n' "$termux_workbench_host" >&2
+      return 1
+      ;;
+  esac
+  termux_workbench_node_id=$(termux_workbench_default_node_id)
+  mkdir -p "$termux_workbench_config_home"
+  umask 077
+  {
+    printf 'DISTRIBUTED_WORKBENCH_PEER_HOST=%s\n' "$termux_workbench_host"
+    printf 'DISTRIBUTED_WORKBENCH_TERMUX_NODE_ID=%s\n' "$termux_workbench_node_id"
+    printf '%s\n' 'DISTRIBUTED_WORKBENCH_VERSION=latest'
+  } >"$termux_workbench_config"
+  chmod 600 "$termux_workbench_config"
+}
+
+termux_distributed_workbench_setup()
+{
+  termux_workbench_local_config || return 0
+  termux_workbench_host=$(sed -n 's/^DISTRIBUTED_WORKBENCH_PEER_HOST=//p' "$termux_workbench_config" | tail -1)
+  termux_workbench_node_id=$(sed -n 's/^DISTRIBUTED_WORKBENCH_TERMUX_NODE_ID=//p' "$termux_workbench_config" | tail -1)
+  termux_workbench_version=$(sed -n 's/^DISTRIBUTED_WORKBENCH_VERSION=//p' "$termux_workbench_config" | tail -1)
+  termux_workbench_version=${termux_workbench_version:-latest}
+  for termux_workbench_value in "$termux_workbench_host" "$termux_workbench_node_id" "$termux_workbench_version"; do
+    case $termux_workbench_value in
+      ''|*[!0-9A-Za-z._-]*)
+        printf 'termux: invalid value in %s\n' "$termux_workbench_config" >&2
+        return 2
+        ;;
+    esac
+  done
+
+  if ! ssh -o BatchMode=yes -o ClearAllForwardings=yes "$termux_workbench_host" true; then
+    printf 'termux: SSH alias %s is not ready; distributed-workbench setup deferred\n' "$termux_workbench_host" >&2
+    return 0
+  fi
+
+  termux_workbench_cache=${XDG_CACHE_HOME:-"$HOME/.cache"}/distributed-workbench
+  termux_workbench_installer=$termux_workbench_cache/install-from-release.sh
+  mkdir -p "$termux_workbench_cache"
+  curl -fsSL \
+    https://raw.githubusercontent.com/lukewang1024/distributed-workbench/main/scripts/install-from-release.sh \
+    -o "$termux_workbench_installer"
+  chmod 755 "$termux_workbench_installer"
+  if ! DISTRIBUTED_WORKBENCH_CONTROLLER_ID=$termux_workbench_node_id \
+    DISTRIBUTED_WORKBENCH_EXECUTOR_ID=$termux_workbench_node_id-rust \
+    "$termux_workbench_installer" "$termux_workbench_version" "$HOME"; then
+    printf '%s\n' 'termux: published Android release unavailable; trying the authenticated peer bootstrap cache' >&2
+    termux_workbench_remote_version=$(ssh -o BatchMode=yes -o ClearAllForwardings=yes \
+      "$termux_workbench_host" '"$HOME/.local/bin/workbench" --version' | awk 'NR == 1 {print $2}')
+    case $termux_workbench_remote_version in
+      ''|*[!0-9A-Za-z._-]*)
+        printf '%s\n' 'termux: peer returned an invalid distributed-workbench version' >&2
+        return 1
+        ;;
+    esac
+    termux_workbench_archive=$termux_workbench_cache/termux-current.tar.gz
+    ssh -o BatchMode=yes -o ClearAllForwardings=yes "$termux_workbench_host" \
+      'cat "${XDG_CACHE_HOME:-$HOME/.cache}/distributed-workbench-bootstrap/termux-current.tar.gz"' \
+      >"$termux_workbench_archive"
+    termux_workbench_unpack=$termux_workbench_cache/bootstrap
+    mkdir -p "$termux_workbench_unpack"
+    tar -C "$termux_workbench_unpack" -xzf "$termux_workbench_archive"
+    termux_workbench_root=$termux_workbench_unpack/distributed-workbench-$termux_workbench_remote_version-aarch64-linux-android
+    DISTRIBUTED_WORKBENCH_CONTROLLER_ID=$termux_workbench_node_id \
+      "$termux_workbench_root/scripts/install-termux-user.sh" \
+      "$termux_workbench_root/bin/workbench" "$termux_workbench_node_id-rust" "$HOME"
+  fi
+  "$HOME/.local/bin/connect-termux-peer" "$termux_workbench_host" "$termux_workbench_node_id"
+}
+
 termux_default_shell_setup()
 {
   termux_zsh=$(command -v zsh 2>/dev/null || true)
@@ -107,6 +205,7 @@ prepare_termux_env()
   fi
   vim_plugins_setup
   termux_ssh_setup
+  termux_distributed_workbench_setup
 
   printf '\n%s\n' 'Termux core setup complete. Public SSH key:'
   cat "$HOME/.ssh/id_ed25519.pub"
