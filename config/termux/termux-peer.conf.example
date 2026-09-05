@@ -1,0 +1,5 @@
+# Copy to $XDG_CONFIG_HOME/distributed-workbench/termux-peer.conf.
+# Keep the destination private and do not commit its values.
+DISTRIBUTED_WORKBENCH_PEER_HOST=ssh-alias
+DISTRIBUTED_WORKBENCH_TERMUX_NODE_ID=phone-termux
+DISTRIBUTED_WORKBENCH_VERSION=latest

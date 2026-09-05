@@ -47,6 +47,7 @@ Platform-specific prerequisites, side effects, and verification:
 
 - [macOS setup](docs/platforms/macos.md)
 - [Linux setup](docs/platforms/linux.md)
+- [Termux setup](docs/platforms/termux.md)
 - [Windows setup](docs/platforms/windows.md)
 
 ## Day-to-day operations
