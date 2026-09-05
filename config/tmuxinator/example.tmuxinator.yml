@@ -13,7 +13,7 @@
 # Model: a session is a TASK, seeded with one repo. Two kinds of window:
 #   +----------------------+     +----------------------+
 #   |                      |     |  git (tig/lazygit)   |   <- <repo> window:
-#   |   agent  (mux-agent) |     +----------------------+      that repo's
+#   |   agent  (tmux-agent-workbench agent start --managed) |     +----------------------+      that repo's
 #   |   = the driver,      |     |  shell (scratchpad)  |      inspection surface,
 #   |     full window      |     +----------------------+      even-vertical
 #   |                      |     |  editor (nvim/vim)   |
@@ -24,17 +24,17 @@
 #
 # The task GROWS by accretion — fold in more repos as inspection windows:
 #   - manually:  prefix+G  (pick a repo from the pool)
-#   - the agent: it runs `mux-inspect <path>` itself when its work reaches into
+#   - the agent: it runs `tmux-agent-workbench inspect <path>` itself when its work reaches into
 #     another repo. Put this in the repo's CLAUDE.md / AGENTS.md (codex + opencode
 #     read AGENTS.md too) so all three agents follow it:
 #
 #       When your work starts touching another local repo, run
-#       `mux-inspect <abs-repo-path>` once so it appears as an inspection window.
+#       `tmux-agent-workbench inspect <abs-repo-path>` once so it appears as an inspection window.
 #       Then bring it into your own write scope: Claude → `/add-dir <path>`;
 #       codex → relaunch with `--add-dir <path>` if you must write there (reads
 #       already work); opencode → it will prompt on first external access.
 #
-# mux-agent starts the CLI selected by @workbench-agent / $WORKBENCH_AGENT.
+# tmux-agent-workbench agent start --managed starts the CLI selected by @workbench-agent / $WORKBENCH_AGENT.
 # This dotfiles setup defaults it to codex in tmux.conf.
 
 name: REPLACE-ME              # session name (and sesh picker label) = the task
@@ -43,7 +43,7 @@ startup_window: agent
 
 windows:
   - agent:                    # the session-level coding agent — where you steer
-      - mux-agent
+      - tmux-agent-workbench agent start --managed
   - REPLACE-ME:               # seed repo's inspection window (name it after the repo)
       layout: even-vertical
       panes:
