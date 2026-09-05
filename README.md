@@ -109,6 +109,7 @@ Other entrypoint tasks:
 | --- | --- |
 | `./init sync` | Reconcile an already-provisioned checkout. |
 | `./init migrate-xdg [--dry-run]` | Move a legacy checkout to the XDG config root without breaking old links. |
+| `./init workbench` | Install or reconcile this machine as a Distributed Workbench node. |
 | `./init npmg` | Reinstall common global npm packages. |
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |
 | `./init run <module> <function>` | Run one function from a bootstrap module. |

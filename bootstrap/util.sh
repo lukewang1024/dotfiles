@@ -102,6 +102,8 @@ The platform is always detected; platform arguments are not accepted.
   migrate-xdg - Move ~/.dotfiles to $XDG_CONFIG_HOME/dotfiles, retarget managed
           symlinks, and remove the temporary compatibility path. Supports
           --dry-run and is safe to repeat after an interrupted migration.
+  workbench - Install or reconcile this machine as a Distributed Workbench node.
+          Platform details and peer direction are selected automatically.
   run   - Run arbitrary function in any bootstrap scripts
     `./init run [module] [task]`, below are tasks available:
     `macos backup_automator_stuff`: Backup Automator stuff to Dropbox
