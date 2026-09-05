@@ -47,7 +47,7 @@ mode=${1:-}
 [ -n "$mode" ] || print_usage 2
 
 case "$mode" in
-  basic|core|all|sync|npmg|zinit|kerberos|migrate-xdg|run) ;;
+  basic|core|all|sync|npmg|zinit|kerberos|migrate-xdg|workbench|run) ;;
   *)
     echo "Unknown mode or task: $mode" >&2
     print_usage 2
@@ -60,6 +60,7 @@ if [ "$platform" = unknown ]; then
   print_usage 2
 fi
 export DOTFILES_PLATFORM="$platform"
+source "$partial_dir/workbench.sh"
 
 case "$mode" in
   'basic')
@@ -130,6 +131,14 @@ case "$mode" in
   'migrate-xdg')
     shift
     exec "$util_dir/dotfiles/migrate-xdg" "$@"
+    ;;
+
+  'workbench')
+    setup_distributed_workbench
+    workbench_status=$?
+    if [ "$workbench_status" -ne 0 ]; then
+      exit "$workbench_status"
+    fi
     ;;
 
   'run')

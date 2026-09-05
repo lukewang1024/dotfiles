@@ -1,6 +1,10 @@
 function prepare_windows_env($mode = "core")
 {
   switch ($mode) {
+    'workbench' {
+      setup_distributed_workbench
+      break
+    }
     'core' {
       prepare_windows_env_core
       break
@@ -26,6 +30,22 @@ function prepare_windows_env($mode = "core")
       print_usage
       break
     }
+  }
+}
+
+function setup_distributed_workbench()
+{
+  $cacheBase = $env:XDG_CACHE_HOME
+  if (!$cacheBase) {
+    $cacheBase = Join-Path $env:LOCALAPPDATA 'Cache'
+  }
+  $cacheRoot = Join-Path $cacheBase 'distributed-workbench'
+  New-Item -ItemType Directory -Force -Path $cacheRoot | Out-Null
+  $installer = Join-Path $cacheRoot 'install-from-release.ps1'
+  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/lukewang1024/distributed-workbench/main/scripts/install-from-release.ps1' -OutFile $installer
+  & $installer latest
+  if ($LASTEXITCODE -ne 0) {
+    throw "Distributed Workbench setup failed with status $LASTEXITCODE"
   }
 }
 
@@ -467,7 +487,7 @@ function backup_then_symlink($fromPath, $toPath)
 function print_usage()
 {
   'Usage: .\init.ps1 [mode]'
-  'Modes: core, cli, gui, game, all'
+  'Modes: core, cli, gui, game, all, workbench'
   exit
 }
 
