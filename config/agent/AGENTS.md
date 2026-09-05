@@ -15,6 +15,9 @@ running in an **ordinary** session (a bare agent the human started ad-hoc);
 there, this whole mechanism stays out of the way and you do nothing special
 for cross-repo work.
 
+Use the public `tmux-agent-workbench` command for all workbench operations.
+Legacy command aliases are compatibility-only; do not use them in new calls.
+
 When your work starts touching a **local repo other than the one you started in**:
 
 1. First check whether you're in a **workspace** session — its root (and every
@@ -23,16 +26,16 @@ When your work starts touching a **local repo other than the one you started in*
    own git worktree/branch dedicated to this feature, not just a read-only
    peek at the repo's shared `~/Code` checkout.
    - **Workspace session, repo not yet a member** — run
-     `ws-add <repo-short-name>[:<branch>]` (e.g. `ws-add web-app`) instead of
-     `mux-inspect`. It creates that repo's worktree under this workspace
+     `tmux-agent-workbench add <repo-short-name>[:<branch>]` (e.g. `tmux-agent-workbench add web-app`) instead of
+     `tmux-agent-workbench inspect`. It creates that repo's worktree under this workspace
      (branch defaults to the workspace's own name) *and* folds it in as an
      inspection window in one step. Idempotent — re-running it once the
      worktree exists just re-focuses the window.
    - **Any other session** (an ordinary single-repo session from the `~/Code`
-     pool, or a workspace repo that's already a member) — `mux-inspect
+     pool, or a workspace repo that's already a member) — `tmux-agent-workbench inspect
      <absolute-repo-path>` as below.
-2. Run `mux-inspect <absolute-repo-path>` once (via your shell tool) — either
-   directly (non-workspace case) or as the last step `ws-add` already took care
+2. Run `tmux-agent-workbench inspect <absolute-repo-path>` once (via your shell tool) — either
+   directly (non-workspace case) or as the last step `tmux-agent-workbench add` already took care
    of. In a workbench it adds that repo as an inspection window in the current
    session, detached — it appears without stealing focus. Idempotent and safe
    to re-run. It **self-gates**: in an ordinary (non-workbench) session it
@@ -49,17 +52,29 @@ When your work starts touching a **local repo other than the one you started in*
 
 Do this the moment a repo enters scope, not at the end: the inspection window is
 how the human follows your cross-repo work in real time. None of this needs to
-be decided up front — a workspace can start (`ws-new <feature>`) with zero
+be decided up front — a workspace can start (`tmux-agent-workbench new <feature>`) with zero
 repos attached and grow into whichever ones the task actually turns out to
-touch, one `ws-add` at a time.
+touch, one `tmux-agent-workbench add` at a time.
 
 When a task needs a dev server or another long-running command, keep the default
 inspection window unchanged until the command is actually needed. Then run
-`mux-run-task --name <label> <absolute-repo-path> '<command>'`. It appends a
+`tmux-agent-workbench run --name <label> <absolute-repo-path> -- <command> <args...>`.
+For commands that require shell syntax, use
+`tmux-agent-workbench run --name <label> <absolute-repo-path> --shell '<command>'`.
+It appends a
 detached task pane to that repo's inspection window, starts the command, and
 prints the pane id. Use that pane id with `tmux capture-pane` to inspect output
 or `tmux kill-pane` when the task is no longer needed. Do not run persistent
 project processes in the session-level agent pane.
+
+Missing `TMUX` / `TMUX_PANE` variables do not prove that this is an ordinary
+session: agent tool runners may remove them. The command can recover the
+session through process ancestry. If a PID sandbox hides that too, use
+`WORKBENCH_SESSION=<verified-session-name-or-id>` with the public command.
+For `add`, `WORKBENCH_FEATURE=<verified-workspace-name>` is also supported.
+If tmux socket access is denied, use the agent's permission mechanism to retry
+with socket access. Do not treat a connection or session-resolution failure
+as permission to launch the task in an independent background process.
 
 ## Where generated files go — keep `$HOME` clean, honour XDG
 

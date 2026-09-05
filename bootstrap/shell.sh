@@ -66,7 +66,7 @@ tmux_plugins_setup()
   # cloned by TPM above. Anything tmux itself spawns already gets the plugin's
   # bin dirs on PATH via its `.tmux` entrypoints; the plugin also ships `install`
   # (which enumerates and symlinks its own bins, so this file never tracks the
-  # command list) to cover calling e.g. `ws-new` from a shell tmux never touched.
+  # command list) to cover calling e.g. `tmux-agent-workbench new` from a shell tmux never touched.
   # Run it from the TPM clone once that clone exists.
   local workbench_dir="$plugins_dir/tmux-agent-workbench"
   if [ -x "$workbench_dir/install" ]; then
