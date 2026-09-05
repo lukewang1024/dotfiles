@@ -15,8 +15,10 @@ usage()
   cat <<'EOF'
 usage: ssh-connect [--print] [--tmux | --workbench] [-- SSH_OPTIONS...]
        ssh-connect hosts path
+       ssh-connect hosts list
        ssh-connect hosts discover
        ssh-connect hosts edit [--discover]
+       ssh-connect connect HOST
 
 Pick an alias from the SSH host inventory and connect. `--workbench` uses the
 client-aware tmux-agent-workbench SSH transport so mobile completion and input
@@ -71,6 +73,16 @@ validate_inventory()
     }
     END { exit invalid ? 1 : 0 }
   ' "$1"
+}
+
+effective_hosts()
+{
+  if [ -f "$hosts_file" ]; then
+    validate_inventory "$hosts_file"
+    inventory_hosts "$hosts_file"
+  else
+    discover_hosts
+  fi
 }
 
 edit_hosts()
@@ -140,6 +152,10 @@ if [ "${1:-}" = hosts ]; then
       [ "$#" -eq 1 ] || { usage >&2; exit 2; }
       printf '%s\n' "$hosts_file"
       ;;
+    list)
+      [ "$#" -eq 1 ] || { usage >&2; exit 2; }
+      effective_hosts
+      ;;
     discover)
       [ "$#" -eq 1 ] || { usage >&2; exit 2; }
       discover_hosts
@@ -155,6 +171,16 @@ if [ "${1:-}" = hosts ]; then
     *) usage >&2; exit 2 ;;
   esac
   exit 0
+fi
+
+if [ "${1:-}" = connect ]; then
+  [ "$#" -eq 2 ] || { usage >&2; exit 2; }
+  requested_host=$2
+  effective_hosts | grep -Fxq "$requested_host" || {
+    printf 'ssh-connect: host is not in the effective inventory: %s\n' "$requested_host" >&2
+    exit 2
+  }
+  exec ssh "$requested_host"
 fi
 
 print_only=0
@@ -178,12 +204,7 @@ done
 
 choices_file=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.XXXXXX")
 trap 'rm -f "$choices_file"' EXIT HUP INT TERM
-if [ -f "$hosts_file" ]; then
-  validate_inventory "$hosts_file"
-  inventory_hosts "$hosts_file" >"$choices_file"
-else
-  discover_hosts >"$choices_file"
-fi
+effective_hosts >"$choices_file"
 [ -s "$choices_file" ] || {
   printf '%s\n' 'ssh-connect: no hosts found; run: ssh-connect hosts edit --discover' >&2
   exit 1
