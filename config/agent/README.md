@@ -15,3 +15,10 @@ agents. `./init sync` installs the entrypoints and applies the managed settings.
 
 Do not add credentials, per-project permissions, MCP secrets, or absolute
 machine-specific paths to these shared files.
+
+- `code-ship` and `skills/code-ship` implement repository shipping policies.
+  First use asks for a strategy and saves it under XDG config, never in the
+  repository. Run `agent-skills-install --local-only` to install local skills
+  without downloading other skills. The command requires Python 3; GitHub PRs
+  additionally require authenticated `gh`. Organization-specific providers are
+  installed separately and selected in the machine-local policy.
