@@ -127,7 +127,14 @@ _agent_run_and_remember() {
   # Ctrl-C kills the child TUI and would normally abort the rest of this shell
   # function too. Keep the trap local so cleanup and history insertion still run.
   trap 'interrupted=1' INT
-  command "$executable" "$@"
+  # Refresh the managed clipboard environment for every agent launch, including
+  # existing SSH/tmux shells with an absent or stale DISPLAY. Scope it to the child.
+  if [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env" ] &&
+      [ -x "$HOME/.local/bin/workbench" ]; then
+    command "$HOME/.local/bin/workbench" clipboard exec -- "$executable" "$@"
+  else
+    command "$executable" "$@"
+  fi
   exit_status=$?
   [ "$interrupted" -eq 1 ] && exit_status=130
 
@@ -174,16 +181,7 @@ codex() {
   if [ "$permission_mode" = auto ]; then
     set -- --approve-for-me "$@"
   fi
-  # Resolve the managed clipboard environment on every launch, including from
-  # an existing SSH/tmux shell whose DISPLAY still points at an expired server.
-  # Keep this scoped to the child process so other desktop apps are unaffected.
-  if [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env" ] &&
-      [ -x "$HOME/.local/bin/workbench" ]; then
-    _agent_run_and_remember codex "$HOME/.local/bin/workbench" "$resume_prefix" "$HOME/.codex/sessions" \
-      clipboard exec -- "$HOME/.local/bin/codex" "$@"
-  else
-    _agent_run_and_remember codex "$HOME/.local/bin/codex" "$resume_prefix" "$HOME/.codex/sessions" "$@"
-  fi
+  _agent_run_and_remember codex "$HOME/.local/bin/codex" "$resume_prefix" "$HOME/.codex/sessions" "$@"
 }
 claude() {
   local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'
@@ -224,12 +222,16 @@ traex() {
   _agent_run_and_remember traex "$HOME/.local/bin/traex" "$resume_prefix" "$HOME/.trae/cli/sessions" "$@"
 }
 opencode() {
-  local arg has_auto=0
+  local arg has_auto=0 executable
+  executable=$(whence -p opencode) || {
+    print -u2 -- 'opencode: executable not found in PATH'
+    return 127
+  }
   for arg in "$@"; do
     [ "$arg" = "--auto" ] && has_auto=1
   done
   if [ "$has_auto" -eq 0 ]; then
     set -- --auto "$@"
   fi
-  _agent_run_and_remember opencode /opt/homebrew/bin/opencode 'opencode --auto --session' '' "$@"
+  _agent_run_and_remember opencode "$executable" 'opencode --auto --session' '' "$@"
 }
