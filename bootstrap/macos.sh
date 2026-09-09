@@ -318,9 +318,11 @@ set_macos_configs()
   apply_nix_app_configs
 
   # Hammerspoon
-  sync_config_repo ~/.config/hammerspoon https://github.com/ashfinal/awesome-hammerspoon
-  backup_then_symlink "$config_dir/hammerspoon/private" ~/.config/hammerspoon/private
-  defaults write org.hammerspoon.Hammerspoon MJConfigFile "$XDG_CONFIG_HOME/hammerspoon/init.lua"
+  mkdir -p "$XDG_CONFIG_HOME/hammerspoon"
+  backup_then_symlink "$config_dir/hammerspoon/private" "$XDG_CONFIG_HOME/hammerspoon/private"
+  backup_then_symlink "$config_dir/hammerspoon/init.lua" "$XDG_CONFIG_HOME/hammerspoon/init.lua"
+  backup_then_symlink "$config_dir/hammerspoon/init.lua" "$XDG_CONFIG_HOME/hammerspoon/workbench-init.lua"
+  defaults write org.hammerspoon.Hammerspoon MJConfigFile "$XDG_CONFIG_HOME/hammerspoon/workbench-init.lua"
 
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
   backup_then_symlink "$config_dir/ranger/macos" ~/.config/ranger
