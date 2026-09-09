@@ -22,3 +22,11 @@ machine-specific paths to these shared files.
   without downloading other skills. The command requires Python 3; GitHub PRs
   additionally require authenticated `gh`. Organization-specific providers are
   installed separately and selected in the machine-local policy.
+
+- `agent-skills-install` also installs the public interview skills from
+  `mattpocock/skills` for Claude Code, Codex, and OpenCode. Install the complete
+  bundle: `grill-me` delegates to `grilling`; `grill-with-docs` delegates to
+  `grilling` and `domain-modeling` (including its document templates). The
+  installer checks all four skills before skipping an existing installation.
+  Keep their names in `skills-keep.txt` so `agent-skills-prune --apply` preserves
+  the dependencies. Run `agent-skills-install` to repair an incomplete bundle.

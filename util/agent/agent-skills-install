@@ -37,11 +37,20 @@ if [ ! -e "$agent_command_target" ] && [ ! -L "$agent_command_target" ]; then
 fi
 [ "${1:-}" != --local-only ] || exit 0
 
-if [ -f "$HOME/.agents/skills/grill-me/SKILL.md" ] &&
-  [ -f "$HOME/.agents/skills/grill-with-docs/SKILL.md" ] &&
-  [ -f "$HOME/.claude/skills/grill-me/SKILL.md" ] &&
-  [ -f "$HOME/.claude/skills/grill-with-docs/SKILL.md" ]; then
-  echo 'agent-skills-install: grill-me and grill-with-docs already installed'
+# The two entry skills delegate to grilling and domain-modeling. Check the
+# complete bundle before skipping. Codex and OpenCode use the universal
+# ~/.agents/skills directory; the installer links Claude Code separately.
+agent_public_skills='grill-me grill-with-docs grilling domain-modeling'
+agent_public_complete=true
+for agent_skill_dir in "$HOME/.agents/skills" "$HOME/.claude/skills"; do
+  for agent_skill_name in $agent_public_skills; do
+    if [ ! -f "$agent_skill_dir/$agent_skill_name/SKILL.md" ]; then
+      agent_public_complete=false
+    fi
+  done
+done
+if [ "$agent_public_complete" = true ]; then
+  echo 'agent-skills-install: public skill bundle already installed'
   exit 0
 fi
 
@@ -53,5 +62,5 @@ fi
 npx --yes skills@latest add mattpocock/skills \
   --global \
   --agent claude-code codex opencode \
-  --skill grill-me grill-with-docs \
+  --skill grill-me grill-with-docs grilling domain-modeling \
   --yes
