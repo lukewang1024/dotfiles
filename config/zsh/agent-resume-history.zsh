@@ -174,7 +174,16 @@ codex() {
   if [ "$permission_mode" = auto ]; then
     set -- --approve-for-me "$@"
   fi
-  _agent_run_and_remember codex "$HOME/.local/bin/codex" "$resume_prefix" "$HOME/.codex/sessions" "$@"
+  # Resolve the managed clipboard environment on every launch, including from
+  # an existing SSH/tmux shell whose DISPLAY still points at an expired server.
+  # Keep this scoped to the child process so other desktop apps are unaffected.
+  if [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env" ] &&
+      [ -x "$HOME/.local/bin/workbench" ]; then
+    _agent_run_and_remember codex "$HOME/.local/bin/workbench" "$resume_prefix" "$HOME/.codex/sessions" \
+      clipboard exec -- "$HOME/.local/bin/codex" "$@"
+  else
+    _agent_run_and_remember codex "$HOME/.local/bin/codex" "$resume_prefix" "$HOME/.codex/sessions" "$@"
+  fi
 }
 claude() {
   local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'
