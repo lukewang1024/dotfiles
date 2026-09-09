@@ -36,7 +36,11 @@ tmux_config_setup()
   done < "$sesh_template" > "$sesh_dir/sesh.toml.tmp"
   mv "$sesh_dir/sesh.toml.tmp" "$sesh_dir/sesh.toml"
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
-  backup_then_symlink "$util_dir/shell/tmux-host-metrics" "$bin_dir/tmux-host-metrics"
+  # Host metrics now ship with tmux-agent-workbench; remove only our old link.
+  if [ -L "$bin_dir/tmux-host-metrics" ] &&
+      [ "$(readlink "$bin_dir/tmux-host-metrics")" = "$util_dir/shell/tmux-host-metrics" ]; then
+    rm "$bin_dir/tmux-host-metrics"
+  fi
   # tmux-autoreload launcher (deps-satisfied wrapper, sourced from tmux.conf)
   backup_then_symlink "$util_dir/shell/tmux-autoreload-launch" "$bin_dir/tmux-autoreload-launch"
   backup_then_symlink "$util_dir/shell/tmux-workbench-update" "$bin_dir/tmux-workbench-update"
