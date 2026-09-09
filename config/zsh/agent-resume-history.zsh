@@ -203,22 +203,19 @@ claude() {
   _agent_run_and_remember claude "$HOME/.local/bin/claude" "$resume_prefix" '' "$@"
 }
 traex() {
-  local arg permission_mode=auto resume_prefix='traex --permission-mode auto resume'
+  # TraeX persists its approval reviewer in the session. Injecting a default
+  # permission mode during resume conflicts with that persisted configuration.
+  local arg resume_prefix='traex resume'
   for arg in "$@"; do
     case "$arg" in
       -y|--yolo|--dangerously-bypass-approvals-and-sandbox)
-        permission_mode=explicit
         resume_prefix='traex --yolo resume'
         ;;
       --permission-mode|--permission-mode=*)
-        permission_mode=explicit
         resume_prefix='traex resume'
         ;;
     esac
   done
-  if [ "$permission_mode" = auto ]; then
-    set -- --permission-mode auto "$@"
-  fi
   _agent_run_and_remember traex "$HOME/.local/bin/traex" "$resume_prefix" "$HOME/.trae/cli/sessions" "$@"
 }
 opencode() {
