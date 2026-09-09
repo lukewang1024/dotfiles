@@ -45,6 +45,8 @@ visualize
 code-ship
 grill-me
 grill-with-docs
+grilling
+domain-modeling
 
 # Public lark-cli skills that are useful globally.
 lark-shared
