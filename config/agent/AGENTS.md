@@ -61,10 +61,14 @@ inspection window unchanged until the command is actually needed. Then run
 `tmux-agent-workbench run --name <label> <absolute-repo-path> -- <command> <args...>`.
 For commands that require shell syntax, use
 `tmux-agent-workbench run --name <label> <absolute-repo-path> --shell '<command>'`.
-It appends a
-detached task pane to that repo's inspection window, starts the command, and
-prints the pane id. Use that pane id with `tmux capture-pane` to inspect output
-or `tmux kill-pane` when the task is no longer needed. Do not run persistent
+It creates or reuses a detached task pane in that repo's inspection window
+and prints the pane id. Use stable names such as `dev`, `build`, and `test`;
+rerunning the same name replaces the previous live or dead task in the same
+pane and retains only the latest output. Use different names only when tasks
+must coexist. Temporary worktrees share their direct workspace member's window
+while commands run in the requested worktree directory. Use that pane id with
+`tmux capture-pane` to inspect output or `tmux kill-pane` when the task is no
+longer needed. Do not run persistent
 project processes in the session-level agent pane.
 
 Missing `TMUX` / `TMUX_PANE` variables do not prove that this is an ordinary

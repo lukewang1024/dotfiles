@@ -208,6 +208,7 @@ util_setup()
   backup_then_symlink "$util_dir/agent/codex-settings-apply" "$bin_dir/codex-settings-apply"
   backup_then_symlink "$util_dir/agent/codex-unlock" "$bin_dir/codex-unlock"
   backup_then_symlink "$util_dir/agent/agent-skills-install" "$bin_dir/agent-skills-install"
+  backup_then_symlink "$util_dir/agent/code-ship" "$bin_dir/code-ship"
   backup_then_symlink "$util_dir/agent/agent-skills-prune" "$bin_dir/agent-skills-prune"
   backup_then_symlink "$util_dir/agent/home-dotdir-prune" "$bin_dir/home-dotdir-prune"
   backup_then_symlink "$util_dir/agent/agent-hooks-prune" "$bin_dir/agent-hooks-prune"
