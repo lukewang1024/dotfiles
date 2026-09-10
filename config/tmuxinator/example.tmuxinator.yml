@@ -22,14 +22,17 @@
 #   +----------------------+     +----------------------+
 #     ^ startup lands here          ^ one per repo in the task
 #
-# The task GROWS by accretion — fold in more repos as inspection windows:
+# A Workspace task GROWS by accretion — fold in more repos as inspection windows:
 #   - manually:  prefix+G  (pick a repo from the pool)
-#   - the agent: it runs `tmux-agent-workbench inspect <path>` itself when its work reaches into
-#     another repo. Put this in the repo's CLAUDE.md / AGENTS.md (codex + opencode
-#     read AGENTS.md too) so all three agents follow it:
+#   - the agent: in a Workspace session, it runs `tmux-agent-workbench add <repo>`
+#     when its work reaches into a repo that is not yet a workspace member. Put
+#     this in the repo's CLAUDE.md / AGENTS.md (codex + opencode read AGENTS.md
+#     too) so all three agents follow it. In an ordinary session, it does not
+#     run any inspect/add command:
 #
-#       When your work starts touching another local repo, run
-#       `tmux-agent-workbench inspect <abs-repo-path>` once so it appears as an inspection window.
+#       When your work starts touching another local repo in a Workspace task,
+#       run `tmux-agent-workbench add <repo-short-name>` once so its worktree and
+#       inspection window are created. Do not run this in an ordinary session.
 #       Then bring it into your own write scope: Claude → `/add-dir <path>`;
 #       codex → relaunch with `--add-dir <path>` if you must write there (reads
 #       already work); opencode → it will prompt on first external access.

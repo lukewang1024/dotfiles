@@ -1,0 +1,41 @@
+#!/bin/sh
+# Kill the current tmux session without exposing tmux-sessionist's nested
+# run-shell quoting bug. With no argument this shows the confirmation prompt;
+# --confirmed is used only by the command queued after a positive answer.
+
+set -u
+
+script_name=$(basename "$0")
+case ${1:-} in
+  '')
+    current_name=$(tmux display-message -p '#{session_name}') || exit 1
+    tmux confirm-before -p "kill-session ${current_name}? (y/n)" \
+      "run-shell \"$0 --confirmed\"" || true
+    exit 0
+    ;;
+  --confirmed)
+    [ $# -eq 1 ] || {
+      printf 'usage: %s [--confirmed]\n' "$script_name" >&2
+      exit 2
+    }
+    ;;
+  *)
+    printf 'usage: %s [--confirmed]\n' "$script_name" >&2
+    exit 2
+    ;;
+esac
+
+session_id=$(tmux display-message -p '#{session_id}') || exit 1
+session_count=$(tmux list-sessions 2>/dev/null | wc -l | tr -d ' ')
+last_session=$(tmux display-message -p '#{client_last_session}') || last_session=
+current_session=$(tmux display-message -p '#{client_session}') || current_session=
+
+if [ "$session_count" -gt 1 ]; then
+  if [ -z "$last_session" ] || [ "$last_session" = "$current_session" ]; then
+    tmux switch-client -n
+  else
+    tmux switch-client -l
+  fi
+fi
+
+tmux kill-session -t "$session_id"
