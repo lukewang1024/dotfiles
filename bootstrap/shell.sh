@@ -36,6 +36,10 @@ tmux_config_setup()
   done < "$sesh_template" > "$sesh_dir/sesh.toml.tmp"
   mv "$sesh_dir/sesh.toml.tmp" "$sesh_dir/sesh.toml"
   backup_then_symlink "$util_dir/shell/sesh-connect" "$bin_dir/sesh-connect"
+  # Override tmux-sessionist's prefix+X prompt. Its nested tmux command
+  # quoting treats a session id such as $0 as a shell positional parameter and
+  # can report a spurious status 1 after the prompt.
+  backup_then_symlink "$util_dir/shell/tmux-kill-session" "$bin_dir/tmux-kill-session"
   # Host metrics now ship with tmux-agent-workbench; remove only our old link.
   if [ -L "$bin_dir/tmux-host-metrics" ] &&
       [ "$(readlink "$bin_dir/tmux-host-metrics")" = "$util_dir/shell/tmux-host-metrics" ]; then

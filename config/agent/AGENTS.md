@@ -26,22 +26,20 @@ When your work starts touching a **local repo other than the one you started in*
    own git worktree/branch dedicated to this feature, not just a read-only
    peek at the repo's shared `~/Code` checkout.
    - **Workspace session, repo not yet a member** — run
-     `tmux-agent-workbench add <repo-short-name>[:<branch>]` (e.g. `tmux-agent-workbench add web-app`) instead of
-     `tmux-agent-workbench inspect`. It creates that repo's worktree under this workspace
-     (branch defaults to the workspace's own name) *and* folds it in as an
-     inspection window in one step. Idempotent — re-running it once the
-     worktree exists just re-focuses the window.
-   - **Any other session** (an ordinary single-repo session from the `~/Code`
-     pool, or a workspace repo that's already a member) — `tmux-agent-workbench inspect
-     <absolute-repo-path>` as below.
-2. Run `tmux-agent-workbench inspect <absolute-repo-path>` once (via your shell tool) — either
-   directly (non-workspace case) or as the last step `tmux-agent-workbench add` already took care
-   of. In a workbench it adds that repo as an inspection window in the current
-   session, detached — it appears without stealing focus. Idempotent and safe
-   to re-run. It **self-gates**: in an ordinary (non-workbench) session it
-   simply no-ops, so you can call it unconditionally without worrying about
-   which kind of session you are in — no need to detect the session type
-   yourself.
+   `tmux-agent-workbench add <repo-short-name>[:<branch>]` (e.g. `tmux-agent-workbench add web-app`) instead of
+   `tmux-agent-workbench inspect`. It creates that repo's worktree under this workspace
+   (branch defaults to the workspace's own name) *and* folds it in as an
+   inspection window in one step. Idempotent — re-running it once the
+   worktree exists just re-focuses the window.
+   - **Workspace session, repo already a member** — do not run `inspect`; its
+     inspection window already exists.
+   - **Ordinary session** (including a checkout from the `~/Code` pool) — do
+     not run `inspect`, `add`, or any other workbench window command. Work on
+     the repo without changing the user's tmux layout; do not use
+     `inspect --force` as a workaround.
+2. In the first case only, let `tmux-agent-workbench add` create the worktree
+   and inspection window. If the workspace repo is already a member, there is
+   no inspection command to run.
 3. Bring the repo into your own **write** scope (the mechanism differs per agent):
    - **Claude Code** — `/add-dir <path>` (effective immediately).
    - **Codex** — you can already read it; to write there the session must be
@@ -50,11 +48,12 @@ When your work starts touching a **local repo other than the one you started in*
    - **opencode** — approve the `external_directory` prompt on first access, or
      declare the path under `permission.external_directory` / `references`.
 
-Do this the moment a repo enters scope, not at the end: the inspection window is
-how the human follows your cross-repo work in real time. None of this needs to
-be decided up front — a workspace can start (`tmux-agent-workbench new <feature>`) with zero
-repos attached and grow into whichever ones the task actually turns out to
-touch, one `tmux-agent-workbench add` at a time.
+Do this the moment a repo enters scope, not at the end: in a Workspace task the
+inspection window is how the human follows your work in real time. None of this
+needs to be decided up front — a workspace can start (`tmux-agent-workbench new
+<feature>`) with zero repos attached and grow into whichever ones the task
+actually turns out to touch, one `tmux-agent-workbench add` at a time. An
+ordinary session never opts into this window-per-repo behavior implicitly.
 
 When a task needs a dev server or another long-running command, keep the default
 inspection window unchanged until the command is actually needed. Then run
