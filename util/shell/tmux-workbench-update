@@ -5,6 +5,15 @@
 
 set -eu
 
+log_file=$(mktemp "${TMPDIR:-/tmp}/tmux-workbench-update.XXXXXX")
+
+cleanup()
+{
+  rm -f "$log_file"
+}
+
+trap cleanup 0 1 2 3 15
+
 expand_home()
 {
   case $1 in
@@ -44,28 +53,44 @@ repo_label()
   basename "$1"
 }
 
-require_clean()
+require_repo()
 {
   repo=$1
   [ -d "$repo" ] || die "checkout is missing: $repo"
   [ "$(git -C "$repo" rev-parse --is-inside-work-tree 2>/dev/null)" = true ] ||
     die "not a Git checkout: $repo"
-  [ -z "$(git -C "$repo" status --porcelain)" ] ||
-    die "$(repo_label "$repo") has local changes; commit or stash them first"
+}
+
+run_quiet()
+{
+  if "$@" >"$log_file" 2>&1; then
+    return 0
+  fi
+
+  cat "$log_file" >&2
+  return 1
 }
 
 fetch_repo()
 {
   repo=$1
-  printf 'Fetching %s...\n' "$(repo_label "$repo")"
-  git -C "$repo" fetch --quiet --prune
+  run_quiet git -C "$repo" fetch --quiet --prune ||
+    die "failed to fetch $(repo_label "$repo")"
 }
 
 update_repo()
 {
   repo=$1
-  printf 'Updating %s...\n' "$(repo_label "$repo")"
-  git -C "$repo" pull --ff-only
+  before=$(git -C "$repo" rev-parse HEAD)
+  run_quiet git -C "$repo" pull --ff-only ||
+    die "failed to update $(repo_label "$repo")"
+  after=$(git -C "$repo" rev-parse HEAD)
+
+  if [ "$before" = "$after" ]; then
+    printf '%s: up to date\n' "$(repo_label "$repo")"
+  else
+    printf '%s: updated\n' "$(repo_label "$repo")"
+  fi
 }
 
 report_repo()
@@ -74,8 +99,34 @@ report_repo()
   upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null) ||
     die "$(repo_label "$repo") has no upstream branch"
   counts=$(git -C "$repo" rev-list --left-right --count "HEAD...$upstream")
+  ahead=$(printf '%s\n' "$counts" | awk '{print $1}')
   behind=$(printf '%s\n' "$counts" | awk '{print $2}')
-  printf '%-24s %s commit(s) available\n' "$(repo_label "$repo")" "$behind"
+
+  if [ -n "$(git -C "$repo" status --porcelain)" ]; then
+    printf '%s: warning: local changes\n' "$(repo_label "$repo")" >&2
+  elif [ "$ahead" -gt 0 ] && [ "$behind" -gt 0 ]; then
+    printf '%s: diverged (+%s/-%s)\n' "$(repo_label "$repo")" "$ahead" "$behind"
+  elif [ "$ahead" -gt 0 ]; then
+    printf '%s: %s local commit(s) ahead\n' "$(repo_label "$repo")" "$ahead"
+  elif [ "$behind" -gt 0 ]; then
+    printf '%s: %s update(s) available\n' "$(repo_label "$repo")" "$behind"
+  else
+    printf '%s: up to date\n' "$(repo_label "$repo")"
+  fi
+}
+
+workbench_has_unreleased_changes()
+{
+  repo=$1
+  upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}')
+  ahead=$(git -C "$repo" rev-list --count "$upstream..HEAD")
+
+  [ -n "$(git -C "$repo" status --porcelain)" ] || [ "$ahead" -gt 0 ]
+}
+
+warn_workbench_unreleased()
+{
+  printf '%s\n' 'tmux-agent-workbench: warning: local/unreleased changes detected; keeping checkout and installing the latest GitHub release' >&2
 }
 
 mode=update
@@ -88,42 +139,49 @@ esac
 
 command -v git >/dev/null 2>&1 || die 'git is required'
 
-# Check every checkout before changing any of them. This avoids a half-updated
-# stack when one TPM plugin contains an experiment or other local work.
+# Check every checkout before changing any of them. The workbench checkout is
+# allowed to contain experiments: those are reported and never built here.
 for repo in "$dotfiles_dir" "$workbench_dir" "$theme_dir"; do
-  require_clean "$repo"
+  require_repo "$repo"
+done
+
+printf '%s\n' 'tmux-workbench-update: fetching repositories'
+for repo in "$dotfiles_dir" "$workbench_dir" "$theme_dir"; do
+  fetch_repo "$repo"
 done
 
 if [ "$mode" = check ]; then
+  printf '%s\n' 'tmux-workbench-update: checking updates'
   for repo in "$dotfiles_dir" "$workbench_dir" "$theme_dir"; do
-    fetch_repo "$repo"
     report_repo "$repo"
   done
   exit 0
 fi
 
+printf '%s\n' 'tmux-workbench-update: updating repositories'
 update_repo "$dotfiles_dir"
-update_repo "$workbench_dir"
+if workbench_has_unreleased_changes "$workbench_dir"; then
+  warn_workbench_unreleased
+else
+  update_repo "$workbench_dir"
+fi
 update_repo "$theme_dir"
 
-# Reconcile links/config after dotfiles changes, then refresh commands exported
-# by the workbench plugin. Both operations are idempotent.
-"$dotfiles_dir/init" sync
+printf '%s\n' 'tmux-workbench-update: syncing dotfiles'
+run_quiet "$dotfiles_dir/init" sync || die 'failed to sync dotfiles'
+printf '%s\n' 'tmux-workbench-update: dotfiles synced'
+
 if [ -x "$workbench_dir/install" ]; then
-  # A source update does not necessarily bump Cargo.toml's version. Build first
-  # when Cargo is available so install cannot mistake an older same-version
-  # binary for the current checkout.
-  if command -v cargo >/dev/null 2>&1; then
-    cargo build --quiet --manifest-path "$workbench_dir/Cargo.toml" \
-      --release --bin tmux-agent-workbench
-  fi
-  "$workbench_dir/install" "$bin_dir"
+  printf '%s\n' 'tmux-workbench-update: installing latest GitHub release'
+  run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 "$workbench_dir/install" "$bin_dir" ||
+    die 'failed to install the latest tmux-agent-workbench GitHub release'
 fi
 
 # Existing daemon and sidebar processes keep the old executable mapped after
 # it is replaced. Stop the daemon, reload the plugin, and respawn sidebar panes
 # in place so their layout and window membership are preserved.
 if command -v tmux >/dev/null 2>&1 && tmux list-sessions >/dev/null 2>&1; then
+  printf '%s\n' 'tmux-workbench-update: reloading active tmux server'
   workbench_command=$bin_dir/tmux-agent-workbench
   if [ -x "$workbench_command" ]; then
     tmux run-shell "\"$workbench_command\" daemon stop >/dev/null 2>&1 || true"
@@ -142,7 +200,7 @@ if command -v tmux >/dev/null 2>&1 && tmux list-sessions >/dev/null 2>&1; then
   if [ -x "$theme_dir/tmux-adaptive-theme.tmux" ]; then
     "$theme_dir/tmux-adaptive-theme.tmux"
   fi
-  printf '%s\n' 'Reloaded the active tmux server.'
+  printf '%s\n' 'tmux-workbench-update: active tmux server reloaded'
 fi
 
-printf '%s\n' 'tmux workbench stack is up to date.'
+printf '%s\n' 'tmux-workbench-update: complete'
