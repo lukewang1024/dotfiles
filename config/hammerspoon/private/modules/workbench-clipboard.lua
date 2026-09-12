@@ -13,12 +13,13 @@ end
 local function reason(message)
   message = tostring(message or '')
   if message:find('CLIPBOARD_UNSUPPORTED', 1, true) then return '节点尚未安装图片剪贴板支持' end
-  if message:find('NO_IMAGE', 1, true) then return '剪贴板中没有图片' end
+  if message:find('NO_IMAGE', 1, true) then return '本机剪贴板没有可传输的图片，请先截图或复制图片' end
   if message:find('CLIPBOARD_TOO_LARGE', 1, true) then return '图片过大（像素数据上限 16 MiB）' end
   if message:find('CLIPBOARD_UNAVAILABLE', 1, true) then return '远端剪贴板未就绪' end
   if message:find('TARGET_UNAVAILABLE', 1, true) then return '目标设备未连接，请重新选择' end
   if message:find('TARGET_CHECK_TIMEOUT', 1, true) then return '目标检查超时，图片尚未发送' end
-  if message:find('RPC_TIMEOUT', 1, true) then return '等待超时，结果未确认；不会自动重试' end
+  if message:find('CLIPBOARD_UNCONFIRMED', 1, true) then return '远端返回但未确认写入，结果未知；请先检查目标剪贴板' end
+  if message:find('RPC_TIMEOUT', 1, true) then return '等待远端响应超时，结果未知；请先检查目标剪贴板，不要立即重传' end
   if message:find('EXECUTOR_UNAVAILABLE', 1, true) then return '远端执行服务不可用' end
   if message:find('unrecognized subcommand', 1, true) then return '本机 workbench 尚未安装图片同步版本' end
   return (message:gsub('[\r\n]+', ' ')):sub(1, 240)

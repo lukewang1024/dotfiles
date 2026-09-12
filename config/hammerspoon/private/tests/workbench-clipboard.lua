@@ -73,12 +73,12 @@ completeTargets({ready})
 module.hotkey.release()
 local failed=tasks[#tasks]
 failed.callback(1,{ok=false,error={message='NO_IMAGE'}},'')
-assert(not module.busy and module.status().lastError=='剪贴板中没有图片')
+assert(not module.busy and module.status().lastError=='本机剪贴板没有可传输的图片，请先截图或复制图片')
 completeTargets({ready})
 local before=#tasks
 module.pushSelected();assert(#tasks==before+1)
 tasks[#tasks].callback(1,{},'RPC_TIMEOUT')
-assert(not module.busy and hud.error:find('不会自动重试',1,true))
+assert(not module.busy and hud.error:find('不要立即重传',1,true))
 completeTargets({old})
 before=#tasks
 module.pushSelected()

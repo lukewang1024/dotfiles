@@ -13,8 +13,16 @@ function M.new()
     local complete = self.stage=='success'
     local failed = self.stage=='failed'
     local label = complete and '图片已传好' or (failed and '图片传输失败' or '正在传图片…')
-    if failed and tostring(self.error):find('超时',1,true) then
-      label=tostring(self.error):find('尚未发送',1,true) and '连接超时，尚未发送' or '传输超时，未确认'
+    if failed then
+      local error=tostring(self.error)
+      if error:find('没有可传输的图片',1,true) or error:find('NO_IMAGE',1,true) then
+        label='剪贴板中没有图片'
+      elseif error:find('尚未发送',1,true) then
+        label='连接超时，图片尚未发送'
+      elseif error:find('未确认写入',1,true) or error:find('结果未知',1,true)
+          or error:find('超时',1,true) then
+        label='远端未确认，结果未知'
+      end
     end
     local elements = {
       {type='rectangle',action='fill',fillColor={hex='#272931'},roundedRectRadii={xRadius=12,yRadius=12}},
