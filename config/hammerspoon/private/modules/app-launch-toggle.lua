@@ -53,7 +53,7 @@ setAppToggles(hyper, {
   f = 'org.mozilla.firefox',                      -- Firefox
   -- g = '',
   -- h: for arrows
-  i = 'Cloud IDE',
+  i = 'Cloud Agent Box',
   -- j: for arrows
   -- k: for arrows
   -- l: for arrows
@@ -103,7 +103,7 @@ setAppToggles(hyperAlt, {
   -- f = '',
   -- g = '',
   -- h: for mouse move
-  -- i = '',
+  i = 'Cloud IDE',
   -- j: for mouse move
   -- k: for mouse move
   -- l: for mouse move
