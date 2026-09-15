@@ -40,10 +40,13 @@ detect() {
 
 apply() {
    want=$(detect)
+   changed=no
    # state file (atomic) -> nvim libuv watcher + vim FocusGained
    mkdir -p "$(dirname "$STATE")" 2>/dev/null || true
    if [ ! -f "$STATE" ] || [ "$(cat "$STATE" 2>/dev/null)" != "$want" ]; then
-      printf '%s\n' "$want" > "$STATE.$$" && mv "$STATE.$$" "$STATE"
+      if printf '%s\n' "$want" > "$STATE.$$" && mv "$STATE.$$" "$STATE"; then
+         changed=yes
+      fi
    fi
    # Alacritty has no native OS-theme following.
    if command -v alacritty-appearance >/dev/null 2>&1; then
@@ -62,7 +65,9 @@ apply() {
    # switch — and since every terminal here follows the OS, OS-truth == terminal-
    # truth. theme-push-remotes self-gates on ~/.ssh/tmux-*.sock (no-op with no
    # devbox attached) and bounds each box, so this can't stall the daemon.
-   if command -v theme-push-remotes >/dev/null 2>&1; then
+   # macOS can report an appearance update while remaining dark (or light).
+   # Only relay a newly published value; an absent state counts as initialization.
+   if [ "$changed" = yes ] && command -v theme-push-remotes >/dev/null 2>&1; then
       theme-push-remotes "$want" || true
    fi
 }
