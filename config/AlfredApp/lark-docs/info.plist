@@ -21,6 +21,32 @@
 				<false/>
 			</dict>
 		</array>
+		<key>ET000000-0000-0000-0000-000000000008</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>SF000000-0000-0000-0000-000000000001</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>ET000000-0000-0000-0000-000000000009</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>RS000000-0000-0000-0000-000000000005</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>RS000000-0000-0000-0000-000000000005</key>
 		<array>
 			<dict>
@@ -179,7 +205,7 @@ exec node search.mjs "$1"</string>
 				<integer>102</integer>
 				<key>script</key>
 				<string>export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-node auth.mjs</string>
+node auth.mjs "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -218,10 +244,8 @@ node auth.mjs</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>2</integer>
-				<key>passinputasargument</key>
-				<false/>
+				<key>availableviaurlhandler</key>
+				<true/>
 				<key>triggerid</key>
 				<string>login</string>
 			</dict>
@@ -229,6 +253,36 @@ node auth.mjs</string>
 			<string>alfred.workflow.trigger.external</string>
 			<key>uid</key>
 			<string>ET000000-0000-0000-0000-000000000007</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>availableviaurlhandler</key>
+				<true/>
+				<key>triggerid</key>
+				<string>login-profiles</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>ET000000-0000-0000-0000-000000000008</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>availableviaurlhandler</key>
+				<true/>
+				<key>triggerid</key>
+				<string>login-import</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>ET000000-0000-0000-0000-000000000009</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -240,13 +294,13 @@ node auth.mjs</string>
 
 ↩ open · ⌘↩ copy link · ⌥↩ copy title + link
 
-When the session has expired, `ld` shows a 'Sign in to Lark' row — ↩ on it
-opens Chrome to refresh the cookie jar. There is no separate login keyword;
-the row appears exactly when it is needed. (It fires the `login` External
-Trigger, reachable as alfred://runtrigger/com.lukew.larkdocs/login/ .)
+When the session has expired, `ld` shows the installed Chromium browsers. Pick
+a browser, then a Profile, and ↩ imports that profile's Lark cookie jar. There
+is no separate login keyword; the chooser appears exactly when it is needed.
+The dedicated browser fallback remains available if no browser Profile exists.
 
 Source of truth: ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/AlfredApp/lark-docs (this directory is a
-symlink into it). Needs Homebrew node and Google Chrome.</string>
+symlink into it). Needs Homebrew node and a supported Chromium-based browser.</string>
 	<key>uidata</key>
 	<dict>
 		<key>CP000000-0000-0000-0000-000000000003</key>

@@ -3,27 +3,39 @@
 //
 //   node auth.mjs
 //
-// Launches a dedicated-profile Chrome on a CDP port, opens the Feishu docs
+// Launches a dedicated profile in a supported Chromium browser on a CDP port, opens the Feishu docs
 // home, and waits until an authenticated session is available (scan the QR
 // code the first time — the profile persists, so later refreshes are silent).
 // Then it extracts the cookie jar via CDP and writes it to ~/.config/lark-alfred/cookies.
 import { spawn, execSync } from 'node:child_process';
-import { writeFileSync, chmodSync, existsSync } from 'node:fs';
+import { writeFileSync, chmodSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { ensureDirs, COOKIE_FILE, PROFILE_DIR, HOST, fetchRecent, AuthError } from './lib.mjs';
+import {
+  findBrowserExecutable,
+  readBrowserCookieJar,
+  readBrowserCookieJars,
+} from './chrome-cookies.mjs';
 
 const PORT = Number(process.env.LARK_CDP_PORT || 9333);
 const TIMEOUT_MS = 180_000;
 
-const CHROME_CANDIDATES = [
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
-  '/Applications/Chromium.app/Contents/MacOS/Chromium',
-];
+function parseRequest(request) {
+  const [type, browser, encodedProfile] = request.split('|');
+  if (type === 'browser' && browser) return { type, browser };
+  if (type === 'profile' && browser && encodedProfile) {
+    return { type, browser, profile: decodeURIComponent(encodedProfile) };
+  }
+  return { type: request || 'fallback' };
+}
 
-function findChrome() {
-  for (const p of CHROME_CANDIDATES) if (existsSync(p)) return p;
-  throw new Error('Google Chrome not found in /Applications');
+async function importSelectedProfile(browser, profile) {
+  const jar = readBrowserCookieJar(browser, profile);
+  if (!jar) throw new Error(`No Lark session found in ${browser} profile ${profile}`);
+  await fetchRecent(jar, 1);
+  writeFileSync(COOKIE_FILE, jar, { mode: 0o600 });
+  chmodSync(COOKIE_FILE, 0o600);
+  process.stdout.write(`Lark Docs: imported the ${browser} session (${profile}).`);
 }
 
 async function cdp(method, params = {}) {
@@ -70,9 +82,32 @@ async function waitForCdp() {
 
 async function main() {
   ensureDirs();
-  const chrome = findChrome();
+  const request = parseRequest(process.argv[2] || 'fallback');
+
+  if (request.type === 'profile') {
+    await importSelectedProfile(request.browser, request.profile);
+    return;
+  }
+
+  // Keep direct CLI invocation useful: try existing browser sessions before
+  // falling back to the persistent dedicated profile.
+  if (request.type === 'fallback') {
+    for (const { browser, profile, jar } of readBrowserCookieJars()) {
+      try {
+        await fetchRecent(jar, 1);
+        writeFileSync(COOKIE_FILE, jar, { mode: 0o600 });
+        chmodSync(COOKIE_FILE, 0o600);
+        process.stdout.write(`Lark Docs: imported the active ${browser} session (${profile}).`);
+        return;
+      } catch (e) {
+        if (!(e instanceof AuthError)) process.stderr.write(`  ${browser} profile ${profile}: ${e.message}\n`);
+      }
+    }
+  }
+
+  const { name: browser, executable } = findBrowserExecutable();
   const child = spawn(
-    chrome,
+    executable,
     [
       `--remote-debugging-port=${PORT}`,
       `--user-data-dir=${PROFILE_DIR}`,
@@ -112,7 +147,7 @@ async function main() {
   writeFileSync(COOKIE_FILE, jar, { mode: 0o600 });
   chmodSync(COOKIE_FILE, 0o600);
   closeChrome();
-  process.stdout.write('Lark Docs: signed in. Cookies saved.');
+  process.stdout.write(`Lark Docs: signed in with ${browser}. Cookies saved.`);
 }
 
 function closeChrome() {
