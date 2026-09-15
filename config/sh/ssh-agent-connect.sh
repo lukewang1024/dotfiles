@@ -1,7 +1,33 @@
 addKeys()
 {
-  # Add all private keys start with 'id_'
-  ssh-add $(find ~/.ssh -name 'id_*' ! -name '*.*' | tr '\n' ' ')
+  # Add every conventional private key in ~/.ssh that is not already loaded.
+  # Collect them first and invoke ssh-add once: OpenSSH retries the last
+  # passphrase for subsequent identity files in the same invocation.
+  loaded_keys=$(ssh-add -l 2>/dev/null | awk '{ print $2 }')
+  add_keys_status=0
+  set --
+  key=
+
+  for key in "$HOME"/.ssh/id_*; do
+    [ -f "$key" ] || continue
+    case "$key" in
+      *.pub) continue ;;
+    esac
+
+    fingerprint=$(ssh-keygen -lf "$key" 2>/dev/null | awk 'NR == 1 { print $2; exit }')
+    [ -n "$fingerprint" ] || continue
+
+    case "$loaded_keys" in
+      *"$fingerprint"*)
+        continue
+        ;;
+    esac
+
+    set -- "$@" "$key"
+  done
+
+  [ "$#" -eq 0 ] || ssh-add "$@" || add_keys_status=1
+  return "$add_keys_status"
 }
 
 sshAgentSocketAvailable()
@@ -55,11 +81,13 @@ connectSSHAgent()
     # Local shells all use one stable pathname. If the underlying agent is
     # replaced, repointing this symlink repairs existing shells and tmux panes.
     publishSSHAgentSocket
+    addKeys
     return
   fi
 
   if sshAgentSocketAvailable "$stable_agent_socket"; then
     export SSH_AUTH_SOCK="$stable_agent_socket"
+    addKeys
     return
   fi
 

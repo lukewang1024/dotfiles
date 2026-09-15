@@ -5,19 +5,6 @@
             "complex_modifications": {
                 "rules": [
                     {
-                        "description": "Right Command → fn",
-                        "manipulators": [
-                            {
-                                "from": {
-                                    "key_code": "right_command",
-                                    "modifiers": { "optional": ["any"] }
-                                },
-                                "to": [{ "apple_vendor_top_case_key_code": "keyboard_fn" }],
-                                "type": "basic"
-                            }
-                        ]
-                    },
-                    {
                         "description": "Swap left command and option only in focused NoMachine/Windows App remote desktop windows",
                         "manipulators": [
                             {
