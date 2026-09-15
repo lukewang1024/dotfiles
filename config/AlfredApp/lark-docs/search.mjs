@@ -20,6 +20,7 @@ import {
   AuthError,
   ICON_DIR,
 } from './lib.mjs';
+import { browserIcon, browserLabel, listBrowserProfiles, listInstalledBrowsers } from './chrome-cookies.mjs';
 
 const RECENT_TTL = 300; // 5 min
 const SEARCH_TTL = 60; // 1 min
@@ -52,22 +53,83 @@ function emit(items, rerun) {
 }
 
 // Alfred can fire one of its own workflow's External Triggers over its URL
-// scheme, and this filter's ↩ already feeds an Open URL action — so handing back
-// a runtrigger URL makes the row itself sign you in. That replaced the old `ll`
-// keyword outright: an entry point you have to remember, which does nothing on
-// 99% of days, and which the human could not find at the one moment it mattered.
-const LOGIN_URL = 'alfred://runtrigger/com.lukew.larkdocs/login/';
+// scheme. Browser selection goes back into this Script Filter; profile
+// selection goes to auth.mjs.
+const LOGIN_BASE_URL = 'alfred://runtrigger/com.lukew.larkdocs/';
+
+function loginUrl(trigger, argument) {
+  return `${LOGIN_BASE_URL}${trigger}/?argument=${encodeURIComponent(argument)}`;
+}
 
 function loginPrompt(detail) {
+  const browsers = listInstalledBrowsers();
+  if (!browsers.length) {
+    return emit([
+      {
+        uid: 'lark-login-fallback',
+        title: 'Sign in to Lark',
+        subtitle: `↩ opens the dedicated browser login${detail ? `  ·  ${detail}` : ''}`,
+        valid: true,
+        arg: loginUrl('login', 'fallback'),
+        icon: { path: join(ICON_DIR, 'login.png') },
+      },
+    ]);
+  }
+
   emit([
     {
-      title: 'Sign in to Lark',
-      subtitle: `↩ opens Chrome to refresh the session${detail ? `  ·  ${detail}` : ''}`,
-      valid: true,
-      arg: LOGIN_URL,
+      uid: 'lark-login-browser-heading',
+      title: 'Choose a browser for Lark sign-in',
+      subtitle: detail || 'Select the browser whose existing session should be imported',
+      valid: false,
       icon: { path: join(ICON_DIR, 'login.png') },
     },
+    ...browsers.map((browser) => ({
+      uid: `lark-login-browser:${browser.name}`,
+      title: browser.label,
+      subtitle: `${browser.profileCount} profile${browser.profileCount === 1 ? '' : 's'} available  ·  ↩ choose browser`,
+      valid: true,
+      arg: loginUrl('login-profiles', `browser|${browser.name}`),
+      icon: { path: browser.icon || join(ICON_DIR, 'login.png') },
+    })),
   ]);
+}
+
+function loginProfilePrompt(browserName, terms = []) {
+  let profiles;
+  try {
+    profiles = listBrowserProfiles(browserName);
+  } catch (e) {
+    return emit([{ title: 'Lark login error', subtitle: e.message, valid: false }]);
+  }
+
+  const filtered = terms.length
+    ? profiles.filter((profile) => terms.every((term) => profile.name.toLowerCase().includes(term)))
+    : profiles;
+  emit([
+    {
+      uid: `lark-login-profile-heading:${browserName}`,
+      title: `Choose a ${browserLabel(browserName)} profile`,
+      subtitle: 'Select the profile containing the active Lark session',
+      valid: false,
+      icon: { path: join(ICON_DIR, 'login.png') },
+    },
+    ...filtered.map((profile) => ({
+      uid: `lark-login-profile:${browserName}:${profile.dir}`,
+      title: profile.name,
+      subtitle: `${browserLabel(browserName)}  ·  ↩ import this profile's Lark session`,
+      valid: true,
+      arg: loginUrl('login-import', `profile|${browserName}|${profile.dir}`),
+      icon: { path: browserIcon(browserName) || join(ICON_DIR, 'login.png') },
+    })),
+  ]);
+}
+
+function loginMode(query) {
+  if (!query.startsWith('browser|')) return null;
+  const rest = query.slice('browser|'.length).trim();
+  const [browserName, ...terms] = rest.split(/\s+/).filter(Boolean);
+  return browserName ? { browserName, terms: terms.map((term) => term.toLowerCase()) } : null;
 }
 
 async function main() {
@@ -76,6 +138,8 @@ async function main() {
   // Safety net: if Alfred's "{query}" placeholder wasn't substituted (argv vs
   // {query} mode mismatch), treat it as an empty query and show recents.
   if (query === '{query}') query = '';
+  const mode = loginMode(query);
+  if (mode) return loginProfilePrompt(mode.browserName, mode.terms);
   const cookie = readCookies();
   if (!cookie) return loginPrompt('no cookies found');
 
@@ -129,22 +193,6 @@ async function main() {
 }
 
 main().catch((e) => {
-  // Signing in is the fix for most failures here, and since the `ll` keyword was
-  // retired this row is the only way in — so always offer it, even when the
-  // error was not recognised as an auth problem. Without this, one unclassified
-  // server message would leave the workflow with no login path at all.
-  emit([
-    {
-      title: 'Lark Docs error',
-      subtitle: String(e && e.message ? e.message : e),
-      valid: false,
-    },
-    {
-      title: 'Sign in to Lark',
-      subtitle: '↩ opens Chrome to refresh the session',
-      valid: true,
-      arg: LOGIN_URL,
-      icon: { path: join(ICON_DIR, 'login.png') },
-    },
-  ]);
+  // Always leave a visible path back into the browser/profile chooser.
+  loginPrompt(`Lark Docs error: ${String(e && e.message ? e.message : e)}`);
 });
