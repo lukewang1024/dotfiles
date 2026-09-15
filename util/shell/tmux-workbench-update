@@ -203,4 +203,16 @@ if command -v tmux >/dev/null 2>&1 && tmux list-sessions >/dev/null 2>&1; then
   printf '%s\n' 'tmux-workbench-update: active tmux server reloaded'
 fi
 
+# Refresh an existing login-scoped appearance watcher after installing updates.
+# Leave machines that have not enabled the watcher opted out.
+if [ "$(uname -s)" = Darwin ]; then
+  appearance_service="gui/$(id -u)/com.lukew.appearance"
+  if launchctl print "$appearance_service" >/dev/null 2>&1; then
+    printf '%s\n' 'tmux-workbench-update: restarting appearance watcher'
+    run_quiet launchctl kickstart -k "$appearance_service" ||
+      die 'failed to restart appearance watcher'
+    printf '%s\n' 'tmux-workbench-update: appearance watcher restarted'
+  fi
+fi
+
 printf '%s\n' 'tmux-workbench-update: complete'
