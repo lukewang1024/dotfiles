@@ -10,12 +10,34 @@
 只保留三个动作：发送已有剪贴板图片、选择同步目标、查看上次同步结果。
 Ctrl+Option+V 直接发送当前剪贴板图片，不必打开菜单。原 Ctrl+Option+C、Ctrl+Option+Z 和 Ctrl+Option+/ 已释放。
 
-窗口分屏只用快捷键，沿用 Rectangle 配置：Hyper+方向键为上下左右半屏，
-Hyper+Return 最大化；Hyper+Shift+左右跨屏，上为左侧三分之二，下为右侧三分之一。
-Rectangle 运行时不重复注册；退出后 Hammerspoon 自动接管，重新启动则让出。
-Hyper 为 Ctrl+Option+Command。保留 Hyper 应用切换、导航、既有录屏快捷键和
-远程桌面的 Karabiner 自动切换。窗口、控制台、重载、功能管理不再放进列表。
-功能开关仍保存在 `workbench.toolbox.features` 设置中。
+Hyper 键位现在由 [共享配置](../../hyper/README.md) 统一管理。
+菜单内搜索框为空时，Backspace 返回上一级；有文字时正常删除，顶层不退出，Esc 关闭整个面板。
+H+E 默认轻量编辑器 Sublime Text，H+Shift+V 直达 VS Code；H+Shift+T 的 Sublime 直达入口保留。
+H+V 释放，剪贴板历史统一使用 H+3；原 H+Shift+V 的剪贴板工具菜单移到 H+0 → C。
+数字行：H+1 窗口搜索、2 应用搜索、3 剪贴板历史、4 区域截图、5 录屏入口，
+6 音频输出、7 麦克风、0 Hyper 配置；H+8/9 与 H+Shift+S 释放。
+H+0 → S/V/D/F 分别为截图、录屏、显示器设置和专注设置，不再保留独立截图录屏子菜单。
+Shift+数字释放，不再绑定虚拟桌面；H+3 首次使用需确认开启内存文本历史。
+横屏 H+左右方向键贴左/右半屏，半屏接 H+上/下进入对应上/下角 1/4；普通窗口 H+上最大化，H+下最小化，
+H+上优先恢复最近由 Hyper 最小化的窗口。H+Shift+上循环左/右 2/3，
+H+Shift+下按右→中→左循环 1/3；H+Backspace 撤销，H+Shift+左右跨屏。
+竖屏按当前屏幕可用区域高度大于宽度自动识别：H+左右改为上/下半屏，
+H+Shift+上循环上/下 2/3，H+Shift+下循环下/中/上 1/3。
+竖屏 H+上/下保留最大化、恢复和最小化，不触发横屏的半屏/四分屏转换；切屏按键不变。
+H+分号切换主终端，H+Shift+分号切换副终端；Enter 和 backtick 两组终端绑定已移除。
+H+Home/End 居中/最大化恢复，H+PageUp/PageDown 保留为完整键盘的固定上下半屏补充入口；这四键加 Shift 后按左/右/上/下聚焦窗口。
+H+Shift+Space 系统全屏；H+方括号减小/增加宽度，加 Shift 调高度，均不弹菜单。
+Hammerspoon 独占 Hyper 窗口动作；首次迁移需执行共享配置中的 Rectangle 迁移脚本。
+H+Space 搜索，H+/ 速查，H+X 系统菜单；窗口菜单、旧分号分屏和单引号入口已取消，应用键再次按下仍隐藏应用。
+H+W 为工作聊天（默认飞书），H+C 为日常聊天（默认微信），H+Shift+W 固定直达微信。
+角色入口和高频应用直达键并存，不因默认应用相同而删除直达键。
+H+A 的 AI 角色默认 ChatGPT；H+Shift+A 固定 ChatGPT，H+Shift+D 固定豆包。
+H+C 日常聊天和 H+Shift+C Chrome 不变。
+H+Shift+/ 或 H+X 后按 C 配置所有应用角色，显示当前应用与快捷键，选择后立即保存生效，也可恢复默认。
+配置候选包含已安装应用的缓存索引。旧 chat 偏好迁移为 workChat，不影响 dailyChat。
+H+R 为 Windows App，H+Shift+R 为 Reeder，H+Shift+N 为 NoMachine。
+菜单随系统首选语言显示中文或英文，重载后更新；中英文功能名都能搜索。
+Hyper 为 Ctrl+Option+Command。保留远程桌面的 Karabiner 自动切换和图片同步入口。
 
 新入口不加载旧 ModalMgr、appM、ClipShow、HSearch、KSheet、时钟和倒计时面板。
 

@@ -324,6 +324,13 @@ prepare_arch_env_gui_core()
     picom                             # X compositor that may fix tearing issues
     polybar                           # Fast and easy-to-use status bar
     python-pywal                      # Generate and change colorschemes on the fly
+    python                            # Shared Hyper action adapter
+    glib2                             # gio launch for discovered desktop applications
+    wmctrl                            # EWMH window metadata and control
+    xdotool                           # Hyper editing and X11 window actions
+    xorg-xrandr                       # Display geometry
+    xorg-xprop                        # Window state and desktop metadata
+    xorg-xwininfo                     # Decorated-window geometry on X11
     redshift                          # Adjusts the color temperature of your screen
     rofi                              # Window switcher, application launcher and dmenu replacement
     rofi-scripts                      # Collection of scripts for rofi

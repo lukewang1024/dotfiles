@@ -1,0 +1,13 @@
+{
+  "repository": "lukewang1024/hyper-palette",
+  "run": 35096774715,
+  "commit": "8c396a2e2eeaa5a3a809a970456f97fb2a5d3bbd",
+  "version": "0.1.0",
+  "protocol": 1,
+  "sha256": {
+    "aarch64-apple-darwin": "f683a6c00343fa7f7af6af7b3aca7a914768b07e0c2061f9e080546fefe677d9",
+    "x86_64-apple-darwin": "f485ae57e6be5c1b197d54f7441de85626b85f4a9fea5837ae23649b7ea72e4a",
+    "x86_64-pc-windows-msvc": "a217d2dd298f70e488f2109f8440249a86ec631e36763f5655b90618fc556540",
+    "x86_64-unknown-linux-gnu": "63340b2640a6c941e196f1cc465b4bf81d188cc110f82e4d5ec1dd25a0fcf4bc"
+  }
+}

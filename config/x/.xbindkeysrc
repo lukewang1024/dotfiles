@@ -1,19 +1,5 @@
 # syntax:ssHash
 
-# >> Vim cursor move: Hyper + hjkl
-
-"xte 'key Up'"
-  Mod3 + k + Release
-
-"xte 'key Down'"
-  Mod3 + j + Release
-
-"xte 'key Left'"
-  Mod3 + h + Release
-
-"xte 'key Right'"
-  Mod3 + l + Release
-
 # >> Display management
 
 "dmenu-display primary"
@@ -42,8 +28,6 @@
 
 # >> Active window resize
 
-"window-resize toggle_maximize"
-  Mod3 + Return
 
 "window-resize toggle_maximize"
   Mod4 + Return
@@ -191,66 +175,238 @@
 "flameshot gui"
   Print
 
-# >> Hyper shortcuts
-
-"jumpapp -m chromium"
-  Mod3 + a
-
-"jumpapp -m google-chrome"
-  Mod3 + c
-
-"jumpapp -m subl"
-  Mod3 + e
-
-"jumpapp -m firefox"
-  Mod3 + f
-
-"jumpapp -m foxitreader"
-  Mod3 + p
-
-"jumpapp -m zathura"
-  Mod3 + r
-
-"jumpapp -m telegram-desktop"
-  Mod3 + t
-
-"jumpapp -m code"
-  Mod3 + v
-
-"xrun -i wechat.exe -e 'gtk-launch com.qq.weixin.deepin'"
-  Mod3 + w
-
-"jumpapp -mR corplink"
-  Mod3 + x
-
-"jumpapp -mR zeal"
-  Mod3 + z
-
-"jumpapp -mR gsimplecal"
-  Mod3 + 1
-
-"jumpapp -m alacritty"
-  Mod3 + semicolon
-
-"jumpapp -m kitty"
-  Mod3 + apostrophe
-
-"jumpapp -m slack"
-  Mod3 + bracketright
-
-"jumpapp -mR keepassxc"
-  Mod3 + backslash
-
-"jumpapp -c feishu -m gtk-launch feishu"
-  Mod3 + space
-
-# >> Hyper+Shift shortcuts
-
-"jumpapp -m lxtask"
-  Shift+Mod3 + a
-
 # >> Extra XF86 keys
 # these are the extra media keys that some keyboards have
 
 "jumpapp -m galculator"
   XF86Calculator
+
+# BEGIN GENERATED HYPER
+"xdotool key --clearmodifiers Left"
+  Mod3 + h
+
+"xdotool key --clearmodifiers Down"
+  Mod3 + j
+
+"xdotool key --clearmodifiers Up"
+  Mod3 + k
+
+"xdotool key --clearmodifiers Right"
+  Mod3 + l
+
+"xdotool key --clearmodifiers Home"
+  Mod3 + u
+
+"xdotool key --clearmodifiers End"
+  Mod3 + o
+
+"xdotool key --clearmodifiers Prior"
+  Mod3 + i
+
+"xdotool key --clearmodifiers Next"
+  Mod3 + comma
+
+"xdotool mousemove_relative -- -10 0"
+  Shift+Mod3 + h
+
+"xdotool mousemove_relative -- 0 10"
+  Shift+Mod3 + j
+
+"xdotool mousemove_relative -- 0 -10"
+  Shift+Mod3 + k
+
+"xdotool mousemove_relative -- 10 0"
+  Shift+Mod3 + l
+
+"xdotool key --clearmodifiers shift+Home"
+  Shift+Mod3 + u
+
+"xdotool key --clearmodifiers shift+End"
+  Shift+Mod3 + o
+
+"hyper window.left"
+  Mod3 + Left + Release
+
+"hyper window.right"
+  Mod3 + Right + Release
+
+"hyper window.up"
+  Mod3 + Up + Release
+
+"hyper window.down"
+  Mod3 + Down + Release
+
+"hyper screen.left"
+  Shift+Mod3 + Left + Release
+
+"hyper screen.right"
+  Shift+Mod3 + Right + Release
+
+"hyper window.cycleTwoThirds"
+  Shift+Mod3 + Up + Release
+
+"hyper window.cycleThirds"
+  Shift+Mod3 + Down + Release
+
+"hyper window.center"
+  Mod3 + Home + Release
+
+"hyper window.max"
+  Mod3 + End + Release
+
+"hyper window.top"
+  Mod3 + Prior + Release
+
+"hyper window.bottom"
+  Mod3 + Next + Release
+
+"hyper focus.left"
+  Shift+Mod3 + Home + Release
+
+"hyper focus.right"
+  Shift+Mod3 + End + Release
+
+"hyper focus.up"
+  Shift+Mod3 + Prior + Release
+
+"hyper focus.down"
+  Shift+Mod3 + Next + Release
+
+"hyper window.fullscreen"
+  Shift+Mod3 + space + Release
+
+"hyper resize.left"
+  Mod3 + bracketleft + Release
+
+"hyper resize.right"
+  Mod3 + bracketright + Release
+
+"hyper resize.up"
+  Shift+Mod3 + bracketleft + Release
+
+"hyper resize.down"
+  Shift+Mod3 + bracketright + Release
+
+"hyper window.undo"
+  Mod3 + BackSpace + Release
+
+"hyper window.previous"
+  Mod3 + Tab + Release
+
+"hyper menu.windows"
+  Shift+Mod3 + Tab + Release
+
+"hyper menu.all"
+  Mod3 + space + Release
+
+"hyper menu.help"
+  Mod3 + slash + Release
+
+"hyper menu.roles"
+  Shift+Mod3 + slash + Release
+
+"hyper launch.wechat"
+  Shift+Mod3 + w + Release
+
+"hyper launch.chatgpt"
+  Shift+Mod3 + a + Release
+
+"hyper launch.doubao"
+  Shift+Mod3 + d + Release
+
+"hyper launch.firefox"
+  Shift+Mod3 + f + Release
+
+"hyper launch.chrome"
+  Shift+Mod3 + c + Release
+
+"hyper launch.edge"
+  Shift+Mod3 + e + Release
+
+"hyper launch.sublime"
+  Shift+Mod3 + t + Release
+
+"hyper launch.reeder"
+  Shift+Mod3 + r + Release
+
+"hyper launch.nomachine"
+  Shift+Mod3 + n + Release
+
+"hyper app.secondaryTerminal"
+  Shift+Mod3 + semicolon + Release
+
+"hyper capture.screenshot"
+  Mod3 + s + Release
+
+"hyper launch.code"
+  Shift+Mod3 + v + Release
+
+"hyper menu.system"
+  Mod3 + x + Release
+
+"hyper remote.escape"
+  Mod3 + Escape + Release
+
+"hyper menu.windows"
+  Mod3 + 1 + Release
+
+"hyper menu.apps"
+  Mod3 + 2 + Release
+
+"hyper clipboard.history"
+  Mod3 + 3 + Release
+
+"hyper capture.screenshot"
+  Mod3 + 4 + Release
+
+"hyper capture.record"
+  Mod3 + 5 + Release
+
+"hyper system.audioOutput"
+  Mod3 + 6 + Release
+
+"hyper system.audioInput"
+  Mod3 + 7 + Release
+
+"hyper menu.config"
+  Mod3 + 0 + Release
+
+"hyper app.terminal"
+  Mod3 + semicolon + Release
+
+"hyper app.browser"
+  Mod3 + b + Release
+
+"hyper app.editor"
+  Mod3 + e + Release
+
+"hyper app.files"
+  Mod3 + f + Release
+
+"hyper app.workChat"
+  Mod3 + w + Release
+
+"hyper app.dailyChat"
+  Mod3 + c + Release
+
+"hyper app.ai"
+  Mod3 + a + Release
+
+"hyper app.notes"
+  Mod3 + n + Release
+
+"hyper app.music"
+  Mod3 + m + Release
+
+"hyper app.passwords"
+  Mod3 + p + Release
+
+"hyper app.remote"
+  Mod3 + r + Release
+
+"hyper app.git"
+  Mod3 + g + Release
+
+"hyper app.docs"
+  Mod3 + d + Release
+# END GENERATED HYPER

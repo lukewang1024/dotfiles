@@ -75,46 +75,10 @@ for_window [instance="dropdown"] border pixel 5
 
 bindsym $super+$alt+space               $exe $rofi run
 bindsym $alt+space                      $exe $rofi drun
-bindsym $hyper+Tab                      $exe $rofi window
 bindsym Control+$alt+c                  $exe $rofi clipboard -modi 'clipboard:greenclip print' -run-command '{cmd}'
 
 bindsym $super+r                        $exe dmenu_run
 bindsym $super+e                        $exe thunar
-
-# >> Hyper shortcuts
-
-bindsym $hyper+c                        $grun -i google-chrome -e 'google-chrome'
-bindsym $hyper+e                        $grun -i sublime_text -x subl -e 'subl'
-bindsym $hyper+f                        $grun -c firefox -e 'firefox'
-bindsym $hyper+m                        $srun -i lx-music-desktop -e 'gtk-launch lx-music-desktop'
-bindsym $hyper+p                        $grun -i FoxitReader -e 'foxitreader'
-bindsym $hyper+q                        $grun -i qutebrowser -e 'qutebrowser'
-bindsym $hyper+r                        $grun -c Zathura -e 'zathura'
-bindsym $hyper+t                        $grun -i telegram-desktop -e 'telegram-desktop'
-bindsym $hyper+v                        $grun -i code
-bindsym $hyper+w                        $srun -i wechat.exe -e 'gtk-launch com.qq.weixin.deepin'
-bindsym $hyper+x                        $srun -i corplink -e 'corplink'
-bindsym $hyper+z                        $grun -i filemanagerA -e 'thunar-launcher filemanagerA ThunarDetailsView'
-
-bindsym $hyper+1                        $srun -i gsimplecal -e 'gsimplecal'
-
-bindsym $hyper+semicolon                $grun -i aterm -e '$term --class aterm'
-bindsym $hyper+apostrophe               $grun -i kitty -e 'kitty'
-bindsym $hyper+bracketright             $grun -i slack
-bindsym $hyper+backslash                $srun -i keepassxc -e 'keepassxc'
-bindsym $hyper+space                    $grun -i feishu -e 'gtk-launch feishu'
-
-# >> Hyper+Shift shortcuts
-
-bindsym $hyper+Shift+a                  $grun -i lxtask -e 'lxtask'
-bindsym $hyper+Shift+e                  $grun -i filemanagerB -e 'thunar-launcher filemanagerB ThunarIconView'
-bindsym $hyper+Control+e                $grun -i filemanagerD -e 'thunar-launcher filemanagerD ThunarDetailsView'
-bindsym $hyper+Shift+m                  $srun -i qqmusic -e 'qqmusic'
-bindsym $hyper+Shift+w                  $srun -i weixin -e 'gtk-launch wechat-uos'
-bindsym $hyper+Shift+z                  $srun -i zeal -e 'zeal'
-
-bindsym $hyper+Shift+bracketright       $srun -i whatsapp-for-linux -e 'gtk-launch com.github.eneshecan.WhatsAppForLinux'
-bindsym $hyper+Shift+semicolon          $grun -i termite -e 'termite'
 
 # >> Window rules
 
@@ -317,13 +281,6 @@ bindsym $super+Shift+7 move container to workspace $ws7
 bindsym $super+Shift+8 move container to workspace $ws8
 bindsym $super+Shift+9 move container to workspace $ws9
 bindsym $super+Shift+0 move container to workspace $ws10
-
-# >> Vim cursor move: Hyper + hjkl
-
-bindsym --release $hyper+k $exe xte 'key Up'
-bindsym --release $hyper+j $exe xte 'key Down'
-bindsym --release $hyper+h $exe xte 'key Left'
-bindsym --release $hyper+l $exe xte 'key Right'
 
 # >> Display management
 
@@ -528,3 +485,82 @@ bindsym XF86Xfer              $exe $xf86_default
 #           
 
 # syntax:ssHash
+
+# BEGIN GENERATED HYPER
+bindsym Mod3+h exec --no-startup-id xdotool key --clearmodifiers Left
+bindsym Mod3+j exec --no-startup-id xdotool key --clearmodifiers Down
+bindsym Mod3+k exec --no-startup-id xdotool key --clearmodifiers Up
+bindsym Mod3+l exec --no-startup-id xdotool key --clearmodifiers Right
+bindsym Mod3+u exec --no-startup-id xdotool key --clearmodifiers Home
+bindsym Mod3+o exec --no-startup-id xdotool key --clearmodifiers End
+bindsym Mod3+i exec --no-startup-id xdotool key --clearmodifiers Prior
+bindsym Mod3+comma exec --no-startup-id xdotool key --clearmodifiers Next
+bindsym Mod3+Shift+h exec --no-startup-id xdotool mousemove_relative -- -10 0
+bindsym Mod3+Shift+j exec --no-startup-id xdotool mousemove_relative -- 0 10
+bindsym Mod3+Shift+k exec --no-startup-id xdotool mousemove_relative -- 0 -10
+bindsym Mod3+Shift+l exec --no-startup-id xdotool mousemove_relative -- 10 0
+bindsym Mod3+Shift+u exec --no-startup-id xdotool key --clearmodifiers shift+Home
+bindsym Mod3+Shift+o exec --no-startup-id xdotool key --clearmodifiers shift+End
+bindsym --release Mod3+Left exec --no-startup-id hyper window.left
+bindsym --release Mod3+Right exec --no-startup-id hyper window.right
+bindsym --release Mod3+Up exec --no-startup-id hyper window.up
+bindsym --release Mod3+Down exec --no-startup-id hyper window.down
+bindsym --release Mod3+Shift+Left exec --no-startup-id hyper screen.left
+bindsym --release Mod3+Shift+Right exec --no-startup-id hyper screen.right
+bindsym --release Mod3+Shift+Up exec --no-startup-id hyper window.cycleTwoThirds
+bindsym --release Mod3+Shift+Down exec --no-startup-id hyper window.cycleThirds
+bindsym --release Mod3+Home exec --no-startup-id hyper window.center
+bindsym --release Mod3+End exec --no-startup-id hyper window.max
+bindsym --release Mod3+Prior exec --no-startup-id hyper window.top
+bindsym --release Mod3+Next exec --no-startup-id hyper window.bottom
+bindsym --release Mod3+Shift+Home exec --no-startup-id hyper focus.left
+bindsym --release Mod3+Shift+End exec --no-startup-id hyper focus.right
+bindsym --release Mod3+Shift+Prior exec --no-startup-id hyper focus.up
+bindsym --release Mod3+Shift+Next exec --no-startup-id hyper focus.down
+bindsym --release Mod3+Shift+space exec --no-startup-id hyper window.fullscreen
+bindsym --release Mod3+bracketleft exec --no-startup-id hyper resize.left
+bindsym --release Mod3+bracketright exec --no-startup-id hyper resize.right
+bindsym --release Mod3+Shift+bracketleft exec --no-startup-id hyper resize.up
+bindsym --release Mod3+Shift+bracketright exec --no-startup-id hyper resize.down
+bindsym --release Mod3+BackSpace exec --no-startup-id hyper window.undo
+bindsym --release Mod3+Tab exec --no-startup-id hyper window.previous
+bindsym --release Mod3+Shift+Tab exec --no-startup-id hyper menu.windows
+bindsym --release Mod3+space exec --no-startup-id hyper menu.all
+bindsym --release Mod3+slash exec --no-startup-id hyper menu.help
+bindsym --release Mod3+Shift+slash exec --no-startup-id hyper menu.roles
+bindsym --release Mod3+Shift+w exec --no-startup-id hyper launch.wechat
+bindsym --release Mod3+Shift+a exec --no-startup-id hyper launch.chatgpt
+bindsym --release Mod3+Shift+d exec --no-startup-id hyper launch.doubao
+bindsym --release Mod3+Shift+f exec --no-startup-id hyper launch.firefox
+bindsym --release Mod3+Shift+c exec --no-startup-id hyper launch.chrome
+bindsym --release Mod3+Shift+e exec --no-startup-id hyper launch.edge
+bindsym --release Mod3+Shift+t exec --no-startup-id hyper launch.sublime
+bindsym --release Mod3+Shift+r exec --no-startup-id hyper launch.reeder
+bindsym --release Mod3+Shift+n exec --no-startup-id hyper launch.nomachine
+bindsym --release Mod3+Shift+semicolon exec --no-startup-id hyper app.secondaryTerminal
+bindsym --release Mod3+s exec --no-startup-id hyper capture.screenshot
+bindsym --release Mod3+Shift+v exec --no-startup-id hyper launch.code
+bindsym --release Mod3+x exec --no-startup-id hyper menu.system
+bindsym --release Mod3+Escape exec --no-startup-id hyper remote.escape
+bindsym --release Mod3+1 exec --no-startup-id hyper menu.windows
+bindsym --release Mod3+2 exec --no-startup-id hyper menu.apps
+bindsym --release Mod3+3 exec --no-startup-id hyper clipboard.history
+bindsym --release Mod3+4 exec --no-startup-id hyper capture.screenshot
+bindsym --release Mod3+5 exec --no-startup-id hyper capture.record
+bindsym --release Mod3+6 exec --no-startup-id hyper system.audioOutput
+bindsym --release Mod3+7 exec --no-startup-id hyper system.audioInput
+bindsym --release Mod3+0 exec --no-startup-id hyper menu.config
+bindsym --release Mod3+semicolon exec --no-startup-id hyper app.terminal
+bindsym --release Mod3+b exec --no-startup-id hyper app.browser
+bindsym --release Mod3+e exec --no-startup-id hyper app.editor
+bindsym --release Mod3+f exec --no-startup-id hyper app.files
+bindsym --release Mod3+w exec --no-startup-id hyper app.workChat
+bindsym --release Mod3+c exec --no-startup-id hyper app.dailyChat
+bindsym --release Mod3+a exec --no-startup-id hyper app.ai
+bindsym --release Mod3+n exec --no-startup-id hyper app.notes
+bindsym --release Mod3+m exec --no-startup-id hyper app.music
+bindsym --release Mod3+p exec --no-startup-id hyper app.passwords
+bindsym --release Mod3+r exec --no-startup-id hyper app.remote
+bindsym --release Mod3+g exec --no-startup-id hyper app.git
+bindsym --release Mod3+d exec --no-startup-id hyper app.docs
+# END GENERATED HYPER

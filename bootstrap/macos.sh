@@ -327,7 +327,9 @@ set_macos_configs()
   backup_then_symlink "$config_dir/karabiner" ~/.config/karabiner
   backup_then_symlink "$config_dir/ranger/macos" ~/.config/ranger
   backup_then_symlink "$config_dir/Rime" ~/Library/Rime
-  cp "$config_dir/RectangleApp/RectangleConfig.json" '~/Library/Application Support/Rectangle/RectangleConfig.json'
+  mkdir -p "$HOME/Library/Application Support/Rectangle"
+  cp "$config_dir/RectangleApp/RectangleConfig.json" "$HOME/Library/Application Support/Rectangle/RectangleConfig.json"
+  python3 "$config_dir/hyper/migrate_rectangle.py" --apply
 
   # Handy scripts
   backup_then_symlink "$util_dir/macos/setup-launchagent" "$bin_dir/setup-launchagent"
