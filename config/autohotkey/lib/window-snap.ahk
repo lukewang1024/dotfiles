@@ -37,8 +37,8 @@ getMonitorIndexFromWindow(windowHandle) {
   VarSetCapacity(monitorInfo, 40)
   NumPut(40, monitorInfo)
 
-  if (monitorHandle := DllCall("MonitorFromWindow", "uint", windowHandle, "uint", 0x2))
-    && DllCall("GetMonitorInfo", "uint", monitorHandle, "uint", &monitorInfo) {
+  if (monitorHandle := DllCall("MonitorFromWindow", "ptr", windowHandle, "uint", 0x2, "ptr"))
+    && DllCall("GetMonitorInfo", "ptr", monitorHandle, "ptr", &monitorInfo) {
     monitorLeft   := NumGet(monitorInfo,  4, "Int")
     monitorTop    := NumGet(monitorInfo,  8, "Int")
     monitorRight  := NumGet(monitorInfo, 12, "Int")

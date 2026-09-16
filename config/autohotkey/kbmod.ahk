@@ -16,7 +16,8 @@ Menu, Tray, Icon, %A_ScriptDir%\res\kbmod.ico
 Loop, %A_ScriptDir%\app\*.ahk
 {
   WinClose, %A_LoopFileName% - AutoHotkey
-  Run, % A_ScriptDir . "\app\" . A_LoopFileName
+  ; Keep child scripts on the same v1 runtime even when .ahk is associated with v2.
+  Run, % """" . A_AhkPath . """ """ . A_ScriptDir . "\app\" . A_LoopFileName . """"
 }
 
 #Include %A_ScriptDir%\lib ; Set root path for other includes
@@ -27,7 +28,7 @@ Loop, %A_ScriptDir%\app\*.ahk
 
 ; Scripts in 'mod' may have any code
 #Include %A_ScriptDir%\mod\appskey-mod.ahk
-#Include %A_ScriptDir%\mod\capslock-mod.ahk
+#Include %A_ScriptDir%\mod\hyper-capslock.ahk
 #Include %A_ScriptDir%\mod\conemu-hack.ahk
 
 ; Close active window by Win-Shift-Q

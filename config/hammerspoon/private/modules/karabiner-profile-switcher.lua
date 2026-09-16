@@ -139,6 +139,7 @@ local function toggle_nomachine_f18_workaround()
   end, {'--set-variables', variables}):start()
 end
 
-hotkey.bind(hyper, 'f12', toggle_nomachine_f18_workaround)
+module.toggleCompatibility = toggle_nomachine_f18_workaround
+module.isFocused = is_remote_desktop_window_focused
 
 return module

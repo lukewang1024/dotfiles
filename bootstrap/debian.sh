@@ -154,6 +154,12 @@ prepare_debian_env_gui_core()
     rofi                              # window switcher, run dialog and dmenu replacement
     i3-wm                             # improved dynamic tiling window manager
     polybar                           # Fast and easy-to-use tool for creating status bars
+    python3                           # Shared Hyper action adapter
+    libglib2.0-bin                     # gio launch for discovered desktop applications
+    wmctrl                            # EWMH window metadata and control
+    xdotool                           # Hyper editing and X11 window actions
+    x11-xserver-utils                  # xrandr
+    x11-utils                         # xprop and xwininfo
     xcape                             # Configure modifier keys to act as other keys when pressed and released
     xautomation                       # Control X from the command line, and find things on the screen
     xbindkeys                         # Associate a combination of keys or mouse buttons with a shell command

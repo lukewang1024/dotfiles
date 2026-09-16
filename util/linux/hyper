@@ -1,0 +1,423 @@
+#!/usr/bin/env python3
+"""Hyper X11 adapter for i3 and EWMH desktops; stdlib plus desktop CLI tools."""
+import contextlib
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'config/hyper'))
+from generate import bindings
+from app_index import installed, linux_spec
+from roles import migrate, save_default, shortcuts
+from localize import catalog, translate, keywords
+from linux_desktop import create_desktop
+LABELS=catalog(json.loads((ROOT/'config/hyper/keys.json').read_text()))
+def tr(key,**values):return translate(LABELS,key,**values)
+
+
+def call(*args, input=None, check=True):
+    return subprocess.run(args, input=input, text=True, capture_output=True, check=check).stdout.strip()
+
+
+def notify(message):
+    message=tr(str(message))
+    if shutil.which('notify-send'):
+        call('notify-send', 'Hyper', str(message), check=False)
+    print(message, file=sys.stderr)
+
+
+def select_screen(screens, current, direction, wrap=False):
+    if wrap:
+        if len(screens)<2:return None
+        opposite={'left':'right','right':'left','up':'down','down':'up'}
+        other_axis={'left':'up','right':'down','up':'left','down':'right'}
+        # Prefer the requested ray, then wrap to its farthest opposite edge.
+        for d in (direction,other_axis[direction]):
+            result=select_screen(screens,current,d)
+            if result is not None:return result
+            a=screens[current];candidates=[]
+            reverse=opposite[d]
+            for i,b in enumerate(screens):
+                dx=b[0]+b[2]/2-a[0]-a[2]/2;dy=b[1]+b[3]/2-a[1]-a[3]/2
+                valid={'left':dx<0 and -dx>=abs(dy),'right':dx>0 and dx>=abs(dy),
+                       'up':dy<0 and -dy>=abs(dx),'down':dy>0 and dy>=abs(dx)}[reverse]
+                if i!=current and valid:
+                    primary,secondary=(abs(dx),abs(dy)) if d in ('left','right') else (abs(dy),abs(dx))
+                    candidates.append((-primary,secondary,i))
+            if candidates:return min(candidates)[2]
+        # Mirrored displays can have identical centers; still cycle deterministically.
+        return (current+1)%len(screens)
+    a = screens[current]
+    candidates = []
+    for i, b in enumerate(screens):
+        dx, dy = b[0] + b[2]/2 - a[0] - a[2]/2, b[1] + b[3]/2 - a[1] - a[3]/2
+        valid = {'left': dx < 0 and -dx >= abs(dy), 'right': dx > 0 and dx >= abs(dy),
+                 'up': dy < 0 and -dy >= abs(dx), 'down': dy > 0 and dy >= abs(dx)}[direction]
+        if i != current and valid:
+            candidates.append((dx*dx + dy*dy, i))
+    return min(candidates)[1] if candidates else None
+
+
+def place(area, fraction):
+    x, y, w, h = area
+    a, b, c, d = fraction
+    return [round(x+w*a), round(y+h*b), round(w*c), round(h*d)]
+
+
+def rebase_snapshot(snapshot, source, destination):
+    x,y,w,h=snapshot['frame'];sx,sy,sw,sh=source
+    return dict(snapshot,frame=place(destination,[(x-sx)/sw,(y-sy)/sh,w/sw,h/sh]))
+
+
+def same_frame(a,b):
+    return a is not None and b is not None and all(abs(x-y)<3 for x,y in zip(a,b))
+
+
+def layout(data,name,area):
+    r=data['layouts'][name]
+    return [r[1],r[0],r[3],r[2]] if area[3]>area[2] and data['adaptiveLayouts'].get(name) else r
+
+
+def cycle_layout(data,name,frame,area):
+    cycle=data['layoutCycles'][name]
+    for i,name in enumerate(cycle):
+        if same_frame(frame,place(area,layout(data,name,area))):
+            return cycle[(i+1)%len(cycle)]
+    return cycle[0]
+
+
+class Hyper:
+    def __init__(self):
+        self.data=json.loads((ROOT/'config/hyper/keys.json').read_text())
+        self.defaults=dict(self.data['defaults'].get('linux',{}))
+        config=Path(os.environ.get('XDG_CONFIG_HOME',str(Path.home()/'.config')))/'hyper/local.json'
+        self.config=config
+        if config.exists():
+            local=json.loads(config.read_text());self.defaults.update(local.get('defaults',{}))
+            for name,app in local.get('apps',{}).items(): self.data['apps'][name]=app
+        self.defaults=migrate(self.defaults)
+        self.desktop=create_desktop(call, select_screen)
+        self.target=None
+        self.state_dir=Path(os.environ.get('XDG_STATE_HOME',str(Path.home()/'.local/state')))/'hyper'
+        self.state_dir.mkdir(parents=True,exist_ok=True,mode=0o700)
+        display=re.sub(r'[^a-zA-Z0-9_-]','_',os.environ.get('DISPLAY','default'))
+        self.path=self.state_dir/(display+'.json')
+
+    @contextlib.contextmanager
+    def state(self):
+        with self.path.with_suffix('.lock').open('a') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX)
+            state=json.loads(self.path.read_text()) if self.path.exists() else {}
+            yield state
+            fd,name=tempfile.mkstemp(dir=self.state_dir)
+            with os.fdopen(fd,'w') as out: json.dump(state,out)
+            os.replace(name,self.path)
+
+    def toggle(self,name):
+        app=self.data['apps'][name].get('linux')
+        if not app: raise RuntimeError(tr('error.unavailable',name=name))
+        app=self.desktop.app_spec(app)
+        if not app.get('class') and not app.get('instance'):
+            # A web URL has no separate app identity; never hide all browser windows.
+            self.launch(app['argv']);return
+        windows=[w for w in self.desktop.windows() if self.desktop.matches(w,app)]
+        if not windows: self.launch(app['argv']);return
+        active=self.target or self.desktop.active()
+        with self.state() as state:
+            groups=state.setdefault('apps',{})
+            if any(w['id']==active for w in windows):
+                if not app.get('hide_on_active',True):return
+                saved=[]
+                for w in windows:
+                    if self.desktop.hidden(w): continue
+                    saved.append(self.desktop.capture_app_window(w))
+                    self.desktop.minimize(w['id'])
+                groups[name]={'windows':saved,'active':active}
+            elif name in groups:
+                saved=groups.pop(name); live={w['id']:w for w in windows}
+                for w in saved['windows']:
+                    if w['id'] not in live or live[w['id']]['pid']!=w['pid']: continue
+                    self.desktop.restore_app_window(w)
+                target=saved['active'] if saved['active'] in live else windows[0]['id']
+                self.desktop.activate(target,app.get('activation','focus'))
+            else: self.desktop.activate(windows[0]['id'],app.get('activation','focus'))
+
+    def role_default(self,role):
+        return self.data['defaults'].get('linux',{}).get(role,self.data['roles'][role]['apps'][0])
+
+    def role_app(self,role):
+        return self.defaults.get(role,self.role_default(role))
+
+    def role_title(self,choice):
+        return self.data['apps'][choice]['title'] if choice in self.data['apps'] else Path(choice.removeprefix('installed.')).stem
+
+    def role_rows(self):
+        return [(shortcuts(self.data,role),tr('role.'+role)+' · '+tr('ui.roleCurrent',name=self.role_title(self.role_app(role))),'role.'+role)
+                for role in self.data['roles']]
+
+    def role_choices(self,role):
+        rows=[('',tr('ui.roleReset')+' · '+self.role_title(self.role_default(role)),'resetrole.'+role)]
+        names=list(dict.fromkeys(self.data['roles'][role]['apps']+list(self.data['apps'])))
+        for name in names:
+            app=self.data['apps'][name]
+            if 'linux' in app:
+                rows.append(('✓' if name==self.role_app(role) else '',app['title'],'setrole.'+role+'.'+name))
+        for app in installed('linux'):
+            label=app['title']+(' · '+tr('ui.launchOnly') if not app.get('wmclass') else '')
+            rows.append(('',label,'setrole.'+role+'.installed.'+app['path']))
+        return rows
+
+    def set_role(self,role,choice):
+        known=choice in self.data['apps'] and 'linux' in self.data['apps'][choice]
+        discovered=choice.startswith('installed./') and Path(choice[len('installed.'):]).is_file()
+        if role not in self.data['roles'] or not (known or discovered):
+            raise RuntimeError(tr('error.role',name=role))
+        save_default(self.config,role,choice)
+        self.defaults[role]=choice
+        notify(tr('ui.roleSaved',name=tr('role.'+role)+' → '+self.role_title(choice)))
+
+    def launch(self,argv):
+        if not shutil.which(argv[0]): raise RuntimeError(tr('error.notInstalled',name=argv[0]))
+        subprocess.Popen(argv,start_new_session=True)
+
+    def choose(self,rows,title,quick=False,continuous=False):
+        from palette_bridge import Session
+        import uuid
+        title=tr(('mode.' if continuous else 'menu.')+title)
+        rows=[(key,tr(action) if action in LABELS['en'] and not action.startswith('role.') else label,action) for key,label,action in rows]
+        if not self.target:
+            try:self.target=self.desktop.active()
+            except (ValueError,subprocess.CalledProcessError):self.target=None
+        page=str(uuid.uuid4())
+        active=getattr(self,'palette_session',None)
+        rid=active.rid if active else str(uuid.uuid4())
+        if not active:self.palette_actions={}
+        items=[]
+        for index,(key,label,action) in enumerate(rows):
+            item_id=page+'-'+str(index)
+            self.palette_actions[item_id]=action
+            navigate=action.startswith(('menu.','role.','mode.'))
+            items.append(dict(id=item_id,title=label,detail='',shortcut=key,
+                              keywords=keywords(LABELS,action),navigate=navigate,
+                              keep_open=navigate or continuous))
+        value=dict(request_id=rid,root=page,menus={page:dict(title=title,items=items,quick=quick)})
+        if active:
+            active.command(dict(type='push',request=value));return
+        session=Session(value)
+        self.palette_session=session
+        try:
+            for event in session.events():
+                if event['type']=='error':raise RuntimeError(event.get('message','Hyper Palette failed'))
+                if event['type']=='dismissed':
+                    if event.get('reason')=='escape' and self.target:self.desktop.focus(self.target)
+                if event['type']=='action':
+                    action=self.palette_actions[event['action']]
+                    if not event.get('keep_open'):
+                        self.palette_session=None
+                        if self.target:self.desktop.focus(self.target)
+                    self.run(action)
+        finally:
+            self.palette_session=None;self.palette_actions={}
+            session.close()
+
+    def restore_minimized(self):
+        # Restore before asking for the active window: minimizing the last window
+        # may leave the desktop with no active client at all.
+        with self.state() as state:
+            minimized=state.setdefault('minimized',[])
+            if not minimized:return False
+            live_windows={w['id']:w for w in self.desktop.windows()}
+            while minimized:
+                previous=minimized.pop();candidate=live_windows.get(previous['id'])
+                if candidate and [candidate['pid'],candidate['cls']]==previous['identity']:
+                    hidden=self.desktop.hidden(candidate)
+                    if hidden:
+                        self.desktop.focus(previous['id']);self.desktop.restore(previous['id'],previous['snapshot']);return True
+        return False
+
+    def run(self,action):
+        kind,arg=action.split('.',1)
+        if kind=='window' and arg=='up' and self.restore_minimized():return
+        if kind in ('edit','select'):
+            keys={'left':'Left','right':'Right','up':'Up','down':'Down','home':'Home','end':'End','pageup':'Prior','pagedown':'Next'}
+            call('xdotool','key','--clearmodifiers',('shift+' if kind=='select' else '')+keys[arg]);return
+        if kind=='app':
+            choice=self.role_app(arg)
+            if choice.startswith('installed.'):
+                self.data['apps'][choice]={'title':self.role_title(choice),'linux':linux_spec(choice[len('installed.'):])}
+            self.toggle(choice);return
+        if kind=='role':
+            if arg not in self.data['roles']:raise RuntimeError(tr('error.role',name=arg))
+            self.choose(self.role_choices(arg),'roleApps');return
+        if kind=='setrole':
+            role,choice=arg.split('.',1);self.set_role(role,choice);return
+        if kind=='resetrole':
+            if arg not in self.data['roles']:raise RuntimeError(tr('error.role',name=arg))
+            self.set_role(arg,self.role_default(arg));return
+        if kind=='launch': self.toggle(arg);return
+        if kind=='installed':
+            if not Path(arg).is_file(): raise RuntimeError('Application no longer installed')
+            self.launch(['gio','launch',arg]);return
+        if kind=='menu':
+            if arg=='roles':self.choose(self.role_rows(),arg)
+            elif arg in self.data['menus']: self.choose(self.data['menus'][arg],arg,quick=True)
+            elif arg=='windows': self.choose([('',w['title'],'winid.'+str(w['id'])) for w in self.desktop.windows()],arg)
+            elif arg=='apps': self.choose([('',app['title'],'installed.'+app['path']) for app in installed('linux')],arg)
+            else:
+                rows=[('H+'+('Shift+' if b.get('shift') else '')+b['key'],b['action'],b['action']) for b in bindings(self.data) if b['action'] not in ('menu.all','menu.help')]
+                if arg=='all':
+                    rows += [('',app['title'],'installed.'+app['path']) for app in installed('linux')]
+                self.choose(rows,arg)
+            return
+        if kind=='mode':
+            if arg=='resize':
+                wid=self.target or self.desktop.active()
+                live=next(w for w in self.desktop.windows() if w['id']==wid)
+                with self.state() as state:
+                    state.setdefault('windows',{})[str(wid)]={'identity':[live['pid'],live['cls']], 'undo':self.desktop.snapshot(wid)}
+            rows=[]
+            for key,direction in [('h','left'),('j','down'),('k','up'),('l','right')]:
+                rows += [(key,direction,arg+'.'+direction),('S-'+key,'Fast '+direction,arg+'.fast-'+direction)]
+            if arg=='mouse': rows += [('return','Click','mouse.click'),('delete','Right click','mouse.rightclick'),('u','Scroll up','mouse.scrollup'),('o','Scroll down','mouse.scrolldown')]
+            self.choose(rows,arg,quick=True,continuous=True);return
+        if kind=='mouse':
+            if arg in ('click','rightclick','scrollup','scrolldown'): call('xdotool','click',{'click':'1','rightclick':'3','scrollup':'4','scrolldown':'5'}[arg])
+            else:
+                step=40 if arg.startswith('fast-') else 10;d=arg.removeprefix('fast-')
+                dx,dy={'left':(-step,0),'right':(step,0),'up':(0,-step),'down':(0,step)}[d]
+                call('xdotool','mousemove_relative','--',str(dx),str(dy))
+            return
+        if kind=='capture': subprocess.Popen(['flameshot','gui'] if arg=='screenshot' else ['dmenu-record']);return
+        if kind=='clipboard':
+            if arg=='history':
+                if shutil.which('greenclip') and shutil.which('rofi'):
+                    self.launch(['rofi','-show','clipboard','-modi','clipboard:greenclip print','-run-command','{cmd}'])
+                elif shutil.which('copyq'):self.launch(['copyq','show'])
+                elif shutil.which('xfce4-clipman-history'):self.launch(['xfce4-clipman-history'])
+                elif shutil.which('xfce4-clipman-settings'):self.launch(['xfce4-clipman-settings'])
+                else:raise RuntimeError(tr('error.clipboardService'))
+            elif arg=='targets': notify(call('workbench','clipboard','targets','--json'))
+            elif arg=='send':
+                target=self.defaults.get('clipboardTarget')
+                if not target: raise RuntimeError(tr('error.clipboardTarget'))
+                notify(call('workbench','clipboard','push','--target',target,'--image-only','--json'))
+            return
+        if kind=='system':
+            if arg in ('audioOutput','audioInput','displays','focus'):
+                candidates={
+                    'audioOutput':[['pavucontrol','--tab','3'],['gnome-control-center','sound']],
+                    'audioInput':[['pavucontrol','--tab','4'],['gnome-control-center','sound']],
+                    'displays':[['xfce4-display-settings'],['arandr'],['gnome-control-center','display']],
+                    'focus':[['xfce4-notifyd-config'],['gnome-control-center','notifications']],
+                }[arg]+[['xfce4-settings-manager']]
+                for command in candidates:
+                    if shutil.which(command[0]):self.launch(command);return
+                raise RuntimeError(tr('error.settingsTool'))
+            if arg=='hyperKeys':self.launch(['xdg-open',str(ROOT/'config/hyper/keys.json')]);return
+            commands={'lock':['lock'],'settings':['xfce4-settings-manager'],'activity':['lxtask'],'power':['dmenu-power'],'launcher':['rofi','-show','drun'],
+                      'reload':list(self.desktop.reload_command)}
+            subprocess.Popen(commands[arg]);return
+        if kind=='remote':
+            if arg=='escape':
+                active=self.target or self.desktop.active()
+                win=next((w for w in self.desktop.windows() if w['id']==active),None)
+                if win and any(name in win['cls'].casefold() for name in ('nxplayer','remmina','vncviewer')):
+                    self.desktop.minimize(active)
+            else: notify('info.linuxHyper')
+            return
+        if kind=='winid': self.desktop.focus(int(arg));return
+        wid=self.target or self.desktop.active()
+        if kind=='desktop':
+            move=arg.startswith('move.');n=int(arg.split('.')[-1])
+            self.desktop.workspace(wid,n,move)
+            return
+        if kind=='window' and arg=='previous':
+            ids=re.findall(r'0x[0-9a-fA-F]+',call('xprop','-root','_NET_CLIENT_LIST_STACKING'))
+            for item in reversed(ids):
+                other=int(item,16)
+                if other!=wid: self.desktop.focus(other);break
+            return
+        if kind=='focus':
+            self.desktop.focus_direction(wid,arg)
+            return
+        with self.state() as state:
+            windows=state.setdefault('windows',{});key=str(wid)
+            live=next((w for w in self.desktop.windows() if w['id']==wid),None)
+            if not live: raise RuntimeError('No standard window')
+            saved=windows.setdefault(key,{})
+            identity=[live['pid'],live['cls']]
+            if saved.get('identity')!=identity: saved.clear();saved['identity']=identity
+            if kind=='window' and arg=='undo':
+                if 'undo' in saved: self.desktop.restore(wid,saved.pop('undo'));saved.pop('max',None)
+                saved.pop('snap',None);saved.pop('managed',None)
+                return
+            before=self.desktop.snapshot(wid)
+            if saved.get('managed') and not same_frame(before['frame'],saved['managed']):
+                saved.pop('max',None);saved.pop('snap',None);saved.pop('managed',None)
+            screens=self.desktop.screens()
+            if not screens: raise RuntimeError('No active display')
+            index=self.desktop.current_screen(wid,screens);area=screens[index]
+            if kind=='window' and arg in self.data['layoutCycles']:
+                arg=cycle_layout(self.data,arg,before['frame'],area)
+            if kind=='window' and arg in ('up','down'):
+                transitions=self.data['windowTransitions'][arg] if area[2]>=area[3] else {}
+                transition=next((result for name,result in transitions.items()
+                                 if same_frame(before['frame'],place(area,self.data['layouts'][name]))),None)
+                arg=transition or ('maximize' if arg=='up' else 'restoreDown')
+            if kind=='window' and arg=='maximize' and same_frame(before['frame'],area):return
+            if kind not in ('resize','screen') or 'undo' not in saved: saved['undo']=before
+            x,y,w,h=before['frame']
+            if kind=='screen':
+                target=select_screen(screens,index,arg,wrap=True)
+                if target is None: raise RuntimeError('Only one screen detected')
+                for name in ('undo','max','snap'):
+                    if name in saved:saved[name]=rebase_snapshot(saved[name],area,screens[target])
+                self.desktop.restore(wid,rebase_snapshot(before,area,screens[target]))
+            elif kind=='resize':
+                step=50 if arg.startswith('fast-') else 10;d=arg[5:] if arg.startswith('fast-') else arg
+                if d=='left':w=max(100,w-step)
+                elif d=='right':w+=step
+                elif d=='up':h=max(100,h-step)
+                else:h+=step
+                self.desktop.move(wid,[x,y,w,h])
+            elif arg=='restoreDown':
+                restore=saved.pop('max',None)
+                if restore is None:restore=saved.pop('snap',None)
+                if restore is not None:self.desktop.restore(wid,restore)
+                elif same_frame(before['frame'],area) or before.get('maximized'):
+                    self.desktop.move(wid,place(area,[.1,.1,.8,.8]))
+                else:
+                    state.setdefault('minimized',[]).append(dict(id=wid,identity=identity,snapshot=before))
+                    self.desktop.minimize(wid);saved.pop('managed',None);return
+            elif arg in ('max','maximize'):
+                if arg=='max' and 'max' in saved:self.desktop.restore(wid,saved.pop('max'))
+                else:saved['max']=before;self.desktop.move(wid,area)
+            elif arg=='fullscreen':
+                self.desktop.fullscreen(wid)
+            elif arg=='center':
+                saved.pop('max',None);saved.pop('snap',None)
+                self.desktop.move(wid,[area[0]+(area[2]-w)/2,area[1]+(area[3]-h)/2,w,h])
+            elif arg in self.data['layouts']:
+                if 'snap' not in saved:saved['snap']=saved.get('max',before)
+                saved.pop('max',None);self.desktop.move(wid,place(area,layout(self.data,arg,area)))
+            else:raise RuntimeError('Unknown action: '+action)
+            saved['managed']=self.desktop.frame(wid)
+
+
+def main():
+    if len(sys.argv)!=2: raise SystemExit('Usage: hyper ACTION')
+    if os.environ.get('XDG_SESSION_TYPE')=='wayland':
+        raise SystemExit('This adapter requires X11. A native Wayland window/input adapter is not installed.')
+    try: Hyper().run(sys.argv[1])
+    except (OSError,RuntimeError,ValueError,ImportError,subprocess.CalledProcessError) as err:
+        notify(err);raise SystemExit(1)
+
+
+if __name__=='__main__':main()

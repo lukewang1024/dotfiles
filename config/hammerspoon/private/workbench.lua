@@ -1,9 +1,7 @@
 -- Unified launcher; intentionally does not load the legacy modal supervisor.
 hyper = {'ctrl', 'alt', 'cmd'}
 hyperAlt = {'ctrl', 'alt', 'cmd', 'shift'}
-require 'private/modules/app-launch-toggle'
-require 'private/modules/karabiner-profile-switcher'
-require 'private/modules/quick-screen-recording'
+local remote = require 'private/modules/karabiner-profile-switcher'
 
 local toolbox = require 'private/modules/toolbox'
 local clipboard
@@ -12,11 +10,9 @@ if toolbox.features().workbench then
   clipboard = require 'private/modules/workbench-clipboard'
 end
 workbenchToolbox = toolbox.new({clipboard = clipboard})
-if toolbox.features().windows then
-  workbenchWindowShortcuts = require('private/modules/window-shortcuts').new(workbenchToolbox)
-end
+workbenchHyper = require('private/modules/hyper').new({toolbox=workbenchToolbox, clipboard=clipboard, remote=remote})
 hs.shutdownCallback = function()
-  if workbenchWindowShortcuts then workbenchWindowShortcuts:stop() end
+  workbenchHyper:stop()
   workbenchToolbox:stop()
   if clipboard then clipboard.stop() end
 end

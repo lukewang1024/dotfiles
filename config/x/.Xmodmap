@@ -10,9 +10,8 @@ keycode 66 = Hyper_L Hyper_L Caps_Lock
 ! Use Hyper_R to avoid xcape Hyper_L=Escape triggering on repeats
 keycode 196 = Hyper_R
 
-! use Esc to access 3rd and 4th value in keycode definition below
-keycode 999 = Escape
-keycode 9 = Mode_switch
+! Escape is a normal key. Hyper owns navigation and mouse shortcuts now.
+keycode 9 = Escape
 
 ! leave mod4 as super key only
 remove mod4 = Hyper_L
@@ -20,25 +19,19 @@ remove mod4 = Hyper_L
 ! set mod3 to hyper key
 add mod3 = Hyper_L Hyper_R
 
-! more accessible end
-keycode 13 = 4 dollar End End
-
-! more accessible home
-keycode 19 = 0 parenright Home Home
-
-! move mouse pointer (requires accessibility feature to be enabled)
-keycode 29 = y Y KP_Left  KP_Left
-keycode 30 = u U KP_Down  KP_Down
-keycode 31 = i I KP_Up    KP_Up
-keycode 32 = o O KP_Right KP_Right
-
-! simulate arrow keys vim style
-keycode 43 = h H Left  Left
-keycode 44 = j J Down  Down
-keycode 45 = k K Up    Up
-keycode 46 = l L Right Right
-
-! allow clicking with keyboard
-keycode 58 = m M Pointer_Button1 Pointer_Button1
-keycode 59 = comma less Pointer_Button2 Pointer_Button2
-keycode 60 = period greater Pointer_Button3 Pointer_Button3
+! Clear the retired Escape/Mode_switch layer on reload as well as fresh login.
+! Duplicate navigation keysyms on letter keys make XKeysymToKeycode resolve
+! arrows to H/J/K/L, breaking both xbindkeys grabs and xdotool key injection.
+keycode 13 = 4 dollar 4 dollar
+keycode 19 = 0 parenright 0 parenright
+keycode 29 = y Y y Y
+keycode 30 = u U u U
+keycode 31 = i I i I
+keycode 32 = o O o O
+keycode 43 = h H h H
+keycode 44 = j J j J
+keycode 45 = k K k K
+keycode 46 = l L l L
+keycode 58 = m M m M
+keycode 59 = comma less comma less
+keycode 60 = period greater period greater

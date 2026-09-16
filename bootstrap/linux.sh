@@ -41,6 +41,7 @@ apply_linux_app_configs()
   backup_then_symlink "$config_dir/gtk-2.0/.gtkrc-2.0" ~/.gtkrc-2.0
   backup_then_symlink "$config_dir/gtk-3.0" ~/.config/gtk-3.0
   backup_then_symlink "$config_dir/i3" ~/.config/i3
+  backup_then_symlink "$config_dir/hyper" ~/.config/hyper
   backup_then_symlink "$config_dir/mpv" ~/.config/mpv
   backup_then_symlink "$config_dir/picom" ~/.config/picom
   backup_then_symlink "$config_dir/polipo" ~/.config/polipo
@@ -83,6 +84,7 @@ apply_linux_app_configs()
   backup_then_symlink "$util_dir/linux/dmenu-umount" "$bin_dir/dmenu-umount"
   backup_then_symlink "$util_dir/linux/enable-exec" "$bin_dir/enable-exec"
   backup_then_symlink "$util_dir/linux/kbmod" "$bin_dir/kbmod"
+  backup_then_symlink "$util_dir/linux/hyper" "$bin_dir/hyper"
   backup_then_symlink "$util_dir/linux/local-http-proxy" "$bin_dir/local-http-proxy"
   backup_then_symlink "$util_dir/linux/lock" "$bin_dir/lock"
   backup_then_symlink "$util_dir/linux/notify" "$bin_dir/notify"
