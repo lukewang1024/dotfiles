@@ -32,6 +32,10 @@ def links(c, group):
         if source == '$unit':
             # systemd's directory entries are expanded by the platform task.
             continue
+        if source == '$config_dir/ssh/config' and target in ('~/.ssh/config', '$HOME/.ssh/config'):
+            # The legacy inventory lists a symlink; SSH now has a local entrypoint.
+            c.task('ssh_setup')
+            continue
         target = target.replace('~/.config/', '$XDG_CONFIG_HOME/').replace('$HOME/.config/', '$XDG_CONFIG_HOME/')
         c.link(source, target, allow_missing=not c.path(source).is_relative_to(c.repo))
 
@@ -195,7 +199,28 @@ def python_setup(c):
 
 @task()
 def ssh_setup(c):
-    c.link(c.repo / 'config/ssh/config', c.home / '.ssh/config')
+    dest = c.home / '.ssh/config'
+    shared = c.repo / 'config/ssh/config'
+    begin = '# -- dotfiles SSH config begin --'
+    end = '# -- dotfiles SSH config end --'
+    def quoted(path):
+        return '"' + path.as_posix().replace('"', '\\"') + '"'
+    block = '\n'.join((begin, '# Local overrides precede shared defaults (SSH uses the first value).',
+                       'Host *', '  Include ' + quoted(c.home / '.ssh/config.local'),
+                       'Host *', '  Include ' + quoted(shared), 'Host *', end)) + '\n'
+    content = dest.read_text(encoding='utf-8') if dest.exists() else ''
+    if dest.is_symlink() and dest.resolve() == shared.resolve():
+        # Replace the legacy link itself, never write through it into the repo.
+        content = ''
+    pattern = re.compile(r'^' + re.escape(begin) + r'\n.*?^' + re.escape(end) + r'(?:\n|$)', re.M | re.S)
+    if pattern.search(content):
+        updated = pattern.sub(lambda _: block, content)
+    else:
+        updated = content + ('\n' if content and not content.endswith('\n') else '')
+        updated += ('\n' if content else '') + block
+    if dest.is_symlink() or updated != content or not dest.exists():
+        c.backup(dest)
+        c.write(dest, updated)
     local = c.home / '.ssh/config.local'
     if not local.exists():
         c.write(local, '')

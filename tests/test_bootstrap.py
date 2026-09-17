@@ -204,13 +204,79 @@ class BootstrapTests(unittest.TestCase):
                 raise
             c.task('sync_setup')
         links = [e for e in c.events if e['kind'] == 'link']
-        self.assertEqual(len(links), 14)
+        self.assertEqual(len(links), 12)
         for entry in links:
             target = Path(entry['target'])
             self.assertTrue(target.is_relative_to(self.home))
             self.assertTrue(target.is_symlink())
             self.assertEqual(target.resolve(), Path(entry['source']))
         self.assertTrue((c.config / 'tig').is_symlink())
+        self.assertTrue((self.home / '.ssh/config').is_file())
+        self.assertFalse((self.home / '.ssh/config').is_symlink())
+
+    def test_ssh_migrates_shared_link_and_preserves_later_injections(self):
+        c = self.context(dry=False)
+        dest = self.home / '.ssh/config'
+        shared = ROOT / 'config/ssh/config'
+        original = shared.read_bytes()
+        dest.parent.mkdir()
+        try:
+            dest.symlink_to(shared)
+        except OSError as exc:
+            if os.name == 'nt' and getattr(exc, 'winerror', None) == 1314:
+                self.skipTest('Windows session lacks symlink privilege')
+            raise
+        local = dest.with_name('config.local')
+        local.write_text('Host private\n  User teammate\n', encoding='utf-8')
+        c.task('ssh_setup')
+        self.assertFalse(dest.is_symlink())
+        self.assertTrue(dest.with_name('config~').is_symlink())
+        self.assertIn(shared.as_posix(), dest.read_text())
+        self.assertEqual(local.read_text(), 'Host private\n  User teammate\n')
+        injection = '# -- CloudIDE injection begin --\nInclude "cloudide/*"\n# -- CloudIDE injection end --\n'
+        dest.write_text(injection + dest.read_text(), encoding='utf-8')
+        before = dest.read_bytes()
+        files = sorted(p.name for p in dest.parent.iterdir())
+        c.task('ssh_setup')
+        self.assertEqual(dest.read_bytes(), before)
+        self.assertEqual(shared.read_bytes(), original)
+        self.assertEqual(sorted(p.name for p in dest.parent.iterdir()), files)
+        if os.name != 'nt':
+            self.assertEqual(dest.stat().st_mode & 0o777, 0o600)
+
+    def test_ssh_preserves_existing_config_and_dry_run_has_no_effects(self):
+        dest = self.home / '.ssh/config'
+        dest.parent.mkdir()
+        original = 'Host existing\n  HostName existing.example\n  User custom'
+        dest.write_text(original, encoding='utf-8')
+        self.context(dry=True).task('ssh_setup')
+        self.assertEqual(dest.read_text(), original)
+        self.assertEqual(list(dest.parent.iterdir()), [dest])
+        c = self.context(dry=False)
+        c.task('ssh_setup')
+        self.assertTrue(dest.read_text().startswith(original + '\n'))
+        self.assertEqual(dest.with_name('config~').read_text(), original)
+        c.task('ssh_setup')
+        self.assertEqual(dest.read_text().count('# -- dotfiles SSH config begin --'), 1)
+
+    @unittest.skipUnless(shutil.which('ssh'), 'OpenSSH configuration parser')
+    def test_ssh_local_overrides_and_include_scope_with_spaces(self):
+        c = self.context(dry=False)
+        c.repo = self.home / 'repo with spaces'
+        shared = c.repo / 'config/ssh/config'
+        shared.parent.mkdir(parents=True)
+        shared.write_text('Host *\n  ServerAliveInterval 30\nHost shared.example\n  User shared\n', encoding='utf-8')
+        local = self.home / '.ssh/config.local'
+        local.parent.mkdir()
+        local.write_text('Host override.example\n  ServerAliveInterval 71\nHost unmatched.example\n  User other\n', encoding='utf-8')
+        c.task('ssh_setup')
+        dest = local.with_name('config')
+        for host, expected in [('override.example', 'serveraliveinterval 71'),
+                               ('shared.example', 'user shared')]:
+            result = subprocess.run(['ssh', '-G', '-F', str(dest), host],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(expected, result.stdout)
 
     @unittest.skipIf(os.name == 'nt', 'Unix sudo authentication')
     def test_sudo_authenticates_visibly_before_captured_commands(self):

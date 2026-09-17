@@ -66,7 +66,7 @@ inspection of the current environment, not a promise of successful provisioning.
 - One progress renderer, log format, task runner, and command boundary on all OSes.
 - Every run writes `output.log` and UTF-8 `results.json`; required failures stop
   later categories instead of allowing a later successful command to mask them.
-- Windows gains link-only `basic` and `sync`, uses the actual checkout location,
+- Windows gains configuration-only `basic` and `sync`, uses the actual checkout location,
   and supports the same inspection flags and named tasks as Unix.
 - Python is the shared runtime. Launchers reuse 3.10+ or prepare managed 3.12 with
   uv; inspection does not install it. A standalone Windows launcher needs Git
@@ -76,6 +76,15 @@ inspection of the current environment, not a promise of successful provisioning.
   Upgrades can proceed, but cleanup cannot delete the running interpreter's
   standard library. A later ordinary Homebrew cleanup can remove the old keg.
 - Existing backup files are retained; replacements get a unique backup name.
+- SSH uses a private regular `~/.ssh/config` entrypoint on Unix and Windows.
+  Bootstrap replaces its managed Include block while preserving third-party
+  additions and existing local content. It backs up legacy symlinks before
+  replacing them, so CloudIDE and similar tools can no longer write through to
+  the repository. `~/.ssh/config.local` is included before the shared
+  `config/ssh/config`; local values take precedence over shared defaults.
+  `Host *` resets isolate the includes from preceding Host/Match blocks.
+  The legacy link inventory is retained, but SSH entries dispatch to this setup.
+  To migrate or refresh just SSH, run `./init run shell ssh_setup`.
 - Linux inotify settings use a dedicated sysctl drop-in. macOS Launchpad reset
   uses its reset preference instead of deleting system cache trees.
 - XDG migration is implemented in Python. `util/dotfiles/migrate-xdg` is only a
