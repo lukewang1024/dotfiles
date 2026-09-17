@@ -8,4 +8,5 @@
 
 tmux-assistant-resurrect/hooks/
 tmux-agent-workbench hook ingest
+tmux-agent-workbench.js
 session-tracker.js
