@@ -39,7 +39,7 @@ Hyper 为 Ctrl+Option+Command。保留远程桌面的 Karabiner 自动切换和�
 
 新入口不加载旧 ModalMgr、appM、ClipShow、HSearch、KSheet、时钟和倒计时面板。
 
-安装由 `bootstrap/macos.sh` 配置：将本目录上一级的 `init.lua` 链接到
+安装由 `bootstrap/dotfiles/platforms.py` 配置：将本目录上一级的 `init.lua` 链接到
 `$XDG_CONFIG_HOME/hammerspoon/init.lua` 和 `workbench-init.lua`，并把 Hammerspoon 的
 `MJConfigFile` 指向此路径。首次切换后使用 Hammerspoon 菜单 Reload Config。
 本机迁移前的旧入口备份在 `$XDG_CONFIG_HOME/hammerspoon/legacy-init.lua`。

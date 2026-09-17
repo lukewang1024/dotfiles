@@ -5,8 +5,8 @@ configuration, macOS defaults, and user-level helper commands.
 
 ## Design
 
-`bootstrap/macos.sh` owns the package and application selections. It reuses the
-shared Unix setup from `bootstrap/env.sh` and `bootstrap/nix.sh`, then applies
+`bootstrap/dotfiles/packages.json` owns the package and application selections. It reuses the
+shared setup from `bootstrap/dotfiles/tasks.py`, then applies
 macOS-specific configuration such as Hammerspoon, Karabiner, Rime, terminal
 settings, and system defaults.
 
@@ -20,7 +20,7 @@ The modes are cumulative selections, not increasing safety levels:
 | `all` | Extended CLI and extended GUI flows |
 | `game` | Gaming-specific setup |
 
-Review the corresponding function and package arrays in `bootstrap/macos.sh`
+Review the corresponding function and package groups in `bootstrap/dotfiles/packages.json`
 before using an extended mode.
 
 ## Install a new machine
@@ -54,13 +54,13 @@ safe and useful when checking a newly added link.
 
 ## Apply one group of defaults
 
-The maintenance entrypoint can source a module and run one function:
+The maintenance entrypoint can select and run one registered Python task:
 
 ```sh
 "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" run macos-defaults better_macos_defaults
 ```
 
-Inspect the function first: defaults commands mutate the current user or system
+Inspect `platforms.py` and `macos-defaults.json` first: defaults commands mutate the current user or system
 preferences and may require affected applications to restart.
 
 ## Verify

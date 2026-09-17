@@ -5,7 +5,7 @@
 # bootstrap steps, util wrappers, or the tmux/vim plugin manifests (which need a
 # fresh install step, not just a symlink). For anything else we exit quietly.
 #
-# Wired per-machine via `core.hooksPath` (see git_hooks_setup in bootstrap/env.sh),
+# Wired per-machine via `core.hooksPath` (see git_hooks_setup in bootstrap/dotfiles/tasks.py),
 # so this tracked script propagates to every machine through git itself.
 
 # $1 is 1 for a squash merge; ORIG_HEAD is set by merge/pull to the pre-merge tip.

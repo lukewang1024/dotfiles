@@ -1,502 +1,87 @@
-function prepare_windows_env($mode = "core")
-{
-  switch ($mode) {
-    'workbench' {
-      setup_distributed_workbench
-      break
+# Bootstrap source/interpreter only. No package lists, tasks, or reporting logic.
+$ErrorActionPreference = 'Stop'
+$bootstrapArgs = @($args)
+if ($bootstrapArgs.Count -eq 0) { Write-Host 'Usage: init.ps1 <basic|core|all|sync|run|...> [options]'; exit 2 }
+$env:PYTHONDONTWRITEBYTECODE = '1'
+$repoDir = $PSScriptRoot
+$mainScript = Join-Path $repoDir 'bootstrap/main.py'
+$inspection = @($bootstrapArgs | Where-Object { $_ -in @('--dry-run', '--list-tasks', '-h', '--help') }).Count -gt 0
+
+# A downloaded standalone launcher obtains a complete Git checkout first.
+if (!(Test-Path -LiteralPath $mainScript)) {
+  if ($inspection) { throw 'Download or clone the complete dotfiles checkout before inspecting it.' }
+  $configRoot = $env:XDG_CONFIG_HOME
+  if (!$configRoot) { $configRoot = Join-Path $env:USERPROFILE '.config' }
+  $repoDir = Join-Path $configRoot 'dotfiles'
+  $mainScript = Join-Path $repoDir 'bootstrap/main.py'
+  if (!(Test-Path -LiteralPath $mainScript)) {
+    if (Test-Path -LiteralPath $repoDir) { throw "Refusing to overwrite incomplete checkout: $repoDir" }
+    $git = Get-Command git -ErrorAction SilentlyContinue
+    if (!$git) {
+      throw 'Git is required to fetch the checkout. Install Git, then rerun this launcher.'
     }
-    'core' {
-      prepare_windows_env_core
-      break
-    }
-    'cli' {
-      prepare_windows_env_cli
-      break
-    }
-    'gui' {
-      prepare_windows_env_gui
-      break
-    }
-    'game' {
-      prepare_windows_gaming
-      break
-    }
-    'all' {
-      prepare_windows_env_cli
-      prepare_windows_env_gui
-      break
-    }
-    Default {
-      print_usage
-      break
-    }
+    & $git.Source clone --depth 1 https://github.com/lukewang1024/dotfiles $repoDir
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   }
 }
 
-function setup_distributed_workbench()
-{
-  $cacheBase = $env:XDG_CACHE_HOME
-  if (!$cacheBase) {
-    $cacheBase = Join-Path $env:LOCALAPPDATA 'Cache'
-  }
-  $cacheRoot = Join-Path $cacheBase 'distributed-workbench'
-  New-Item -ItemType Directory -Force -Path $cacheRoot | Out-Null
-  $installer = Join-Path $cacheRoot 'install-from-release.ps1'
-  Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/lukewang1024/distributed-workbench/main/scripts/install-from-release.ps1' -OutFile $installer
-  & $installer latest
-  if ($LASTEXITCODE -ne 0) {
-    throw "Distributed Workbench setup failed with status $LASTEXITCODE"
+foreach ($name in @('python3', 'python', 'py', (Join-Path $env:USERPROFILE '.local/bin/python3.12.exe'))) {
+  $candidate = Get-Command $name -ErrorAction SilentlyContinue
+  if (!$candidate -or $candidate.Source -like '*WindowsApps*') { continue }
+  $prefix = @()
+  if ($name -eq 'py') { $prefix = @('-3') }
+  & $candidate.Source @prefix -c 'import sys; sys.exit(sys.version_info < (3, 10))' 2>$null
+  if ($LASTEXITCODE -eq 0) {
+    & $candidate.Source @prefix $mainScript @bootstrapArgs
+    exit $LASTEXITCODE
   }
 }
-
-function prepare_windows_env_core()
-{
-  prepare_windows_env_cli_core
-  prepare_windows_env_gui_core
-}
-
-function prepare_windows_env_cli()
-{
-  prepare_windows_env_cli_core
-  prepare_windows_env_cli_extra
-}
-
-function prepare_windows_env_gui()
-{
-  prepare_windows_env_gui_core
-  prepare_windows_env_gui_extra
-}
-
-function prepare_windows_env_cli_core()
-{
-  install_scoop
-  install_winget
-
-  $pkgs =
-    'ag',                             # Fast code searching tool, also known as "The Silver Searcher"
-    'delta',                          # Syntax-highlighting pager for git, diff, and grep output
-    'fd',                             # Fast and user-friendly alternative to the find command
-    'fx',                             # Terminal-based JSON viewer and processor
-    'fzf',                            # Fuzzy finder command-line tool for interactive filtering
-    'git',                            # Distributed version control system
-    'gow',                            # GNU utilities for Windows - provides Unix-like command line tools
-    'jq',                             # Lightweight command-line JSON processor
-    'lf',                             # Terminal file manager with vim-like keybindings
-    'ln',                             # Command for creating symbolic links and hard links
-    'openssh',                        # Secure Shell protocol implementation
-    'procs',                          # Modern replacement for the ps command with colored output
-    'ripgrep',                        # Recursively searches directories for a regex pattern
-    'runat',                          # Windows utility for running commands at specific times
-    'say',                            # Text-to-speech command that converts text input into spoken audio
-    'starship',                       # Cross-platform shell prompt that is fast, customizable, and feature-rich
-    'sudo',                           # Allows users to run commands with elevated privileges
-    'touch',                          # Unix-like utility for creating empty files or updating timestamps
-    'vim',                            # Highly configurable text editor with modal editing
-    'witr',                           # ('Why Is This Running') is a tool that explains the causal chain behind running processes with additional insights.
-    'yazi',                           # Blazing fast terminal file manager written in Rust, based on async I/O
-    'zoxide'                          # A faster way to navigate your filesystem
-
-  scoop_install $pkgs
-
-  # Uncomment this if proxy needed
-  #sudo winget settings --enable ProxyCommandLineOptions
-  #sudo winget settings set DefaultProxy http://127.0.0.1:1081
-
-  $wingetPkgs =
-    'JanDeDobbeleer.OhMyPosh',
-    'Microsoft.PowerShell'
-
-  winget_install $wingetPkgs
-}
-
-function prepare_windows_env_cli_extra()
-{
-  $pkgs =
-    'adb',                            # Android Debug Bridge - Command-line tool for communicating with Android devices
-    'aria2',                          # Multi-protocol download utility with fast parallel downloading
-    'broot',                          # Interactive tree view file manager with fuzzy search
-    'chafa',                          # Terminal graphics for the 21st century
-    'cloc',                           # Count Lines of Code - Tool that counts lines of source code in many languages
-    'cowsay',                         # Fun command-line program that generates ASCII pictures of a cow saying text
-    'csvlens',                        # Command line csv viewer
-    'deno',                           # Modern JavaScript and TypeScript runtime built on V8
-    'duf',                            # Disk Usage/Free utility - Modern replacement for 'df'
-    'dum',                            # Simple duplicate file finder
-    'far',                            # File and Archive manager - Advanced file manager for Windows
-    'ffmpeg',                         # A complete, cross-platform solution to record, convert and stream audio and video
-    'fq',                             # jq for binary formats - Tool for exploring binary data
-    'gcloud',                         # Google Cloud CLI - Command-line interface for Google Cloud Platform
-    'gh',                             # GitHub CLI - Official command-line tool for GitHub
-    'git-lfs',                        # Git Large File Storage - Extension for versioning large files
-    'gitui',                          # Terminal-based Git user interface written in Rust
-    'glow',                           # Render markdown on the CLI
-    'gping',                          # Ping tool with a graph - Visual ping utility with real-time graphs
-    'helix',                          # Post-modern modal text editor with multiple selections and LSP support
-    'imagemagick',                    # Create, edit, compose, and convert 200+ bitmap image formats.
-    'kubectl',                        # Kubernetes command-line tool for managing containerized applications
-    'lazydocker',                     # Terminal UI for Docker and Docker Compose
-    'lazygit',                        # Simple terminal UI for Git commands
-    'losslesscut',                    # Cross-platform GUI tool for lossless trimming of video and audio files,
-    'lxrunoffline',                   # Windows Subsystem for Linux (WSL) management tool
-    'mc',                             # Midnight Commander - Terminal-based file manager with dual-pane interface
-    'micro',                          # Modern terminal-based text editor that aims to be easy to use
-    'miniconda3',                     # Minimal installer for Conda package manager and Python environment management
-    'minikube',                       # Tool for running Kubernetes clusters locally for development and testing
-    'musikcube',                      # Terminal-based music player with a ncurses interface
-    'nmap',                           # Network discovery and security auditing tool for port scanning
-    'nodejs',                         # JavaScript runtime built on Chrome's V8 engine for server-side development
-    'now-cli',                        # Command-line interface for Vercel (formerly Zeit Now) deployment platform
-    'ntfy',                           # Simple notification service for sending push notifications via HTTP requests
-    'nvm',                            # Node Version Manager for switching between different Node.js versions
-    'opencode',                       # AI coding agent, built for the terminal
-    'oraclejdk',                      # Oracle's Java Development Kit for Java application development
-    'pandoc',                         # Universal document converter between numerous markup and document formats
-    'pipx',                           # Tool for installing and running Python applications in isolated environments
-    'pnpm',                           # Fast, disk space efficient package manager for Node.js
-    'poppler',                        # PDF rendering library
-    'python',                         # Python programming language interpreter and runtime environment
-    'resvg',                          # An SVG rendering library.
-    'sbt',                            # Scala Build Tool for building and managing Scala and Java projects
-    'scrcpy',                         # Tool for displaying and controlling Android devices connected via USB or wireless
-    'shasum',                         # Command-line utility for calculating and verifying SHA checksums of files
-    'sniffnet',                       # Network traffic monitor with a graphical interface
-    'uv',                             # Ultra-fast Python package installer and resolver written in Rust
-    'vagrant',                        # Tool for building and managing virtual machine environments for development
-    'xan',                            # Fast CSV processing tool with various data manipulation and analysis capabilities
-    'yarn'                            # Package manager for Node.js that provides faster, more reliable dependency management
-
-  scoop_install $pkgs
-
-  $wingetPkgs =
-    'Docker.DockerDesktop'
-
-  winget_install $wingetPkgs
-}
-
-function prepare_windows_env_gui_core()
-{
-  $pkgs =
-    '7zip',                           # Open-source file archiver with high compression ratio
-    'alacritty',                      # Cross-platform, GPU-accelerated terminal emulator
-    'altsnap',                        # Window management utility for moving and resizing windows
-    'autohotkey',                     # Powerful automation scripting language for Windows
-    'autohotkey1.1',                  # Legacy version of AutoHotkey for compatibility
-    'ditto',                          # Advanced clipboard manager that stores clipboard history
-    'dotnet-sdk',                     # Microsoft .NET Software Development Kit
-    'everything',                     # Ultra-fast file search engine that instantly locates files
-    'keepassxc',                      # Cross-platform password manager with strong encryption
-    'listary',                        # Smart file search and launcher for Windows
-    'localsend',                      # Share files to nearby devices. An open source cross-platform alternative to AirDrop
-    'obsidian',                       # Powerful knowledge base that works on top of a local folder of plain text Markdown files
-    'powertoys',                      # Microsoft's collection of utilities for power users
-    'quicklook',                      # Spacebar preview functionality for Windows, similar to macOS
-    'snipaste',                       # Screenshot and image annotation tool with pinning capabilities
-    'sublime-merge',                  # Git client with powerful merge conflict resolution
-    'sublime-text',                   # Sophisticated text editor for code, markup, and prose
-    'sumatrapdf',                     # Lightweight, fast PDF, eBook, and document viewer
-    'switcheroo',                     # Alt-Tab replacement with enhanced window switching
-    'sysinternals',                   # Microsoft's collection of advanced system utilities
-    'trafficmonitor',                 # Network and system monitoring tool with real-time usage display
-    'unlocker',                       # Utility to unlock files that are in use by system processes
-    'vscode',                         # Microsoft's free, open-source code editor with extensive extensions
-    'windows-terminal'                # Modern, fast terminal application for command-line tools
-
-  scoop_install $pkgs
-
-  $fonts =
-    'FiraCode-NF',                    # FiraCode Nerd Font - Programming font with ligatures
-    'Meslo-NF',                       # Meslo Nerd Font - Terminal font based on Menlo
-    'SourceCodePro-NF'                # Source Code Pro Nerd Font - Adobe's programming font
-
-  scoop_sudo_install $fonts
-
-  $wingetPkgs =
-    'Rime.Weasel',                    # Chinese input method engine for Windows
-    'stnkl.EverythingToolbar'         # Everything search integration for Windows taskbar
-
-  winget_install $wingetPkgs
-
-  set_windows_configs
-}
-
-function prepare_windows_env_gui_extra()
-{
-  $pkgs =
-    'altsnap',                        # Window management utility for moving and resizing windows using Alt+drag
-    'android-sdk',                    # Android Software Development Kit for Android app development
-    'android-studio',                 # Official integrated development environment (IDE) for Android development
-    'calibre',                        # E-book management software for organizing and converting digital books
-    'carnac',                         # Keystroke visualizer for presentations and tutorials
-    'ccleaner',                       # System optimization and privacy tool for cleaning temporary files
-    'chromium',                       # Open-source web browser foundation for Google Chrome
-    'clash-verge-rev',                # Cross-platform proxy client with GUI for network management
-    'cpu-z',                          # System information utility displaying hardware specifications
-    'doublecmd',                      # Dual-pane file manager with advanced features
-    'dropit',                         # Drag-and-drop automation tool with customizable rules
-    'eartrumpet',                     # Advanced volume control with per-application audio management
-    'filezilla',                      # Free FTP, FTPS, and SFTP client for file transfer
-    'firefox',                        # Open-source web browser with privacy-focused features
-    'flux',                           # Screen color temperature adjustment tool for reducing blue light
-    'foobar2000',                     # Lightweight, customizable audio player
-    'foobar2000-encoders',            # Additional audio encoding components for foobar2000
-    'foxit-pdf-reader',               # PDF viewer and editor with annotation capabilities
-    'googlechrome',                   # Popular web browser with integrated Google services
-    'handbrake',                      # Open-source video transcoder for format conversion,
-    'heidisql',                       # Database management GUI for MySQL, MariaDB, PostgreSQL, SQLite
-    'hexchat',                        # Cross-platform IRC client with graphical interface
-    'hub',                            # Command-line wrapper for Git with GitHub integration
-    'hwmonitor',                      # System monitoring tool for hardware temperatures and voltages
-    'irfanview',                      # Fast and compact image viewer and editor
-    'joplin',                         # Open-source note-taking and to-do list application
-    'kdiff3',                         # File and directory comparison and merge tool
-    'kitematic',                      # Docker GUI for managing containers visually
-    'licecap',                        # Screen recording tool that saves as animated GIF files
-    'marktext',                       # Real-time markdown editor with live preview
-    'mobaxterm',                      # Enhanced terminal with X11 server and SSH client
-    'nimbleset',                      # Text manipulation tool for bulk find-and-replace operations
-    'nimbletext',                     # Data manipulation tool for transforming structured text
-    'nircmd',                         # Command-line utility for various Windows system operations
-    'nirlauncher',                    # Collection launcher for all NirSoft utilities
-    'nodejs-lts',                     # Long Term Support version of Node.js JavaScript runtime
-    'obs-studio',                     # Open-source software for video recording and live streaming
-    'openark',                        # Database administration toolkit for MySQL
-    'openhardwaremonitor',            # System monitoring application for hardware sensors
-    'pdfarranger',                    # PDF document manipulation tool for merging and splitting,
-    'pdfsam',                         # PDF manipulation tool for splitting, merging, and rotating pages
-    'phantomjs',                      # Headless WebKit browser for web scraping and automation
-    'potplayer',                      # Feature-rich multimedia player with advanced playback options
-    'processhacker',                  # Advanced system monitor and process manager
-    'proxifier',                      # Network proxy client with SOCKS/HTTPS support
-    'putty',                          # SSH and telnet client for secure remote connections
-    'qutebrowser',                    # Keyboard-driven web browser with vim-like keybindings
-    'robo3t',                         # GUI client for MongoDB database management
-    'rufus',                          # Utility for creating bootable USB drives from ISO images
-    'runcat',                         # System monitor displaying CPU usage through animated cat
-    'screentogif',                    # Screen recorder that exports animations to GIF format
-    'slack',                          # Team communication and collaboration platform
-    'smartmontools',                  # Command-line utilities for monitoring hard drive health
-    'spacesniffer',                   # Disk usage analyzer with treemap visualization
-    'spotify',                        # Music streaming service with millions of songs and podcasts
-    'sqlitebrowser',                  # GUI tool for creating and editing SQLite database files
-    'strokesplus',                    # Mouse gesture recognition software for commands and shortcuts
-    'switchhosts',                    # Quick hosts file editor for switching configurations
-    'synctrayzor',                    # GUI wrapper for Syncthing file synchronization
-    'telegram',                       # Cross-platform messaging app with security focus,
-    'thorium-reader',                 # Accessible EPUB reader supporting various ebook formats
-    'translucenttb',                  # Utility that makes Windows taskbar transparent or translucent
-    'v2rayn',                         # GUI client for V2Ray proxy tool for network privacy
-    'vcredist',                       # Microsoft Visual C++ Redistributable packages
-    'vcxsrv',                         # X11 server for Windows allowing Linux GUI applications
-    'vncviewer',                      # Remote desktop client for connecting to VNC servers
-    'whatsapp',                       # Popular messaging application for text, voice, and video
-    'win-dynamic-desktop',            # Utility that changes wallpaper based on time of day
-    'windirstat',                     # Disk usage statistics viewer with treemap visualization
-    'winscp',                         # SFTP, FTP, and SCP client for secure file transfers
-    'wireshark',                      # Network protocol analyzer for examining network traffic
-    'wsltty',                         # Terminal emulator for Windows Subsystem for Linux
-    'xming',                          # X Window System server for Windows
-    'xnviewmp',                       # Image viewer and converter supporting hundreds of formats
-    'zeal',                           # Offline documentation browser for programming languages,
-    'https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json',
-    'https://raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json'
-
-  scoop_install $pkgs
-
-  $wingetPkgs =
-    '9NGHP3DX8HDX',                   # Files App - Modern file manager for Windows
-    '9NW33J738BL0',                   # Monitorian - Monitor brightness control
-    'Bytedance.Feishu',               # Team collaboration and productivity platform
-    'CLechasseur.PathCopyCopy',       # Context menu plugin for copying file paths
-    'Dropbox.Dropbox',                # Cloud storage and file synchronization service
-    'Google.Drive',                   # Google's cloud storage and office suite
-    'Oracle.VirtualBox',              # Virtual machine software for running multiple OS
-    'Tencent.QQ',                     # Popular Chinese instant messaging application
-    'Tencent.QQMusic',                # Chinese music streaming service
-    'Tencent.WeChat',                 # Chinese multi-purpose messaging and social media app
-    'XK72.Charles'                    # Web debugging proxy for monitoring HTTP traffic
-
-  winget_install $wingetPkgs
-}
-
-function prepare_windows_gaming()
-{
-  $pkgs =
-    'dosbox',                         # Emulator for x86 with DOS for running legacy games
-    'dosbox-x',                       # Enhanced fork of DOSBox with additional features
-    'openra',                         # Real-time strategy game engine for classic Westwood games
-    'steam'                           # Digital distribution platform for PC gaming
-
-  scoop_install $pkgs
-}
-
-function install_scoop()
-{
-  Set-ExecutionPolicy RemoteSigned -scope CurrentUser
-
-  if (Get-Command scoop -errorAction SilentlyContinue) {
-    scoop update
+if ($inspection) { throw 'Python 3.10+ is required for inspection. Run init.ps1 core to prepare the bootstrap runtime.' }
+$stateRoot = $env:XDG_STATE_HOME
+if (!$stateRoot) { $stateRoot = Join-Path $env:LOCALAPPDATA 'State' }
+$dataRoot = $env:XDG_DATA_HOME
+if (!$dataRoot) { $dataRoot = Join-Path $env:USERPROFILE '.local/share' }
+$cacheRoot = $env:XDG_CACHE_HOME
+if (!$cacheRoot) { $cacheRoot = Join-Path $env:LOCALAPPDATA 'Cache' }
+$env:UV_INSTALL_DIR = Join-Path $env:USERPROFILE '.local/bin'
+$env:UV_NO_MODIFY_PATH = '1'
+$env:UV_PYTHON_INSTALL_DIR = Join-Path $dataRoot 'uv/python'
+$env:UV_CACHE_DIR = Join-Path $cacheRoot 'uv'
+$env:UV_PYTHON_BIN_DIR = $env:UV_INSTALL_DIR
+$runtimeDir = Join-Path $stateRoot ('dotfiles/bootstrap/runtime-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
+$runtimeLog = Join-Path $runtimeDir 'output.log'
+Write-Host "Preparing Python runtime...`nLog: $runtimeLog"
+# Windows PowerShell 5 treats redirected native stderr as ErrorRecords. Check
+# the process exit code explicitly while preserving stderr diagnostics in the log.
+function Invoke-RuntimeCommand {
+  param([string]$Executable, [string[]]$Arguments, [switch]$Capture)
+  $resolved = Get-Command $Executable -ErrorAction Stop
+  $ErrorActionPreference = 'Continue'
+  if ($Capture) {
+    $value = & $resolved.Source @Arguments 2>> $runtimeLog
   } else {
-    iex (new-object net.webclient).downloadstring('https://get.scoop.sh')
+    & $resolved.Source @Arguments *>> $runtimeLog
   }
-
-  # Uncomment this if proxy needed
-  #scoop config proxy 127.0.0.1:1080
-
-  scoop install git
-
-  $buckets =
-    'extras',
-    'games',
-    'java',
-    'nerd-fonts',
-    'nirsoft',
-    'nonportable',
-    'versions'
-  scoop_bucket_add $buckets
-  scoop bucket add customize https://github.com/ChinLong/scoop-customize.git
+  $code = $LASTEXITCODE
+  if ($code -ne 0) { throw "Runtime command failed with exit code $code; see $runtimeLog" }
+  if ($Capture) { return $value }
 }
-
-function install_winget()
-{
-  $pkgMgr = Get-AppPackage -name 'Microsoft.DesktopAppInstaller'
-  if (!$pkgMgr -or [version]$pkgMgr.Version -lt [version]"1.10.0.0") {
-    Start-Process ms-appinstaller:?source=https://aka.ms/getwinget
-    Read-Host -Prompt "Press enter to continue..."
+try {
+  $uv = Get-Command uv -ErrorAction SilentlyContinue
+  if ($uv) { $uvPath = $uv.Source } else { $uvPath = Join-Path $env:UV_INSTALL_DIR 'uv.exe' }
+  if (!(Test-Path -LiteralPath $uvPath)) {
+    $installer = Join-Path $runtimeDir 'install.ps1'
+    Invoke-WebRequest -UseBasicParsing -Uri https://astral.sh/uv/install.ps1 -OutFile $installer
+    Invoke-RuntimeCommand 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $installer)
   }
+  Invoke-RuntimeCommand $uvPath @('python', 'install', '3.12')
+  $python = Invoke-RuntimeCommand $uvPath @('python', 'find', '--no-project', '--managed-python', '3.12') -Capture
+} catch {
+  $_ | Out-String | Add-Content -LiteralPath $runtimeLog
+  Write-Error "Runtime setup failed. Details: $runtimeLog"
+  exit 1
 }
-
-function set_windows_configs()
-{
-  $dotPath = "$env:USERPROFILE\.dotfiles"
-  $configPath = "$dotPath\config"
-
-  # enable developer mode
-  sudo reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"
-
-  # enable ssh-agent service
-  sudo Set-Service ssh-agent -StartupType Automatic
-
-  sync_config_repo https://github.com/lukewang1024/dotfiles "$dotPath"
-
-  backup_then_symlink "$configPath\alacritty" "$env:APPDATA\alacritty"
-  backup_then_symlink "$configPath\powershell" "$env:USERPROFILE\Documents\PowerShell"
-  backup_then_symlink "$configPath\Rime" "$env:APPDATA\Rime"
-  backup_then_symlink "$configPath\ssh\config" "$env:USERPROFILE\.ssh\config"
-  backup_then_symlink "$configPath\tig" "$env:USERPROFILE\.config\tig"
-  backup_then_symlink "$configPath\windows-terminal\settings.json" "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
-  backup_then_symlink "$configPath\windows-terminal\ubuntu.png" "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\ubuntu.png"
-
-  # Make git work with openssh
-  [environment]::setenvironmentvariable('GIT_SSH', (resolve-path (scoop which ssh)), 'USER')
-  git config --global core.sshCommand C:/Windows/System32/OpenSSH/ssh.exe
-}
-
-#########
-# Utils #
-#########
-
-function blank_lines($num = 3, $char = '.')
-{
-  for ($i = 0; $i -lt $num; $i++) {
-    $char
-  }
-}
-
-function scoop_bucket_add($buckets)
-{
-  foreach ($bucket in $buckets) {
-    Invoke-Expression "scoop bucket add $bucket"
-  }
-}
-
-function scoop_install($pkgs)
-{
-  Invoke-Expression "scoop install $pkgs"
-}
-
-function scoop_sudo_install($pkgs)
-{
-  Invoke-Expression "sudo scoop install $fonts"
-}
-
-function winget_install($pkgs)
-{
-  foreach ($pkg in $pkgs) {
-    Invoke-Expression "winget install $pkg --accept-package-agreements"
-  }
-}
-
-function sync_config_repo($repoUrl, $configPath, $shallow = $false)
-{
-  if (Test-Path "$configPath") {
-    if (Test-Path "$configPath\.git") {
-      Invoke-Expression "pwsh -Command { cd '$configPath' ; git pull }"
-      return
-    }
-
-    backup $configPath
-  }
-
-  if ($shallow) {
-    git clone --depth 1 $repoUrl $configPath
-  } else {
-    git clone $repoUrl $configPath
-  }
-}
-
-function backup($path)
-{
-  $backupPath = "$path~"
-  if (!(Test-Path $path)) {
-    Write-Output "[util.backup] Target not found."
-    return
-  }
-  if (Test-Path $backupPath) {
-    Remove-Item $backupPath
-  }
-  Move-Item $path $backupPath
-}
-
-function symlink($fromPath, $toPath)
-{
-  if (!(Test-Path $fromPath)) {
-    Write-Output "[util.symlink] Target not found."
-    return
-  }
-
-  $parentPath = Split-Path -Path $toPath
-
-  if (!(Test-Path $parentPath)) {
-    New-Item -ItemType Directory -Path $parentPath
-  }
-
-  New-Item -ItemType SymbolicLink -Path $toPath -Target $fromPath
-}
-
-function backup_then_symlink($fromPath, $toPath)
-{
-  if (!(Test-Path $fromPath)) {
-    Write-Output "[util.backup_then_symlink] Target not found."
-    return
-  }
-
-  backup $toPath
-  symlink $fromPath $toPath
-}
-
-function print_usage()
-{
-  'Usage: .\init.ps1 [mode]'
-  'Modes: core, cli, gui, game, all, workbench'
-  exit
-}
-
-########
-# Main #
-########
-
-if ($args.count -eq 0) {
-  print_usage
-}
-
-prepare_windows_env($args[0])
+Write-Host 'Python runtime ready.'
+& $python $mainScript @bootstrapArgs
+exit $LASTEXITCODE

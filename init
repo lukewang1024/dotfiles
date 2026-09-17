@@ -1,162 +1,62 @@
-#!/usr/bin/env bash
-
-realpath() {
-  local filename=$1
-  local parent_dir=$(dirname "${filename}")
-
-  if [ -d "${filename}" ]; then
-    echo "$(cd "${filename}" && pwd)"
-  elif [ -d "${parent_dir}" ]; then
-    echo "$(cd "${parent_dir}" && pwd)/$(basename "${filename}")"
-  fi
-}
-
-repo_path=$(dirname `realpath $0`)
-partial_dir="$repo_path/bootstrap"
-config_dir="$repo_path/config"
-util_dir="$repo_path/util"
-bin_dir="$HOME/.local/bin"
-
-source "$partial_dir/util.sh"
-
-detect_platform() {
-  if [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = '/data/data/com.termux/files/usr' ]; then
-    echo termux
-    return
-  fi
-
-  case $(uname -s 2>/dev/null) in
-    Darwin) echo macos ;;
-    CYGWIN*|MINGW*|MSYS*) echo cygwin ;;
-    Linux)
-      if [ -f /etc/arch-release ]; then
-        echo arch
-      elif [ -f /etc/lsb-release ] && grep -q '^CHROMEOS_RELEASE_' /etc/lsb-release; then
-        echo chromeos
-      elif [ -f /etc/debian_version ]; then
-        echo debian
-      else
-        echo unknown
-      fi
-      ;;
-    *) echo unknown ;;
-  esac
-}
-
-mode=${1:-}
-[ -n "$mode" ] || print_usage 2
-
-case "$mode" in
-  basic|core|all|sync|npmg|zinit|kerberos|migrate-xdg|workbench|run) ;;
-  *)
-    echo "Unknown mode or task: $mode" >&2
-    print_usage 2
-    ;;
-esac
-
-platform=$(detect_platform)
-if [ "$platform" = unknown ]; then
-  echo 'Could not detect this platform.' >&2
-  print_usage 2
-fi
-export DOTFILES_PLATFORM="$platform"
-source "$partial_dir/workbench.sh"
-
-case "$mode" in
-  'basic')
-    source "$partial_dir/env.sh"
-    if [ "$platform" = termux ]; then
-      source "$partial_dir/termux.sh"
-      termux_basic_setup
-    else
-      basic_env_setup
-    fi
-    ;;
-
-  'core' | 'all')
-    case "$platform" in
-      macos)
-        source "$partial_dir/macos.sh"
-        prepare_macos_env "$mode"
-        ;;
-      debian)
-        source "$partial_dir/debian.sh"
-        prepare_debian_env "$mode"
-        ;;
-      arch)
-        source "$partial_dir/arch.sh"
-        prepare_arch_env "$mode"
-        ;;
-      chromeos)
-        [ "$mode" = core ] || echo 'Warning: ChromeOS has no additional all package set; using core.' >&2
-        source "$partial_dir/chromeos.sh"
-        prepare_chromeos
-        ;;
-      termux)
-        source "$partial_dir/env.sh"
-        source "$partial_dir/termux.sh"
-        prepare_termux_env "$mode"
-        ;;
-      cygwin)
-        [ "$mode" = core ] || echo 'Warning: Cygwin has no additional all package set; using core.' >&2
-        source "$partial_dir/cygwin.sh"
-        check_admin
-        setup_cygwin_env
-        install_sage
-        install_cygwin_packages
-        ;;
+#!/bin/sh
+# Bootstrap the interpreter only; all provisioning lives in bootstrap/main.py.
+set -eu
+repo_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+main_script=$repo_dir/bootstrap/main.py
+[ -f "$main_script" ] || { printf '%s\n' "Missing $main_script; run init from a complete dotfiles checkout." >&2; exit 1; }
+export PYTHONDONTWRITEBYTECODE=1
+bootstrap_system=$(uname -s)
+for runtime in python3 python "$HOME/.local/bin/python3.12" /opt/homebrew/bin/python3 /usr/local/bin/python3; do
+  if command -v "$runtime" >/dev/null 2>&1 &&
+     "$runtime" -c 'import sys; sys.exit(sys.version_info < (3, 10))' >/dev/null 2>&1; then
+    case $bootstrap_system in
+      CYGWIN*) "$runtime" -c 'import sys; sys.exit(not sys.platform.startswith("cygwin"))' >/dev/null 2>&1 || continue ;;
     esac
-    ;;
-
-  'npmg')
-    source "$partial_dir/pkg.sh"
-    install_npm_packages
-    ;;
-
-  'zinit')
-    source "$partial_dir/shell.sh"
-    zinit_setup
-    ;;
-
-  'kerberos')
-    shift
-    exec "$partial_dir/kerberos.sh" "$@"
-    ;;
-
-  'sync')
-    source "$partial_dir/env.sh"
-    sync_setup
-    ;;
-
-  'migrate-xdg')
-    shift
-    exec "$util_dir/dotfiles/migrate-xdg" "$@"
-    ;;
-
-  'workbench')
-    setup_distributed_workbench
-    workbench_status=$?
-    if [ "$workbench_status" -ne 0 ]; then
-      exit "$workbench_status"
-    fi
-    ;;
-
-  'run')
-    echo "Run '$3' in '$partial_dir/$2.sh'..."
-    echo
-    source "$partial_dir/$2.sh"
-    eval "$3"
-    run_status=$?
-    if [ "$run_status" -ne 0 ]; then
-      echo "Task '$3' failed with status $run_status." >&2
-      exit "$run_status"
-    fi
-    ;;
-
-  *)
-    print_usage
-    ;;
+    exec "$runtime" "$main_script" "$@"
+  fi
+done
+case $bootstrap_system in
+  CYGWIN*) printf '%s\n' 'Install Cygwin-native Python 3.10+ using Cygwin Setup, then rerun init.' >&2; exit 1 ;;
 esac
-
-echo 'All jobs done. Have a nice day...'
-exit 0
+[ "$#" -gt 0 ] || { printf '%s\n' 'Usage: init <basic|core|all|sync|run|...> [options]' >&2; exit 2; }
+# An inspection must not silently install a runtime.
+for argument do
+  case $argument in
+    --dry-run|--list-tasks|-h|--help)
+      printf '%s\n' 'Python 3.10+ is required to inspect this checkout. Run init core to prepare the bootstrap runtime.' >&2
+      exit 1 ;;
+  esac
+done
+export UV_INSTALL_DIR="$HOME/.local/bin"
+export UV_NO_MODIFY_PATH=1
+export UV_PYTHON_INSTALL_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/uv/python"
+export UV_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/uv"
+export UV_PYTHON_BIN_DIR="$HOME/.local/bin"
+bootstrap_state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/bootstrap
+mkdir -p "$bootstrap_state"
+bootstrap_dir=$(umask 077; mktemp -d "$bootstrap_state/runtime-XXXXXX")
+bootstrap_log=$bootstrap_dir/output.log
+printf 'Preparing Python runtime...\nLog: %s\n' "$bootstrap_log" >&2
+if [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = /data/data/com.termux/files/usr ]; then
+  if ! pkg install -y python >"$bootstrap_log" 2>&1; then
+    printf 'Runtime setup failed. Details: %s\n' "$bootstrap_log" >&2; exit 1
+  fi
+  exec python "$main_script" "$@"
+fi
+if command -v uv >/dev/null 2>&1; then
+  bootstrap_uv=$(command -v uv)
+elif [ -x "$UV_INSTALL_DIR/uv" ]; then
+  bootstrap_uv=$UV_INSTALL_DIR/uv
+else
+  if ! curl -fsSL https://astral.sh/uv/install.sh -o "$bootstrap_dir/install.sh" >>"$bootstrap_log" 2>&1 ||
+     ! sh "$bootstrap_dir/install.sh" >>"$bootstrap_log" 2>&1; then
+    printf 'Runtime setup failed. Details: %s\n' "$bootstrap_log" >&2; exit 1
+  fi
+  bootstrap_uv=$UV_INSTALL_DIR/uv
+fi
+if ! "$bootstrap_uv" python install 3.12 >>"$bootstrap_log" 2>&1; then
+  printf 'Runtime setup failed. Details: %s\n' "$bootstrap_log" >&2; exit 1
+fi
+bootstrap_python=$("$bootstrap_uv" python find --no-project --managed-python 3.12 2>>"$bootstrap_log")
+printf '%s\n' 'Python runtime ready.' >&2
+exec "$bootstrap_python" "$main_script" "$@"

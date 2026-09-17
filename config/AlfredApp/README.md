@@ -33,7 +33,7 @@ prefs.json .syncfolders -> ${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/Alf
 ```
 
 `util/macos/alfred-prefs-folder` sets that (idempotently), and
-`bootstrap/macos.sh` calls it from `set_macos_configs`. It is the **only** install
+`bootstrap/dotfiles/platforms.py` calls it from `set_macos_configs`. It is the **only** install
 step — the workflow symlinks are repo-relative and tracked, so they resolve on
 any machine straight out of a fresh clone. There are no per-workflow installers.
 

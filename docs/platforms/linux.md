@@ -1,14 +1,14 @@
 # Linux setup
 
 Linux support separates distro package selection from shared desktop and shell
-configuration. Debian-family packages live in `bootstrap/debian.sh`, Arch
-packages live in `bootstrap/arch.sh`, and shared application links live in
-`bootstrap/linux.sh`.
+configuration. Debian-family packages live in `bootstrap/dotfiles/packages.json`, Arch
+packages live in `bootstrap/dotfiles/packages.json`, and shared application links live in
+`bootstrap/dotfiles/platforms.py`.
 
 ## Design
 
-Both distro flows build on the common environment in `bootstrap/env.sh` and the
-cross-Unix package/configuration helpers in `bootstrap/nix.sh`.
+Both distro flows build on the common environment in `bootstrap/dotfiles/tasks.py` and the
+cross-Unix package/configuration helpers in `bootstrap/dotfiles/tasks.py`.
 
 | Mode | Includes |
 | --- | --- |
@@ -20,7 +20,7 @@ cross-Unix package/configuration helpers in `bootstrap/nix.sh`.
 
 The GUI path is opinionated around X11 tooling such as i3, X resources,
 Polybar, Rofi, and systemd user units. Do not run it on an unrelated desktop
-without reviewing `bootstrap/linux.sh`.
+without reviewing `bootstrap/dotfiles/platforms.py`.
 
 ## Install a new machine
 
@@ -40,7 +40,7 @@ git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.co
 
 The distro bootstrap uses the native package manager and may invoke `sudo`.
 The Arch entrypoint also configures pacman mirrors before selecting a mode.
-Review package arrays and distro assumptions before the first run.
+Review package groups and distro assumptions before the first run.
 
 ## Update and reconcile
 

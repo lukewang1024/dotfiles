@@ -1,0 +1,2588 @@
+{
+  "workbench/workbench_release_installer": {
+    "arrays": {},
+    "links": []
+  },
+  "workbench/workbench_default_node_id": {
+    "arrays": {},
+    "links": []
+  },
+  "workbench/workbench_peer_local_config": {
+    "arrays": {},
+    "links": []
+  },
+  "workbench/setup_termux_workbench_peer": {
+    "arrays": {},
+    "links": []
+  },
+  "workbench/setup_distributed_workbench": {
+    "arrays": {},
+    "links": []
+  },
+  "pkg/install_common_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "pkg/install_ai_agent_tools": {
+    "arrays": {},
+    "links": []
+  },
+  "pkg/install_cargo_packages": {
+    "arrays": {
+      "core_pkgs": [
+        [
+          "wurl"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "pkg/install_gem_packages": {
+    "arrays": {
+      "core_pkgs": [
+        [
+          "mdless"
+        ]
+      ],
+      "extra_pkgs": [
+        [
+          "iStats"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "pkg/install_uv": {
+    "arrays": {},
+    "links": []
+  },
+  "pkg/install_pnpm": {
+    "arrays": {},
+    "links": []
+  },
+  "pkg/install_npm_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "pkg/install_npm_cli_packages": {
+    "arrays": {
+      "extra_pkgs": [
+        [
+          "commitizen",
+          "depcheck",
+          "hexo-cli",
+          "is-website-vulnerable",
+          "madge",
+          "npm-check",
+          "npm-check-updates",
+          "npm-quick-run",
+          "pm2",
+          "svgexport",
+          "terminalizer",
+          "textlint",
+          "updtr",
+          "vercel",
+          "yo"
+        ]
+      ],
+      "core_pkgs": [
+        [
+          "git-file-history",
+          "happy",
+          "http-server",
+          "localtunnel",
+          "mcporter",
+          "musicn",
+          "neovim",
+          "nls",
+          "npkill",
+          "nrm",
+          "open-cli",
+          "pangu",
+          "readability-cli",
+          "serve",
+          "skills",
+          "taskbook",
+          "zx"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "pkg/install_npm_gui_packages": {
+    "arrays": {
+      "core_pkgs": [
+        [
+          "brightness-cli",
+          "clipboard-cli"
+        ]
+      ],
+      "extra_pkgs": [
+        [
+          "@electron/asar",
+          "@mermaid-js/mermaid-cli",
+          "create-dmg",
+          "nativefier",
+          "open-computer-use"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "pkg/install_pip_packages": {
+    "arrays": {
+      "core_pkgs": [
+        [
+          "poetry",
+          "powerline-status"
+        ]
+      ],
+      "extra_pkgs": [
+        [
+          "cppman",
+          "ici",
+          "myqr",
+          "present",
+          "pygments",
+          "pywal"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "pkg/install_other_packages": {
+    "arrays": {},
+    "links": [
+      [
+        "$util_dir/shell/find-and-replace",
+        "$bin_dir/find-and-replace"
+      ],
+      [
+        "$util_dir/shell/killbp",
+        "$bin_dir/killbp"
+      ],
+      [
+        "$util_dir/shell/mann",
+        "$bin_dir/mann"
+      ],
+      [
+        "$util_dir/shell/md2resume",
+        "$bin_dir/md2resume"
+      ],
+      [
+        "$util_dir/shell/npm-token",
+        "$bin_dir/npm-token"
+      ],
+      [
+        "$util_dir/shell/pretty-csv",
+        "$bin_dir/pretty-csv"
+      ],
+      [
+        "$util_dir/shell/vnc-connect",
+        "$bin_dir/vnc-connect"
+      ]
+    ]
+  },
+  "pkg/install_any_script": {
+    "arrays": {},
+    "links": []
+  },
+  "cygwin/check_admin": {
+    "arrays": {},
+    "links": []
+  },
+  "cygwin/setup_cygwin_env": {
+    "arrays": {},
+    "links": [
+      [
+        "$util_dir/cygwin/sudo",
+        "$bin_dir/sudo"
+      ]
+    ]
+  },
+  "cygwin/install_sage": {
+    "arrays": {},
+    "links": []
+  },
+  "cygwin/install_cygwin_packages": {
+    "arrays": {
+      "pkgs": [
+        [
+          "curl",
+          "cygport",
+          "cygutils-extra",
+          "fish",
+          "fortune-mod",
+          "git",
+          "ImageMagick",
+          "ImageMagick-doc",
+          "inetutils",
+          "irssi",
+          "mosh",
+          "mutt",
+          "nano",
+          "nc",
+          "openssh",
+          "perl",
+          "python3",
+          "python3-setuptools",
+          "rsync",
+          "ruby",
+          "the_silver_searcher",
+          "tig",
+          "tmux",
+          "tree",
+          "vim",
+          "w3m",
+          "zip",
+          "zsh"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "chromeos/crew_install_pkgs": {
+    "arrays": {},
+    "links": []
+  },
+  "chromeos/prepare_chromeos": {
+    "arrays": {
+      "pkgs": [
+        [
+          "ag",
+          "figlet",
+          "fzf",
+          "git",
+          "htop",
+          "imagemagick7",
+          "jq",
+          "less",
+          "manpages",
+          "mc",
+          "nano",
+          "neofetch",
+          "openssh",
+          "p7zip",
+          "proxychains",
+          "ranger",
+          "rsync",
+          "tig",
+          "tldr",
+          "tmux",
+          "unzip",
+          "yarn",
+          "zip",
+          "zsh"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "macos-defaults/better_macos_defaults": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/install_linuxbrew": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/install_linux_brew_core_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/install_linux_brew_extra_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/install_st": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/apply_linux_app_configs": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/aria2",
+        "~/.aria2"
+      ],
+      [
+        "$config_dir/dunst",
+        "~/.config/dunst"
+      ],
+      [
+        "$config_dir/flameshot",
+        "~/.config/Dharkael"
+      ],
+      [
+        "$config_dir/fontconfig",
+        "~/.config/fontconfig"
+      ],
+      [
+        "$config_dir/gsimplecal",
+        "~/.config/gsimplecal"
+      ],
+      [
+        "$config_dir/gtk-2.0",
+        "~/.config/gtk-2.0"
+      ],
+      [
+        "$config_dir/gtk-2.0/.gtkrc-2.0",
+        "~/.gtkrc-2.0"
+      ],
+      [
+        "$config_dir/gtk-3.0",
+        "~/.config/gtk-3.0"
+      ],
+      [
+        "$config_dir/i3",
+        "~/.config/i3"
+      ],
+      [
+        "$config_dir/hyper",
+        "~/.config/hyper"
+      ],
+      [
+        "$config_dir/mpv",
+        "~/.config/mpv"
+      ],
+      [
+        "$config_dir/picom",
+        "~/.config/picom"
+      ],
+      [
+        "$config_dir/polipo",
+        "~/.config/polipo"
+      ],
+      [
+        "$config_dir/polybar",
+        "~/.config/polybar"
+      ],
+      [
+        "$config_dir/privoxy",
+        "~/.config/privoxy"
+      ],
+      [
+        "$config_dir/ranger/linux",
+        "~/.config/ranger"
+      ],
+      [
+        "$config_dir/redshift/redshift.conf",
+        "~/.config/redshift.conf"
+      ],
+      [
+        "$config_dir/rofi",
+        "~/.config/rofi"
+      ],
+      [
+        "$unit",
+        "~/.config/systemd/user/$(basename $unit)"
+      ],
+      [
+        "$config_dir/thunar",
+        "~/.config/Thunar"
+      ],
+      [
+        "$config_dir/tilda",
+        "~/.config/tilda"
+      ],
+      [
+        "$config_dir/v2ray",
+        "~/.config/v2ray"
+      ],
+      [
+        "$config_dir/vnc",
+        "~/.vnc"
+      ],
+      [
+        "$config_dir/x/.xbindkeysrc",
+        "~/.xbindkeysrc"
+      ],
+      [
+        "$config_dir/x/.xinitrc",
+        "~/.xinitrc"
+      ],
+      [
+        "$config_dir/x/.Xmodmap",
+        "~/.Xmodmap"
+      ],
+      [
+        "$config_dir/x/.Xresources",
+        "~/.Xresources"
+      ],
+      [
+        "$config_dir/x/.Xresources.d",
+        "~/.Xresources.d"
+      ],
+      [
+        "$config_dir/x/.xscreensaver",
+        "~/.xscreensaver"
+      ],
+      [
+        "$config_dir/zathura",
+        "~/.config/zathura"
+      ],
+      [
+        "~/Dropbox/Sync/Rime",
+        "~/.config/fcitx/rime/sync"
+      ],
+      [
+        "$config_dir/polybar/launch-bars",
+        "$bin_dir/polybar-launch"
+      ],
+      [
+        "$util_dir/linux/chrome-launcher",
+        "$bin_dir/chrome-launcher"
+      ],
+      [
+        "$util_dir/linux/dmenu-display",
+        "$bin_dir/dmenu-display"
+      ],
+      [
+        "$util_dir/linux/dmenu-handler",
+        "$bin_dir/dmenu-handler"
+      ],
+      [
+        "$util_dir/linux/dmenu-i3",
+        "$bin_dir/dmenu-i3"
+      ],
+      [
+        "$util_dir/linux/dmenu-mount",
+        "$bin_dir/dmenu-mount"
+      ],
+      [
+        "$util_dir/linux/dmenu-power",
+        "$bin_dir/dmenu-power"
+      ],
+      [
+        "$util_dir/linux/dmenu-prompt",
+        "$bin_dir/dmenu-prompt"
+      ],
+      [
+        "$util_dir/linux/dmenu-record",
+        "$bin_dir/dmenu-record"
+      ],
+      [
+        "$util_dir/linux/dmenu-umount",
+        "$bin_dir/dmenu-umount"
+      ],
+      [
+        "$util_dir/linux/enable-exec",
+        "$bin_dir/enable-exec"
+      ],
+      [
+        "$util_dir/linux/kbmod",
+        "$bin_dir/kbmod"
+      ],
+      [
+        "$util_dir/linux/hyper",
+        "$bin_dir/hyper"
+      ],
+      [
+        "$util_dir/linux/local-http-proxy",
+        "$bin_dir/local-http-proxy"
+      ],
+      [
+        "$util_dir/linux/lock",
+        "$bin_dir/lock"
+      ],
+      [
+        "$util_dir/linux/notify",
+        "$bin_dir/notify"
+      ],
+      [
+        "$util_dir/linux/record-audio",
+        "$bin_dir/record-audio"
+      ],
+      [
+        "$util_dir/linux/record-screencast",
+        "$bin_dir/record-screencast"
+      ],
+      [
+        "$util_dir/linux/record-video",
+        "$bin_dir/record-video"
+      ],
+      [
+        "$util_dir/linux/ssh-agent-per-user",
+        "$bin_dir/ssh-agent-per-user"
+      ],
+      [
+        "$util_dir/linux/thunar-launcher",
+        "$bin_dir/thunar-launcher"
+      ],
+      [
+        "$util_dir/linux/touchpad-toggle",
+        "$bin_dir/touchpad-toggle"
+      ],
+      [
+        "$util_dir/linux/wallpaper",
+        "$bin_dir/wallpaper"
+      ],
+      [
+        "$util_dir/linux/window-move",
+        "$bin_dir/window-move"
+      ],
+      [
+        "$util_dir/linux/window-resize",
+        "$bin_dir/window-resize"
+      ],
+      [
+        "$util_dir/linux/xrun",
+        "$bin_dir/xrun"
+      ],
+      [
+        "$config_dir/xsessions/i3-systemd-init",
+        "$bin_dir/i3-systemd-init"
+      ],
+      [
+        "$config_dir/xsessions/xfce-systemd-init",
+        "$bin_dir/xfce-systemd-init"
+      ]
+    ]
+  },
+  "linux/install_flatpak_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/fix_ENOSPC": {
+    "arrays": {},
+    "links": []
+  },
+  "linux/fix_locale": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/prepare_macos_env": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/prepare_macos_env_core": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/prepare_macos_env_cli": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/prepare_macos_env_gui": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/install_homebrew": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/prepare_macos_env_cli_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "colima",
+          "mas"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "macos/prepare_macos_env_cli_extra": {
+    "arrays": {
+      "pkgs": [
+        [
+          "brightness",
+          "csshx",
+          "cormacrelf/tap/dark-notify",
+          "duti",
+          "fortune",
+          "m-cli",
+          "mackup",
+          "powershell",
+          "reattach-to-user-namespace",
+          "scrcpy",
+          "LizardByte/homebrew/sunshine",
+          "terminal-notifier"
+        ]
+      ],
+      "casks": [
+        [
+          "android-platform-tools",
+          "dotnet-sdk",
+          "gcloud-cli",
+          "miniconda",
+          "orbstack",
+          "vagrant"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "macos/prepare_macos_env_gui_core": {
+    "arrays": {
+      "casks": [
+        [
+          "alacritty",
+          "alfred",
+          "appcleaner",
+          "dockdoor",
+          "fliqlo",
+          "font-fira-code-nerd-font",
+          "font-meslo-lg-nerd-font",
+          "font-sauce-code-pro-nerd-font",
+          "font-symbols-only-nerd-font",
+          "hammerspoon",
+          "iina",
+          "iterm2",
+          "jordanbaird-ice",
+          "karabiner-elements",
+          "macpass",
+          "maczip",
+          "mos",
+          "obsidian",
+          "oomol-lab/tap/lockime",
+          "pika",
+          "rectangle",
+          "shottr",
+          "snipaste",
+          "squirrel",
+          "sublime-merge",
+          "sublime-text",
+          "visual-studio-code"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "macos/prepare_macos_env_gui_extra": {
+    "arrays": {
+      "masApps": [
+        [
+          "441258766",
+          "497799835",
+          "664513913",
+          "747648890",
+          "768053424",
+          "784801555",
+          "789066512",
+          "897283731",
+          "937984704",
+          "998361254",
+          "998804308",
+          "1025306797",
+          "1044484672",
+          "1142151959",
+          "1176895641",
+          "1314842898",
+          "1449412482",
+          "1452453066",
+          "1477089520",
+          "1485844094",
+          "1497527363",
+          "1499181666",
+          "1507782672",
+          "1607635845",
+          "1615988943",
+          "1659622164",
+          "1661733229",
+          "6444050820"
+        ]
+      ],
+      "casks": [
+        [
+          "aerial",
+          "lihaoyun6/tap/airbattery",
+          "alt-tab",
+          "androidtool",
+          "background-music",
+          "betterdisplay",
+          "boop",
+          "browserosaurus",
+          "calibre",
+          "caprine",
+          "charles",
+          "clash-verge-rev",
+          "commander-one",
+          "coteditor",
+          "db-browser-for-sqlite",
+          "dropbox",
+          "duet",
+          "easydict",
+          "electron-fiddle",
+          "espanso",
+          "eul",
+          "feishu",
+          "firefox",
+          "fluor",
+          "flux",
+          "folx",
+          "font-smoothing-adjuster",
+          "google-chrome",
+          "handbrake",
+          "handy",
+          "haptickey",
+          "hyperconnect",
+          "imageoptim",
+          "inkscape",
+          "istat-menus",
+          "itermai",
+          "itsycal",
+          "joplin",
+          "jupyter-notebook-viewer",
+          "kap",
+          "kdiff3",
+          "keepingyouawake",
+          "keka",
+          "keycastr",
+          "kitty",
+          "lark",
+          "lepton",
+          "losslesscut",
+          "lulu",
+          "lyricsx",
+          "mac-mouse-fix@2",
+          "maccy",
+          "mark-text",
+          "markedit",
+          "marta",
+          "microsoft-edge",
+          "mongodb-compass",
+          "monitorcontrol",
+          "moonlight",
+          "lukewang1024/legacy/mweb2",
+          "netnewswire",
+          "netspot",
+          "nightfall",
+          "ntfstool",
+          "omnidisksweeper",
+          "onyx",
+          "openinterminal",
+          "openmtp",
+          "pdf-expert",
+          "pdfsam-basic",
+          "provisionql",
+          "proxifier",
+          "qlcolorcode",
+          "qlmarkdown",
+          "qlprettypatch",
+          "qlstephen",
+          "qlvideo",
+          "qq",
+          "qqmusic",
+          "quicklook-csv",
+          "quicklookase",
+          "lihaoyun6/tap/quickrecorder",
+          "qutebrowser",
+          "rapidapi",
+          "raycast",
+          "redisinsight",
+          "resilio-sync",
+          "sequel-ace",
+          "shifty",
+          "skim",
+          "slack",
+          "sloth",
+          "spotify",
+          "sqlpro-for-postgres",
+          "stats",
+          "stretchly",
+          "suspicious-package",
+          "swiftdefaultappsprefpane",
+          "switchhosts",
+          "tailscale-app",
+          "the-unarchiver",
+          "thorium",
+          "topnotch",
+          "ubersicht",
+          "uninstallpkg",
+          "utm",
+          "vagrant-manager",
+          "virtualbox",
+          "vnc-viewer",
+          "webpquicklook",
+          "wechat",
+          "darrylmorley/whatcable/whatcable",
+          "whatsapp",
+          "windows-app",
+          "wireshark",
+          "xbar",
+          "xld",
+          "xquartz"
+        ]
+      ],
+      "no_quarantined_casks": [
+        [
+          "syntax-highlight"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "macos/set_macos_configs": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/hammerspoon/private",
+        "$XDG_CONFIG_HOME/hammerspoon/private"
+      ],
+      [
+        "$config_dir/hammerspoon/init.lua",
+        "$XDG_CONFIG_HOME/hammerspoon/init.lua"
+      ],
+      [
+        "$config_dir/hammerspoon/init.lua",
+        "$XDG_CONFIG_HOME/hammerspoon/workbench-init.lua"
+      ],
+      [
+        "$config_dir/karabiner",
+        "~/.config/karabiner"
+      ],
+      [
+        "$config_dir/ranger/macos",
+        "~/.config/ranger"
+      ],
+      [
+        "$config_dir/Rime",
+        "~/Library/Rime"
+      ],
+      [
+        "$util_dir/macos/setup-launchagent",
+        "$bin_dir/setup-launchagent"
+      ],
+      [
+        "$util_dir/macos/launchservices-prune",
+        "$bin_dir/launchservices-prune"
+      ],
+      [
+        "$util_dir/macos/virtualbox-kext",
+        "$bin_dir/virtualbox-kext"
+      ],
+      [
+        "$util_dir/macos/alfred-prefs-folder",
+        "$bin_dir/alfred-prefs-folder"
+      ]
+    ]
+  },
+  "macos/setup_alfred_prefs": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/retire_peon_relay_agent": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/brew_multi_user_permission": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/fix_battery_drain_over_sleep": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/install_mac_wechat_plugin": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/backup_automator_stuff": {
+    "arrays": {},
+    "links": []
+  },
+  "macos/setup_macos_gaming": {
+    "arrays": {
+      "casks": [
+        [
+          "battle-net",
+          "dosbox",
+          "dosbox-x",
+          "ea",
+          "epic-games",
+          "openemu",
+          "openra",
+          "steam"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "util/backup": {
+    "arrays": {},
+    "links": []
+  },
+  "util/symlink": {
+    "arrays": {},
+    "links": []
+  },
+  "util/backup_then_symlink": {
+    "arrays": {},
+    "links": []
+  },
+  "util/sync_config_repo": {
+    "arrays": {},
+    "links": []
+  },
+  "util/blank_lines": {
+    "arrays": {},
+    "links": []
+  },
+  "util/print_usage": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/tmux_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/tmux_config_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/tmux",
+        "$XDG_CONFIG_HOME/tmux"
+      ],
+      [
+        "$util_dir/shell/sesh-connect",
+        "$bin_dir/sesh-connect"
+      ],
+      [
+        "$util_dir/shell/tmux-kill-session",
+        "$bin_dir/tmux-kill-session"
+      ],
+      [
+        "$util_dir/shell/tmux-autoreload-launch",
+        "$bin_dir/tmux-autoreload-launch"
+      ],
+      [
+        "$util_dir/shell/tmux-workbench-update",
+        "$bin_dir/tmux-workbench-update"
+      ]
+    ]
+  },
+  "shell/tmux_plugins_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/tig_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/tig",
+        "~/.config/tig"
+      ]
+    ]
+  },
+  "shell/vim_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/vim_config_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/vim",
+        "$XDG_CONFIG_HOME/vim"
+      ],
+      [
+        "$config_dir/vim",
+        "$XDG_CONFIG_HOME/nvim"
+      ]
+    ]
+  },
+  "shell/vim_plugins_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/ssh_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/ssh/config",
+        "~/.ssh/config"
+      ]
+    ]
+  },
+  "shell/zinit_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/zsh/zinit.zshrc",
+        "$XDG_CONFIG_HOME/zsh/.zshrc"
+      ]
+    ]
+  },
+  "shell/zinit_install": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/zsh_config_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/zsh/zinit.zshrc",
+        "$XDG_CONFIG_HOME/zsh/.zshrc"
+      ],
+      [
+        "$config_dir/zsh/.zlogin",
+        "$XDG_CONFIG_HOME/zsh/.zlogin"
+      ],
+      [
+        "$config_dir/zsh/.zshenv",
+        "$XDG_CONFIG_HOME/zsh/.zshenv"
+      ],
+      [
+        "$config_dir/zsh/.zprofile",
+        "$XDG_CONFIG_HOME/zsh/.zprofile"
+      ],
+      [
+        "$config_dir/starship/starship.toml",
+        "$XDG_CONFIG_HOME/starship.toml"
+      ]
+    ]
+  },
+  "shell/find_global_zshenv": {
+    "arrays": {
+      "locations": [
+        [
+          "/etc/zshenv",
+          "/etc/zsh/zshenv",
+          "/usr/local/etc/zshenv"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "shell/zsh_common_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/zsh/.zlogin",
+        "$XDG_CONFIG_HOME/zsh/.zlogin"
+      ],
+      [
+        "$config_dir/zsh/.zshenv",
+        "$XDG_CONFIG_HOME/zsh/.zshenv"
+      ],
+      [
+        "$config_dir/zsh/.zprofile",
+        "$XDG_CONFIG_HOME/zsh/.zprofile"
+      ],
+      [
+        "$config_dir/starship/starship.toml",
+        "$XDG_CONFIG_HOME/starship.toml"
+      ]
+    ]
+  },
+  "shell/shell_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/set_default_shell": {
+    "arrays": {},
+    "links": []
+  },
+  "shell/profile_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "nix/install_nix_brew_runtimes": {
+    "arrays": {
+      "pkgs": [
+        [
+          "anyenv",
+          "deno",
+          "go",
+          "node",
+          "php",
+          "pnpm",
+          "python",
+          "python-tk",
+          "ruby",
+          "uv",
+          "yarn"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "nix/install_nix_brew_core_packages": {
+    "arrays": {
+      "pkgs": [
+        [
+          "btop",
+          "diff-so-fancy",
+          "docker",
+          "docker-buildx",
+          "docker-compose",
+          "docker-credential-helper",
+          "entr",
+          "fd",
+          "findutils",
+          "fx",
+          "fzf",
+          "git",
+          "httpie",
+          "jq",
+          "lazydocker",
+          "lazygit",
+          "lazyrsync",
+          "less",
+          "lf",
+          "lsd",
+          "navi",
+          "openssh",
+          "peco",
+          "prettyping",
+          "procs",
+          "ripgrep",
+          "rsync",
+          "sesh",
+          "starship",
+          "tealdeer",
+          "the_silver_searcher",
+          "tig",
+          "tmux",
+          "tmuxinator",
+          "trash-cli",
+          "unar",
+          "urlview",
+          "vim",
+          "wget",
+          "witr",
+          "yazi",
+          "zoxide",
+          "zsh"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "nix/install_nix_brew_extra_packages": {
+    "arrays": {
+      "pkgs": [
+        [
+          "ansifilter",
+          "aria2",
+          "ata",
+          "autossh",
+          "axel",
+          "bash",
+          "bash-completion",
+          "bat",
+          "bifrost-proxy/bifrost/bifrost",
+          "binutils",
+          "broot",
+          "c2048",
+          "calcurse",
+          "chafa",
+          "cheat",
+          "checkbashisms",
+          "cmake",
+          "cmatrix",
+          "cmus",
+          "coreutils",
+          "cowsay",
+          "cpulimit",
+          "csvlens",
+          "ddgr",
+          "diffutils",
+          "dive",
+          "doggo",
+          "duf",
+          "egoist/tap/dum",
+          "ed",
+          "emscripten",
+          "exiftool",
+          "extract_url",
+          "fastfetch",
+          "ffmpeg",
+          "ffmpegthumbnailer",
+          "figlet",
+          "file-formula",
+          "fish",
+          "fpp",
+          "wader/tap/fq",
+          "textualize/homebrew/frogmouth",
+          "fswatch",
+          "gawk",
+          "gdu",
+          "gh",
+          "ghi",
+          "gifsicle",
+          "gist",
+          "git-appraise",
+          "git-delta",
+          "git-extras",
+          "git-filter-repo",
+          "git-flow",
+          "git-lfs",
+          "git-quick-stats",
+          "gitui",
+          "glances",
+          "glow",
+          "gnu-indent",
+          "gnu-sed",
+          "gnu-tar",
+          "gnu-which",
+          "gnutls",
+          "anhoder/go-musicfox/go-musicfox",
+          "gping",
+          "graphviz",
+          "grep",
+          "gzip",
+          "haproxy",
+          "hashcat",
+          "helix",
+          "hexyl",
+          "htop",
+          "httpstat",
+          "hub",
+          "hyperfine",
+          "icdiff",
+          "iftop",
+          "imagemagick",
+          "inetutils",
+          "irssi",
+          "jless",
+          "jpegoptim",
+          "kubernetes-cli",
+          "jesseduffield/lazynpm/lazynpm",
+          "llmfit",
+          "lolcat",
+          "mailsy",
+          "make",
+          "media-info",
+          "micro",
+          "midnight-commander",
+          "minikube",
+          "mkcert",
+          "arimxyer/tap/models",
+          "mosh",
+          "mpc",
+          "mpd",
+          "mps-youtube",
+          "mpv",
+          "multitail",
+          "clangen/musikcube/musikcube",
+          "mutt",
+          "mycli",
+          "xwmx/taps/nb",
+          "ncdu",
+          "ncmpcpp",
+          "neofetch",
+          "neomutt",
+          "neovim",
+          "netcat",
+          "nmap",
+          "nnn",
+          "noti",
+          "ntfy",
+          "nyancat",
+          "ocrmypdf",
+          "offlineimap",
+          "oha",
+          "onefetch",
+          "open-mpi",
+          "opencode",
+          "optipng",
+          "p7zip",
+          "pandoc",
+          "pdfsandwich",
+          "pgcli",
+          "pngquant",
+          "poppler",
+          "privoxy",
+          "progress",
+          "proxychains-ng",
+          "qpdf",
+          "ranger",
+          "redis",
+          "resvg",
+          "sc-im",
+          "scc",
+          "sevenzip",
+          "shellcheck",
+          "sl",
+          "smartmontools",
+          "sniffnet",
+          "spark",
+          "speedtest-cli",
+          "anhoder/go-musicfox/spotifox",
+          "abhimanyu003/sttr/sttr",
+          "gromgit/brewtils/taproom",
+          "tesseract",
+          "tesseract-lang",
+          "testdisk",
+          "thefuck",
+          "tmate",
+          "abhinav/tap/tmux-fastcopy",
+          "tmuxinator",
+          "toolong",
+          "translate-shell",
+          "tree",
+          "jstkdng/programs/ueberzugpp",
+          "unzip",
+          "w3m",
+          "watch",
+          "wdiff",
+          "websocat",
+          "whistle",
+          "wifi-password",
+          "wtf",
+          "wtfutil",
+          "xan",
+          "xdg-ninja",
+          "xpdf",
+          "you-get",
+          "yt-dlp",
+          "zsh-completions"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "nix/install_nix_brew_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "nix/apply_nix_app_configs": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/alacritty",
+        "~/.config/alacritty"
+      ],
+      [
+        "$config_dir/conda",
+        "~/.config/conda"
+      ],
+      [
+        "$config_dir/gitui",
+        "~/.config/gitui"
+      ],
+      [
+        "$config_dir/htop",
+        "~/.config/htop"
+      ],
+      [
+        "$config_dir/kitty",
+        "~/.config/kitty"
+      ],
+      [
+        "$config_dir/lf",
+        "~/.config/lf"
+      ],
+      [
+        "$config_dir/percol",
+        "~/.config/percol"
+      ],
+      [
+        "$config_dir/starship/starship.toml",
+        "$XDG_CONFIG_HOME/starship.toml"
+      ]
+    ]
+  },
+  "nix/brew_cleanup": {
+    "arrays": {},
+    "links": []
+  },
+  "nix/brew_bundle_cleanup": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/debian_add_PPAs": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/debian_install_pkgs": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/prepare_debian_env": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/prepare_debian_env_core": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/prepare_debian_env_cli": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/prepare_debian_env_gui": {
+    "arrays": {},
+    "links": []
+  },
+  "debian/prepare_debian_env_cli_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "build-essential",
+          "curl",
+          "file",
+          "fzf",
+          "git",
+          "htop",
+          "ripgrep",
+          "silversearcher-ag",
+          "tig",
+          "tmux",
+          "vim",
+          "zsh"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "debian/prepare_debian_env_cli_extra": {
+    "arrays": {
+      "pkgs": [
+        [
+          "apt-transport-https",
+          "ca-certificates",
+          "dstat",
+          "libbz2-dev",
+          "libncurses5-dev",
+          "libreadline-dev",
+          "libsqlite3-dev",
+          "libssl-dev",
+          "llvm",
+          "make",
+          "python3-setuptools",
+          "ruby",
+          "software-properties-common",
+          "tk-dev",
+          "wget",
+          "xz-utils",
+          "zlib1g-dev",
+          "fortune-mod",
+          "gnupg2",
+          "neovim",
+          "python3-dev",
+          "python3-pip",
+          "rxvt-unicode-256color",
+          "w3m-img"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "debian/prepare_debian_env_gui_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "dunst",
+          "feh",
+          "firefox-esr",
+          "flameshot",
+          "fonts-noto",
+          "fonts-noto-cjk",
+          "rofi",
+          "i3-wm",
+          "polybar",
+          "python3",
+          "libglib2.0-bin",
+          "wmctrl",
+          "xdotool",
+          "x11-xserver-utils",
+          "x11-utils",
+          "xcape",
+          "xautomation",
+          "xbindkeys",
+          "xclip",
+          "xsel"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "debian/setup_fcitx_rime": {
+    "arrays": {
+      "pkgs": [
+        [
+          "fcitx",
+          "fcitx-rime",
+          "fcitx-config-gtk",
+          "fcitx-frontend-gtk2",
+          "fcitx-frontend-gtk3",
+          "fcitx-frontend-qt5",
+          "fcitx-ui-classic"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "debian/prepare_debian_env_gui_extra": {
+    "arrays": {
+      "ppas": [
+        [
+          "ppa:mmstick76/alacritty",
+          "ppa:jtaylor/keepass",
+          "ppa:zeal-developers/ppa"
+        ]
+      ],
+      "pkgs": [
+        [
+          "alacritty",
+          "chromium-browser",
+          "doublecmd-gtk",
+          "kdiff3",
+          "keepass2",
+          "oneko",
+          "sublime-merge",
+          "sublime-text",
+          "zeal"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "arch/config_pacman": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/pacman_install_pkgs": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/aur_install_pkgs": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/prepare_arch_env": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/prepare_arch_env_core": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/prepare_arch_env_cli": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/prepare_arch_env_gui": {
+    "arrays": {},
+    "links": []
+  },
+  "arch/prepare_arch_env_cli_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "btop",
+          "diff-so-fancy",
+          "fd",
+          "fx",
+          "fzf",
+          "git",
+          "httpie",
+          "jq",
+          "less",
+          "lsd",
+          "openssh",
+          "pamac-cli",
+          "peco",
+          "prettyping",
+          "privoxy",
+          "procs",
+          "ripgrep",
+          "rsync",
+          "starship",
+          "tealdeer",
+          "the_silver_searcher",
+          "tig",
+          "tmux",
+          "trash-cli",
+          "unarchiver",
+          "vim",
+          "wget",
+          "yay",
+          "yazi",
+          "zoxide",
+          "zsh"
+        ],
+        [
+          "find-the-command",
+          "lazyrsync",
+          "lf-bin",
+          "navi",
+          "sesh-bin",
+          "tmuxinator",
+          "urlview",
+          "witr-bin"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "arch/prepare_arch_env_cli_extra": {
+    "arrays": {
+      "pkgs": [
+        [
+          "android-tools",
+          "aria2",
+          "autossh",
+          "axel",
+          "bat",
+          "bluetui",
+          "broot",
+          "calcurse",
+          "chafa",
+          "checkbashisms",
+          "cloc",
+          "cmake",
+          "cmatrix",
+          "cmus",
+          "cowsay",
+          "cpulimit",
+          "csvlens",
+          "dnsmasq",
+          "docker",
+          "docker-compose",
+          "dog",
+          "dstat",
+          "duf",
+          "ebtables",
+          "ffmpeg",
+          "ffmpegthumbnailer",
+          "figlet",
+          "fish",
+          "flatpak",
+          "fortune-mod",
+          "fq",
+          "frogmouth",
+          "gdu",
+          "gifsicle",
+          "git-delta",
+          "git-lfs",
+          "github-cli",
+          "gitui",
+          "glances",
+          "glow-bin",
+          "go",
+          "gping",
+          "graphviz",
+          "haproxy",
+          "hashcat",
+          "helix",
+          "hexyl",
+          "htop",
+          "hub",
+          "hyperfine",
+          "iftop",
+          "imagemagick",
+          "impala",
+          "iptables-nft",
+          "irssi",
+          "jdk-openjdk",
+          "jless",
+          "jpegoptim",
+          "kubectl",
+          "lazygit",
+          "libvirt",
+          "lolcat",
+          "mc",
+          "mediainfo",
+          "micro",
+          "minikube",
+          "mpc",
+          "mpd",
+          "mps-youtube",
+          "mpv",
+          "multitail",
+          "musikcube-bin",
+          "mutt",
+          "ncdu",
+          "ncmpcpp",
+          "neomutt",
+          "neovim",
+          "nghttp2",
+          "ntfysh-bin",
+          "nyancat",
+          "offlineimap",
+          "oha",
+          "onefetch",
+          "optipng",
+          "p7zip",
+          "pamixer",
+          "pandoc-cli",
+          "perl-image-exiftool",
+          "pkgfile",
+          "playerctl",
+          "pngquant",
+          "poppler",
+          "progress",
+          "proxychains-ng",
+          "qemu",
+          "ranger",
+          "shellcheck",
+          "sl",
+          "snapd",
+          "sniffnet",
+          "toolong",
+          "translate-shell",
+          "transmission-cli",
+          "tree",
+          "unrar",
+          "unzip",
+          "v2ray",
+          "v2ray-domain-list-community",
+          "v2ray-geoip",
+          "vagrant",
+          "w3m",
+          "websocat",
+          "wtf",
+          "xan",
+          "you-get",
+          "yt-dlp",
+          "zip"
+        ],
+        [
+          "cheat-bin",
+          "dive",
+          "downgrader",
+          "fpp",
+          "fswatch",
+          "git-bug-bin",
+          "git-quick-stats",
+          "gitflow-avh",
+          "go-musicfox-bin",
+          "google-cloud-cli",
+          "icdiff",
+          "lazydocker-bin",
+          "lazynpm",
+          "miniconda3",
+          "mons",
+          "mycli",
+          "nb",
+          "ocrmypdf",
+          "opencode-bin",
+          "pdfsandwich",
+          "pgcli",
+          "powershell-bin",
+          "sc-im",
+          "sparklines-git",
+          "touchpad-state-git",
+          "ttf-weather-icons",
+          "ueberzugpp",
+          "xdg-ninja"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "arch/prepare_arch_env_gui_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "alacritty",
+          "appmenu-gtk-module",
+          "arandr",
+          "autorandr",
+          "blueman",
+          "dmenu",
+          "dunst",
+          "evince",
+          "fcitx",
+          "fcitx-configtool",
+          "fcitx-im",
+          "fcitx-rime",
+          "feh",
+          "firefox",
+          "flameshot",
+          "foliate",
+          "galculator",
+          "gsimplecal",
+          "hyprpicker",
+          "hyprshot",
+          "i3-wm",
+          "libdbusmenu-glib",
+          "libdbusmenu-gtk2",
+          "libdbusmenu-gtk3",
+          "lxappearance",
+          "lxsession",
+          "lxtask",
+          "maim",
+          "network-manager-applet",
+          "noto-fonts",
+          "noto-fonts-cjk",
+          "noto-fonts-emoji",
+          "pa-applet",
+          "parcellite",
+          "picom",
+          "polybar",
+          "python-pywal",
+          "python",
+          "glib2",
+          "wmctrl",
+          "xdotool",
+          "xorg-xrandr",
+          "xorg-xprop",
+          "xorg-xwininfo",
+          "redshift",
+          "rofi",
+          "rofi-scripts",
+          "switcheroo",
+          "thunar",
+          "thunar-archive-plugin",
+          "thunar-media-tags-plugin",
+          "thunar-shares-plugin",
+          "thunar-volman",
+          "ttf-font-awesome",
+          "ttf-meslo-nerd",
+          "ttf-sarasa-gothic",
+          "ttf-sourcecodepro-nerd",
+          "tumbler",
+          "udiskie",
+          "vala-panel-appmenu-xfce-git",
+          "wqy-zenhei",
+          "xautomation",
+          "xbindkeys",
+          "xcape",
+          "xclip",
+          "xorg-apps",
+          "xscreensaver",
+          "xsecurelock",
+          "xsel",
+          "xss-lock",
+          "zathura",
+          "zathura-cb",
+          "zathura-djvu",
+          "zathura-pdf-mupdf",
+          "zathura-ps"
+        ],
+        [
+          "betterlockscreen",
+          "gluqlo-git",
+          "i3ass",
+          "jumpapp",
+          "localsend-bin",
+          "nerd-fonts-fira-code",
+          "obsidian-bin",
+          "sublime-merge",
+          "sublime-text-4",
+          "visual-studio-code-bin",
+          "walker",
+          "xgetres",
+          "xinit-xsession"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "arch/prepare_arch_env_gui_extra": {
+    "arrays": {
+      "pkgs": [
+        [
+          "android-file-transfer",
+          "arc-gtk-theme",
+          "arc-icon-theme",
+          "chromium",
+          "copyq",
+          "drawing",
+          "file-roller",
+          "freerdp",
+          "handbrake",
+          "hardinfo",
+          "kdiff3",
+          "keepassxc",
+          "kitty",
+          "materia-gtk-theme",
+          "neofetch",
+          "pdfarranger",
+          "qutebrowser",
+          "remmina",
+          "rxvt-unicode",
+          "scrcpy",
+          "sqlitebrowser",
+          "telegram-desktop",
+          "termite",
+          "tilda",
+          "virt-manager",
+          "virtualbox",
+          "winetricks",
+          "wkhtmltopdf",
+          "xcursor-simpleandsoft",
+          "zeal"
+        ],
+        [
+          "android-sdk",
+          "android-sdk-platform-tools",
+          "corplink-bin",
+          "deepin-wine-tim",
+          "deepin-wine-wechat",
+          "dropbox",
+          "feedreader",
+          "feishu-bin",
+          "genymotion",
+          "git-cola",
+          "google-chrome",
+          "joplin",
+          "kitematic",
+          "losslesscut",
+          "mailspring",
+          "marktext-bin",
+          "microsoft-edge-stable-bin",
+          "musixmatch-bin",
+          "qqmusic-bin",
+          "rslsync",
+          "screenkey",
+          "slack-desktop",
+          "spotify",
+          "thorium-bin",
+          "ttf-ms-fonts",
+          "urxvt-fullscreen",
+          "urxvt-resize-font-git",
+          "v2raya-bin",
+          "wechat-uos",
+          "whatsapp-for-linux"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "arch/setup_arch_gaming": {
+    "arrays": {
+      "pkgs": [
+        [
+          "desmume",
+          "dosbox",
+          "higan",
+          "mame",
+          "openra",
+          "pcsx2",
+          "ppsspp",
+          "snes9x-gtk",
+          "steam",
+          "vbam-wx"
+        ],
+        [
+          "dosbox-x"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "arch/set_default_apps": {
+    "arrays": {},
+    "links": []
+  },
+  "env/git_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/git/alias",
+        "$XDG_CONFIG_HOME/git/alias"
+      ],
+      [
+        "$config_dir/git/common",
+        "$XDG_CONFIG_HOME/git/common"
+      ],
+      [
+        "$util_dir/shell/git-branch-cleanup",
+        "$bin_dir/git-branch-cleanup"
+      ],
+      [
+        "$util_dir/shell/git-clone-bare",
+        "$bin_dir/git-clone-bare"
+      ],
+      [
+        "$util_dir/shell/git-new-branch",
+        "$bin_dir/git-new-branch"
+      ],
+      [
+        "$util_dir/shell/git-set-identity",
+        "$bin_dir/git-set-identity"
+      ]
+    ]
+  },
+  "env/git_identity_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/anyenv_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/rustup_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/uv_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/python_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/python",
+        "$XDG_CONFIG_HOME/python"
+      ]
+    ]
+  },
+  "env/pnpm_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/pnpm_config_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/pnpm",
+        "$XDG_CONFIG_HOME/pnpm"
+      ]
+    ]
+  },
+  "env/npm_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/util_setup": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/proxychains/proxychains.conf",
+        "$XDG_CONFIG_HOME/proxychains.conf"
+      ],
+      [
+        "$config_dir/agent/AGENTS.md",
+        "$HOME/.codex/AGENTS.md"
+      ],
+      [
+        "$config_dir/agent/AGENTS.md",
+        "$XDG_CONFIG_HOME/opencode/AGENTS.md"
+      ],
+      [
+        "$config_dir/agent/AGENTS.md",
+        "$HOME/.claude/AGENTS.md"
+      ],
+      [
+        "$config_dir/agent/CLAUDE.md",
+        "$HOME/.claude/CLAUDE.md"
+      ],
+      [
+        "$util_dir/agent/claude-settings-apply",
+        "$bin_dir/claude-settings-apply"
+      ],
+      [
+        "$util_dir/agent/claude-statusline",
+        "$bin_dir/claude-statusline"
+      ],
+      [
+        "$util_dir/agent/codex-settings-apply",
+        "$bin_dir/codex-settings-apply"
+      ],
+      [
+        "$util_dir/agent/codex-unlock",
+        "$bin_dir/codex-unlock"
+      ],
+      [
+        "$util_dir/agent/agent-skills-install",
+        "$bin_dir/agent-skills-install"
+      ],
+      [
+        "$util_dir/agent/code-ship",
+        "$bin_dir/code-ship"
+      ],
+      [
+        "$util_dir/agent/agent-skills-prune",
+        "$bin_dir/agent-skills-prune"
+      ],
+      [
+        "$util_dir/agent/home-dotdir-prune",
+        "$bin_dir/home-dotdir-prune"
+      ],
+      [
+        "$util_dir/agent/agent-hooks-prune",
+        "$bin_dir/agent-hooks-prune"
+      ],
+      [
+        "$util_dir/agent/open-computer-use-sync",
+        "$bin_dir/open-computer-use-sync"
+      ],
+      [
+        "$util_dir/agent/rust-target-prune",
+        "$bin_dir/rust-target-prune"
+      ],
+      [
+        "$util_dir/agent/mcp-sync",
+        "$bin_dir/mcp-sync"
+      ],
+      [
+        "$util_dir/shell/alacritty-appearance",
+        "$bin_dir/alacritty-appearance"
+      ],
+      [
+        "$util_dir/shell/appearance-daemon",
+        "$bin_dir/appearance-daemon"
+      ],
+      [
+        "$util_dir/shell/theme-sync",
+        "$bin_dir/theme-sync"
+      ],
+      [
+        "$util_dir/shell/theme-push-remotes",
+        "$bin_dir/theme-push-remotes"
+      ],
+      [
+        "$util_dir/shell/tmux-appearance-fallback",
+        "$bin_dir/tmux-appearance-fallback"
+      ],
+      [
+        "$util_dir/shell/ssh-first-reachable",
+        "$bin_dir/ssh-first-reachable"
+      ],
+      [
+        "$util_dir/shell/ssh-connect",
+        "$bin_dir/ssh-connect"
+      ],
+      [
+        "$util_dir/spark/pyspark-jupyter",
+        "$bin_dir/pyspark-jupyter"
+      ],
+      [
+        "$util_dir/spark/pyspark-jupyter-public",
+        "$bin_dir/pyspark-jupyter-public"
+      ],
+      [
+        "$util_dir/kerberos/kinit-auto-login",
+        "$bin_dir/kinit-auto-login"
+      ],
+      [
+        "$util_dir/dotfiles/migrate-xdg",
+        "$bin_dir/dotfiles-migrate-xdg"
+      ]
+    ]
+  },
+  "env/git_hooks_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/sync_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/basic_env_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/core_env_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/xdg_dir_create": {
+    "arrays": {},
+    "links": []
+  },
+  "env/extra_env_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/env_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "env/rime_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/termux_link_config": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/install_termux_core_packages": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/termux_shell_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/termux_ssh_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/termux_default_shell_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/termux_basic_setup": {
+    "arrays": {},
+    "links": []
+  },
+  "termux/prepare_termux_env": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/prepare_windows_env": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/setup_distributed_workbench": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/prepare_windows_env_core": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/prepare_windows_env_cli": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/prepare_windows_env_gui": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/prepare_windows_env_cli_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "ag",
+          "delta",
+          "fd",
+          "fx",
+          "fzf",
+          "git",
+          "gow",
+          "jq",
+          "lf",
+          "ln",
+          "openssh",
+          "procs",
+          "ripgrep",
+          "runat",
+          "say",
+          "starship",
+          "sudo",
+          "touch",
+          "vim",
+          "witr",
+          "yazi",
+          "zoxide"
+        ]
+      ],
+      "wingetPkgs": [
+        [
+          "JanDeDobbeleer.OhMyPosh",
+          "Microsoft.PowerShell"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "windows/prepare_windows_env_cli_extra": {
+    "arrays": {
+      "pkgs": [
+        [
+          "adb",
+          "aria2",
+          "broot",
+          "chafa",
+          "cloc",
+          "cowsay",
+          "csvlens",
+          "deno",
+          "duf",
+          "dum",
+          "far",
+          "ffmpeg",
+          "fq",
+          "gcloud",
+          "gh",
+          "git-lfs",
+          "gitui",
+          "glow",
+          "gping",
+          "helix",
+          "imagemagick",
+          "kubectl",
+          "lazydocker",
+          "lazygit",
+          "losslesscut",
+          "lxrunoffline",
+          "mc",
+          "micro",
+          "miniconda3",
+          "minikube",
+          "musikcube",
+          "nmap",
+          "nodejs",
+          "now-cli",
+          "ntfy",
+          "nvm",
+          "opencode",
+          "oraclejdk",
+          "pandoc",
+          "pipx",
+          "pnpm",
+          "poppler",
+          "python",
+          "resvg",
+          "sbt",
+          "scrcpy",
+          "shasum",
+          "sniffnet",
+          "uv",
+          "vagrant",
+          "xan",
+          "yarn"
+        ]
+      ],
+      "wingetPkgs": [
+        [
+          "Docker.DockerDesktop"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "windows/prepare_windows_env_gui_core": {
+    "arrays": {
+      "pkgs": [
+        [
+          "7zip",
+          "alacritty",
+          "altsnap",
+          "autohotkey",
+          "autohotkey1.1",
+          "ditto",
+          "dotnet-sdk",
+          "everything",
+          "keepassxc",
+          "listary",
+          "localsend",
+          "obsidian",
+          "powertoys",
+          "quicklook",
+          "snipaste",
+          "sublime-merge",
+          "sublime-text",
+          "sumatrapdf",
+          "switcheroo",
+          "sysinternals",
+          "trafficmonitor",
+          "unlocker",
+          "vscode",
+          "windows-terminal"
+        ]
+      ],
+      "fonts": [
+        [
+          "FiraCode-NF",
+          "Meslo-NF",
+          "SourceCodePro-NF"
+        ]
+      ],
+      "wingetPkgs": [
+        [
+          "Rime.Weasel",
+          "stnkl.EverythingToolbar"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "windows/prepare_windows_env_gui_extra": {
+    "arrays": {
+      "pkgs": [
+        [
+          "altsnap",
+          "android-sdk",
+          "android-studio",
+          "calibre",
+          "carnac",
+          "ccleaner",
+          "chromium",
+          "clash-verge-rev",
+          "cpu-z",
+          "doublecmd",
+          "dropit",
+          "eartrumpet",
+          "filezilla",
+          "firefox",
+          "flux",
+          "foobar2000",
+          "foobar2000-encoders",
+          "foxit-pdf-reader",
+          "googlechrome",
+          "handbrake",
+          "heidisql",
+          "hexchat",
+          "hub",
+          "hwmonitor",
+          "irfanview",
+          "joplin",
+          "kdiff3",
+          "kitematic",
+          "licecap",
+          "marktext",
+          "mobaxterm",
+          "nimbleset",
+          "nimbletext",
+          "nircmd",
+          "nirlauncher",
+          "nodejs-lts",
+          "obs-studio",
+          "openark",
+          "openhardwaremonitor",
+          "pdfarranger",
+          "pdfsam",
+          "phantomjs",
+          "potplayer",
+          "processhacker",
+          "proxifier",
+          "putty",
+          "qutebrowser",
+          "robo3t",
+          "rufus",
+          "runcat",
+          "screentogif",
+          "slack",
+          "smartmontools",
+          "spacesniffer",
+          "spotify",
+          "sqlitebrowser",
+          "strokesplus",
+          "switchhosts",
+          "synctrayzor",
+          "telegram",
+          "thorium-reader",
+          "translucenttb",
+          "v2rayn",
+          "vcredist",
+          "vcxsrv",
+          "vncviewer",
+          "whatsapp",
+          "win-dynamic-desktop",
+          "windirstat",
+          "winscp",
+          "wireshark",
+          "wsltty",
+          "xming",
+          "xnviewmp",
+          "zeal",
+          "https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json",
+          "https://raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json"
+        ]
+      ],
+      "wingetPkgs": [
+        [
+          "9NGHP3DX8HDX",
+          "9NW33J738BL0",
+          "Bytedance.Feishu",
+          "CLechasseur.PathCopyCopy",
+          "Dropbox.Dropbox",
+          "Google.Drive",
+          "Oracle.VirtualBox",
+          "Tencent.QQ",
+          "Tencent.QQMusic",
+          "Tencent.WeChat",
+          "XK72.Charles"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "windows/prepare_windows_gaming": {
+    "arrays": {
+      "pkgs": [
+        [
+          "dosbox",
+          "dosbox-x",
+          "openra",
+          "steam"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "windows/install_scoop": {
+    "arrays": {
+      "buckets": [
+        [
+          "extras",
+          "games",
+          "java",
+          "nerd-fonts",
+          "nirsoft",
+          "nonportable",
+          "versions"
+        ]
+      ]
+    },
+    "links": []
+  },
+  "windows/install_winget": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/set_windows_configs": {
+    "arrays": {},
+    "links": [
+      [
+        "$config_dir/alacritty",
+        "$APPDATA/alacritty"
+      ],
+      [
+        "$config_dir/powershell",
+        "$HOME/Documents/PowerShell"
+      ],
+      [
+        "$config_dir/Rime",
+        "$APPDATA/Rime"
+      ],
+      [
+        "$config_dir/ssh/config",
+        "$HOME/.ssh/config"
+      ],
+      [
+        "$config_dir/tig",
+        "$HOME/.config/tig"
+      ],
+      [
+        "$config_dir/windows-terminal/settings.json",
+        "$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
+      ],
+      [
+        "$config_dir/windows-terminal/ubuntu.png",
+        "$LOCALAPPDATA/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/ubuntu.png"
+      ]
+    ]
+  },
+  "windows/blank_lines": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/scoop_bucket_add": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/scoop_install": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/scoop_sudo_install": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/winget_install": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/sync_config_repo": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/backup": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/symlink": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/backup_then_symlink": {
+    "arrays": {},
+    "links": []
+  },
+  "windows/print_usage": {
+    "arrays": {},
+    "links": []
+  }
+}
