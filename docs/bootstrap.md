@@ -60,6 +60,10 @@ inspection of the current environment, not a promise of successful provisioning.
 - Python is the shared runtime. Launchers reuse 3.10+ or prepare managed 3.12 with
   uv; inspection does not install it. A standalone Windows launcher needs Git
   to retrieve the checkout. Cygwin requires a Cygwin-native Python installation.
+- When running on Homebrew Python, child commands retain its formula through
+  `HOMEBREW_NO_CLEANUP_FORMULAE` for this run (preserving existing exclusions).
+  Upgrades can proceed, but cleanup cannot delete the running interpreter's
+  standard library. A later ordinary Homebrew cleanup can remove the old keg.
 - Existing backup files are retained; replacements get a unique backup name.
 - Linux inotify settings use a dedicated sysctl drop-in. macOS Launchpad reset
   uses its reset preference instead of deleting system cache trees.

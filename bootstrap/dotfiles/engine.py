@@ -180,6 +180,16 @@ class Context:
         self.home = Path(home) if home is not None else Path.home()
         self.env = dict(os.environ if env is None else env)
         self.env['PYTHONUTF8'] = '1'
+        # brew install may upgrade this very interpreter and delete its old
+        # standard library before a later import. Protect its keg for this run,
+        # including the final brew cleanup. base_prefix also covers virtualenvs
+        # and the nested Python.framework layout used on macOS.
+        for prefix in Path(sys.base_prefix).resolve().parents:
+            if prefix.parent.name == 'Cellar':
+                protected = self.env.get('HOMEBREW_NO_CLEANUP_FORMULAE', '').split(',')
+                self.env['HOMEBREW_NO_CLEANUP_FORMULAE'] = ','.join(
+                    dict.fromkeys(name for name in [*protected, prefix.name] if name))
+                break
         self.env.setdefault('LOCALAPPDATA', str(self.home / 'AppData/Local'))
         self.env.setdefault('APPDATA', str(self.home / 'AppData/Roaming'))
         # Context-owned paths, never a mutation of the process HOME.
