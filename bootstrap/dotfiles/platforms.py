@@ -210,8 +210,9 @@ def setup_alfred_prefs(c):
 def retire_peon_relay_agent(c):
     if (c.home / 'Library/LaunchAgents/com.lukew.peon-relay.plist').exists():
         c.command(c.repo / 'util/macos/setup-launchagent', '--uninstall', '--label', 'com.lukew.peon-relay')
-    local = c.home / '.ssh/config.local'
-    if local.exists():
+    for local in (c.home / '.ssh/config', c.home / '.ssh/config.local'):
+        if not local.exists() or local.resolve() == (c.repo / 'config/ssh/config').resolve():
+            continue
         old = local.read_text(encoding='utf-8')
         new = re.sub(r'^\s*RemoteForward\s+(?:localhost:)?19998(?:\s[^\n]*)?\n?', '', old, flags=re.M)
         if old != new:

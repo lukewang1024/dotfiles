@@ -200,32 +200,35 @@ def python_setup(c):
 @task()
 def ssh_setup(c):
     dest = c.home / '.ssh/config'
+    local = dest.with_name('config.local')
     shared = c.repo / 'config/ssh/config'
     begin = '# -- dotfiles SSH config begin --'
     end = '# -- dotfiles SSH config end --'
     def quoted(path):
         return '"' + path.as_posix().replace('"', '\\"') + '"'
     block = '\n'.join((begin, '# Local overrides precede shared defaults (SSH uses the first value).',
-                       'Host *', '  Include ' + quoted(c.home / '.ssh/config.local'),
-                       'Host *', '  Include ' + quoted(shared), 'Host *', end)) + '\n'
+                       'Host *', '  Include ' + quoted(shared), end)) + '\n'
     content = dest.read_text(encoding='utf-8') if dest.exists() else ''
     if dest.is_symlink() and dest.resolve() == shared.resolve():
         # Replace the legacy link itself, never write through it into the repo.
         content = ''
     pattern = re.compile(r'^' + re.escape(begin) + r'\n.*?^' + re.escape(end) + r'(?:\n|$)', re.M | re.S)
-    if pattern.search(content):
-        updated = pattern.sub(lambda _: block, content)
-    else:
-        updated = content + ('\n' if content and not content.endswith('\n') else '')
-        updated += ('\n' if content else '') + block
+    # Keep the shared defaults last, including after third-party appends.
+    # Preserve the old block's global scope for any content following it.
+    updated = pattern.sub(lambda m: 'Host *\n' if content[m.end():].strip() else '', content)
+    if local.exists():
+        overrides = local.read_text(encoding='utf-8')
+        if overrides:
+            updated = updated.rstrip('\n') + '\n\nHost *\n' if updated.strip() else ''
+            updated += overrides
+    updated = updated.rstrip('\n') + '\n\n' if updated.strip() else ''
+    updated += block
     if dest.is_symlink() or updated != content or not dest.exists():
         c.backup(dest)
         c.write(dest, updated)
-    local = c.home / '.ssh/config.local'
-    if not local.exists():
-        c.write(local, '')
-    elif not c.dry_run:
-        local.chmod(0o600)
+    # Retire only after successfully writing the merged entrypoint.
+    if local.exists():
+        c.backup(local)
 
 
 @task()

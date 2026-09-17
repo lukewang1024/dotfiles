@@ -1,6 +1,6 @@
 # syntax:sshConfig
 # Shared settings, included by the machine-local ~/.ssh/config entrypoint.
-# Put machine-specific hosts and overrides in ~/.ssh/config.local.
+# Put machine-specific hosts and overrides in ~/.ssh/config before this Include.
 
 Host *
   AddKeysToAgent yes
@@ -13,7 +13,7 @@ Host *
 # LocalForward of its tmux control socket, so clicking a relayed notification
 # switches the remote pane by driving the local tmux client over that socket
 # (one round-trip, no extra ssh per click). ssh-focus.sh finds it via `ssh -G`.
-# Add to the relevant Host block(s) in config.local:
+# Add to the relevant Host block(s) in ~/.ssh/config:
 #   Host <box>
 #     LocalForward /Users/<you>/.ssh/tmux-%n.sock /tmp/tmux-<remote-uid>/default
 #     StreamLocalBindUnlink yes   # clean stale sockets on reconnect

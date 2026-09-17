@@ -232,7 +232,9 @@ class BootstrapTests(unittest.TestCase):
         self.assertFalse(dest.is_symlink())
         self.assertTrue(dest.with_name('config~').is_symlink())
         self.assertIn(shared.as_posix(), dest.read_text())
-        self.assertEqual(local.read_text(), 'Host private\n  User teammate\n')
+        self.assertFalse(local.exists())
+        self.assertEqual(local.with_name('config.local~').read_text(), 'Host private\n  User teammate\n')
+        self.assertIn('Host private\n  User teammate\n', dest.read_text())
         injection = '# -- CloudIDE injection begin --\nInclude "cloudide/*"\n# -- CloudIDE injection end --\n'
         dest.write_text(injection + dest.read_text(), encoding='utf-8')
         before = dest.read_bytes()
@@ -258,6 +260,35 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(dest.with_name('config~').read_text(), original)
         c.task('ssh_setup')
         self.assertEqual(dest.read_text().count('# -- dotfiles SSH config begin --'), 1)
+
+    def test_ssh_merges_old_local_include_and_keeps_shared_defaults_last(self):
+        c = self.context(dry=False)
+        dest = self.home / '.ssh/config'
+        dest.parent.mkdir()
+        local = dest.with_name('config.local')
+        local.write_text('Host private\n  User teammate\n', encoding='utf-8')
+        original = ('# tool prefix\nHost before\n  User before\n'
+                    '# -- dotfiles SSH config begin --\nHost *\n'
+                    f'  Include "{local.as_posix()}"\nHost *\n'
+                    f'  Include "{(ROOT / "config/ssh/config").as_posix()}"\nHost *\n'
+                    '# -- dotfiles SSH config end --\n'
+                    '# tool suffix\nHost after\n  User after\n')
+        dest.write_text(original, encoding='utf-8')
+        self.context(dry=True).task('ssh_setup')
+        self.assertEqual(dest.read_text(), original)
+        self.assertTrue(local.exists())
+        c.task('ssh_setup')
+        merged = dest.read_text()
+        self.assertNotIn('Include "' + local.as_posix() + '"', merged)
+        self.assertIn('Host before\n  User before\nHost *\n# tool suffix', merged)
+        self.assertLess(merged.index('Host after'), merged.index('# -- dotfiles SSH config begin --'))
+        self.assertLess(merged.index('Host private'), merged.index('# -- dotfiles SSH config begin --'))
+        self.assertTrue(merged.endswith('  Include "' + (ROOT / 'config/ssh/config').as_posix()
+                                        + '"\n# -- dotfiles SSH config end --\n'))
+        self.assertFalse(local.exists())
+        c.task('ssh_setup')
+        self.assertEqual(dest.read_text(), merged)
+        self.assertFalse(local.exists())
 
     @unittest.skipUnless(shutil.which('ssh'), 'OpenSSH configuration parser')
     def test_ssh_local_overrides_and_include_scope_with_spaces(self):
