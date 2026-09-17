@@ -1,4 +1,6 @@
 # syntax:sshConfig
+# Shared settings, included by the machine-local ~/.ssh/config entrypoint.
+# Put machine-specific hosts and overrides in ~/.ssh/config.local.
 
 Host *
   AddKeysToAgent yes
@@ -7,8 +9,7 @@ Host *
   ServerAliveCountMax 3
   UseKeychain yes
 
-# Machine-specific hosts live in ~/.ssh/config.local (untracked; bootstrap
-# touches an empty one). peon-ping remote-pane focus: give each devbox a
+# peon-ping remote-pane focus: give each devbox a
 # LocalForward of its tmux control socket, so clicking a relayed notification
 # switches the remote pane by driving the local tmux client over that socket
 # (one round-trip, no extra ssh per click). ssh-focus.sh finds it via `ssh -G`.
@@ -18,8 +19,6 @@ Host *
 #     StreamLocalBindUnlink yes   # clean stale sockets on reconnect
 # (%n = the host alias, keeping the local socket per-box; requires local &
 #  remote tmux to share a protocol version, else it falls back to ssh-exec.)
-Include config.local
-
 Host github.com
   HostName github.com
   User git
