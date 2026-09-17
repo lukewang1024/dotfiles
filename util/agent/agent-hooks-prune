@@ -199,7 +199,7 @@ archive_config()
   relative_file=$2
   destination=$archive_dir/$relative_file
   mkdir -p "$(dirname "$destination")" || return 1
-  cp "$source_file" "$destination"
+  [ -e "$destination" ] || cp "$source_file" "$destination"
 }
 
 validate_toml()
@@ -315,8 +315,18 @@ if [ -f "$codex_hooks_file" ]; then
       if [ "$apply" -eq 1 ]; then printf 'remove codex %s\n' "$hook"
       else printf 'would remove codex %s\n' "$hook"; fi
     done < "$codex_hooks_removed"
+    # JSON group/handler indices are part of Codex review keys. Prepare the
+    # corresponding state migration before changing either configuration file.
+    codex_state_file=$HOME/.codex/config.toml
+    codex_state_tmp=$work_dir/codex-state.toml
+    python3 "$(resolve_script_dir)/codex-hook-state-remap.py" \
+      "$codex_hooks_file" "$codex_hooks_tmp" "$codex_state_file" "$codex_state_tmp" || exit 1
     if [ "$apply" -eq 1 ]; then
       archive_config "$codex_hooks_file" .codex/hooks.json || exit 1
+      if [ -f "$codex_state_file" ] && ! cmp -s "$codex_state_file" "$codex_state_tmp"; then
+        archive_config "$codex_state_file" .codex/config.toml || exit 1
+        mv "$codex_state_tmp" "$codex_state_file" || exit 1
+      fi
       mv "$codex_hooks_tmp" "$codex_hooks_file" || exit 1
     fi
   fi
