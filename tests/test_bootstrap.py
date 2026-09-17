@@ -224,12 +224,40 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue(calls[1].kwargs['interactive'])
         self.assertEqual(calls[2].args[0], ['sudo', 'install', 'source', 'target'])
 
+    @unittest.skipIf(os.name == 'nt', 'POSIX process sessions')
+    def test_captured_sudo_preserves_authentication_session(self):
+        c = self.context(dry=False)
+        probe = 'import os; print(os.getsid(0))'
+        # Use Python as a harmless stand-in; never invoke real sudo in tests.
+        with patch('dotfiles.engine.shutil.which', return_value=sys.executable):
+            for command in ('sudo', '/usr/bin/sudo'):
+                session = c._command([command, '-c', probe], capture=True)
+                self.assertEqual(int(session), os.getsid(0))
+            session = c._command([sys.executable, '-c', probe], capture=True)
+            self.assertNotEqual(int(session), os.getsid(0))
+
     def test_macos_preference_paths_are_expanded_as_data(self):
         c = self.context('macos')
         c.task('better_macos_defaults')
         argv = [e['argv'] for e in c.events if e['kind'] == 'command']
         self.assertTrue(any(Path(item) == c.home / 'Desktop' for row in argv for item in row))
         self.assertFalse(any('${HOME}' in item or item.startswith('~/') for row in argv for item in row))
+
+    def test_rejected_macos_preference_does_not_skip_remaining_setup(self):
+        c = self.context('macos', dry=False)
+        def run(*argv, **kwargs):
+            return int(argv[:3] == ('defaults', 'write', 'com.apple.universalaccess'))
+        with patch.object(c, 'command', side_effect=run) as execute:
+            c.task('better_macos_defaults')
+        self.assertTrue(any(e['kind'] == 'note' and 'Preference not applied:' in e['text']
+                            for e in c.events))
+        self.assertTrue(any(call.args[:3] == ('defaults', 'write', 'com.apple.finder')
+                            for call in execute.call_args_list))
+        self.assertTrue(any(call.args == ('killall', 'SystemUIServer')
+                            for call in execute.call_args_list))
+        with patch.object(c, 'command', side_effect=Failure('required setup failed')):
+            with self.assertRaisesRegex(Failure, 'required setup failed'):
+                c.task('better_macos_defaults')
 
     def test_existing_files_are_backed_up_and_symlinks_are_idempotent(self):
         c = self.context(dry=False)

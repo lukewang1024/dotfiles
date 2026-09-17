@@ -65,7 +65,9 @@ def install(c, manager, values, *flags):
     elif manager == 'scoop-fonts':
         c.command('sudo', 'scoop', 'install', *values)
     else:
-        c.command(manager, 'install', *flags, *values)
+        # Cask package installers may invoke sudo themselves and need a terminal.
+        c.command(manager, 'install', *flags, *values,
+                  interactive=manager == 'brew' and '--cask' in flags)
 
 
 @task('basic_env_setup')
@@ -474,8 +476,7 @@ def install_homebrew(c):
     if not c.exists('brew'):
         c.installer('https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh', 'bash', interactive=True)
         c.refresh_path()
-    if c.platform == 'macos':
-        c.command('brew', 'tap', 'homebrew/command-not-found')
+    # command-not-found is built into Homebrew; its former tap is deprecated.
 
 
 TASKS['install_linuxbrew'] = install_homebrew

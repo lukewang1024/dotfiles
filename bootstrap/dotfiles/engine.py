@@ -272,8 +272,7 @@ class Context:
         if self.dry_run:
             return '' if capture else 0
         if argv[0] == 'sudo' and os.name != 'nt' and self.platform != 'cygwin' and not self.validating_sudo:
-            # Authenticate visibly before output capture and detached process
-            # groups remove access to the controlling terminal.
+            # Authenticate visibly before capturing privileged command output.
             self.validating_sudo = True
             try:
                 if self.command('sudo', '-n', '-v', check=False):
@@ -308,6 +307,9 @@ class Context:
 
     def _command(self, argv, *, capture=False, input=None, cwd=None, env=None, interactive=False, check=True, output_file=None):
         child_env = dict(self.env, **(env or {}))
+        # sudo credentials are scoped to the controlling terminal. Keep both
+        # validation and execution in that session even when output is captured.
+        new_session = os.name != 'nt' and not interactive and Path(argv[0]).name != 'sudo'
         resolved = shutil.which(argv[0], path=child_env['PATH'])
         if resolved:
             argv[0] = resolved
@@ -323,7 +325,7 @@ class Context:
         output = self.reporter.log if self.reporter else subprocess.DEVNULL
         options = dict(cwd=cwd, env=child_env, stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
                        stdout=output_file if output_file is not None else (subprocess.PIPE if capture else output), stderr=output,
-                       start_new_session=os.name != 'nt')
+                       start_new_session=new_session)
         if interactive:
             options.update(stdin=None, stdout=None, stderr=None, start_new_session=False)
         @contextmanager
@@ -341,8 +343,10 @@ class Context:
                 if proc.poll() is None:
                     if os.name == 'nt':
                         subprocess.run(['taskkill', '/PID', str(proc.pid), '/T', '/F'], stdout=output, stderr=output)
-                    else:
+                    elif new_session:
                         os.killpg(proc.pid, signal.SIGTERM)
+                    else:
+                        proc.terminate()
                     try:
                         proc.wait(timeout=5)
                     except subprocess.TimeoutExpired:
