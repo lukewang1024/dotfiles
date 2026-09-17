@@ -77,12 +77,14 @@ inspection of the current environment, not a promise of successful provisioning.
   standard library. A later ordinary Homebrew cleanup can remove the old keg.
 - Existing backup files are retained; replacements get a unique backup name.
 - SSH uses a private regular `~/.ssh/config` entrypoint on Unix and Windows.
-  Bootstrap replaces its managed Include block while preserving third-party
+  Bootstrap places its managed Include block at the end while preserving third-party
   additions and existing local content. It backs up legacy symlinks before
   replacing them, so CloudIDE and similar tools can no longer write through to
-  the repository. `~/.ssh/config.local` is included before the shared
-  `config/ssh/config`; local values take precedence over shared defaults.
-  `Host *` resets isolate the includes from preceding Host/Match blocks.
+  the repository. Existing `~/.ssh/config.local` contents are merged into the
+  entrypoint, then the old file is backed up; it is no longer created or included.
+  Put local hosts and overrides before the shared `config/ssh/config` Include,
+  since SSH uses the first value. One `Host *` before the Include resets the
+  scope of preceding Host/Match blocks; no trailing reset is needed at EOF.
   The legacy link inventory is retained, but SSH entries dispatch to this setup.
   To migrate or refresh just SSH, run `./init run shell ssh_setup`.
 - Linux inotify settings use a dedicated sysctl drop-in. macOS Launchpad reset
