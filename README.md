@@ -43,6 +43,78 @@ git clone https://github.com/lukewang1024/dotfiles "${XDG_CONFIG_HOME:-$HOME/.co
 
 The platform is detected automatically. A mode is required.
 
+### One bootstrap implementation
+
+`init` (POSIX sh) and `init.ps1` (PowerShell 5.1/7) only locate the checkout,
+prepare Python if necessary, and forward arguments and the exit code. All
+provisioning and reporting run through `bootstrap/main.py`, using Python 3.10+
+and the standard library. No Python packages need to be installed.
+
+The launchers reuse an existing Python, or install managed Python 3.12 with uv
+under XDG data/cache directories. Inspection commands never install a runtime.
+A complete Git checkout is required; the standalone Windows launcher can clone
+one when Git is already installed.
+
+```sh
+./init core --dry-run
+./init --dry-run --json --platform windows all
+./init --list-tasks
+```
+
+The same arguments work with `./init.ps1`. `--platform` is restricted to dry runs.
+A dry run records intended actions without running commands, downloading files,
+or writing configuration. Conditional actions reflect the inspected environment.
+
+### Bootstrap progress and logs
+
+On a terminal, one line shows the current category, nested step, running command,
+and elapsed time. Each completed category becomes an `OK`, `SKIP`, or `FAIL` line.
+At the end, the summary lists category results and any failed steps. Redirected
+output uses plain progress lines without terminal escape codes.
+
+The shared runner captures detailed stdout/stderr and checks command exit codes.
+A required failure stops the run and returns a nonzero status. Optional actions
+explicitly report that they need attention. Prompts and installers that require
+a terminal temporarily use an interactive path; that interaction is not logged.
+
+Each run creates `output.log` and `results.json` in:
+
+- Unix: `${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/bootstrap/<run>/`
+- Windows: `$XDG_STATE_HOME/dotfiles/bootstrap/<run>/`, falling back to
+  `$LOCALAPPDATA/State/dotfiles/bootstrap/<run>/`.
+
+Unix run directories are private (`0700`), with logs created as `0600`. Follow
+verbose output with `tail -f <log>` or `Get-Content <log> -Wait`.
+
+All progress, logging, command execution, backup, and link behavior lives in
+`bootstrap/dotfiles/engine.py`. Task modules use the shared context:
+
+```python
+@task()
+def configure_tools(c):
+    c.task('shell_setup')
+    c.command('uv', 'tool', 'install', '--upgrade', 'example')
+```
+
+Package selections and links live in `packages.json` and `links.json`; macOS
+preference commands live in `macos-defaults.json`. See the
+[migration and maintenance guide](docs/bootstrap.md) for the module map.
+
+Run the same harmless suite on each host (no application installation):
+
+```sh
+python3 -B -m unittest discover -s tests -v
+```
+
+```powershell
+python -B -m unittest discover -s tests -v
+```
+
+The suite checks all seven platform plans, the previous package/link inventory,
+stream routing, failure propagation, arguments, backups, migration, and terminal
+rendering. On Windows it also exercises native scripts and both installed
+PowerShell launchers.
+
 Platform-specific prerequisites, side effects, and verification:
 
 - [macOS setup](docs/platforms/macos.md)
@@ -101,7 +173,7 @@ partial migration.
 | `all` | Install core plus platform extras, then configure it. |
 
 Termux, ChromeOS, and Cygwin currently have no additional `all` package set;
-they warn and use their platform-specific core flow.
+they use their platform-specific core flow.
 
 Other entrypoint tasks:
 
@@ -112,7 +184,7 @@ Other entrypoint tasks:
 | `./init workbench` | Install or reconcile this machine as a Distributed Workbench node. |
 | `./init npmg` | Reinstall common global npm packages. |
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |
-| `./init run <module> <function>` | Run one function from a bootstrap module. |
+| `./init run <module> <task> [arguments]` | Run a registered task; no shell evaluation. |
 
 Frequently changing tmux workbench modules can be updated and re-applied as a
 single clean-stack operation:
@@ -138,14 +210,14 @@ For example:
 
 1. Put application configuration in `config/<tool>/` or a reusable command in
    `util/`.
-2. Add its linking or apply step to the appropriate `bootstrap/` module.
+2. Add links to `bootstrap/dotfiles/links.json` and apply steps to the appropriate Python task.
 3. Include it in `sync_setup` when existing machines need the new step.
 4. Run `./init sync` and verify the destination link or merged block.
 5. Confirm any replaced local file was preserved as `<path>~`.
 6. Keep package-list changes separate from configuration changes in Git.
 
-For shell changes, use `/bin/sh -n` for POSIX scripts and `bash -n` for the Bash
-bootstrap modules. Run ShellCheck when available.
+For launcher and helper shell changes, use `/bin/sh -n` and ShellCheck.
+Run the shared Python suite and inspect the affected platform with `--dry-run`.
 
 ### Override a setting locally
 

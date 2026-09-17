@@ -1,5 +1,5 @@
 # sesh - smart tmux session manager (https://github.com/joshmedeski/sesh)
-# Materialized into $XDG_CONFIG_HOME/sesh/sesh.toml by tmux_setup in bootstrap/shell.sh.
+# Materialized into $XDG_CONFIG_HOME/sesh/sesh.toml by tmux_setup in bootstrap/dotfiles/tasks.py.
 
 # Coding layouts are owned by tmuxinator (declarative, per-project):
 #   - repo-local ./.tmuxinator.yml   →  `tmuxinator local` / `mux start .`

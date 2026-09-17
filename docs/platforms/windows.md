@@ -1,62 +1,67 @@
 # Windows setup
 
-Windows provisioning is implemented in `init.ps1`. It installs packages through
-Scoop and WinGet, clones this repository, enables required Windows features, and
-links supported application configuration.
+Windows uses the same Python bootstrap as macOS and Linux. `init.ps1` only
+locates the source and Python runtime; package managers, Windows settings,
+linking, progress, and logs are implemented under `bootstrap/dotfiles/`.
 
 ## Design
 
-Windows uses a separate PowerShell entrypoint because its package managers,
-privilege model, paths, and symbolic-link behavior differ from the Unix setup.
-It still follows the same source-of-truth rule: tracked files live under
-`%USERPROFILE%\.dotfiles\config`, while applications read linked destinations.
+Package selections live in `packages.json`, configuration links in `links.json`,
+and Windows operations in `platforms.py`. Scoop and WinGet remain the Windows
+package managers. PowerShell snippets are used for Windows APIs and vendor
+installers; they do not duplicate the task graph or reporter.
 
 | Mode | Includes |
 | --- | --- |
-| `core` | Core CLI and GUI packages |
+| `basic`, `sync` | Supported application links and repository hook configuration |
+| `core` | Core CLI and GUI packages, then Windows configuration |
 | `cli` | Core plus extended CLI packages |
-| `gui` | Core plus extended GUI packages |
+| `gui` | Core plus extended GUI packages, then Windows configuration |
 | `all` | Extended CLI and GUI flows |
 | `game` | Gaming-specific packages |
 
-The package lists are personal and extensive. Review the selected functions in
-`init.ps1` before running them.
-
 ## Install a new machine
 
-Download the entrypoint into the user profile and run it from PowerShell:
+Use PowerShell 5.1 or 7 with Git installed. Python 3.10+ is reused when available;
+otherwise the launcher installs uv and managed Python 3.12 under XDG directories.
 
 ```powershell
-Set-Location $env:USERPROFILE
-Invoke-WebRequest `
-  -Uri https://raw.githubusercontent.com/lukewang1024/dotfiles/main/init.ps1 `
-  -OutFile $env:USERPROFILE\init.ps1
+$configRoot = $env:XDG_CONFIG_HOME
+if (!$configRoot) { $configRoot = Join-Path $env:USERPROFILE '.config' }
+$repo = Join-Path $configRoot 'dotfiles'
+git clone https://github.com/lukewang1024/dotfiles $repo
+Set-Location $repo
+.\init.ps1 core --dry-run
 .\init.ps1 core
 ```
 
-During configuration, the script clones the repository to
-`%USERPROFILE%\.dotfiles`. It may request elevation, enable Developer Mode, and
-configure the OpenSSH agent. Developer Mode is required for the intended
-symbolic-link workflow.
+Alternatively, download `init.ps1` into a temporary directory. With Git available,
+it clones the source into the same config location. It refuses to overwrite an
+incomplete destination. Inspection commands require a complete checkout and an
+existing Python runtime.
 
-## Update
+Application links use the actual checkout path, including existing legacy
+checkouts; they no longer assume `%USERPROFILE%\.dotfiles`. Configuration may
+request elevation, enable Developer Mode, and configure the OpenSSH agent.
+Symbolic links require Developer Mode or an elevated session.
 
-There is currently no Windows equivalent of the Unix `./init sync` task or its
-post-merge hook. Pull tracked content directly:
+## Update and reconcile
 
 ```powershell
-Set-Location $env:USERPROFILE\.dotfiles
+Set-Location $repo
 git pull
+.\init.ps1 sync
 ```
 
-Changes to already-linked files take effect through the symlink. When a pull
-adds a new linking or provisioning step, rerun the appropriate `init.ps1` mode
-after reviewing its package and system actions.
+`sync` refreshes links and the repository hook without package installation,
+prompts, or elevation. Existing linked content changes take effect immediately.
+It requires the symlink permissions already established by initial provisioning.
 
 ## Verify
 
 ```powershell
-git -C $env:USERPROFILE\.dotfiles status --short
+python -B -m unittest discover -s tests -v
+.\init.ps1 --dry-run --json all
 Get-Command scoop
 Get-Command winget
 Get-Item $env:APPDATA\alacritty
@@ -65,16 +70,13 @@ Get-Item $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\Loca
 Get-Service ssh-agent
 ```
 
-Also verify that Git uses Windows OpenSSH and that the linked Rime, SSH, and Tig
-configuration is visible to their applications.
+Also verify Git's Windows OpenSSH setting and the Rime, SSH, and Tig links.
+Detailed output and `results.json` use `$XDG_STATE_HOME/dotfiles/bootstrap/`, or
+`$LOCALAPPDATA/State/dotfiles/bootstrap/` when XDG state is unset.
 
-## Recover an overwritten destination
+## Backups
 
-The PowerShell linker uses the same backup convention as Unix: an existing
-destination is moved to a sibling ending in `~`. Inspect the link and backup
-before restoring either one:
-
-```powershell
-Get-Item $env:APPDATA\alacritty
-Get-Item "$env:APPDATA\alacritty~"
-```
+The shared linker moves an existing file/directory to a sibling ending in `~`.
+If that backup already exists, it uses a unique `.backup-<timestamp>` sibling.
+Inspect these files before restoring a destination. An already-correct symlink
+is left in place.

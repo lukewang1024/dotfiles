@@ -12,12 +12,13 @@ derived phone node ID in the machine-local file
 `$XDG_CONFIG_HOME/distributed-workbench/peer.conf` with mode `0600`.
 Neither value is committed to dotfiles.
 
-The same task is available on every supported dotfiles platform. On Termux it
+The same task is available on macOS, Linux, Windows, and Termux. On Termux it
 installs the Android release of distributed-workbench, configures
 its Controller and restricted Executor under `termux-services`, and creates a
 persistent outbound peer connection. Re-running `./init core` upgrades and
-reconciles the same services. If SSH is not ready, setup is deferred without
-breaking the rest of the Termux bootstrap.
+reconciles the same services. If SSH is not ready, the workbench step fails with a logged error. Fix the SSH
+alias and rerun `./init workbench`. Leave the first interactive peer selection
+blank to skip workbench setup.
 
 Before an Android artifact is published, the same flow may use an artifact from
 the selected peer's authenticated SSH bootstrap cache. This fallback contains
