@@ -14,15 +14,16 @@ Hold Caps Lock for H; tap it for Escape. [Full key table](KEYS.md).
 | --- | --- |
 | H+semicolon | Primary terminal toggle (iTerm on macOS) |
 | H+Shift+semicolon | Secondary terminal toggle (kitty on macOS, Alacritty on Linux/Windows) |
-| H+B / E / F | Browser / editor / files toggle |
-| H+W / C | Work chat / daily chat toggle (Feishu / WeChat by default) |
-| H+Shift+W | WeChat direct toggle, independent of the daily-chat role |
-| H+Shift+F / C / E | Firefox / Chrome / Edge toggle |
-| H+E / H+Shift+V | Editor (Sublime Text by default) / VS Code direct toggle |
-| H+Shift+T | Sublime Text direct toggle (retained) |
-| H+A / N / M / P | AI / notes / music / passwords toggle |
-| H+Shift+A / D | ChatGPT / Doubao direct shortcuts |
-| H+R / G / D | Remote / Git / docs toggle |
+| H+Q / H+Shift+Q | Firefox / Safari direct toggle |
+| H+W / H+Shift+W | Edge / Chrome direct toggle |
+| H+E / H+Shift+E | Sublime Text / VS Code direct toggle |
+| H+A / H+S | ChatGPT / Doubao direct toggle |
+| H+D / H+Shift+D | Dictionary / DevDocs direct toggle |
+| H+Z | Finder direct toggle |
+| H+X / H+Shift+X | Feishu / Feishu Meetings (macOS/Windows) direct toggle |
+| H+C / H+Shift+C | WeChat / Telegram direct toggle |
+| H+N / M / P | Notes / music / passwords toggle |
+| H+R / G | Remote / Git toggle |
 | H+Shift+R / N | Reeder (macOS) / NoMachine toggle |
 | H+H/J/K/L | Left/down/up/right; hold to repeat |
 | H+Shift+H/J/K/L | Move the mouse directly; hold to repeat, no menu |
@@ -43,9 +44,10 @@ Hold Caps Lock for H; tap it for Escape. [Full key table](KEYS.md).
 | H+Shift+[ / ] | Decrease / increase window height by 10 pixels |
 | H+Backspace | Undo layout |
 | H+Tab / Shift+Tab | Previous window; searchable window list |
-| H+S | Screenshot (H+Shift+S unbound) |
+| H+S | Doubao direct toggle |
 | H+0 → C | Clipboard tools: history, image sync, targets/status (H+V unbound) |
-| H+X | System menu |
+| H+4 / 5 | Region screenshot / recording entry |
+| H+0 → X | System menu |
 | H+Space / slash | Search installed apps/actions; key reference |
 | H+Shift+slash | Configure role applications |
 | H+1 | Search open windows |
@@ -96,18 +98,18 @@ minimized windows are not restored as part of that group. A Linux web-only
 entry opens its URL and never hides all browser windows.
 
 Shift application keys are explicit app shortcuts, not role-selection menus.
-H+T/Y are no longer browser shortcuts. Other Shift window/input bindings remain.
-H+Q is unbound. H+Shift+W always toggles WeChat independently of role preferences.
-Role keys and high-frequency explicit app keys intentionally coexist.
-The AI role (H+A) defaults to ChatGPT. H+Shift+A always targets ChatGPT and
-H+Shift+D always targets Doubao, even after changing the AI role. H+Shift+C
-remains Chrome; H+C remains daily chat. ChatGPT uses its native bundle on
-macOS; the Windows/Linux definitions currently open the web app without hiding
-the browser. A different local AI-role target can be selected in role settings.
+The Q/W, A/S, and X/C neighborhoods group browsers, AI apps, and communication
+apps; the fixed direct keys do not change when role preferences change. The
+Shift+number row is unbound, while the unshifted number row retains the window,
+application, clipboard, capture, audio, and configuration menus. ChatGPT and
+Doubao use the configured native/web definitions for their platforms.
+Windows distinguishes Feishu chat and meetings by exact window class and title;
+when no matching window exists, the shortcut launches Feishu. Linux currently
+has no dedicated meeting-window definition.
 On macOS, direct app shortcuts prefer the configured bundle ID, with a cached
 installed-name fallback when the local bundle uses a different identifier.
-H+W is the configurable work-chat role (Feishu,
-Lark, etc.); H+C is the daily-chat role (WeChat, Telegram, etc.). H+R defaults to Windows App on
+The role picker remains available from H+Shift+/ and H+0 → A, but the QWEASDZXC
+application keys are fixed direct shortcuts. H+R defaults to Windows App on
 macOS (its installed bundle ID is still `com.microsoft.rdc.macos`), Windows
 Remote Desktop on Windows, and Remmina on Linux. H+Shift+R launches Reeder on
 macOS; other platforms report that it is unavailable. H+Shift+N launches
@@ -200,16 +202,18 @@ override changes all four arrows to zone navigation, including Up/Down.
 
 ### Configure role applications
 
-Press **H+Shift+/**, or **H+X then C**, to open role settings. The same action is
+Press **H+Shift+/**, or **H+0 then A**, to open role settings. The same action is
 searchable in H+Space and H+/. Pick a role, then an application; saving changes
-its shortcut immediately without launching the app or reloading the desktop.
+its role action immediately without launching the app or reloading the desktop.
+Roles without a shortcut are available as actions in **H+Space**; H+/ lists
+only bound shortcuts.
 Esc cancels without changing the mapping. Each role lists its shortcuts and
 current application, and the picker includes a **Use default application** entry.
 
 All roles are editable, including the primary and secondary terminals, browser,
 editor, files, work/daily chat, AI, notes, music, passwords, remote, Git and docs.
-Explicit application keys such as H+Shift+C for Chrome remain fixed; changing the
-browser role affects H+B, not the separate Chrome shortcut.
+Explicit application keys such as H+Shift+W for Chrome remain fixed; changing a
+role preference does not change the QWEASDZXC direct shortcuts.
 
 The picker includes platform-supported configured apps plus the cached installed
 app index; it is not restricted to a role's suggested list. Configured entries

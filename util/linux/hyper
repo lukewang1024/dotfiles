@@ -273,6 +273,7 @@ class Hyper:
             else:
                 rows=[('H+'+('Shift+' if b.get('shift') else '')+b['key'],b['action'],b['action']) for b in bindings(self.data) if b['action'] not in ('menu.all','menu.help')]
                 if arg=='all':
+                    rows += [('', 'app.'+role, 'app.'+role) for role in self.data['roles'] if not shortcuts(self.data,role)]
                     rows += [('',app['title'],'installed.'+app['path']) for app in installed('linux')]
                 self.choose(rows,arg)
             return

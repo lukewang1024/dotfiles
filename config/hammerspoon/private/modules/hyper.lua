@@ -160,6 +160,15 @@ function M.new(options)
         end
       end
       if name=='all' then
+        local roles={}
+        for role in pairs(data.roles) do roles[#roles+1]=role end
+        table.sort(roles)
+        for _,role in ipairs(roles) do
+          if self.roles:keys(role)=='' then
+            local appTitle=self.roles:title(self.roles:get(role))
+            choices[#choices+1]={text=M.actionTitle('app.'..role),subText=appTitle,action='app.'..role,keywords=appTitle}
+          end
+        end
         for _,choice in ipairs(self.apps:choices()) do choices[#choices+1]=choice end
       end
     end

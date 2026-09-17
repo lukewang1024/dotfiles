@@ -51,6 +51,16 @@ class RoleTests(unittest.TestCase):
                 adapter.run('setrole.workChat.slack')
                 toggle.assert_not_called()
                 adapter.run('app.workChat');toggle.assert_called_once_with('slack')
+            with patch.object(adapter,'choose') as choose, patch.object(linux,'installed',return_value=[]):
+                adapter.run('menu.all')
+                actions=[row[2] for row in choose.call_args.args[0]]
+                for role in adapter.data['roles']:
+                    self.assertEqual(actions.count('app.'+role),1)
+                selected=next(action for action in actions if action=='app.workChat')
+                with patch.object(adapter,'toggle') as toggle:
+                    adapter.run(selected);toggle.assert_called_once_with('slack')
+                adapter.run('menu.help')
+                self.assertNotIn('app.workChat',[row[2] for row in choose.call_args.args[0]])
             self.assertEqual(linux.Hyper().role_app('workChat'),'slack')
             adapter.run('resetrole.workChat');self.assertEqual(adapter.role_app('workChat'),'feishu')
             with self.assertRaises(RuntimeError):adapter.set_role('workChat','not-configured')
@@ -68,9 +78,13 @@ class RoleTests(unittest.TestCase):
             path.write_text('[Desktop Entry]\nType=Application\nName=Custom\nExec=custom %U\n')
             self.assertNotIn('class',app_index.linux_spec(path))
 
-    def test_all_roles_have_shortcuts_and_bilingual_labels(self):
+    def test_role_shortcut_contract_and_bilingual_labels(self):
         from localize import catalog
         data=json.loads(generate.SOURCE.read_text());labels=catalog(data)
+        expected={'terminal':'H+;', 'secondaryTerminal':'H+Shift+;', 'notes':'H+n',
+                  'music':'H+m', 'passwords':'H+p', 'remote':'H+r', 'git':'H+g'}
+        unbound={'browser','editor','files','workChat','dailyChat','ai','docs'}
+        self.assertEqual(set(data['roles']),set(expected)|unbound)
         for role in data['roles']:
-            self.assertTrue(roles.shortcuts(data,role))
+            self.assertEqual(roles.shortcuts(data,role),expected.get(role,''))
             for lang in ('en','zh'):self.assertIn('role.'+role,labels[lang])
