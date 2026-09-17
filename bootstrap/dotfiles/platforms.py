@@ -231,13 +231,23 @@ def fix_battery_drain_over_sleep(c):
 
 
 @task()
+def apply_macos_preference(c, *argv):
+    argv = [c.expand(arg) if arg.startswith('~/') or '${HOME}' in arg else arg for arg in argv]
+    if c.command(*argv, check=False):
+        detail = 'Preference not applied: ' + ' '.join(argv)
+        c.note(detail + '; check macOS privacy permissions or set it in System Settings.')
+        raise Skip(detail)
+
+
+@task()
 def better_macos_defaults(c):
     c.command('osascript', '-e', 'tell application "System Preferences" to quit')
     c.command('sudo', 'nvram', 'StartupMute=%00')
+    # Current macOS removed -kill; compact and refresh app registrations instead.
     c.command('/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister',
-              '-kill', '-r', '-domain', 'local', '-domain', 'system', '-domain', 'user')
+              '-gc', '-r', '-apps', 'local,system,user')
     for argv in json.loads((DATA / 'macos-defaults.json').read_text(encoding='utf-8')):
-        c.command(*[c.expand(arg) if arg.startswith('~/') or '${HOME}' in arg else arg for arg in argv])
+        c.task('apply_macos_preference', *argv)
     c.command('chflags', 'nohidden', c.home / 'Library')
     # Use the supported reset preference rather than deleting OS cache trees.
     c.command('defaults', 'write', 'com.apple.dock', 'ResetLaunchPad', '-bool', 'true')

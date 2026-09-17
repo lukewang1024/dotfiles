@@ -44,7 +44,18 @@ stream redirection, and process handling in the engine.
 use `check=False` and handle its return value explicitly. Use `Skip` for a step
 that does not apply. An unhandled failure stops the run; the summary and JSON
 record the failing child and category. Interactive commands must explicitly use
-`interactive=True`; their terminal interaction is not captured.
+`interactive=True`; their terminal interaction is not captured. Homebrew cask
+installs use this mode because package installers can request sudo authentication.
+Captured sudo commands retain the controlling terminal's session so they can
+reuse the credentials established by interactive authentication.
+
+macOS personalization preferences are optional: each rejected write prints a
+`Preference not applied` note and records `SKIP` in `results.json`, while the
+remaining preferences continue. Protected settings may require terminal privacy
+permissions or manual changes in System Settings. Package installation and
+required setup commands still fail the run on error. LaunchServices maintenance
+uses garbage collection and app registration refresh; the removed `-kill` option
+is no longer used.
 
 A dry run skips effects, including command execution and network access. It
 still reads local configuration and evaluates conditions, so a plan is an
@@ -106,3 +117,12 @@ This validation did not install the full application sets or exercise a fresh
 machine's Python download. Full application provisioning and system preference
 changes were not applied to the Mac. Arch, ChromeOS, Termux, and Cygwin still
 need live acceptance on their respective systems.
+
+On 2026-09-17, a full `./init core` acceptance run on macOS 26.6.2 completed
+with exit status 0: CLI core, GUI core, and Homebrew cleanup all passed.
+Of 221 personalization writes, 170 succeeded and 51 were rejected and recorded
+as `SKIP` (Safari 36, Mail 9, universal access 5, Address Book 1). This confirms
+installation completion, not that every preference took effect. The system's
+`cfprefsd` log identified the universal-access rejection as missing sandbox
+write access. Granting terminal privacy permissions or applying settings
+manually remains necessary for those protected preferences.

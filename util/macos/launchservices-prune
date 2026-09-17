@@ -180,7 +180,7 @@ if [ "$MATCH_COUNT" -eq 0 ]; then
   echo 'launchservices-prune: no matching app bundles found.'
   if [ "$REBUILD" -eq 1 ]; then
     echo 'launchservices-prune: rebuilding LaunchServices anyway.'
-    "$LSREGISTER" -kill -r -domain local -domain system -domain user
+    "$LSREGISTER" -gc -r -apps local,system,user
   fi
   if [ "$KILL_FINDER" -eq 1 ]; then
     killall Finder >/dev/null 2>&1 || true
@@ -217,7 +217,7 @@ done < "$UNIQUE_FILE"
 
 if [ "$REBUILD" -eq 1 ]; then
   echo 'launchservices-prune: rebuilding LaunchServices database...'
-  "$LSREGISTER" -kill -r -domain local -domain system -domain user
+  "$LSREGISTER" -gc -r -apps local,system,user
 fi
 
 if [ "$KILL_FINDER" -eq 1 ]; then
