@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import platform
 import re
 import shutil
 
@@ -143,7 +144,7 @@ def git_setup(c, mode='interactive'):
         c.link(c.repo / 'util/shell' / name, c.bin / name)
     if c.platform == 'macos':
         c.command('git', 'config', '--global', 'credential.helper', 'osxkeychain')
-    if c.platform == 'cygwin' or 'microsoft' in __import__('platform').release().lower():
+    if c.platform == 'cygwin' or 'microsoft' in platform.release().lower():
         c.command('git', 'config', '--global', 'core.autocrlf', 'input')
         c.command('git', 'config', '--global', 'core.fileMode', 'false')
     saved = [line.split('=', 1) for line in identities.splitlines() if re.match(r'^user\.\w+\.\w+=', line)]
@@ -328,7 +329,9 @@ def util_setup(c, mode='all'):
 
 @task()
 def anyenv_setup(c):
-    c.command('anyenv', 'install', '--force-init', 'https://github.com/lukewang1024/anyenv-install.git')
+    manifest = Path(c.env.get('ANYENV_DEFINITION_ROOT', str(c.config / 'anyenv/anyenv-install')))
+    if not manifest.is_dir():
+        c.command('anyenv', 'install', '--force-init', 'https://github.com/lukewang1024/anyenv-install.git')
     for name in ('goenv', 'nodenv', 'pyenv', 'rbenv'):
         c.command('anyenv', 'install', '--skip-existing', name)
     # These paths are explicit; no eval of emitted shell initialization code.
@@ -345,6 +348,8 @@ def anyenv_setup(c):
 
 @task()
 def rustup_setup(c):
+    if c.exists('rustup') and c.command('rustup', 'show', 'active-toolchain', check=False) == 0:
+        raise Skip('Rust toolchain is already installed')
     c.installer('https://sh.rustup.rs', 'sh', '-y', '--no-modify-path')
 
 
@@ -373,7 +378,7 @@ def install_pnpm(c):
     if c.exists('brew') and c.command('brew', 'install', 'pnpm', check=False) == 0:
         return
     extra = {'PNPM_HOME': str(pnpm_home)}
-    if c.platform == 'macos' and __import__('platform').machine() == 'x86_64':
+    if c.platform == 'macos' and platform.machine() == 'x86_64':
         extra['PNPM_VERSION'] = '10.25.0'
     if c.platform == 'windows':
         c.command('npm', 'install', '-g', 'pnpm')

@@ -144,6 +144,45 @@ class BootstrapTests(unittest.TestCase):
         finally:
             reporter.close()
 
+    def test_running_homebrew_python_is_protected_from_cleanup(self):
+        self.env['HOMEBREW_NO_CLEANUP_FORMULAE'] = 'node'
+        for suffix in ('', '/Frameworks/Python.framework/Versions/3.14'):
+            prefix = self.home / ('brew/Cellar/python@3.14/3.14.6' + suffix)
+            with self.subTest(suffix=suffix), patch('sys.base_prefix', str(prefix)):
+                c = self.context(dry=False)
+                self.assertEqual(c.env['HOMEBREW_NO_CLEANUP_FORMULAE'], 'node,python@3.14')
+                value = c.command(sys.executable, '-c',
+                    "import os; print(os.environ['HOMEBREW_NO_CLEANUP_FORMULAE'])", capture=True)
+                self.assertEqual(value.strip(), 'node,python@3.14')
+        self.assertEqual(self.env['HOMEBREW_NO_CLEANUP_FORMULAE'], 'node')
+        with patch('sys.base_prefix', str(self.home / 'system-python')):
+            self.assertEqual(self.context().env['HOMEBREW_NO_CLEANUP_FORMULAE'], 'node')
+
+    def test_rust_setup_installs_only_when_toolchain_is_missing(self):
+        for exists, status in ((False, 0), (True, 1), (True, 0)):
+            with self.subTest(exists=exists, status=status):
+                c = self.context()
+                with patch.object(c, 'exists', return_value=exists), \
+                     patch.object(c, 'command', return_value=status), \
+                     patch.object(c, 'installer') as installer:
+                    c.task('rustup_setup')
+                self.assertEqual(installer.called, not exists or status != 0)
+
+    def test_anyenv_initializes_only_missing_manifests(self):
+        for custom in (False, True):
+            manifest = self.home / ('custom-manifest' if custom else 'config/anyenv/anyenv-install')
+            if custom:
+                self.env['ANYENV_DEFINITION_ROOT'] = str(manifest)
+            for exists in (False, True):
+                with self.subTest(custom=custom, exists=exists):
+                    if exists:
+                        manifest.mkdir(parents=True)
+                    c = self.context()
+                    c.task('anyenv_setup')
+                    commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+                    self.assertEqual(any('--force-init' in cmd for cmd in commands), not exists)
+                    self.assertIn(['anyenv', 'install', '--skip-existing', 'pyenv'], commands)
+
     def test_windows_sync_applies_links_in_isolated_home_without_commands(self):
         repo = self.home / 'source-repo'
         config = repo / 'config'
