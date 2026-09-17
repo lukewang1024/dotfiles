@@ -67,7 +67,7 @@ class ContractTests(unittest.TestCase):
     def setUp(self):
         self.data = json.loads(generate.SOURCE.read_text())
 
-    def test_number_row_has_function_roles_not_desktops(self):
+    def test_number_row_restores_function_menus(self):
         chords={(b['key'],bool(b.get('shift'))):b['action'] for b in generate.bindings(self.data)}
         expected=['menu.config','menu.windows','menu.apps','clipboard.history','capture.screenshot',
                   'capture.record','system.audioOutput','system.audioInput']
@@ -78,9 +78,8 @@ class ContractTests(unittest.TestCase):
         for key in ('8','9'):
             self.assertNotIn((key,False),chords)
             self.assertNotIn((key,True),chords)
-        self.assertNotIn(('s',True),chords)
         self.assertNotIn('capture',self.data['menus'])
-        self.assertEqual([row[2] for row in self.data['menus']['config']],['menu.roles','system.hyperKeys','system.reload','menu.clipboard','capture.screenshot','capture.record','system.displays','system.focus'])
+        self.assertEqual([row[2] for row in self.data['menus']['config']],['menu.roles','system.hyperKeys','system.reload','menu.clipboard','capture.screenshot','capture.record','system.displays','system.focus','menu.system'])
 
     def test_linux_environment_routes_and_fallback(self):
         adapter=linux.Hyper.__new__(linux.Hyper)
@@ -95,6 +94,15 @@ class ContractTests(unittest.TestCase):
             adapter.run('system.displays')
             launch.assert_called_once_with(['xfce4-settings-manager'])
 
+    def test_meetings_does_not_alias_chat_on_unsupported_platforms(self):
+        meetings=self.data['apps']['feishu-meetings']
+        self.assertNotEqual(meetings['mac'],self.data['apps']['feishu']['mac'])
+        self.assertNotIn('linux',meetings)
+        self.assertEqual(meetings['windows']['class'],'Chrome_WidgetWin_0')
+        self.assertEqual(meetings['windows']['title'],'Feishu Meetings')
+        self.assertEqual(self.data['apps']['feishu']['windows']['class'],'Chrome_WidgetWin_1')
+        self.assertEqual(self.data['apps']['feishu']['windows']['title'],'Feishu')
+
     def test_no_collisions_and_fast_ratio_keys(self):
         bindings = generate.bindings(self.data)
         chords = {(b['key'], bool(b.get('shift'))): b['action'] for b in bindings}
@@ -104,30 +112,26 @@ class ContractTests(unittest.TestCase):
         self.assertNotIn('window',self.data['menus'])
         self.assertEqual(chords[';', False], 'app.terminal')
         self.assertEqual(chords['h', True], 'mouse.left')
-        self.assertEqual(chords['w', False], 'app.workChat')
-        self.assertEqual(chords['c', False], 'app.dailyChat')
-        self.assertEqual(chords['w',True],'launch.wechat')
-        self.assertEqual(chords['a',False],'app.ai')
-        self.assertEqual(chords['a',True],'launch.chatgpt')
-        self.assertEqual(chords['d',True],'launch.doubao')
-        self.assertEqual(chords['d',False],'app.docs')
+        expected_apps={
+            ('q',False):'launch.firefox',('q',True):'launch.safari',
+            ('w',False):'launch.edge',('w',True):'launch.chrome',
+            ('e',False):'launch.sublime',('e',True):'launch.code',
+            ('a',False):'launch.chatgpt',('s',False):'launch.doubao',
+            ('d',False):'launch.dictionary',('d',True):'launch.docs',
+            ('z',False):'launch.files',('x',False):'launch.feishu',
+            ('x',True):'launch.feishu-meetings',('c',False):'launch.wechat',
+            ('c',True):'launch.telegram'}
+        for chord,action in expected_apps.items(): self.assertEqual(chords[chord],action)
         self.assertEqual(self.data['roles']['ai']['apps'][0],'chatgpt')
         self.assertEqual(chords['/',True],'menu.roles')
         self.assertEqual(self.data['roles']['workChat']['apps'][0],'feishu')
         self.assertEqual(self.data['roles']['dailyChat']['apps'][0],'wechat')
         self.assertNotIn('chat',self.data['roles'])
-        self.assertNotIn(('q',False),chords)
-        self.assertEqual(chords['f', True], 'launch.firefox')
-        self.assertEqual(chords['c', True], 'launch.chrome')
-        self.assertEqual(chords['e', True], 'launch.edge')
-        self.assertEqual(chords['t', True], 'launch.sublime')
         self.assertEqual(chords['r', False], 'app.remote')
         self.assertEqual(chords['r', True], 'launch.reeder')
         self.assertEqual(chords['n', True], 'launch.nomachine')
         self.assertEqual(self.data['defaults']['mac']['remote'], 'windows-app')
-        self.assertEqual(chords['e', False], 'app.editor')
         self.assertEqual(self.data['roles']['editor']['apps'][0],'sublime')
-        self.assertEqual(chords['v',True],'launch.code')
         self.assertNotIn(('v',False),chords)
         self.assertEqual(list(chords.values()).count('clipboard.history'),1)
         self.assertEqual(chords[';', True], 'app.secondaryTerminal')

@@ -249,6 +249,13 @@ for _,choice in ipairs(choices) do
   assert(choice.action~='menu.window')
 end
 assert(discovered==1)
+for role in pairs(model.roles) do
+  local count=0
+  for _,choice in ipairs(choices) do if choice.action=='app.'..role then count=count+1 end end
+  assert(count==1,role..' must be searchable exactly once')
+end
+instance:run('menu.help')
+for _,choice in ipairs(choices) do assert(choice.action~='app.workChat') end
 instance:run('menu.roles')
 local roleCount=0;for _ in pairs(model.roles) do roleCount=roleCount+1 end
 assert(#choices==roleCount)
@@ -259,7 +266,7 @@ for _,choice in ipairs(choices) do if choice.action=='setrole.workChat.feishu' t
 assert(workChoice)
 -- Number-row app search is apps-only, configuration retains nested navigation.
 instance:run('menu.apps');assert(#choices==1 and choices[1].action:match('^installed%.'))
-instance:run('menu.config');assert(#choices==9)
+instance:run('menu.config');assert(#choices==10)
 assert(choices[4].shortcut=='c' and choices[4].navigate)
 assert(instance.roles:get('editor')=='sublime')
 instance:run('menu.clipboard')

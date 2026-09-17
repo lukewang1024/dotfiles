@@ -9,7 +9,7 @@ local roles=module.new(data,index)
 assert(roles:get('workChat')=='lark' and roles:get('dailyChat')=='wechat')
 assert(roles:get('ai')=='chatgpt')
 assert(saved['hyper.defaults'].workChat==nil) -- Migration is non-destructive until a save.
-assert(roles:keys('workChat')=='H+w' and roles:keys('dailyChat')=='H+c')
+assert(roles:keys('workChat')=='' and roles:keys('dailyChat')=='')
 assert(roles:keys('terminal')=='H+;')
 assert(roles:keys('secondaryTerminal')=='H+Shift+;')
 local count=0;for _ in pairs(data.roles) do count=count+1 end

@@ -121,6 +121,22 @@ hyperToggle(name)
   if spec.HasKey("class")
     query .= " ahk_class " . spec.class
   WinGet, wins, List, %query%
+  ; Feishu chat and meetings share a process; preserve exact title matching.
+  if spec.HasKey("title")
+  {
+    matched := 0
+    Loop, %wins%
+    {
+      id := wins%A_Index%
+      WinGetTitle, title, ahk_id %id%
+      if (title == spec.title)
+      {
+        matched += 1
+        wins%matched% := id
+      }
+    }
+    wins := matched
+  }
   if (wins = 0)
   {
     if hyperLaunch(spec.launch, false)
@@ -407,6 +423,9 @@ hyperRows(group)
         rows.Push([key, action, action])
     if (group="all")
     {
+      for role, spec in hyperData.roles
+        if (hyperRoleKeys(role)="")
+          rows.Push(["", "app." . role, "app." . role])
       if (!IsObject(hyperInstalledApps) || A_TickCount-hyperAppsUpdated>600000)
         hyperRefreshApps()
       for _, row in hyperInstalledApps

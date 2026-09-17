@@ -87,7 +87,7 @@ bridge.interactive()
         for platform in ('mac', 'linux', 'windows'):
             for lang in ('en', 'zh'):
                 value = bridge.request(platform, lang)
-                self.assertEqual(len(value['menus']['menu.config']['items']), 9 if platform == 'mac' else 8)
+                self.assertEqual(len(value['menus']['menu.config']['items']), 10 if platform == 'mac' else 9)
                 self.assertEqual(len(value['menus']['menu.clipboard']['items']), 3)
                 allowed = bridge.allowed_actions(value)
                 self.assertIn('system.hyperKeys', allowed)
