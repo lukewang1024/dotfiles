@@ -59,10 +59,14 @@ Hyper 为 Ctrl+Option+Command。保留远程桌面的 Karabiner 自动切换和�
 的版本。默认 CLI 路径为 `~/.local/bin/workbench`；开发调试可设置
 `hs.settings.set('workbench.clipboard.binary', '/absolute/path/to/workbench')` 后重载配置。
 清除该设置即可恢复默认路径。节点尚未安装图片支持时会置灰。
-Linux 的 dotfiles `codex` shell 函数会在检测到托管 `clipboard-env` 时自动通过
-`workbench clipboard exec` 启动，确保连接到同一个 DISPLAY/XAUTHORITY。已有终端需重新加载
-`config/zsh/agent-resume-history.zsh`，并退出后重新启动 Codex；也可显式运行
-`workbench clipboard exec -- codex resume`。之后 Ctrl-V 使用原生图片粘贴。
+dotfiles 的 agent shell 函数直接启动 agent，不调用 workbench CLI 或 updater。
+启动前可读取 `${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env`，
+仅把其中的 `DISPLAY`、`XAUTHORITY` 字面值传给子进程，并清除子进程的
+`WAYLAND_DISPLAY`；不执行文件内容，也不修改当前 shell 环境。
+`AGENT_CLIPBOARD_ENV_FILE` 可指定其他提供方的环境文件，设为空字符串可禁用此集成。
+文件缺失、包含未知字段或缺少非空必需值时，保留原环境并正常启动 agent。
+图片同步本身仍由上述 workbench 剪贴板功能提供。
+已有终端需重新加载 `config/zsh/agent-resume-history.zsh`，并退出后重新启动 agent。
 
 运行逻辑测试：
 

@@ -116,6 +116,28 @@ _agent_claude_session_id() {
   [ -n "$newest" ] && printf '%s\n' "$newest"
 }
 
+# Optional data-only clipboard integration. Never execute an installer or source
+# the environment file: it contains literal DISPLAY/XAUTHORITY values only.
+_agent_exec_with_clipboard_env() (
+  local env_file=${AGENT_CLIPBOARD_ENV_FILE-${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env}
+  local line clipboard_display= clipboard_authority= valid=1
+  if [ -n "$env_file" ] && [ -r "$env_file" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+      case "$line" in
+        DISPLAY=*) clipboard_display=${line#DISPLAY=} ;;
+        XAUTHORITY=*) clipboard_authority=${line#XAUTHORITY=} ;;
+        '') ;;
+        *) valid=0 ;;
+      esac
+    done < "$env_file"
+    if [ "$valid" = 1 ] && [ -n "$clipboard_display" ] && [ -n "$clipboard_authority" ]; then
+      export DISPLAY="$clipboard_display" XAUTHORITY="$clipboard_authority"
+      unset WAYLAND_DISPLAY
+    fi
+  fi
+  exec "$@"
+)
+
 _agent_run_and_remember() {
   setopt localtraps
   local agent=$1 executable=$2 resume_prefix=$3 session_root=$4
@@ -127,14 +149,7 @@ _agent_run_and_remember() {
   # Ctrl-C kills the child TUI and would normally abort the rest of this shell
   # function too. Keep the trap local so cleanup and history insertion still run.
   trap 'interrupted=1' INT
-  # Refresh the managed clipboard environment for every agent launch, including
-  # existing SSH/tmux shells with an absent or stale DISPLAY. Scope it to the child.
-  if [ -r "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env" ] &&
-      [ -x "$HOME/.local/bin/workbench" ]; then
-    command "$HOME/.local/bin/workbench" clipboard exec -- "$executable" "$@"
-  else
-    command "$executable" "$@"
-  fi
+  _agent_exec_with_clipboard_env "$executable" "$@"
   exit_status=$?
   [ "$interrupted" -eq 1 ] && exit_status=130
 
