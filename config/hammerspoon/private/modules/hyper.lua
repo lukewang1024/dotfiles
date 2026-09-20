@@ -71,10 +71,17 @@ function M.new(options)
     if not target then alert(t('error.unavailable',{name=id})); return end
     local apps = hs.application.applicationsForBundleID(target)
     local app = apps and apps[1] or hs.application.find(target, true)
-    if app and app:isFrontmost() then app:hide()
+    local win=app and app:mainWindow()
+    if app and win and app:isFrontmost() then app:hide()
+    elseif app and win then
+      app:unhide(); app:activate(true); win:focus()
     elseif app then
-      app:unhide(); app:activate(true)
-      local win=app:mainWindow(); if win then win:focus() end
+      -- Use the running app's actual path. A bundle ID or display name can
+      -- activate a windowless process without sending its reopen request.
+      local path=app:path()
+      local opened=path and hs.application.launchOrFocus(path)
+      if not opened then opened=hs.application.launchOrFocus(spec.title) end
+      if not opened then alert(t('error.launch',{name=spec.title})) end
     elseif not hs.application.launchOrFocusByBundleID(target) then
       if not hs.application.launchOrFocus(target) then alert(t('error.launch',{name=spec.title})) end
     end
@@ -205,7 +212,7 @@ function M.new(options)
       local info=hs.application.infoForBundlePath(arg)
       local apps=info and info.CFBundleIdentifier and hs.application.applicationsForBundleID(info.CFBundleIdentifier)
       local app=apps and apps[1]
-      if app and app:isFrontmost() then app:hide()
+      if app and app:mainWindow() and app:isFrontmost() then app:hide()
       elseif not hs.application.launchOrFocus(arg) then alert(t('error.launch',{name=arg})) end
     elseif kind=='menu' then menu(arg)
     elseif kind=='edit' or kind=='select' then
