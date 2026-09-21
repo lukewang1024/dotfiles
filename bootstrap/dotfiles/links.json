@@ -511,8 +511,20 @@
       "$bin_dir/codex-settings-apply"
     ],
     [
+      "$util_dir/agent/agent-team-install",
+      "$bin_dir/agent-team-install"
+    ],
+    [
       "$util_dir/agent/codex-unlock",
       "$bin_dir/codex-unlock"
+    ],
+    [
+      "$config_dir/agent/team.config.toml",
+      "$HOME/.codex/team.config.toml"
+    ],
+    [
+      "$config_dir/agent/team-budget.config.toml",
+      "$HOME/.codex/team-budget.config.toml"
     ],
     [
       "$util_dir/agent/agent-skills-install",

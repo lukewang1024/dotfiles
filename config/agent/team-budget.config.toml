@@ -1,0 +1,10 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+plan_mode_reasoning_effort = "medium"
+developer_instructions = "Team delegation mode is enabled. Apply the opt-in agent-team instructions in AGENTS.md. Proactively delegate useful independent subtasks using the configured subagent model and reasoning effort; keep important decisions and final verification with the primary agent."
+
+[agents]
+enabled = true
+default_subagent_model = "gpt-5.6-luna"
+default_subagent_reasoning_effort = "high"
+max_concurrent_threads_per_session = 2
