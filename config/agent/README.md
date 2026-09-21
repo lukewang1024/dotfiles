@@ -16,6 +16,24 @@ agents. `./init sync` installs the entrypoints and applies the managed settings.
 Do not add credentials, per-project permissions, MCP secrets, or absolute
 machine-specific paths to these shared files.
 
+### Agent teams
+
+The implementation, adapters, collaboration protocol and tests live in the
+standalone `~/Code/github/agent-team` checkout. Run `agent-team-install` to link
+its commands into `~/.local/bin`; set `AGENT_TEAM_REPO` for a different checkout
+location. `./init sync` installs this helper and the personal Codex profiles,
+not the implementation. No checkout is cloned automatically.
+
+Run `agent-team` to select a coding agent and preset, or `agent-team --tmux` for
+interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned
+by the standalone installer. The shared AGENTS.md only authorizes the opt-in
+mode; the standalone CLI injects the full collaboration rules.
+
+Personal Codex defaults remain in `team.config.toml` and
+`team-budget.config.toml`, linked into `~/.codex/`. The standalone CLI can also
+run without these profiles using its bundled defaults. Machine-local overrides
+for any supported tool belong in `$XDG_CONFIG_HOME/agent-team/config.json`.
+
 - `code-ship` and `skills/code-ship` implement repository shipping policies.
   First use asks for a strategy and saves it under XDG config, never in the
   repository. Run `agent-skills-install --local-only` to install local skills

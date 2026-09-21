@@ -5,6 +5,19 @@ Canonical file: `$XDG_CONFIG_HOME/dotfiles/config/agent/AGENTS.md`, symlinked to
 global instructions path (`~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`);
 `~/.claude/CLAUDE.md` imports it. Keep it tool-agnostic — all three read this.
 
+## Opt-in agent teams
+
+When session instructions state "Team delegation mode is enabled", proactively
+use the selected team mode for useful independent subtasks. Follow the shared
+collaboration rules injected by the standalone `agent-team` CLI. Without this
+explicit opt-in, this section does not enable delegation. The standalone
+repository owns the full protocol; do not duplicate it here.
+
+Native mode uses native subagents only. An explicit `agent-team --tmux` session
+uses interactive pane workers only in its dedicated team window. This is the
+exception to the ordinary workbench/dev-server pane rules below; do not alter
+repository inspection windows or mix native and pane workers in one team.
+
 ## tmux task/window model — folding another repo into the task
 
 Some tmux sessions are **task workbenches**: one session is one task, you (the
