@@ -55,20 +55,28 @@ needs to be decided up front — a workspace can start (`tmux-agent-workbench ne
 actually turns out to touch, one `tmux-agent-workbench add` at a time. An
 ordinary session never opts into this window-per-repo behavior implicitly.
 
-When a task needs a dev server or another long-running command, keep the default
-inspection window unchanged until the command is actually needed. Then run
+Agent-initiated tasks default to the agent's background-task execution mechanism.
+Run one-shot builds, tests, lint, installs, and other commands through the agent's
+execution tools; do not create tmux panes for them, even when they take a long
+time. Track their output and exit status through the agent's task/session handle.
+Short commands may finish directly in the execution tool.
+
+Only persistent dev servers in a workbench session use the task-pane workflow
+below. Keep the default inspection window unchanged until the dev server is
+actually needed. Then run
 `tmux-agent-workbench run --name <label> <absolute-repo-path> -- <command> <args...>`.
 For commands that require shell syntax, use
 `tmux-agent-workbench run --name <label> <absolute-repo-path> --shell '<command>'`.
 It creates or reuses a detached task pane in that repo's inspection window
-and prints the pane id. Use stable names such as `dev`, `build`, and `test`;
+and prints the pane id. Use a stable name such as `dev`;
 rerunning the same name replaces the previous live or dead task in the same
-pane and retains only the latest output. Use different names only when tasks
-must coexist. Temporary worktrees share their direct workspace member's window
+pane and retains only the latest output. Use different names only when multiple
+persistent dev servers must coexist. Temporary worktrees share their direct workspace member's window
 while commands run in the requested worktree directory. Use that pane id with
 `tmux capture-pane` to inspect output or `tmux kill-pane` when the task is no
-longer needed. Do not run persistent
-project processes in the session-level agent pane.
+longer needed. Do not run persistent dev servers in the session-level agent pane.
+In ordinary sessions, use the agent's background-task mechanism for dev servers
+as well, without changing the user's tmux layout.
 
 Missing `TMUX` / `TMUX_PANE` variables do not prove that this is an ordinary
 session: agent tool runners may remove them. The command can recover the
@@ -77,7 +85,9 @@ session through process ancestry. If a PID sandbox hides that too, use
 For `add`, `WORKBENCH_FEATURE=<verified-workspace-name>` is also supported.
 If tmux socket access is denied, use the agent's permission mechanism to retry
 with socket access. Do not treat a connection or session-resolution failure
-as permission to launch the task in an independent background process.
+as permission to launch a workbench dev server in an independent background
+process. This restriction applies only to dev servers that require the workbench
+task-pane workflow; other agent tasks use background execution by default.
 
 ## Where generated files go — keep `$HOME` clean, honour XDG
 
