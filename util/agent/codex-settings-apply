@@ -19,7 +19,7 @@ resolve_script_dir()
 
 script_dir=$(resolve_script_dir)
 shared_file=$script_dir/../../config/agent/codex-tui.toml
-config_file=$HOME/.codex/config.toml
+config_file=${CODEX_HOME:-$HOME/.codex}/config.toml
 [ -f "$shared_file" ] || {
   echo "codex-settings-apply: shared config not found: $shared_file" >&2
   exit 1
@@ -116,3 +116,6 @@ fi
 mv "$tmp" "$config_file"
 
 echo "Codex shared TUI settings applied to $config_file"
+
+# Profiles are writable local state; never symlink them back into dotfiles.
+python3 "$script_dir/codex-profiles-apply.py" || exit 1

@@ -30,7 +30,13 @@ by the standalone installer. The shared AGENTS.md only authorizes the opt-in
 mode; the standalone CLI injects the full collaboration rules.
 
 Personal Codex defaults remain in `team.config.toml` and
-`team-budget.config.toml`, linked into `~/.codex/`. The standalone CLI can also
+`team-budget.config.toml` as initialization templates. `codex-settings-apply`
+seeds independent files in `${CODEX_HOME:-~/.codex}` and converts the old
+symlinks into regular files, preserving existing trust and local settings.
+Existing regular profiles are never overwritten by sync; edit the local files
+for model changes after initialization. Codex may write project trust to these
+runtime profiles; those paths must never be linked back into dotfiles.
+The standalone CLI can also
 run without these profiles using its bundled defaults. Machine-local overrides
 for any supported tool belong in `$XDG_CONFIG_HOME/agent-team/config.json`.
 
