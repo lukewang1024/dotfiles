@@ -2076,14 +2076,6 @@
         "$bin_dir/codex-unlock"
       ],
       [
-        "$config_dir/agent/team.config.toml",
-        "$HOME/.codex/team.config.toml"
-      ],
-      [
-        "$config_dir/agent/team-budget.config.toml",
-        "$HOME/.codex/team-budget.config.toml"
-      ],
-      [
         "$util_dir/agent/agent-skills-install",
         "$bin_dir/agent-skills-install"
       ],
