@@ -104,7 +104,11 @@ instance:run('window.max');assert(currentFrame.w==1200)
 instance:run('window.max');assert(math.abs(currentFrame.w-800)<.001)
 instance:run('select.left');assert(stroke[1][1]=='shift' and stroke[2]=='left')
 instance:run('edit.home');assert(stroke[1][1]=='cmd' and stroke[2]=='left')
-instance:run('screen.left')
+local expected=require('private/modules/hyper').rebaseFrame(currentFrame,primary:frame(),left:frame())
+run(instance,'screen.left')
+assert(currentScreen==left and require('private/modules/hyper').sameFrame(currentFrame,expected),
+  'Cross-screen position and size must be applied before any timer fires')
+flushPlacement()
 instance:run('screen.right') -- right edge wraps to the leftmost screen
 instance:run('screen.up') -- no vertical peer: use the horizontal axis
 currentScreen=primary;currentFrame=rect(100,100,600,400)
