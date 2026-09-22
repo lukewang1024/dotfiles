@@ -390,13 +390,15 @@ class BootstrapTests(unittest.TestCase):
 
     def test_binary_command_output_is_atomic_and_failures_preserve_destination(self):
         c = self.context(dry=False)
-        target = self.home / 'artifact'
+        # Child runtimes may create caches in HOME (e.g. Apple's Python).
+        # Atomic output must leave no temporary files beside the destination.
+        target = self.home / 'output' / 'artifact'
         c.command(sys.executable, '-c', "import sys; sys.stdout.buffer.write(bytes([0, 255, 10]))", output_file=target)
         self.assertEqual(target.read_bytes(), bytes([0, 255, 10]))
         with self.assertRaises(Failure):
             c.command(sys.executable, '-c', "import sys; print('partial'); sys.exit(3)", output_file=target)
         self.assertEqual(target.read_bytes(), bytes([0, 255, 10]))
-        self.assertEqual(list(self.home.iterdir()), [target])
+        self.assertEqual(list(target.parent.iterdir()), [target])
 
     def test_tty_updates_current_step_then_collapses_category(self):
         terminal = io.StringIO()
