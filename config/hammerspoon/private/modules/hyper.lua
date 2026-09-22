@@ -303,25 +303,20 @@ function M.new(options)
           -- Apply the intended target explicitly: screen conversion/bounds
           -- clamping can otherwise shrink a maximized window on mixed displays.
           target=target or (maximized and destination or M.rebaseFrame(win:frame(),source,destination))
-          -- iTerm processes AX size/position changes asynchronously. Resizing
-          -- before crossing displays can snap it back to the source display.
-          -- Move first; resize only after the app has processed that move.
+          -- Submit position and size together, without an intermediate move or
+          -- an animation. Only retry if the app clamps or ignores the frame.
           if self.placements[id] then return end
           attempts=attempts+1
-          win:setTopLeft({x=target.x,y=target.y})
-          self.placements[id]=hs.timer.doAfter(0.2,function()
-            if not win:id() then self.placements[id]=nil;return end
-            win:setFrame(target,0)
-            self.placements[id]=hs.timer.doAfter(0.1,function()
-              self.placements[id]=nil
-              if not win:id() then return end
-              -- Some apps apply an older AX request after the newer one.
-              -- Verify the result, not just the setter's return value.
-              if attempts<4 and (win:screen()~=nextScreen or not M.sameFrame(win:frame(),target)) then
-                move();return
-              end
-              self.managed[id]=win:frame()
-            end)
+          win:setFrame(target,0)
+          self.placements[id]=hs.timer.doAfter(0.1,function()
+            self.placements[id]=nil
+            if not win:id() then return end
+            -- Some apps apply an older AX request after the newer one.
+            -- Verify the result, not just the setter's return value.
+            if attempts<4 and (win:screen()~=nextScreen or not M.sameFrame(win:frame(),target)) then
+              move();return
+            end
+            self.managed[id]=win:frame()
           end)
         end
         if not nativeFullscreen then move()
