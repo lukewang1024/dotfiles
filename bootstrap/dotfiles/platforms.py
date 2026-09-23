@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 import re
 import sys
-import tarfile
 
 from .engine import Failure, Skip
 from .tasks import DATA, PACKAGES, install, links, packages, sequence, task
@@ -326,6 +325,8 @@ def windows_category(c, tier):
     if 'fonts' in PACKAGES[group]:
         install(c, 'scoop-fonts', packages(group, 'fonts'))
     install(c, 'winget', packages(group, 'wingetPkgs'))
+    if tier == 'cli_core':
+        c.task('agent_team_setup')
     if tier == 'gui_core':
         c.task('set_windows_configs')
 
@@ -419,79 +420,41 @@ def prepare_termux_env(c, mode='core'):
     if mode == 'all':
         c.note('Termux has no extra package set; using core.')
     sequence(c, 'install_termux_core_packages', 'termux_default_shell_setup', 'zinit_install',
-             'termux_basic_setup', 'tmux_plugins_setup')
+             'termux_basic_setup', 'tmux_plugins_setup', 'agent_team_setup')
     if c.dry_run or c.exists('tmux-agent-workbench'):
         c.command('tmux-agent-workbench', 'client', 'setup', 'termux')
     else:
         c.note('tmux-agent-workbench unavailable; mobile notifications are not configured')
-    sequence(c, 'vim_plugins_setup', 'termux_ssh_setup', 'setup_distributed_workbench')
+    sequence(c, 'vim_plugins_setup', 'termux_ssh_setup', 'setup_machine_fabric')
     c.note('Public SSH key: ' + str(c.home / '.ssh/id_ed25519.pub'))
 
 
 @task()
-def setup_distributed_workbench(c):
-    if c.platform == 'termux':
-        c.task('setup_termux_workbench_peer')
-    elif c.platform == 'windows':
-        c.installer('https://raw.githubusercontent.com/lukewang1024/distributed-workbench/main/scripts/install-from-release.ps1', 'powershell', 'latest')
-    elif c.platform in ('macos', 'debian', 'arch', 'chromeos'):
-        c.installer('https://raw.githubusercontent.com/lukewang1024/distributed-workbench/main/scripts/install-from-release.sh', 'sh', 'latest')
+def setup_machine_fabric(c):
+    """Install or verify the local Machine Fabric runtime.
+
+    Peer topology is intentionally owned by Machine Fabric's bootstrap-fabric
+    tool. Dotfiles only installs the local runtime when an exact version and
+    release CDN are supplied, or verifies an existing installation.
+    """
+    version = c.env.get('MACHINE_FABRIC_VERSION', '')
+    base_url = c.env.get('MACHINE_FABRIC_RELEASE_BASE_URL', '')
+    if not version:
+        if c.dry_run:
+            c.command('machine-fabric', 'status')
+            return
+        if not c.exists('machine-fabric'):
+            raise Failure('machine-fabric is missing; set MACHINE_FABRIC_VERSION and MACHINE_FABRIC_RELEASE_BASE_URL to install it')
+        c.command('machine-fabric', 'status')
+        return
+    if not base_url:
+        raise Failure('MACHINE_FABRIC_RELEASE_BASE_URL is required when installing machine-fabric')
+    env = {'MACHINE_FABRIC_RELEASE_BASE_URL': base_url}
+    if c.platform == 'windows':
+        c.installer('https://raw.githubusercontent.com/lukewang1024/machine-fabric/main/scripts/install-from-release.ps1',
+                    'powershell', version, env=env)
+    elif c.platform in ('macos', 'debian', 'arch', 'chromeos', 'termux'):
+        c.installer('https://raw.githubusercontent.com/lukewang1024/machine-fabric/main/scripts/install-from-release.sh',
+                    'sh', version, env=env)
     else:
-        raise Failure('Distributed Workbench is not supported on ' + c.platform)
-
-
-@task()
-def setup_termux_workbench_peer(c):
-    root = c.config / 'distributed-workbench'
-    config = root / 'peer.conf'
-    old = root / 'termux-peer.conf'
-    if not config.exists() and old.exists():
-        c.copy(old, config)
-    values = {}
-    source = config if config.exists() else old
-    if source.exists():
-        values = dict(line.split('=', 1) for line in source.read_text(encoding='utf-8').splitlines() if '=' in line and not line.startswith('#'))
-    if not values:
-        peer = c.prompt('SSH alias for an existing workbench node (blank to skip)', 'peer' if c.dry_run else '')
-        if not peer:
-            raise Skip('No workbench peer selected')
-        model = c.command('getprop', 'ro.product.model', capture=True).strip() or 'termux'
-        node = re.sub(r'[^a-z0-9._-]+', '-', model.lower()).strip('-') + '-termux'
-        values = dict(DISTRIBUTED_WORKBENCH_PEER_HOST=peer, DISTRIBUTED_WORKBENCH_NODE_ID=node, DISTRIBUTED_WORKBENCH_VERSION='latest')
-        c.write(config, ''.join(k + '=' + v + '\n' for k, v in values.items()))
-    peer = values.get('DISTRIBUTED_WORKBENCH_PEER_HOST', '')
-    node = values.get('DISTRIBUTED_WORKBENCH_NODE_ID', values.get('DISTRIBUTED_WORKBENCH_TERMUX_NODE_ID', ''))
-    version = values.get('DISTRIBUTED_WORKBENCH_VERSION', 'latest')
-    if any(not re.fullmatch(r'[0-9A-Za-z._-]+', v) for v in (peer, node, version)):
-        raise Failure('Invalid peer, node ID, or version in workbench peer.conf')
-    ssh = ['ssh', '-o', 'BatchMode=yes', '-o', 'ClearAllForwardings=yes', peer]
-    c.command(*ssh, 'true')
-    env = dict(DISTRIBUTED_WORKBENCH_CONTROLLER_ID=node, DISTRIBUTED_WORKBENCH_EXECUTOR_ID=node + '-rust')
-    installer = c.download('https://raw.githubusercontent.com/lukewang1024/distributed-workbench/main/scripts/install-from-release.sh',
-                           c.cache / 'distributed-workbench/install-from-release.sh')
-    rc = c.command('sh', installer, version, c.home, env=env, check=False)
-    if rc:
-        output = c.command(*ssh, '"$HOME/.local/bin/workbench" --version', capture=True, expand=False)
-        words = output.split()
-        if len(words) < 2:
-            raise Failure('Peer returned an empty or invalid version')
-        version = words[1]
-        if not re.fullmatch(r'[0-9A-Za-z._-]+', version):
-            raise Failure('Peer returned an invalid version')
-        archive = c.cache / 'distributed-workbench/termux-current.tar.gz'
-        # Binary transfer uses an explicit output file, not a text capture.
-        remote = 'cat "${XDG_CACHE_HOME:-$HOME/.cache}/distributed-workbench-bootstrap/termux-current.tar.gz"'
-        c.record('download-peer-artifact', peer=peer, target=str(archive))
-        c.command(*ssh, remote, output_file=archive)
-        if not c.dry_run:
-            unpack = c.cache / 'distributed-workbench/bootstrap'
-            with tarfile.open(archive) as tar:
-                # Only regular files/directories; reject traversal and links.
-                for member in tar.getmembers():
-                    dest = (unpack / member.name).resolve()
-                    if not dest.is_relative_to(unpack.resolve()) or not (member.isfile() or member.isdir()):
-                        raise Failure('Unsafe peer bootstrap archive member')
-                tar.extractall(unpack)
-            bundle = unpack / f'distributed-workbench-{version}-aarch64-linux-android'
-            c.command('sh', bundle / 'scripts/install-termux-user.sh', bundle / 'bin/workbench', node + '-rust', c.home, env=env)
-    c.command(c.bin / 'connect-termux-peer', peer, node)
+        raise Failure('Machine Fabric is not supported on ' + c.platform)

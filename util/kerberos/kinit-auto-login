@@ -170,7 +170,7 @@ macos_clear_legacy_cache() {
   # they inherited the legacy FILE override, restart them once so subsequent
   # GSSAPI reconnects use the native API cache. Ignore absent services.
   launchctl list 2>/dev/null |
-    awk '$3 ~ /^dev[.]distributed-workbench[.]/ { print $3 }' |
+    awk '$3 ~ /^dev[.]machine-fabric[.]/ { print $3 }' |
     while IFS= read -r label; do
       launchctl kickstart -k "$domain/$label" >/dev/null 2>&1 || true
     done
