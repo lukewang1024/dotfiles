@@ -45,8 +45,10 @@ def is_github_host(host):
 
 
 def github_auto_merge(repo, pull, head, poll_interval, poll_timeout):
-    run('gh', 'pr', 'merge', pull, '--repo', repo, '--auto', '--squash',
-        '--match-head-commit', head, capture=False)
+    # GitHub's auto-merge mutation rejects --match-head-commit for some
+    # repositories even when the pull request is clean. The head SHA is still
+    # checked while polling below, before treating a merge as ours.
+    run('gh', 'pr', 'merge', pull, '--repo', repo, '--auto', '--squash', capture=False)
     waited = 0
     while waited < poll_timeout:
         status = json.loads(run('gh', 'pr', 'view', pull, '--repo', repo,
