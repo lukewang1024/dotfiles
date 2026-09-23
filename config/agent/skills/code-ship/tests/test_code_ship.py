@@ -164,10 +164,13 @@ class ShippingTest(unittest.TestCase):
 
         with patch.object(ship_module, 'run', side_effect=fake_run), \
              patch.object(ship_module.time, 'sleep') as sleep:
-            status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha', 5, 30)
+            status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha',
+                                                   'Ship it', 'Description', 5, 30)
         self.assertEqual(status['mergeCommit']['oid'], 'merge-sha')
         self.assertEqual(calls[0][:5], ('gh', 'pr', 'merge', '7', '--repo'))
         self.assertNotIn('--match-head-commit', calls[0])
+        self.assertIn('--subject', calls[0])
+        self.assertIn('--body', calls[0])
         sleep.assert_called_once_with(5)
 
     def test_saved_identity_contains_no_credentials(self):

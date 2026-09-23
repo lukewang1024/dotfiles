@@ -44,11 +44,16 @@ def is_github_host(host):
     return host == 'github.com' or host.startswith('github.com-')
 
 
-def github_auto_merge(repo, pull, head, poll_interval, poll_timeout):
+def github_auto_merge(repo, pull, head, title, description, poll_interval, poll_timeout):
     # GitHub's auto-merge mutation rejects --match-head-commit for some
     # repositories even when the pull request is clean. The head SHA is still
     # checked while polling below, before treating a merge as ours.
-    run('gh', 'pr', 'merge', pull, '--repo', repo, '--auto', '--squash', capture=False)
+    args = ['gh', 'pr', 'merge', pull, '--repo', repo, '--auto', '--squash']
+    if title:
+        args.extend(['--subject', title])
+    if description:
+        args.extend(['--body', description])
+    run(*args, capture=False)
     waited = 0
     while waited < poll_timeout:
         status = json.loads(run('gh', 'pr', 'view', pull, '--repo', repo,
@@ -240,7 +245,8 @@ def main():
         if strategy == 'auto-merge':
             pull = url.rstrip('/').rsplit('/', 1)[-1]
             head = run('git', 'rev-parse', 'HEAD')
-            status = github_auto_merge(repo, pull, head, a.poll_interval, a.poll_timeout)
+            status = github_auto_merge(repo, pull, head, title, description,
+                                       a.poll_interval, a.poll_timeout)
             print(json.dumps({'strategy': strategy, 'mrUrl': url, 'merged': True,
                               'commit': (status.get('mergeCommit') or {}).get('oid')}))
         else:
