@@ -173,6 +173,31 @@ class ShippingTest(unittest.TestCase):
         self.assertIn('--body', calls[0])
         sleep.assert_called_once_with(5)
 
+    def test_builtin_github_auto_merge_retries_transient_merge_error(self):
+        statuses = iter([
+            {'state': 'MERGED', 'headRefOid': 'head-sha',
+             'mergeCommit': {'oid': 'merge-sha'}, 'statusCheckRollup': []},
+        ])
+        merge_attempts = []
+
+        def fake_run(*args, capture=True):
+            if args[:3] == ('gh', 'pr', 'merge'):
+                merge_attempts.append(args)
+                if len(merge_attempts) == 1:
+                    raise subprocess.CalledProcessError(1, args)
+                return ''
+            if args[:3] == ('gh', 'pr', 'view'):
+                return json.dumps(next(statuses))
+            return ''
+
+        with patch.object(ship_module, 'run', side_effect=fake_run), \
+             patch.object(ship_module.time, 'sleep') as sleep:
+            status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha',
+                                                   'Ship it', 'Description', 5, 30)
+        self.assertEqual(status['mergeCommit']['oid'], 'merge-sha')
+        self.assertEqual(len(merge_attempts), 2)
+        self.assertEqual(sleep.call_count, 1)
+
     def test_saved_identity_contains_no_credentials(self):
         self.setup_repo()
         self.git('remote', 'set-url', 'origin', 'https://user:secret@example.com/owner/repo.git')

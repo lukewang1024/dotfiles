@@ -53,7 +53,13 @@ def github_auto_merge(repo, pull, head, title, description, poll_interval, poll_
         args.extend(['--subject', title])
     if description:
         args.extend(['--body', description])
-    run(*args, capture=False)
+    try:
+        run(*args, capture=False)
+    except subprocess.CalledProcessError:
+        # gh may return non-zero while GitHub is still applying the mutation.
+        # Retry once before surfacing a real failure to the caller.
+        time.sleep(min(poll_interval, 5))
+        run(*args, capture=False)
     waited = 0
     while waited < poll_timeout:
         status = json.loads(run('gh', 'pr', 'view', pull, '--repo', repo,
