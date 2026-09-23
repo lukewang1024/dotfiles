@@ -167,6 +167,7 @@ class ShippingTest(unittest.TestCase):
             status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha', 5, 30)
         self.assertEqual(status['mergeCommit']['oid'], 'merge-sha')
         self.assertEqual(calls[0][:5], ('gh', 'pr', 'merge', '7', '--repo'))
+        self.assertNotIn('--match-head-commit', calls[0])
         sleep.assert_called_once_with(5)
 
     def test_saved_identity_contains_no_credentials(self):
