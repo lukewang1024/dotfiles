@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from urllib.parse import urlsplit
 
 
@@ -36,6 +37,34 @@ def identity(url):
     if parsed.scheme and parsed.scheme != 'file':
         raise ValueError('unsupported origin URL scheme')
     return 'file://' + str(Path(parsed.path if parsed.scheme else url).resolve()), ''
+
+
+def is_github_host(host):
+    """Accept GitHub plus local SSH aliases such as github.com-geek."""
+    return host == 'github.com' or host.startswith('github.com-')
+
+
+def github_auto_merge(repo, pull, head, poll_interval, poll_timeout):
+    run('gh', 'pr', 'merge', pull, '--repo', repo, '--auto', '--squash',
+        '--match-head-commit', head, capture=False)
+    waited = 0
+    while waited < poll_timeout:
+        status = json.loads(run('gh', 'pr', 'view', pull, '--repo', repo,
+                                '--json', 'state,headRefOid,mergeCommit,statusCheckRollup,autoMergeRequest'))
+        if status.get('state') == 'MERGED':
+            return status
+        if status.get('state') != 'OPEN' or status.get('headRefOid') != head:
+            raise ValueError('PR closed or head changed; inspect before continuing')
+        checks = status.get('statusCheckRollup') or []
+        failures = [check for check in checks if check.get('conclusion') in
+                     ('FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED') or
+                     check.get('state') in ('FAILURE', 'ERROR')]
+        if failures:
+            names = ', '.join(check.get('name', check.get('context', '?')) for check in failures)
+            raise ValueError('PR checks failed; auto-merge remains blocked: ' + names)
+        time.sleep(poll_interval)
+        waited += poll_interval
+    raise ValueError('PR has not merged before timeout; GitHub auto-merge remains enabled')
 
 
 def config_path():
@@ -104,7 +133,7 @@ def main():
     for field, value in [('strategy', a.strategy), ('target-branch', a.target_branch), ('provider', a.provider)]:
         if value is not None:
             policy[field] = value
-    if host == 'github.com':
+    if is_github_host(host):
         policy.setdefault('provider', 'github')
     if a.show_policy:
         print(json.dumps({'repository': key, 'policy': policy, 'needsChoice': not policy.get('strategy')}))
@@ -144,10 +173,8 @@ def main():
     adapter = None
     if strategy != 'direct-push':
         if provider == 'github':
-            if host != 'github.com':
-                raise ValueError('built-in github provider requires github.com')
-            if strategy == 'auto-merge':
-                raise ValueError('GitHub auto-merge is not supported in this version')
+            if not is_github_host(host):
+                raise ValueError('built-in github provider requires github.com or a github.com-* SSH alias')
             if not shutil.which('gh'):
                 raise ValueError('GitHub PR creation requires gh and gh auth login')
             run('gh', 'auth', 'status', '--hostname', 'github.com')
@@ -203,11 +230,19 @@ def main():
         subprocess.run([adapter], env=env, check=True)
     else:
         run('git', '-c', 'push.followTags=false', 'push', 'origin', 'HEAD:refs/heads/' + branch, capture=False)
-        args = ['gh', 'pr', 'create', '--repo', key, '--head', branch, '--base', target, '--title', title, '--body', description]
+        repo = key[len(host) + 1:]
+        args = ['gh', 'pr', 'create', '--repo', repo, '--head', branch, '--base', target, '--title', title, '--body', description]
         if a.draft:
             args.append('--draft')
         url = run(*args)
-        print(json.dumps({'strategy': strategy, 'mrUrl': url, 'merged': False}))
+        if strategy == 'auto-merge':
+            pull = url.rstrip('/').rsplit('/', 1)[-1]
+            head = run('git', 'rev-parse', 'HEAD')
+            status = github_auto_merge(repo, pull, head, a.poll_interval, a.poll_timeout)
+            print(json.dumps({'strategy': strategy, 'mrUrl': url, 'merged': True,
+                              'commit': (status.get('mergeCommit') or {}).get('oid')}))
+        else:
+            print(json.dumps({'strategy': strategy, 'mrUrl': url, 'merged': False}))
     return 0
 
 
