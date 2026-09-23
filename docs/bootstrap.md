@@ -14,7 +14,7 @@ retain their native interpreters.
 | `bootstrap/dotfiles/cli.py` | Modes, platform detection/override, category selection |
 | `bootstrap/dotfiles/engine.py` | Task progress, log capture, process exit codes, filesystem operations, dry runs |
 | `bootstrap/dotfiles/tasks.py` | Common environment, shells, editors, language tools, configuration |
-| `bootstrap/dotfiles/platforms.py` | Native packages/settings, Termux and workbench integration |
+| `bootstrap/dotfiles/platforms.py` | Native packages/settings, Termux and Machine Fabric integration |
 | `bootstrap/dotfiles/maintenance.py` | Kerberos, XDG migration, standalone task compositions |
 | `bootstrap/dotfiles/packages.json` | Package groups extracted from previous shell/PowerShell arrays |
 | `bootstrap/dotfiles/links.json` | Previous declarative links |

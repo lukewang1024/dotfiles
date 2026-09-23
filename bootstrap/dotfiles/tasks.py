@@ -6,6 +6,7 @@ from pathlib import Path
 import platform
 import re
 import shutil
+import sys
 
 from .engine import Failure, Skip
 
@@ -92,7 +93,7 @@ def sync(c):
 @task('core_env_setup')
 def core(c):
     sequence(c, 'basic_env_setup', 'shell_setup', 'tmux_plugins_setup', 'vim_plugins_setup',
-             'anyenv_setup', 'rustup_setup', 'uv_setup', 'pnpm_setup')
+             'anyenv_setup', 'rustup_setup', 'uv_setup', 'pnpm_setup', 'agent_team_setup')
 
 
 @task('extra_env_setup')
@@ -355,6 +356,14 @@ def util_setup(c, mode='all'):
         if c.platform == 'macos':
             c.command(c.repo / 'util/shell/alacritty-appearance', 'auto', check=False)
     c.task('git_hooks_setup')
+
+
+@task()
+def agent_team_setup(c):
+    """Keep the standalone agent-team checkout and entrypoints usable."""
+    repo = Path(c.env.get('AGENT_TEAM_REPO', str(c.home / 'Code/github/agent-team'))).expanduser()
+    c.sync_repo(repo, 'https://github.com/lukewang1024/agent-team.git')
+    c.command(sys.executable, repo / 'install.py', '--bin-dir', c.bin)
 
 
 @task()

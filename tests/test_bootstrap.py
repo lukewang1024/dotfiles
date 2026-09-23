@@ -67,6 +67,36 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(a, b)
         self.assertEqual(before, json.dumps(PACKAGES, sort_keys=True))
 
+    def test_core_reconciles_agent_team_checkout_and_entrypoints(self):
+        c = self.context('debian')
+        for name, arguments in select_tasks('debian', 'core', []):
+            c.task(name, *arguments)
+        commands = [event['argv'] for event in c.events if event['kind'] == 'command']
+        self.assertTrue(any('https://github.com/lukewang1024/agent-team.git' in command for command in commands))
+        self.assertTrue(any('agent-team/install.py' in str(value) for command in commands for value in command))
+
+    def test_machine_fabric_install_is_pinned_and_uses_release_cdn(self):
+        c = self.context('debian')
+        c.env.update(MACHINE_FABRIC_VERSION='0.1.25',
+                     MACHINE_FABRIC_RELEASE_BASE_URL='https://example.invalid/fabric')
+        c.task('setup_machine_fabric')
+        downloads = [event for event in c.events if event['kind'] == 'download']
+        commands = [event for event in c.events if event['kind'] == 'command']
+        self.assertEqual(len(downloads), 1)
+        self.assertIn('machine-fabric/main/scripts/install-from-release.sh', downloads[0]['url'])
+        self.assertEqual(commands[0]['argv'][-1], '0.1.25')
+
+    def test_termux_machine_fabric_install_uses_android_release(self):
+        c = self.context('termux')
+        c.env.update(MACHINE_FABRIC_VERSION='0.1.33',
+                     MACHINE_FABRIC_RELEASE_BASE_URL='https://example.invalid/fabric')
+        c.task('setup_machine_fabric')
+        downloads = [event for event in c.events if event['kind'] == 'download']
+        commands = [event for event in c.events if event['kind'] == 'command']
+        self.assertEqual(len(downloads), 1)
+        self.assertIn('machine-fabric/main/scripts/install-from-release.sh', downloads[0]['url'])
+        self.assertEqual(commands[0]['argv'][-1], '0.1.33')
+
     def test_windows_plan_contains_real_package_sets_and_no_unix_installer(self):
         c = self.context('windows')
         for name, args in select_tasks('windows', 'all', []):

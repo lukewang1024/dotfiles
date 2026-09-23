@@ -1,9 +1,11 @@
 -- Explicit image transfer. Timers refresh node metadata, never clipboard contents.
 local M = { targets = {}, jobs = {}, refreshing = false, busy = false }
-local settingsKey = 'workbench.clipboard.target'
+local settingsKey = 'machine-fabric.clipboard.target'
 local home = os.getenv('HOME')
-local binary = hs.settings.get('workbench.clipboard.binary') or os.getenv('WORKBENCH_CLIPBOARD_BIN') or (home .. '/.local/bin/workbench')
-local selected = hs.settings.get(settingsKey)
+local binary = hs.settings.get('machine-fabric.clipboard.binary') or
+  hs.settings.get('workbench.clipboard.binary') or os.getenv('MACHINE_FABRIC_CLIPBOARD_BIN') or
+  os.getenv('WORKBENCH_CLIPBOARD_BIN') or (home .. '/.local/bin/machine-fabric')
+local selected = hs.settings.get(settingsKey) or hs.settings.get('workbench.clipboard.target')
 local errorText, lastResult, lastError
 local progress = require('private/modules/clipboard-progress').new()
 
@@ -21,7 +23,7 @@ local function reason(message)
   if message:find('CLIPBOARD_UNCONFIRMED', 1, true) then return '远端返回但未确认写入，结果未知；请先检查目标剪贴板' end
   if message:find('RPC_TIMEOUT', 1, true) then return '等待远端响应超时，结果未知；请先检查目标剪贴板，不要立即重传' end
   if message:find('EXECUTOR_UNAVAILABLE', 1, true) then return '远端执行服务不可用' end
-  if message:find('unrecognized subcommand', 1, true) then return '本机 workbench 尚未安装图片同步版本' end
+  if message:find('unrecognized subcommand', 1, true) then return '本机 machine-fabric 尚未安装图片同步版本' end
   return (message:gsub('[\r\n]+', ' ')):sub(1, 240)
 end
 local function findTarget(id)
@@ -41,7 +43,7 @@ end
 local function updateTitle()
   if M.menu then
     M.menu:setTitle(M.busy and '图↑…' or '图↑')
-    M.menu:setTooltip('Workbench 图片同步' .. (selected and (' → ' .. selected) or ''))
+    M.menu:setTooltip('Machine Fabric 图片同步' .. (selected and (' → ' .. selected) or ''))
   end
   if M.onChange then M.onChange() end
 end
@@ -93,7 +95,7 @@ local function run(args, timeout, callback, onProgress)
     job.completionTimer=hs.timer.doAfter(0,function()finish(code,out,err)end)
   end
   job.task = onProgress and hs.task.new(binary, terminated, stream, args) or hs.task.new(binary, finish, args)
-  if not job.task then finish(1, '', '无法启动 workbench CLI'); return end
+  if not job.task then finish(1, '', '无法启动 machine-fabric CLI'); return end
   -- GUI apps do not inherit the shell's XDG exports.
   local env = job.task:environment()
   env.XDG_CONFIG_HOME = env.XDG_CONFIG_HOME or (home .. '/.config')
@@ -101,7 +103,7 @@ local function run(args, timeout, callback, onProgress)
   env.XDG_DATA_HOME = env.XDG_DATA_HOME or (home .. '/.local/share')
   if onProgress then env.WORKBENCH_CLIPBOARD_PROGRESS='1' end
   job.task:setEnvironment(env)
-  if not job.task:start() then finish(1, '', '无法启动 workbench CLI'); return end
+  if not job.task:start() then finish(1, '', '无法启动 machine-fabric CLI'); return end
   job.timer = hs.timer.doAfter(timeout, function()
     job.task:terminate()
     local sent=job.stage=='transferring' or job.stage=='confirmed'

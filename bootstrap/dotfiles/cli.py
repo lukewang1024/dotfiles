@@ -19,7 +19,7 @@ def select_tasks(platform, mode, arguments):
             raise Failure('Usage: init run <module> <task> [arguments]')
         module, expression, *extra = arguments
         if module not in ('env', 'shell', 'pkg', 'nix', 'linux', 'macos', 'macos-defaults', 'debian', 'arch', 'chromeos',
-                          'termux', 'cygwin', 'windows', 'workbench', 'maintenance'):
+                          'termux', 'cygwin', 'windows', 'machine-fabric', 'workbench', 'maintenance'):
             raise Failure('Unknown task module: ' + module)
         tokens = shlex.split(expression)
         if not tokens or tokens[0] not in TASKS:
@@ -34,7 +34,8 @@ def select_tasks(platform, mode, arguments):
     if mode in ('basic', 'sync'):
         return [('sync_setup', [])] if mode == 'sync' or platform == 'windows' else [('termux_basic_setup' if platform == 'termux' else 'basic_env_setup', [])]
     names = {'npmg': 'install_npm_packages', 'zinit': 'zinit_setup', 'kerberos': 'kerberos',
-             'migrate-xdg': 'migrate_xdg', 'workbench': 'setup_distributed_workbench'}
+             'migrate-xdg': 'migrate_xdg', 'machine-fabric': 'setup_machine_fabric',
+             'workbench': 'setup_machine_fabric'}
     if mode in names:
         if platform == 'windows' and mode in ('kerberos', 'zinit'):
             raise Failure(f'{mode} is a Unix-only task')
@@ -67,7 +68,7 @@ def select_tasks(platform, mode, arguments):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Cross-platform dotfiles setup. Detailed output is written to XDG state logs.')
-    parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'workbench', 'run'])
+    parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'machine-fabric', 'workbench', 'run'])
     parser.add_argument('arguments', nargs='*')
     parser.add_argument('--dry-run', action='store_true', help='Describe actions without changing files or executing commands')
     parser.add_argument('--json', action='store_true', help='Print a machine-readable dry-run plan')

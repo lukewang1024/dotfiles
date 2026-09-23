@@ -1,39 +1,25 @@
 # Termux setup
 
-Configure Distributed Workbench through the platform-neutral top-level task:
+Run the normal core flow for the Termux shell environment:
 
 ```sh
-./init workbench
+./init core
 ```
 
-On first interactive setup, the bootstrap asks for the SSH config alias of one
-existing distributed-workbench node. It stores that choice and an automatically
-derived phone node ID in the machine-local file
-`$XDG_CONFIG_HOME/distributed-workbench/peer.conf` with mode `0600`.
-Neither value is committed to dotfiles.
+This installs/configures the Termux packages, zsh, tmux plugins, Vim plugins,
+SSH, and the shared agent configuration. It also installs `agent-team` through
+the common core flow.
 
-The same task is available on macOS, Linux, Windows, and Termux. On Termux it
-installs the Android release of distributed-workbench, configures
-its Controller and restricted Executor under `termux-services`, and creates a
-persistent outbound peer connection. Re-running `./init core` upgrades and
-reconciles the same services. If SSH is not ready, the workbench step fails with a logged error. Fix the SSH
-alias and rerun `./init workbench`. Leave the first interactive peer selection
-blank to skip workbench setup.
-
-Before an Android artifact is published, the same flow may use an artifact from
-the selected peer's authenticated SSH bootstrap cache. This fallback contains
-no built-in hostname or account data and is replaced automatically by the
-normal checksum-protected release path once available.
-
-For unattended provisioning, create the local configuration before running the
-bootstrap:
+Machine Fabric v0.1.33 publishes an Android aarch64 runtime. To install it from
+the pinned release, provide the release CDN root explicitly:
 
 ```sh
-mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench"
-cp config/workbench/peer.conf.example \
-  "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/peer.conf"
-chmod 600 "${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/peer.conf"
+MACHINE_FABRIC_VERSION=0.1.33 \
+MACHINE_FABRIC_RELEASE_BASE_URL=https://<release-cdn-root> \
+./init core
 ```
 
-Edit the copied file with local values. The example contains no hostnames,
-usernames, addresses, keys, or tokens.
+The same variables can be used with `./init machine-fabric`. The installer
+configures the local Controller/Executor through `termux-services`; peer
+topology remains owned by Machine Fabric's release/bootstrap tools. The old
+distributed-workbench peer bootstrap is no longer part of dotfiles.
