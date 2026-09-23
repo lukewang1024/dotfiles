@@ -45,8 +45,8 @@ for any supported tool belong in `$XDG_CONFIG_HOME/agent-team/config.json`.
   First use asks for a strategy and saves it under XDG config, never in the
   repository. Run `agent-skills-install --local-only` to install local skills
   without downloading other skills. The command requires Python 3; GitHub PRs
-  additionally require authenticated `gh`. Organization-specific providers are
-  installed separately and selected in the machine-local policy.
+  and auto-merges require authenticated `gh`. Organization-specific providers
+  are installed separately and selected in the machine-local policy.
 
 - `agent-skills-install` also installs the public interview skills from
   `mattpocock/skills` for Claude Code, Codex, and OpenCode. Install the complete

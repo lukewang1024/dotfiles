@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts/code-ship.py'
 spec = importlib.util.spec_from_file_location('code_ship', SCRIPT)
@@ -138,6 +139,35 @@ class ShippingTest(unittest.TestCase):
                     'https://user:secret@example.com:443/Owner/Repo.git/']
         self.assertEqual({ship_module.identity(url)[0] for url in variants}, {'example.com/Owner/Repo'})
         self.assertNotEqual(ship_module.identity('ssh://git@example.com:2222/Owner/Repo')[0], 'example.com/Owner/Repo')
+
+    def test_github_ssh_alias_selects_builtin_provider(self):
+        self.setup_repo()
+        self.git('remote', 'set-url', 'origin', 'git@github.com-geek:Owner/Repo.git')
+        self.git('remote', 'set-url', '--push', 'origin', 'git@github.com-geek:Owner/Repo.git')
+        result = self.ship('--show-policy')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['policy']['provider'], 'github')
+
+    def test_builtin_github_auto_merge_polls_until_merged(self):
+        statuses = iter([
+            {'state': 'OPEN', 'headRefOid': 'head-sha', 'statusCheckRollup': []},
+            {'state': 'MERGED', 'headRefOid': 'head-sha',
+             'mergeCommit': {'oid': 'merge-sha'}, 'statusCheckRollup': []},
+        ])
+        calls = []
+
+        def fake_run(*args, capture=True):
+            calls.append(args)
+            if args[:3] == ('gh', 'pr', 'view'):
+                return json.dumps(next(statuses))
+            return ''
+
+        with patch.object(ship_module, 'run', side_effect=fake_run), \
+             patch.object(ship_module.time, 'sleep') as sleep:
+            status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha', 5, 30)
+        self.assertEqual(status['mergeCommit']['oid'], 'merge-sha')
+        self.assertEqual(calls[0][:5], ('gh', 'pr', 'merge', '7', '--repo'))
+        sleep.assert_called_once_with(5)
 
     def test_saved_identity_contains_no_credentials(self):
         self.setup_repo()
