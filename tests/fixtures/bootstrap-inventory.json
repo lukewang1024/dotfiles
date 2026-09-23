@@ -11,11 +11,11 @@
     "arrays": {},
     "links": []
   },
-  "workbench/setup_termux_workbench_peer": {
+  "workbench/setup_machine_fabric_termux": {
     "arrays": {},
     "links": []
   },
-  "workbench/setup_distributed_workbench": {
+  "workbench/setup_machine_fabric": {
     "arrays": {},
     "links": []
   },
@@ -2217,7 +2217,7 @@
     "arrays": {},
     "links": []
   },
-  "windows/setup_distributed_workbench": {
+  "windows/setup_machine_fabric": {
     "arrays": {},
     "links": []
   },

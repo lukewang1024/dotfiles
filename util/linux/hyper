@@ -304,11 +304,11 @@ class Hyper:
                 elif shutil.which('xfce4-clipman-history'):self.launch(['xfce4-clipman-history'])
                 elif shutil.which('xfce4-clipman-settings'):self.launch(['xfce4-clipman-settings'])
                 else:raise RuntimeError(tr('error.clipboardService'))
-            elif arg=='targets': notify(call('workbench','clipboard','targets','--json'))
+            elif arg=='targets': notify(call('machine-fabric','clipboard','targets','--json'))
             elif arg=='send':
                 target=self.defaults.get('clipboardTarget')
                 if not target: raise RuntimeError(tr('error.clipboardTarget'))
-                notify(call('workbench','clipboard','push','--target',target,'--image-only','--json'))
+                notify(call('machine-fabric','clipboard','push','--target',target,'--image-only','--json'))
             return
         if kind=='system':
             if arg in ('audioOutput','audioInput','displays','focus'):

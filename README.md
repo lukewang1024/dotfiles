@@ -181,7 +181,7 @@ Other entrypoint tasks:
 | --- | --- |
 | `./init sync` | Reconcile an already-provisioned checkout. |
 | `./init migrate-xdg [--dry-run]` | Move a legacy checkout to the XDG config root without breaking old links. |
-| `./init workbench` | Install or reconcile this machine as a Distributed Workbench node. |
+| `./init machine-fabric` | Install or verify the local Machine Fabric runtime. |
 | `./init npmg` | Reinstall common global npm packages. |
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |
 | `./init run <module> <task> [arguments]` | Run a registered task; no shell evaluation. |
@@ -199,6 +199,14 @@ This fast-forwards `dotfiles`, `tmux-agent-workbench`, and
 then restarts the Workbench daemon and existing sidebar panes before reloading
 a running tmux server. It refuses to start when any checkout has local changes,
 avoiding a partially updated stack.
+
+Machine Fabric is separate from the tmux workbench plugin. Use its own
+`bootstrap-fabric.sh` with an exact release version and selected SSH nodes to
+install or reconcile the multi-machine topology. The dotfiles entrypoint only
+installs the local runtime when `MACHINE_FABRIC_VERSION` and
+`MACHINE_FABRIC_RELEASE_BASE_URL` are set; otherwise it verifies an existing
+`machine-fabric` installation. Machine Fabric v0.1.33 also supports Termux on
+Android aarch64 through the same pinned installer path.
 
 For example:
 

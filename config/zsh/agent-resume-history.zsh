@@ -119,7 +119,11 @@ _agent_claude_session_id() {
 # Optional data-only clipboard integration. Never execute an installer or source
 # the environment file: it contains literal DISPLAY/XAUTHORITY values only.
 _agent_exec_with_clipboard_env() (
-  local env_file=${AGENT_CLIPBOARD_ENV_FILE-${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env}
+  local env_file=${AGENT_CLIPBOARD_ENV_FILE-${XDG_CONFIG_HOME:-$HOME/.config}/machine-fabric/clipboard-env}
+  if [ ! -r "$env_file" ] && [ -z "${AGENT_CLIPBOARD_ENV_FILE+x}" ]; then
+    local legacy_env_file=${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env
+    [ -r "$legacy_env_file" ] && env_file=$legacy_env_file
+  fi
   local line clipboard_display= clipboard_authority= valid=1
   if [ -n "$env_file" ] && [ -r "$env_file" ]; then
     while IFS= read -r line || [ -n "$line" ]; do

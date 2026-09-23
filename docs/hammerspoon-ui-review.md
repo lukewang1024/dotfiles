@@ -7,7 +7,7 @@
 
 - Ctrl+Alt+V 发送当前剪贴板图片，不模拟复制，不要求内容刚刚更新。
 - Ctrl+Alt+Shift+V 打开原生图片同步菜单：发送、目标选择、上次结果。
-- 目标来自 distributed-workbench 已连接节点，不可用节点显示原因；失败不自动重试或改发。
+- 目标来自 Machine Fabric 已连接节点，不可用节点显示原因；失败不自动重试或改发。
 - 原生菜单支持 Esc 退出，不使用 chooser 或 Cmd+数字快捷键。
 - Hyper 应用切换、录屏和 Karabiner 远程桌面切换保留。
 - 窗口分屏使用原 Rectangle 快捷键；Rectangle 运行时让出，退出后自动接管。
@@ -16,7 +16,7 @@
 ## 验证与部署
 
 三个 Lua 测试覆盖同步状态、错误与超时、目标选择、菜单清理及窗口快捷键接管。
-本机已重载新配置。distributed-workbench v0.6.48 / workbench-config v1.0.237
+本机已重载新配置。Machine Fabric / workbench-config 已部署并通过本机验证。
 已部署，两个 Linux 目标的图片写入和 X11 图片读取已验证。
 Windows 服务会话尚不支持交互剪贴板，因此目标保持禁用并显示原因。
 

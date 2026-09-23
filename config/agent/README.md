@@ -19,10 +19,11 @@ machine-specific paths to these shared files.
 ### Agent teams
 
 The implementation, adapters, collaboration protocol and tests live in the
-standalone `~/Code/github/agent-team` checkout. Run `agent-team-install` to link
-its commands into `~/.local/bin`; set `AGENT_TEAM_REPO` for a different checkout
-location. `./init sync` installs this helper and the personal Codex profiles,
-not the implementation. No checkout is cloned automatically.
+standalone `~/Code/github/agent-team` checkout. `./init core` clones or updates
+that checkout and links its commands into `~/.local/bin`; set `AGENT_TEAM_REPO`
+for a different checkout location. `agent-team-install` can be run directly
+to repair the entrypoints. `./init sync` only installs this helper and applies
+the lightweight configuration links.
 
 Run `agent-team` to select a coding agent and preset, or `agent-team --tmux` for
 interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned

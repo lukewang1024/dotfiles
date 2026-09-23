@@ -47,7 +47,7 @@ Hyper 为 Ctrl+Option+Command。保留远程桌面的 Karabiner 自动切换和�
 
 ## Workbench 图片同步
 
-`modules/workbench-clipboard.lua` 通过 distributed-workbench CLI 获取已连接的远端节点；
+`modules/workbench-clipboard.lua` 通过 Machine Fabric CLI 获取已连接的远端节点；
 菜单每 30 秒刷新节点元数据，不读取或监听剪贴板。选择目标后按 `Ctrl+Option+V`
 （不含 Command，不使用 Hyper/HyperAlt），直接发送当前剪贴板中的图片。
 不会模拟 Cmd-C，也不要求剪贴板刚刚发生更新；截图或复制图片后都可以发送。
@@ -55,17 +55,19 @@ Hyper 为 Ctrl+Option+Command。保留远程桌面的 Karabiner 自动切换和�
 只有远端确认写入才提示成功；无图片、节点未就绪、断线或超时会显示原因，不自动重试或改发其他设备。
 文本仍通过终端正常粘贴。
 
-依赖支持 `workbench clipboard targets --json` 和 `clipboard push --target ID --image-only --json`
-的版本。默认 CLI 路径为 `~/.local/bin/workbench`；开发调试可设置
-`hs.settings.set('workbench.clipboard.binary', '/absolute/path/to/workbench')` 后重载配置。
+依赖支持 `machine-fabric clipboard targets --json` 和
+`machine-fabric clipboard push --target ID --image-only --json` 的版本。默认 CLI
+路径为 `~/.local/bin/machine-fabric`；开发调试可设置
+`hs.settings.set('machine-fabric.clipboard.binary', '/absolute/path/to/machine-fabric')`
+后重载配置。旧的 `workbench.clipboard.binary` 设置仍兼容。
 清除该设置即可恢复默认路径。节点尚未安装图片支持时会置灰。
 dotfiles 的 agent shell 函数直接启动 agent，不调用 workbench CLI 或 updater。
-启动前可读取 `${XDG_CONFIG_HOME:-$HOME/.config}/distributed-workbench/clipboard-env`，
+启动前可读取 `${XDG_CONFIG_HOME:-$HOME/.config}/machine-fabric/clipboard-env`，
 仅把其中的 `DISPLAY`、`XAUTHORITY` 字面值传给子进程，并清除子进程的
 `WAYLAND_DISPLAY`；不执行文件内容，也不修改当前 shell 环境。
 `AGENT_CLIPBOARD_ENV_FILE` 可指定其他提供方的环境文件，设为空字符串可禁用此集成。
 文件缺失、包含未知字段或缺少非空必需值时，保留原环境并正常启动 agent。
-图片同步本身仍由上述 workbench 剪贴板功能提供。
+图片同步本身仍由上述 Machine Fabric 剪贴板功能提供。
 已有终端需重新加载 `config/zsh/agent-resume-history.zsh`，并退出后重新启动 agent。
 
 运行逻辑测试：
