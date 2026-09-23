@@ -46,7 +46,7 @@ rewriting policy or bypassing repository rules.
 - `manual-merge`: push a feature branch and create a PR/MR. When starting on
   the target branch, create `ship/<sha>` without resetting the target branch.
 - `auto-merge`: provider-specific creation, checks, and merge. Built-in GitHub
-  support currently offers manual PRs only, using authenticated `gh`.
+  support uses authenticated `gh` for PR creation, CI polling, and auto-merge.
 
 Commit the intended changes and run appropriate project checks before shipping.
 Use `--description-file` for multiline PR descriptions. An invocation such as
@@ -67,7 +67,8 @@ Keys normalize origin SSH/HTTPS URLs, strip credentials and `.git`, and retain
 host, repository path, and nonstandard ports. Clones/worktrees of the same
 remote share policy. SSH host aliases are not resolved automatically.
 
-Direct push needs no provider. github.com selects the built-in provider.
+Direct push needs no provider. github.com, and local SSH aliases such as
+github.com-geek, select the built-in GitHub provider.
 Other hosts require `--provider NAME`, remembered alongside the strategy.
 The command invokes `code-ship-provider-NAME` from PATH; if absent, install the
 organization's private provider package. Do not assume an unknown host belongs
