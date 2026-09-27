@@ -2376,7 +2376,7 @@
       "wingetPkgs": [
         [
           "Rime.Weasel",
-          "stnkl.EverythingToolbar"
+          "srwi.EverythingToolbar.Launcher"
         ]
       ]
     },
@@ -2387,7 +2387,7 @@
       "pkgs": [
         [
           "altsnap",
-          "android-sdk",
+          "android-clt",
           "android-studio",
           "calibre",
           "carnac",
@@ -2419,18 +2419,14 @@
           "mobaxterm",
           "nimbleset",
           "nimbletext",
-          "nircmd",
-          "nirlauncher",
           "nodejs-lts",
           "obs-studio",
-          "openark",
           "openhardwaremonitor",
           "pdfarranger",
           "pdfsam",
           "phantomjs",
           "potplayer",
-          "processhacker",
-          "proxifier",
+          "systeminformer",
           "putty",
           "qutebrowser",
           "robo3t",
@@ -2442,7 +2438,6 @@
           "spacesniffer",
           "spotify",
           "sqlitebrowser",
-          "strokesplus",
           "switchhosts",
           "synctrayzor",
           "telegram",
@@ -2451,9 +2446,6 @@
           "v2rayn",
           "vcredist",
           "vcxsrv",
-          "vncviewer",
-          "whatsapp",
-          "win-dynamic-desktop",
           "windirstat",
           "winscp",
           "wireshark",
@@ -2467,17 +2459,13 @@
       ],
       "wingetPkgs": [
         [
-          "9NGHP3DX8HDX",
-          "9NW33J738BL0",
-          "Bytedance.Feishu",
+          "ByteDance.Feishu",
           "CLechasseur.PathCopyCopy",
           "Dropbox.Dropbox",
-          "Google.Drive",
+          "Google.GoogleDrive",
           "Oracle.VirtualBox",
-          "Tencent.QQ",
           "Tencent.QQMusic",
-          "Tencent.WeChat",
-          "XK72.Charles"
+          "Tencent.WeChat"
         ]
       ]
     },
