@@ -481,18 +481,23 @@ function M.new(options)
   for _,binding in ipairs(data.bindings) do
     local b=binding;local mods={'ctrl','alt','cmd'}
     if b.shift then mods[#mods+1]='shift' end
+    local function run()
+      local ok,err=pcall(function()self:run(b.action)end)
+      if not ok then alert('Hyper: '..tostring(err)) end
+    end
     local function fire()
       if self.palette.visible then
-        if b.action=='menu.roles' then self:run(b.action)
-        elseif b.action:match('^mouse%.') then self:run(b.action)
-        elseif b.action:match('^edit%.') or b.action:match('^select%.') then self.palette:navigate(b.action)
-        elseif b.key=='return' then self.palette:navigate('accept')
-        elseif b.key=='escape' or b.key=='space' then self.palette:close() end
+        if b.action=='menu.roles' then self:run(b.action);return
+        elseif b.action:match('^mouse%.') then self:run(b.action);return
+        elseif b.action:match('^edit%.') or b.action:match('^select%.') then self.palette:navigate(b.action);return
+        elseif b.key=='return' then self.palette:navigate('accept');return
+        elseif b.key=='escape' or b.key=='space' then self.palette:close();return end
+        if b.action~='remote.escape' and self.options.remote and self.options.remote.isFocused() then return end
+        self.palette:closeThen(run)
         return
       end
       if b.action~='remote.escape' and self.options.remote and self.options.remote.isFocused() then return end
-      local ok,err=pcall(function()self:run(b.action)end)
-      if not ok then alert('Hyper: '..tostring(err)) end
+      run()
     end
     local input=b.action:match('^edit%.') or b.action:match('^select%.') or b.action:match('^mouse%.')
     -- Menus open on release so held modifiers do not select menu shortcuts.
