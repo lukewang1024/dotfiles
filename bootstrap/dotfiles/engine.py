@@ -28,6 +28,9 @@ class Skip(Exception):
     pass
 
 
+_UNSET = object()
+
+
 def detect_platform():
     if os.environ.get('TERMUX_VERSION') or os.environ.get('PREFIX') == '/data/data/com.termux/files/usr':
         return 'termux'
@@ -204,6 +207,7 @@ class Context:
         self.bin = self.home / '.local/bin'
         self.reporter = reporter
         self.events = []
+        self._platform_version = _UNSET
         self.active = []
         self.tasks = {}
         self.validating_sudo = False
@@ -244,6 +248,17 @@ class Context:
 
     def exists(self, command):
         return shutil.which(str(command), path=self.env['PATH']) is not None
+
+    def platform_version(self):
+        """Return the detected platform version used by declarative rules."""
+        if self.platform != 'macos':
+            return None
+        if self._platform_version is _UNSET:
+            value = self.env.get('DOTFILES_MACOS_VERSION')
+            if value is None and not self.dry_run:
+                value = self.command('sw_vers', '-productVersion', capture=True)
+            self._platform_version = str(value or '').strip() or None
+        return self._platform_version
 
     def record(self, kind, **data):
         self.events.append(dict(kind=kind, task=list(self.active), **data))
@@ -315,13 +330,19 @@ class Context:
             argv[0] = resolved
         # Scoop and other Windows tools are cmd/PowerShell shims, not PE files.
         # Encode argv as data; do not interpolate package names into shell code.
-        if os.name == 'nt' and Path(argv[0]).suffix.lower() in ('.ps1', '.cmd', '.bat'):
-            encoded_args = base64.b64encode(json.dumps(argv).encode()).decode()
-            script = ("$ErrorActionPreference='Stop'; $global:LASTEXITCODE=0; "
-                      "$a = @(ConvertFrom-Json ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + encoded_args + "')))); "
-                      "$cmd = $a[0]; $tail = @($a | Select-Object -Skip 1); & $cmd @tail; $ok=$?; "
-                      "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; if (!$ok) { exit 1 }; exit 0")
-            argv = self.powershell_argv(script)
+        if os.name == 'nt':
+            suffix = Path(argv[0]).suffix.lower()
+            if suffix == '.ps1':
+                # Invoke the script directly.  Passing -File and argv avoids
+                # PowerShell 5.1's fragile JSON/splatting behavior entirely.
+                argv = ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', *argv]
+            elif suffix in ('.cmd', '.bat'):
+                companion = Path(argv[0]).with_suffix('.ps1')
+                if companion.is_file():
+                    argv = ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                            '-File', str(companion), *argv[1:]]
+                else:
+                    argv = ['cmd.exe', '/d', '/c', *argv]
         output = self.reporter.log if self.reporter else subprocess.DEVNULL
         options = dict(cwd=cwd, env=child_env, stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
                        stdout=output_file if output_file is not None else (subprocess.PIPE if capture else output), stderr=output,
@@ -360,7 +381,16 @@ class Context:
         return (out or b'').decode('utf-8', errors='replace') if capture else proc.returncode
 
     def powershell_argv(self, script):
-        executable = 'pwsh.exe' if self.exists('pwsh.exe') else 'powershell.exe'
+        executable = 'powershell.exe'
+        pwsh = shutil.which('pwsh.exe', path=self.env.get('PATH', ''))
+        if pwsh:
+            try:
+                # WindowsApps may expose a zero-byte Store alias when
+                # PowerShell 7 is not installed; that alias is not runnable.
+                if Path(pwsh).stat().st_size > 0:
+                    executable = pwsh
+            except OSError:
+                pass
         script = '$OutputEncoding=[Text.UTF8Encoding]::new($false); [Console]::OutputEncoding=$OutputEncoding; ' + script
         encoded = base64.b64encode(script.encode('utf-16le')).decode()
         return [executable, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded]

@@ -11,7 +11,53 @@ import sys
 from .engine import Failure, Skip
 
 DATA = Path(__file__).parent
-PACKAGES = json.loads((DATA / 'packages.json').read_text(encoding='utf-8'))
+
+
+def _load_jsonc(path):
+    """Load JSON with // and /* */ comments without adding dependencies."""
+    source = path.read_text(encoding='utf-8')
+    output = []
+    in_string = False
+    escaped = False
+    index = 0
+    while index < len(source):
+        char = source[index]
+        next_char = source[index + 1] if index + 1 < len(source) else ''
+        if in_string:
+            output.append(char)
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == '"':
+                in_string = False
+            index += 1
+        elif char == '"':
+            in_string = True
+            output.append(char)
+            index += 1
+        elif char == '/' and next_char == '/':
+            index += 2
+            while index < len(source) and source[index] not in '\r\n':
+                index += 1
+        elif char == '/' and next_char == '*':
+            index += 2
+            while index + 1 < len(source) and source[index:index + 2] != '*/':
+                index += 1
+            index += 2 if index + 1 < len(source) else 0
+        else:
+            output.append(char)
+            index += 1
+    return json.loads(''.join(output))
+
+
+_PACKAGE_CATALOG = _load_jsonc(DATA / 'packages.jsonc')
+# Keep the legacy package mapping stable while allowing declarative rules to
+# add/remove entries for a platform version.  The rules are intentionally
+# separate from the inventory so callers that consume PACKAGES keep seeing the
+# same package groups and array shape.
+PACKAGE_RULES = _PACKAGE_CATALOG.pop('_package_rules', [])
+PACKAGES = _PACKAGE_CATALOG
 LINKS = json.loads((DATA / 'links.json').read_text(encoding='utf-8'))
 TASKS = {}
 
@@ -45,6 +91,44 @@ def packages(group, variable='pkgs', index=0):
     return PACKAGES[group][variable][index]
 
 
+def _version_tuple(value):
+    parts = re.findall(r'\d+', str(value))
+    return tuple(int(part) for part in parts) or (0,)
+
+
+def _package_rule_matches(c, rule):
+    if rule.get('platform') and rule['platform'] != c.platform:
+        return False
+    version = c.platform_version()
+    if version is None:
+        return False
+    current = _version_tuple(version)
+    if 'from_version' in rule and current < _version_tuple(rule['from_version']):
+        return False
+    if 'before_version' in rule and current >= _version_tuple(rule['before_version']):
+        return False
+    if 'until_version' in rule and current > _version_tuple(rule['until_version']):
+        return False
+    return True
+
+
+def platform_packages(c, group, variable='pkgs', index=0):
+    """Return a package set after applying matching platform-version rules."""
+    values = list(packages(group, variable, index))
+    for rule in PACKAGE_RULES:
+        if rule.get('group') != group or rule.get('variable', 'pkgs') != variable:
+            continue
+        if not _package_rule_matches(c, rule):
+            continue
+        for value in rule.get('exclude', []):
+            while value in values:
+                values.remove(value)
+        for value in rule.get('add', []):
+            if value not in values:
+                values.append(value)
+    return values
+
+
 def install(c, manager, values, *flags):
     if not values:
         return
@@ -66,7 +150,9 @@ def install(c, manager, values, *flags):
         c.command('yay', '-Sy', '--needed', *flags, *['aur/' + p for p in values])
     elif manager == 'winget':
         for value in values:
-            c.command('winget', 'install', '--id', value, '--exact', '--accept-package-agreements', '--accept-source-agreements', *flags)
+            installed = '' if c.dry_run else c.command('winget', 'list', '--id', value, '--exact', capture=True, check=False)
+            if c.dry_run or not re.search(re.escape(value), installed, re.IGNORECASE):
+                c.command('winget', 'install', '--id', value, '--exact', '--accept-package-agreements', '--accept-source-agreements', *flags)
     elif manager == 'scoop-fonts':
         c.command('sudo', 'scoop', 'install', *values)
     else:

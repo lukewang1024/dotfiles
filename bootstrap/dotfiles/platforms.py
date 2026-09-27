@@ -7,7 +7,7 @@ import re
 import sys
 
 from .engine import Failure, Skip
-from .tasks import DATA, PACKAGES, install, links, packages, sequence, task
+from .tasks import DATA, PACKAGES, install, links, packages, platform_packages, sequence, task
 
 
 @task()
@@ -174,11 +174,11 @@ def macos_category(c, tier):
     elif tier == 'cli_extra':
         c.task('install_nix_brew_extra_packages')
     if tier == 'gui_extra':
-        c.command('mas', 'install', *packages(group, 'masApps'))
+        c.command('mas', 'install', *platform_packages(c, group, 'masApps'))
         c.command('mas', 'upgrade')
     for variable, flags in [('pkgs', []), ('casks', ['--cask']), ('no_quarantined_casks', ['--cask', '--no-quarantine'])]:
         if variable in PACKAGES[group]:
-            install(c, 'brew', packages(group, variable), *flags)
+            install(c, 'brew', platform_packages(c, group, variable), *flags)
     if tier == 'cli_core':
         c.task('core_env_setup')
     elif tier == 'cli_extra':
@@ -286,9 +286,12 @@ def install_scoop(c):
         c.installer('https://get.scoop.sh', 'powershell', interactive=True)
         c.refresh_path()
     c.command('scoop', 'install', 'git')
+    scoop_root = Path(c.env.get('SCOOP') or c.home / 'scoop')
     for bucket in packages('windows/install_scoop', 'buckets'):
-        c.command('scoop', 'bucket', 'add', bucket)
-    c.command('scoop', 'bucket', 'add', 'customize', 'https://github.com/ChinLong/scoop-customize.git')
+        if c.dry_run or not (scoop_root / 'buckets' / bucket).is_dir():
+            c.command('scoop', 'bucket', 'add', bucket)
+    if c.dry_run or not (scoop_root / 'buckets' / 'customize').is_dir():
+        c.command('scoop', 'bucket', 'add', 'customize', 'https://github.com/ChinLong/scoop-customize.git')
 
 
 @task()
