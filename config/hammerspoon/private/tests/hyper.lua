@@ -1,7 +1,8 @@
 -- Behavioral tests: toggle, spatial placement, undo, selection, remote ownership.
 package.path='config/hammerspoon/?.lua;'..package.path
 package.loaded['private/modules/hyper-rust-palette']={new=function()
-  return {visible=false,show=function()end,stop=function()end,close=function(self)self.visible=false end}
+  return {visible=false,show=function()end,stop=function()end,close=function(self)self.visible=false end,
+    closeThen=function(self,callback)self.visible=false;callback()end}
 end}
 local function clone(t)
   if type(t)~='table' then return t end
