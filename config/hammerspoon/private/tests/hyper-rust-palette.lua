@@ -43,5 +43,12 @@ palette:dispatch({type='action',request_id=palette.rid,action=request.root..'-1'
 assert(palette.visible and picked==2)
 palette:dispatch({type='dismissed',request_id=palette.rid,reason='blur'})
 assert(not palette.visible and focused==1)
+local afterClose=0
+palette:show({{text='Close then'}},{},function()end)
+local closeRid=palette.rid
+palette:closeThen(function()afterClose=afterClose+1 end)
+assert(messages[#messages].action=='close')
+palette:dispatch({type='dismissed',request_id=closeRid,reason='escape'})
+assert(afterClose==1 and not palette.visible)
 palette:stop()
 print('Rust adapter: opaque IDs, dynamic push, ack queue, callbacks, continuous actions and blur passed')

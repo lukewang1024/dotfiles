@@ -19,18 +19,24 @@ function M.new()
     self.visible=false
     if restore and self.target then self.target:focus() end
     if self.onClose then self.onClose() end
+    local afterClose=self.afterClose
+    self.afterClose=nil
     self.entries={};self.queue={};self.waiting=false
+    if afterClose then afterClose() end
   end
   function self:dispatch(event)
     if event.request_id and event.request_id~=self.rid then return end
     if event.type=='shown' or event.type=='ack' then self.waiting=false;self:pump();return end
     if event.type=='action' then
+      -- A user selection wins over a queued close-then action from a chord.
+      self.afterClose=nil
       local entry=self.entries[event.action]
       if not entry or entry.choice.valid==false then return end
       if not event.keep_open then self:closed(true) end
       entry.callback(entry.choice)
     elseif event.type=='dismissed' then self:closed(event.reason=='escape')
     elseif event.type=='error' then
+      self.afterClose=nil
       self:closed(false);hs.alert.show('Hyper Palette: '..(event.message or 'failed'))
     end
   end
@@ -87,7 +93,13 @@ function M.new()
     self:send({type='navigate',request_id=self.rid,action=action});return true
   end
   function self:close() self:navigate('close') end
+  function self:closeThen(callback)
+    if not self.visible then callback();return end
+    self.afterClose=callback
+    self:close()
+  end
   function self:stop()
+    self.afterClose=nil
     if self.task then self.task:closeInput();self.task=nil end
     if self.warm then self.warm:terminate();self.warm=nil end
     self:closed(false)
