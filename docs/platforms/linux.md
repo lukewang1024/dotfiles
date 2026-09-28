@@ -1,8 +1,8 @@
 # Linux setup
 
 Linux support separates distro package selection from shared desktop and shell
-configuration. Debian-family packages live in `bootstrap/dotfiles/packages.json`, Arch
-packages live in `bootstrap/dotfiles/packages.json`, and shared application links live in
+configuration. Debian-family packages live in `bootstrap/dotfiles/packages.jsonc`, Arch
+packages live in `bootstrap/dotfiles/packages.jsonc`, and shared application links live in
 `bootstrap/dotfiles/platforms.py`.
 
 ## Design

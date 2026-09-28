@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / 'bootstrap'))
 sys.dont_write_bytecode = True
 from dotfiles.cli import PLATFORMS, select_tasks, main
 from dotfiles.engine import Context, Failure, Reporter
-from dotfiles.tasks import TASKS, PACKAGES, LINKS, language_packages
+from dotfiles.tasks import TASKS, PACKAGES, LINKS, install, language_packages, platform_packages
 
 
 class BootstrapTests(unittest.TestCase):
@@ -59,6 +59,29 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(PACKAGES, {k: v['arrays'] for k, v in legacy.items() if v['arrays']})
         self.assertEqual(LINKS, {k: v['links'] for k, v in legacy.items() if v['links']})
 
+    def test_disabled_homebrew_casks_are_absent_from_macos_inventory(self):
+        groups = ('macos/prepare_macos_env_gui_core', 'macos/prepare_macos_env_gui_extra',
+                  'macos/setup_macos_gaming')
+        c = self.context('macos')
+        selected = {name for group in groups for name in platform_packages(c, group, 'casks')}
+        self.assertTrue({'alacritty', 'openemu', 'qlcolorcode', 'qlprettypatch', 'qlstephen'}.isdisjoint(selected))
+
+    def test_pkgconf_is_reinstalled_only_after_major_macos_upgrade(self):
+        prefix = self.home / 'pkgconf'
+        prefix.mkdir()
+        self.env['DOTFILES_MACOS_VERSION'] = '27.0'
+        for built_on, expected in (('macOS 26', True), ('macOS 27', False)):
+            with self.subTest(built_on=built_on):
+                (prefix / 'INSTALL_RECEIPT.json').write_text(json.dumps({'built_on': {'os_version': built_on}}))
+                c = self.context('macos', dry=False)
+                calls = []
+                def command(*argv, **kwargs):
+                    calls.append(argv)
+                    return str(prefix) if argv == ('brew', '--prefix', 'pkgconf') else ''
+                c.command = command
+                c.task('reconcile_homebrew_pkgconf')
+                self.assertEqual(('brew', 'reinstall', 'pkgconf') in calls, expected)
+
     def test_package_selection_does_not_mutate_catalog(self):
         before = json.dumps(PACKAGES, sort_keys=True)
         c = self.context()
@@ -67,13 +90,63 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(a, b)
         self.assertEqual(before, json.dumps(PACKAGES, sort_keys=True))
 
+    def test_scoop_url_manifests_skip_installed_apps(self):
+        c = self.context('windows', dry=False)
+        current = self.home / 'scoop/apps/go-musicfox/current'
+        current.mkdir(parents=True)
+        calls = []
+        c.command = lambda *argv, **kwargs: calls.append(argv)
+        manifest = 'https://example.invalid/go-musicfox.json'
+        install(c, 'scoop', ['git', manifest])
+        self.assertEqual(calls, [('scoop', 'install', 'git')])
+        current.rmdir()
+        calls.clear()
+        install(c, 'scoop', ['git', manifest])
+        self.assertEqual(calls, [('scoop', 'install', 'git', manifest)])
+
+    def test_macos_package_rules_follow_os_version(self):
+        group = 'macos/prepare_macos_env_gui_core'
+        extra = 'macos/prepare_macos_env_gui_extra'
+        for version, present in (('26.6.1', True), ('27.0', False), ('28.0.1', False)):
+            with self.subTest(version=version):
+                self.env['DOTFILES_MACOS_VERSION'] = version
+                c = self.context('macos')
+                casks = platform_packages(c, group, 'casks')
+                mas_apps = platform_packages(c, extra, 'masApps')
+                self.assertEqual('jordanbaird-ice' in casks, present)
+                self.assertEqual('1452453066' in mas_apps, present)
+
+    def test_macos_disabled_casks_are_excluded_from_every_plan(self):
+        for version in (None, '26.6.1', '27.0'):
+            with self.subTest(version=version):
+                if version is None:
+                    self.env.pop('DOTFILES_MACOS_VERSION', None)
+                else:
+                    self.env['DOTFILES_MACOS_VERSION'] = version
+                c = self.context('macos')
+                self.assertNotIn('alacritty', platform_packages(c, 'macos/prepare_macos_env_gui_core', 'casks'))
+                casks = platform_packages(c, 'macos/prepare_macos_env_gui_extra', 'casks')
+                for name in ('qlcolorcode', 'qlprettypatch', 'qlstephen'):
+                    self.assertNotIn(name, casks)
+                self.assertNotIn('openemu', platform_packages(c, 'macos/setup_macos_gaming', 'casks'))
+
+    def test_cli_can_override_macos_version_for_dry_run(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main(['--dry-run', '--json', '--platform', 'macos', '--macos-version', '27', 'gui']), 0)
+        actions = json.loads(output.getvalue())['actions']
+        package_commands = [event['argv'] for event in actions if event['kind'] == 'command']
+        self.assertFalse(any('jordanbaird-ice' in argv for argv in package_commands))
+        self.assertFalse(any('1452453066' in argv for argv in package_commands))
+
     def test_core_reconciles_agent_team_checkout_and_entrypoints(self):
         c = self.context('debian')
         for name, arguments in select_tasks('debian', 'core', []):
             c.task(name, *arguments)
         commands = [event['argv'] for event in c.events if event['kind'] == 'command']
         self.assertTrue(any('https://github.com/lukewang1024/agent-team.git' in command for command in commands))
-        self.assertTrue(any('agent-team/install.py' in str(value) for command in commands for value in command))
+        self.assertTrue(any('agent-team/install.py' in str(value).replace('\\', '/')
+                            for command in commands for value in command))
 
     def test_machine_fabric_install_is_pinned_and_uses_release_cdn(self):
         c = self.context('debian')
@@ -334,8 +407,13 @@ class BootstrapTests(unittest.TestCase):
         dest = local.with_name('config')
         for host, expected in [('override.example', 'serveraliveinterval 71'),
                                ('shared.example', 'user shared')]:
-            result = subprocess.run(['ssh', '-G', '-F', str(dest), host],
-                                    capture_output=True, text=True)
+            try:
+                result = subprocess.run(['ssh', '-G', '-F', str(dest), host],
+                                        capture_output=True, text=True, timeout=10)
+            except subprocess.TimeoutExpired:
+                if os.name == 'nt':
+                    self.skipTest('Windows OpenSSH -G hangs in a headless session')
+                raise
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn(expected, result.stdout)
 
@@ -608,24 +686,22 @@ class BootstrapTests(unittest.TestCase):
         self.assertIn('diagnostic', reporter.log_path.read_text(encoding='utf-8'))
 
     @unittest.skipUnless(os.name == 'nt', 'Windows runtime preflight')
-    def test_windows_runtime_preflight_checks_native_exit_not_stderr(self):
+    def test_windows_scoop_preflight_checks_native_exit_not_stderr(self):
         source = (ROOT / 'init.ps1').read_text(encoding='utf-8')
-        helper = source[source.index('function Invoke-RuntimeCommand {'):source.index('\ntry {')]
-        log = self.home / 'runtime.log'
-        script = "$ErrorActionPreference='Stop'; $runtimeLog='" + str(log).replace("'", "''") + "'\n" + helper + "\n"
-        script += '''Invoke-RuntimeCommand 'cmd.exe' @('/d', '/c', 'echo diagnostic 1>&2')
+        helper = source[source.index('function Invoke-Scoop {'):source.index('\nfunction Get-ScoopPython')]
+        script = "$ErrorActionPreference='Stop'\n" + helper + "\n"
+        script += '''Invoke-Scoop 'cmd.exe' @('/d', '/c', 'echo diagnostic 1>&2')
 try {
-  Invoke-RuntimeCommand 'cmd.exe' @('/d', '/c', 'exit 7')
+  Invoke-Scoop 'cmd.exe' @('/d', '/c', 'exit 7')
   exit 1
 } catch {
-  if ($_.Exception.Message -match 'exit code 7') { exit 0 }
+  if ($_.Exception.Message -match 'status 7') { exit 0 }
   throw
 }
 '''
         encoded = base64.b64encode(script.encode('utf-16le')).decode()
         result = subprocess.run(['powershell.exe', '-NoProfile', '-EncodedCommand', encoded], capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertTrue(log.exists())
 
 
 if __name__ == '__main__':

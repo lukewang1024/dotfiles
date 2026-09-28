@@ -99,6 +99,8 @@ def _version_tuple(value):
 def _package_rule_matches(c, rule):
     if rule.get('platform') and rule['platform'] != c.platform:
         return False
+    if not any(key in rule for key in ('from_version', 'before_version', 'until_version')):
+        return True
     version = c.platform_version()
     if version is None:
         return False
@@ -153,6 +155,17 @@ def install(c, manager, values, *flags):
             installed = '' if c.dry_run else c.command('winget', 'list', '--id', value, '--exact', capture=True, check=False)
             if c.dry_run or not re.search(re.escape(value), installed, re.IGNORECASE):
                 c.command('winget', 'install', '--id', value, '--exact', '--accept-package-agreements', '--accept-source-agreements', *flags)
+    elif manager == 'scoop':
+        scoop_root = Path(c.env['SCOOP']) if c.env.get('SCOOP') else c.home / 'scoop'
+        pending = []
+        for value in values:
+            if value.lower().startswith(('http://', 'https://')) and value.lower().endswith('.json'):
+                name = value.rsplit('/', 1)[-1][:-5]
+                if not c.dry_run and (scoop_root / 'apps' / name / 'current').exists():
+                    continue
+            pending.append(value)
+        if pending:
+            c.command('scoop', 'install', *flags, *pending)
     elif manager == 'scoop-fonts':
         c.command('sudo', 'scoop', 'install', *values)
     else:
@@ -631,7 +644,27 @@ def install_nix_brew_packages(c):
 
 @task()
 def brew_cleanup(c):
+    if c.platform == 'macos':
+        c.task('reconcile_homebrew_pkgconf')
     c.command('brew', 'cleanup')
+
+
+@task()
+def reconcile_homebrew_pkgconf(c):
+    """Reinstall pkgconf once after a major macOS upgrade."""
+    prefix = c.command('brew', '--prefix', 'pkgconf', capture=True, check=False).strip()
+    if not prefix:
+        return
+    receipt = Path(prefix) / 'INSTALL_RECEIPT.json'
+    try:
+        installed = json.loads(receipt.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return
+    built_on = installed.get('built_on', {}).get('os_version', '')
+    match = re.fullmatch(r'macOS\s+(\d+)(?:\.\d+)*', built_on)
+    current = c.platform_version()
+    if match and current and int(match.group(1)) != _version_tuple(current)[0]:
+        c.command('brew', 'reinstall', 'pkgconf')
 
 
 @task()

@@ -5,7 +5,7 @@ configuration, macOS defaults, and user-level helper commands.
 
 ## Design
 
-`bootstrap/dotfiles/packages.json` owns the package and application selections. It reuses the
+`bootstrap/dotfiles/packages.jsonc` owns the package and application selections. It reuses the
 shared setup from `bootstrap/dotfiles/tasks.py`, then applies
 macOS-specific configuration such as Hammerspoon, Karabiner, Rime, terminal
 settings, and system defaults.
@@ -20,8 +20,27 @@ The modes are cumulative selections, not increasing safety levels:
 | `all` | Extended CLI and extended GUI flows |
 | `game` | Gaming-specific setup |
 
-Review the corresponding function and package groups in `bootstrap/dotfiles/packages.json`
+Review the corresponding function and package groups in `bootstrap/dotfiles/packages.jsonc`
 before using an extended mode.
+
+### OS-version package rules
+
+The package inventory can keep a package in its normal list while
+`_package_rules` declares when it should be added or excluded. The bootstrap
+detects the installed macOS version with `sw_vers -productVersion`; for
+example, the Ice and Hidden Bar entries are excluded starting with macOS 27.
+This keeps version changes in the package catalog instead of scattering them
+through platform code.
+
+To inspect another version without changing the machine:
+
+```sh
+./init --dry-run --json --platform macos --macos-version 27 gui
+```
+
+Rules without version constraints still apply if the macOS version cannot be
+detected. Version-constrained rules need an explicit `--macos-version` when
+reviewing a dry run for another platform.
 
 ## Install a new machine
 

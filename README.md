@@ -50,10 +50,12 @@ prepare Python if necessary, and forward arguments and the exit code. All
 provisioning and reporting run through `bootstrap/main.py`, using Python 3.10+
 and the standard library. No Python packages need to be installed.
 
-The launchers reuse an existing Python, or install managed Python 3.12 with uv
-under XDG data/cache directories. Inspection commands never install a runtime.
-A complete Git checkout is required; the standalone Windows launcher can clone
-one when Git is already installed.
+Unix launchers reuse an existing Python when available, then install the latest
+managed Python with uv when needed. Windows first installs Scoop and uses
+Scoop-managed Python for provisioning (the latest available on first install).
+Inspection commands never install a runtime.
+A complete Git checkout is required; the standalone Windows launcher can install
+Git through Scoop and clone one when needed.
 
 ```sh
 ./init core --dry-run
@@ -64,6 +66,8 @@ one when Git is already installed.
 The same arguments work with `./init.ps1`. `--platform` is restricted to dry runs.
 A dry run records intended actions without running commands, downloading files,
 or writing configuration. Conditional actions reflect the inspected environment.
+On Windows, pass `--proxy http://host:port` to `init.ps1` when bootstrap
+downloads require an explicit HTTP proxy; no proxy client is assumed.
 
 ### Bootstrap progress and logs
 
@@ -96,7 +100,7 @@ def configure_tools(c):
     c.command('uv', 'tool', 'install', '--upgrade', 'example')
 ```
 
-Package selections and links live in `packages.json` and `links.json`; macOS
+Package selections and links live in `packages.jsonc` and `links.json`; macOS
 preference commands live in `macos-defaults.json`. See the
 [migration and maintenance guide](docs/bootstrap.md) for the module map.
 

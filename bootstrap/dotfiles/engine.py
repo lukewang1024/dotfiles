@@ -329,20 +329,25 @@ class Context:
         if resolved:
             argv[0] = resolved
         # Scoop and other Windows tools are cmd/PowerShell shims, not PE files.
-        # Encode argv as data; do not interpolate package names into shell code.
+        # Encode each argument as data; never interpolate it into shell code.
         if os.name == 'nt':
             suffix = Path(argv[0]).suffix.lower()
-            if suffix == '.ps1':
-                # Invoke the script directly.  Passing -File and argv avoids
-                # PowerShell 5.1's fragile JSON/splatting behavior entirely.
-                argv = ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', *argv]
-            elif suffix in ('.cmd', '.bat'):
+            if suffix in ('.cmd', '.bat'):
                 companion = Path(argv[0]).with_suffix('.ps1')
                 if companion.is_file():
-                    argv = ['powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                            '-File', str(companion), *argv[1:]]
-                else:
-                    argv = ['cmd.exe', '/d', '/c', *argv]
+                    argv[0] = str(companion)
+            if suffix in ('.ps1', '.cmd', '.bat'):
+                def decode(value):
+                    encoded = base64.b64encode(str(value).encode('utf-8')).decode('ascii')
+                    return "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + encoded + "'))"
+                script = ('$ErrorActionPreference="Continue"; $Error.Clear(); $global:LASTEXITCODE=0; '
+                          '$cmd=' + decode(argv[0]) + '; $tail=@(' + ','.join(decode(value) for value in argv[1:]) + '); '
+                          '& $cmd @tail; $ok=$?; $code=$LASTEXITCODE; '
+                          'if ($code -ne 0) { exit $code }; '
+                          'if (@($Error | Where-Object { $_.FullyQualifiedErrorId -notlike "NativeCommandError*" }).Count -gt 0) '
+                          '{ exit 1 }; if (-not $ok) { exit 1 }; exit 0')
+                argv = self.powershell_argv(script)
+                argv[0] = 'powershell.exe'
         output = self.reporter.log if self.reporter else subprocess.DEVNULL
         options = dict(cwd=cwd, env=child_env, stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
                        stdout=output_file if output_file is not None else (subprocess.PIPE if capture else output), stderr=output,

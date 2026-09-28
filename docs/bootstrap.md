@@ -16,7 +16,7 @@ retain their native interpreters.
 | `bootstrap/dotfiles/tasks.py` | Common environment, shells, editors, language tools, configuration |
 | `bootstrap/dotfiles/platforms.py` | Native packages/settings, Termux and Machine Fabric integration |
 | `bootstrap/dotfiles/maintenance.py` | Kerberos, XDG migration, standalone task compositions |
-| `bootstrap/dotfiles/packages.json` | Package groups extracted from previous shell/PowerShell arrays |
+| `bootstrap/dotfiles/packages.jsonc` | Package groups and descriptions extracted from previous shell/PowerShell arrays |
 | `bootstrap/dotfiles/links.json` | Previous declarative links |
 | `bootstrap/dotfiles/macos-defaults.json` | macOS preference command arguments |
 
@@ -68,9 +68,13 @@ inspection of the current environment, not a promise of successful provisioning.
   later categories instead of allowing a later successful command to mask them.
 - Windows gains configuration-only `basic` and `sync`, uses the actual checkout location,
   and supports the same inspection flags and named tasks as Unix.
-- Python is the shared runtime. Launchers reuse 3.10+ or prepare managed 3.12 with
-  uv; inspection does not install it. A standalone Windows launcher needs Git
-  to retrieve the checkout. Cygwin requires a Cygwin-native Python installation.
+- Python is the shared runtime. Unix launchers reuse 3.10+ when available and
+  otherwise prepare the latest managed Python with uv. Windows first installs
+  Scoop and uses Scoop-managed Python for provisioning (the latest available
+  on first install). Inspection
+  does not install a runtime. A standalone Windows launcher can install Git
+  through Scoop before retrieving the checkout. Cygwin requires a Cygwin-native
+  Python installation.
 - When running on Homebrew Python, child commands retain its formula through
   `HOMEBREW_NO_CLEANUP_FORMULAE` for this run (preserving existing exclusions).
   Upgrades can proceed, but cleanup cannot delete the running interpreter's

@@ -1,15 +1,117 @@
 # Bootstrap source/interpreter only. No package lists, tasks, or reporting logic.
 $ErrorActionPreference = 'Stop'
-$bootstrapArgs = @($args)
-if ($bootstrapArgs.Count -eq 0) { Write-Host 'Usage: init.ps1 <basic|core|all|sync|run|...> [options]'; exit 2 }
+$rawArgs = @($args)
+$proxyValue = $null
+$bootstrapArgs = @()
+for ($index = 0; $index -lt $rawArgs.Count; $index++) {
+  $argument = [string]$rawArgs[$index]
+  if ($argument -ieq '--proxy' -or $argument -ieq '--bootstrap-proxy') {
+    if ($index + 1 -ge $rawArgs.Count) { throw "Missing value for $argument" }
+    $proxyValue = [string]$rawArgs[++$index]
+    continue
+  }
+  if ($argument -like '--proxy=*') {
+    $proxyValue = $argument.Substring('--proxy='.Length)
+    continue
+  }
+  if ($argument -like '--bootstrap-proxy=*') {
+    $proxyValue = $argument.Substring('--bootstrap-proxy='.Length)
+    continue
+  }
+  $bootstrapArgs += $argument
+}
+if ($bootstrapArgs.Count -eq 0) { Write-Host 'Usage: init.ps1 [--proxy <http://host:port>] <basic|core|all|sync|run|...> [options]'; exit 2 }
 $env:PYTHONDONTWRITEBYTECODE = '1'
 $repoDir = $PSScriptRoot
 $mainScript = Join-Path $repoDir 'bootstrap/main.py'
 $inspection = @($bootstrapArgs | Where-Object { $_ -in @('--dry-run', '--list-tasks', '-h', '--help') }).Count -gt 0
+$proxy = $null
+
+if ($proxyValue) {
+  $proxyText = $proxyValue.Trim()
+  if ($proxyText -notmatch '^[a-z][a-z0-9+.-]*://') { $proxyText = "http://$proxyText" }
+  try { $proxyUri = [Uri]$proxyText } catch { throw "Invalid proxy URL: $proxyValue" }
+  if (!$proxyUri.IsAbsoluteUri -or $proxyUri.Scheme -notin @('http', 'https') -or !$proxyUri.Host -or $proxyUri.Port -le 0) {
+    throw "Proxy must be an HTTP URL with a host and port: $proxyValue"
+  }
+  $proxy = [pscustomobject]@{
+    Url = $proxyUri.AbsoluteUri.TrimEnd('/')
+    Scoop = $proxyUri.Authority
+  }
+}
+
+function Add-ScoopShims {
+  $scoopRoot = $env:SCOOP
+  if (!$scoopRoot) { $scoopRoot = Join-Path $env:USERPROFILE 'scoop' }
+  $shims = Join-Path $scoopRoot 'shims'
+  if ((Test-Path -LiteralPath $shims) -and !($env:Path -split ';' -contains $shims)) {
+    $env:Path = "$shims;$env:Path"
+  }
+}
+
+function Configure-ScoopProxy {
+  param([string]$ScoopPath, [pscustomobject]$Proxy)
+  if (!$Proxy) { return }
+  & $ScoopPath config proxy $Proxy.Scoop
+  if ($LASTEXITCODE -ne 0) { throw "Failed to configure Scoop proxy" }
+  foreach ($name in @('HTTP_PROXY', 'HTTPS_PROXY')) {
+    if (!(Get-Item -Path "Env:$name" -ErrorAction SilentlyContinue)) {
+      Set-Item -Path "Env:$name" -Value $Proxy.Url
+    }
+  }
+  Write-Host 'Configured Scoop to use the proxy supplied on the command line.'
+}
+
+function Ensure-Scoop {
+  param([pscustomobject]$Proxy)
+  Add-ScoopShims
+  $scoop = Get-Command scoop -ErrorAction SilentlyContinue
+  if (!$scoop) {
+    Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+    $installer = Join-Path ([IO.Path]::GetTempPath()) ('dotfiles-scoop-' + [guid]::NewGuid().ToString('N') + '.ps1')
+    try {
+      $downloadArgs = @('-UseBasicParsing', '-Uri', 'https://get.scoop.sh', '-OutFile', $installer)
+      if ($Proxy) { $downloadArgs += @('-Proxy', $Proxy.Url) }
+      Invoke-WebRequest @downloadArgs
+      & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer
+      if ($LASTEXITCODE -ne 0) { throw "Scoop installer exited with status $LASTEXITCODE" }
+    } finally {
+      Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue
+    }
+    Add-ScoopShims
+    $scoop = Get-Command scoop -ErrorAction SilentlyContinue
+  }
+  if (!$scoop) { throw 'Scoop is unavailable after installation' }
+  Configure-ScoopProxy $scoop.Source $Proxy
+  return $scoop.Source
+}
+
+function Invoke-Scoop {
+  param([string]$ScoopPath, [string[]]$Arguments)
+  & $ScoopPath @Arguments
+  if ($LASTEXITCODE -ne 0) {
+    throw "Scoop command failed with status ${LASTEXITCODE}: $($Arguments -join ' ')"
+  }
+}
+
+function Get-ScoopPython {
+  param([string]$ScoopPath)
+  $prefix = (& $ScoopPath prefix python 2>$null | Select-Object -Last 1)
+  if (!$prefix) { return $null }
+  $python = Join-Path ([string]$prefix).Trim() 'python.exe'
+  if (Test-Path -LiteralPath $python) { return $python }
+  return $null
+}
 
 # A downloaded standalone launcher obtains a complete Git checkout first.
 if (!(Test-Path -LiteralPath $mainScript)) {
   if ($inspection) { throw 'Download or clone the complete dotfiles checkout before inspecting it.' }
+  $scoopPath = Ensure-Scoop $proxy
+  $git = Get-Command git -ErrorAction SilentlyContinue
+  if (!$git -or $git.Source -like '*WindowsApps*') {
+    Invoke-Scoop $scoopPath @('install', 'git')
+    Add-ScoopShims
+  }
   $configRoot = $env:XDG_CONFIG_HOME
   if (!$configRoot) { $configRoot = Join-Path $env:USERPROFILE '.config' }
   $repoDir = Join-Path $configRoot 'dotfiles'
@@ -25,63 +127,29 @@ if (!(Test-Path -LiteralPath $mainScript)) {
   }
 }
 
-foreach ($name in @('python3', 'python', 'py', (Join-Path $env:USERPROFILE '.local/bin/python3.12.exe'))) {
-  $candidate = Get-Command $name -ErrorAction SilentlyContinue
-  if (!$candidate -or $candidate.Source -like '*WindowsApps*') { continue }
-  $prefix = @()
-  if ($name -eq 'py') { $prefix = @('-3') }
-  & $candidate.Source @prefix -c 'import sys; sys.exit(sys.version_info < (3, 10))' 2>$null
-  if ($LASTEXITCODE -eq 0) {
-    & $candidate.Source @prefix $mainScript @bootstrapArgs
-    exit $LASTEXITCODE
+if ($inspection) {
+  foreach ($name in @('python3', 'python', 'py')) {
+    $candidate = Get-Command $name -ErrorAction SilentlyContinue
+    if (!$candidate -or $candidate.Source -like '*WindowsApps*') { continue }
+    $prefix = @()
+    if ($name -eq 'py') { $prefix = @('-3') }
+    & $candidate.Source @prefix -c 'import sys; sys.exit(sys.version_info < (3, 10))' 2>$null
+    if ($LASTEXITCODE -eq 0) {
+      & $candidate.Source @prefix $mainScript @bootstrapArgs
+      exit $LASTEXITCODE
+    }
   }
+  throw 'Python 3.10+ is required for inspection. Run init.ps1 core to prepare the Scoop-managed runtime.'
 }
-if ($inspection) { throw 'Python 3.10+ is required for inspection. Run init.ps1 core to prepare the bootstrap runtime.' }
-$stateRoot = $env:XDG_STATE_HOME
-if (!$stateRoot) { $stateRoot = Join-Path $env:LOCALAPPDATA 'State' }
-$dataRoot = $env:XDG_DATA_HOME
-if (!$dataRoot) { $dataRoot = Join-Path $env:USERPROFILE '.local/share' }
-$cacheRoot = $env:XDG_CACHE_HOME
-if (!$cacheRoot) { $cacheRoot = Join-Path $env:LOCALAPPDATA 'Cache' }
-$env:UV_INSTALL_DIR = Join-Path $env:USERPROFILE '.local/bin'
-$env:UV_NO_MODIFY_PATH = '1'
-$env:UV_PYTHON_INSTALL_DIR = Join-Path $dataRoot 'uv/python'
-$env:UV_CACHE_DIR = Join-Path $cacheRoot 'uv'
-$env:UV_PYTHON_BIN_DIR = $env:UV_INSTALL_DIR
-$runtimeDir = Join-Path $stateRoot ('dotfiles/bootstrap/runtime-' + [guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
-$runtimeLog = Join-Path $runtimeDir 'output.log'
-Write-Host "Preparing Python runtime...`nLog: $runtimeLog"
-# Windows PowerShell 5 treats redirected native stderr as ErrorRecords. Check
-# the process exit code explicitly while preserving stderr diagnostics in the log.
-function Invoke-RuntimeCommand {
-  param([string]$Executable, [string[]]$Arguments, [switch]$Capture)
-  $resolved = Get-Command $Executable -ErrorAction Stop
-  $ErrorActionPreference = 'Continue'
-  if ($Capture) {
-    $value = & $resolved.Source @Arguments 2>> $runtimeLog
-  } else {
-    & $resolved.Source @Arguments *>> $runtimeLog
-  }
-  $code = $LASTEXITCODE
-  if ($code -ne 0) { throw "Runtime command failed with exit code $code; see $runtimeLog" }
-  if ($Capture) { return $value }
+$scoopPath = Ensure-Scoop $proxy
+$python = Get-ScoopPython $scoopPath
+if (!$python) {
+  Write-Host 'Preparing latest managed Python through Scoop...'
+  Invoke-Scoop $scoopPath @('install', 'python')
+  Add-ScoopShims
+  $python = Get-ScoopPython $scoopPath
 }
-try {
-  $uv = Get-Command uv -ErrorAction SilentlyContinue
-  if ($uv) { $uvPath = $uv.Source } else { $uvPath = Join-Path $env:UV_INSTALL_DIR 'uv.exe' }
-  if (!(Test-Path -LiteralPath $uvPath)) {
-    $installer = Join-Path $runtimeDir 'install.ps1'
-    Invoke-WebRequest -UseBasicParsing -Uri https://astral.sh/uv/install.ps1 -OutFile $installer
-    Invoke-RuntimeCommand 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $installer)
-  }
-  Invoke-RuntimeCommand $uvPath @('python', 'install', '3.12')
-  $python = Invoke-RuntimeCommand $uvPath @('python', 'find', '--no-project', '--managed-python', '3.12') -Capture
-} catch {
-  $_ | Out-String | Add-Content -LiteralPath $runtimeLog
-  Write-Error "Runtime setup failed. Details: $runtimeLog"
-  exit 1
-}
-Write-Host 'Python runtime ready.'
+if (!$python) { throw 'Scoop installed Python but python.exe is unavailable' }
+Write-Host "Python runtime ready: $python"
 & $python $mainScript @bootstrapArgs
 exit $LASTEXITCODE

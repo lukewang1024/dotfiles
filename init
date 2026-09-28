@@ -6,7 +6,7 @@ main_script=$repo_dir/bootstrap/main.py
 [ -f "$main_script" ] || { printf '%s\n' "Missing $main_script; run init from a complete dotfiles checkout." >&2; exit 1; }
 export PYTHONDONTWRITEBYTECODE=1
 bootstrap_system=$(uname -s)
-for runtime in python3 python "$HOME/.local/bin/python3.12" /opt/homebrew/bin/python3 /usr/local/bin/python3; do
+for runtime in python3 python "$HOME/.local/bin/python3" "$HOME/.local/bin/python3.12" /opt/homebrew/bin/python3 /usr/local/bin/python3; do
   if command -v "$runtime" >/dev/null 2>&1 &&
      "$runtime" -c 'import sys; sys.exit(sys.version_info < (3, 10))' >/dev/null 2>&1; then
     case $bootstrap_system in
@@ -54,9 +54,9 @@ else
   fi
   bootstrap_uv=$UV_INSTALL_DIR/uv
 fi
-if ! "$bootstrap_uv" python install 3.12 >>"$bootstrap_log" 2>&1; then
+if ! "$bootstrap_uv" python install --default >>"$bootstrap_log" 2>&1; then
   printf 'Runtime setup failed. Details: %s\n' "$bootstrap_log" >&2; exit 1
 fi
-bootstrap_python=$("$bootstrap_uv" python find --no-project --managed-python 3.12 2>>"$bootstrap_log")
+bootstrap_python=$("$bootstrap_uv" python find --no-project --managed-python 2>>"$bootstrap_log")
 printf '%s\n' 'Python runtime ready.' >&2
 exec "$bootstrap_python" "$main_script" "$@"
