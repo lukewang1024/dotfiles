@@ -77,7 +77,6 @@ zinit wait lucid for \
   OMZP::web-search/web-search.plugin.zsh \
   OMZP::yarn/yarn.plugin.zsh \
   supercrabtree/k \
-  ver'main' conda-incubator/conda-zsh-completion \
   zsh-users/zsh-history-substring-search \
   lukewang1024/zsh-tmuxinator \
   atload'_zsh_autosuggest_start' zsh-users/zsh-autosuggestions \

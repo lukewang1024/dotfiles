@@ -59,6 +59,18 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(PACKAGES, {k: v['arrays'] for k, v in legacy.items() if v['arrays']})
         self.assertEqual(LINKS, {k: v['links'] for k, v in legacy.items() if v['links']})
 
+    def test_conda_is_not_installed_or_initialized_by_dotfiles(self):
+        groups = [('macos/prepare_macos_env_cli_extra', 'casks'),
+                  ('arch/prepare_arch_env_cli_extra', 'pkgs'),
+                  ('windows/prepare_windows_env_gui_extra', 'pkgs')]
+        for group, variable in groups:
+            with self.subTest(group=group):
+                self.assertFalse(any('conda' in name.lower() for array in PACKAGES[group][variable]
+                                     for name in array))
+        self.assertFalse(any('conda' in source.lower() or 'conda' in target.lower()
+                             for entries in LINKS.values() for source, target in entries))
+        self.assertNotIn('conda-zsh-completion', (ROOT / 'config/zsh/zinit.zshrc').read_text(encoding='utf-8'))
+
     def test_disabled_homebrew_casks_are_absent_from_macos_inventory(self):
         groups = ('macos/prepare_macos_env_gui_core', 'macos/prepare_macos_env_gui_extra',
                   'macos/setup_macos_gaming')

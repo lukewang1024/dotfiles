@@ -223,7 +223,6 @@
         "android-platform-tools",  // Android SDK component
         "dotnet-sdk",              // Developer platform
         "gcloud-cli",              // Set of tools to manage resources and applications hosted on Google Cloud
-        "miniconda",               // Minimal installer for conda
         "orbstack",                // Replacement for Docker Desktop
         "vagrant"                  // Development environment
       ]
@@ -984,7 +983,6 @@
         "icdiff",              // Improved colored diff
         "lazydocker-bin",      // Lazier way to manage everything docker
         "lazynpm",             // NPM scripts runner
-        "miniconda3",          // Minimal installer for conda
         "mons",                // POSIX Shell script to quickly manage monitors on X
         "mycli",               // CLI for MySQL with auto-completion and syntax highlighting
         "nb",                  // Command-line and local web note-taking, bookmarking, and archiving
@@ -1250,7 +1248,6 @@
         "lxrunoffline",  // Windows Subsystem for Linux (WSL) management tool
         "mc",            // Midnight Commander - Terminal-based file manager with dual-pane interface
         "micro",         // Modern terminal-based text editor that aims to be easy to use
-        "miniconda3",    // Minimal installer for Conda package manager and Python environment management
         "minikube",      // Tool for running Kubernetes clusters locally for development and testing
         "musikcube",     // Terminal-based music player with a ncurses interface
         "nmap",          // Network discovery and security auditing tool for port scanning
