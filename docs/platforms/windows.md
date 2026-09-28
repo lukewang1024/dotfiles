@@ -6,7 +6,7 @@ linking, progress, and logs are implemented under `bootstrap/dotfiles/`.
 
 ## Design
 
-Package selections live in `packages.json`, configuration links in `links.json`,
+Package selections live in `packages.jsonc`, configuration links in `links.json`,
 and Windows operations in `platforms.py`. Scoop and WinGet remain the Windows
 package managers. PowerShell snippets are used for Windows APIs and vendor
 installers; they do not duplicate the task graph or reporter.
@@ -22,8 +22,9 @@ installers; they do not duplicate the task graph or reporter.
 
 ## Install a new machine
 
-Use PowerShell 5.1 or 7 with Git installed. Python 3.10+ is reused when available;
-otherwise the launcher installs uv and managed Python 3.12 under XDG directories.
+Use PowerShell 5.1 or 7. The launcher ensures Scoop is available, installs Git
+through Scoop when a standalone checkout needs it, and installs Scoop's latest
+Python package before handing control to `bootstrap/main.py`.
 
 ```powershell
 $configRoot = $env:XDG_CONFIG_HOME
@@ -34,6 +35,17 @@ Set-Location $repo
 .\init.ps1 core --dry-run
 .\init.ps1 core
 ```
+
+If the machine needs an HTTP proxy during bootstrap, pass it explicitly. The
+launcher does not detect or require a particular proxy client:
+
+```powershell
+.\init.ps1 --proxy http://proxy.example:8118 core
+```
+
+The proxy flag is consumed by `init.ps1`, applied to Scoop, and omitted from
+the arguments forwarded to `bootstrap/main.py`. Without the flag, no proxy is
+configured by the launcher.
 
 Alternatively, download `init.ps1` into a temporary directory. With Git available,
 it clones the source into the same config location. It refuses to overwrite an

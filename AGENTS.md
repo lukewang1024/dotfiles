@@ -5,7 +5,7 @@
 - `bootstrap/main.py`: shared Python 3.10+ standard-library entrypoint.
 - `bootstrap/dotfiles/engine.py`: progress, logs, subprocesses, filesystem effects.
 - `tasks.py`, `platforms.py`, `maintenance.py`: registered task definitions.
-- `packages.json`, `links.json`, `macos-defaults.json`: declarative selections.
+- `packages.jsonc`, `links.json`, `macos-defaults.json`: declarative selections.
 - `init` and `init.ps1`: thin source/runtime launchers. Do not add provisioning here.
 - `config/`: tracked application configuration; `util/`: installed helper commands.
 

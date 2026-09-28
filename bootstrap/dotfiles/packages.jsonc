@@ -2,6 +2,24 @@
   "_package_rules": [
     {
       "platform": "macos",
+      "group": "macos/prepare_macos_env_gui_core",
+      "variable": "casks",
+      "exclude": ["alacritty"]
+    },
+    {
+      "platform": "macos",
+      "group": "macos/prepare_macos_env_gui_extra",
+      "variable": "casks",
+      "exclude": ["qlcolorcode", "qlprettypatch", "qlstephen"]
+    },
+    {
+      "platform": "macos",
+      "group": "macos/setup_macos_gaming",
+      "variable": "casks",
+      "exclude": ["openemu"]
+    },
+    {
+      "platform": "macos",
       "from_version": "27",
       "group": "macos/prepare_macos_env_gui_core",
       "variable": "casks",
@@ -1377,8 +1395,8 @@
         "xming",                                                                                          // X Window System server for Windows
         "xnviewmp",                                                                                       // Image viewer and converter supporting hundreds of formats
         "zeal",                                                                                           // Offline documentation browser for programming languages,
-        "https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json",                         //raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json",
-        "https://raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json"  //raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json"
+        "https://raw.githubusercontent.com/acdzh/zpt/master/bucket/pasteex.json",                         // PasteEx upstream Scoop manifest
+        "https://raw.githubusercontent.com/go-musicfox/go-musicfox/master/deploy/scoop/go-musicfox.json"  // go-musicfox upstream Scoop manifest
       ]
     ],
     "wingetPkgs": [

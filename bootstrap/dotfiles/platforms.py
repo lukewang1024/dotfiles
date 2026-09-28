@@ -273,7 +273,7 @@ def backup_automator_stuff(c):
 
 @task()
 def setup_macos_gaming(c):
-    install(c, 'brew', packages('macos/setup_macos_gaming', 'casks'), '--cask')
+    install(c, 'brew', platform_packages(c, 'macos/setup_macos_gaming', 'casks'), '--cask')
     c.task('brew_cleanup')
 
 

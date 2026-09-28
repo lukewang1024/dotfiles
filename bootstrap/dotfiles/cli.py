@@ -2,6 +2,7 @@
 import argparse
 from contextlib import redirect_stdout, redirect_stderr
 import json
+import os
 from pathlib import Path
 import shlex
 import sys
@@ -73,6 +74,7 @@ def main(argv=None):
     parser.add_argument('--dry-run', action='store_true', help='Describe actions without changing files or executing commands')
     parser.add_argument('--json', action='store_true', help='Print a machine-readable dry-run plan')
     parser.add_argument('--platform', choices=PLATFORMS, help='Override platform for dry-run inspection only')
+    parser.add_argument('--macos-version', help='Override macOS version for dry-run package-rule inspection')
     parser.add_argument('--list-tasks', action='store_true')
     args = parser.parse_args(argv)
     if args.list_tasks:
@@ -84,10 +86,15 @@ def main(argv=None):
         parser.error('--json requires --dry-run')
     if args.platform and not args.dry_run:
         parser.error('--platform is only allowed with --dry-run')
+    if args.macos_version and not args.dry_run:
+        parser.error('--macos-version is only allowed with --dry-run')
     try:
         platform = args.platform or detect_platform()
         plan = select_tasks(platform, args.mode, args.arguments)
-        context = Context(Path(__file__).resolve().parents[2], platform, dry_run=args.dry_run)
+        env = os.environ.copy()
+        if args.macos_version:
+            env['DOTFILES_MACOS_VERSION'] = args.macos_version
+        context = Context(Path(__file__).resolve().parents[2], platform, dry_run=args.dry_run, env=env)
         context.tasks = TASKS
         if args.dry_run:
             for name, values in plan:

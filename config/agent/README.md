@@ -30,12 +30,22 @@ interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned
 by the standalone installer. The shared AGENTS.md only authorizes the opt-in
 mode; the standalone CLI injects the full collaboration rules.
 
+The standalone `agent-team/config/teams.json` is the source of truth for the
+normal/budget model combinations. Direct shortcuts use the same resolver:
+`agent-team run codex`, `agent-team run codex --budget`, and the corresponding
+TraeX, Claude, and OpenCode commands. Keep model changes there (or in the
+documented XDG override), not in shell aliases. Agent-specific environment
+defaults live alongside those presets; an externally supplied environment
+variable always wins.
+
 Personal Codex defaults remain in `team.config.toml` and
 `team-budget.config.toml` as initialization templates. `codex-settings-apply`
 seeds independent files in `${CODEX_HOME:-~/.codex}` and converts the old
 symlinks into regular files, preserving existing trust and local settings.
-Existing regular profiles are never overwritten by sync; edit the local files
-for model changes after initialization. Codex may write project trust to these
+Existing regular profiles are never overwritten by sync. They remain compatible
+with direct `codex --profile` use, but `agent-team` launches pass the resolved
+model and reasoning settings explicitly, so those profiles are not the source
+of truth for normal/budget selection. Codex may write project trust to these
 runtime profiles; those paths must never be linked back into dotfiles.
 The standalone CLI can also
 run without these profiles using its bundled defaults. Machine-local overrides

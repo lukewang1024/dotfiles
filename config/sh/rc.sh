@@ -121,13 +121,6 @@ alias gitc='git --no-pager'
 alias gmtlg='git mergetool --no-prompt --gui'
 alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 
-## AI coding agent related
-export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
-alias claude-yolo='claude --dangerously-skip-permissions'
-alias codex-yolo='codex --yolo'
-alias opencode-yolo='opencode --auto'
-alias traex-yolo='traex --yolo'
-
 ## Tools from npm
 alias create-react-app='npx create-react-app'
 alias react-native='npx react-native'
