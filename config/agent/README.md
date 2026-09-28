@@ -25,8 +25,9 @@ solo CLI wrappers. The zsh integration calls them through the same approval and
 resume-history helper as plain `codex`. These Codex model shortcuts do not imply
 `--yolo`; pass it explicitly when needed. The `codex-team` and `codex-team-budget`
 commands below launch separate, opt-in team presets.
-The `traex-budget` shell alias preserves its TraeX-specific GPT-5.6 Luna High
-and `--yolo` settings.
+The `traex-budget` CLI wrapper uses the same installer and keeps its
+TraeX-specific GPT-5.6 Luna High and `--yolo` settings. The zsh integration
+also records its resume command.
 
 ### Agent teams
 
@@ -42,10 +43,10 @@ interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned
 by the standalone installer. The shared AGENTS.md only authorizes the opt-in
 mode; the standalone CLI injects the full collaboration rules.
 
-The standalone `agent-team/config/teams.json` owns Team, Team Budget, and the
-Codex solo budget/expert presets. Direct Codex shortcuts use
-`agent-team solo codex budget` and `agent-team solo codex expert`; other coding
-agents currently have Team presets only. Machine-local overrides belong in
+The standalone `agent-team/config/teams.json` owns Team, Team Budget, Codex solo
+budget/expert, and TraeX solo budget presets. Direct shortcuts use
+`agent-team solo codex budget`, `agent-team solo codex expert`, and
+`agent-team solo traex budget`. Machine-local overrides belong in
 `$XDG_CONFIG_HOME/agent-team/config.json`.
 
 Personal Codex defaults remain in `team.config.toml` and
