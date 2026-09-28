@@ -411,10 +411,6 @@
       "~/.config/alacritty"
     ],
     [
-      "$config_dir/conda",
-      "~/.config/conda"
-    ],
-    [
       "$config_dir/gitui",
       "~/.config/gitui"
     ],

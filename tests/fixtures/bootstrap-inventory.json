@@ -605,7 +605,6 @@
           "android-platform-tools",
           "dotnet-sdk",
           "gcloud-cli",
-          "miniconda",
           "orbstack",
           "vagrant"
         ]
@@ -1346,10 +1345,6 @@
         "~/.config/alacritty"
       ],
       [
-        "$config_dir/conda",
-        "~/.config/conda"
-      ],
-      [
         "$config_dir/gitui",
         "~/.config/gitui"
       ],
@@ -1745,7 +1740,6 @@
           "icdiff",
           "lazydocker-bin",
           "lazynpm",
-          "miniconda3",
           "mons",
           "mycli",
           "nb",
@@ -2302,7 +2296,6 @@
           "lxrunoffline",
           "mc",
           "micro",
-          "miniconda3",
           "minikube",
           "musikcube",
           "nmap",
