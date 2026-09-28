@@ -179,7 +179,7 @@ _agent_run_and_remember() {
   return "$exit_status"
 }
 
-unalias codex codex-budget codex-expert claude traex opencode 2>/dev/null
+unalias codex codex-budget codex-expert claude traex traex-budget opencode 2>/dev/null
 _agent_codex_run() {
   local executable=$1 command_name=$2
   shift 2
@@ -247,6 +247,9 @@ traex() {
     esac
   done
   _agent_run_and_remember traex "$HOME/.local/bin/traex" "$resume_prefix" "$HOME/.trae/cli/sessions" "$@"
+}
+traex-budget() {
+  _agent_run_and_remember traex "$HOME/.local/bin/traex-budget" 'traex-budget resume' "$HOME/.trae/cli/sessions" "$@"
 }
 opencode() {
   local arg has_auto=0 executable
