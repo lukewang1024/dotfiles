@@ -121,6 +121,9 @@ alias gitc='git --no-pager'
 alias gmtlg='git mergetool --no-prompt --gui'
 alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
 
+## TraeX shortcut
+alias traex-budget='traex --yolo -m GPT-5.6-Luna -c model_reasoning_effort="high"'
+
 ## Tools from npm
 alias create-react-app='npx create-react-app'
 alias react-native='npx react-native'

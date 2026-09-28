@@ -179,28 +179,39 @@ _agent_run_and_remember() {
   return "$exit_status"
 }
 
-unalias codex claude traex opencode 2>/dev/null
-codex() {
-  local arg permission_mode=auto resume_prefix='codex --approve-for-me resume'
+unalias codex codex-budget codex-expert claude traex opencode 2>/dev/null
+_agent_codex_run() {
+  local executable=$1 command_name=$2
+  shift 2
+  local arg permission_mode=auto resume_prefix="$command_name --approve-for-me resume"
   for arg in "$@"; do
     case "$arg" in
       --yolo|--dangerously-bypass-approvals-and-sandbox)
         permission_mode=explicit
-        resume_prefix='codex --yolo resume'
+        resume_prefix="$command_name --yolo resume"
         ;;
       --approve-for-me)
         permission_mode=explicit
         ;;
       -a|--ask-for-approval|--ask-for-approval=*)
         permission_mode=explicit
-        resume_prefix='codex resume'
+        resume_prefix="$command_name resume"
         ;;
     esac
   done
   if [ "$permission_mode" = auto ]; then
     set -- --approve-for-me "$@"
   fi
-  _agent_run_and_remember codex "$HOME/.local/bin/codex" "$resume_prefix" "$HOME/.codex/sessions" "$@"
+  _agent_run_and_remember codex "$executable" "$resume_prefix" "$HOME/.codex/sessions" "$@"
+}
+codex() {
+  _agent_codex_run "$HOME/.local/bin/codex" codex "$@"
+}
+codex-budget() {
+  _agent_codex_run "$HOME/.local/bin/codex-budget" codex-budget "$@"
+}
+codex-expert() {
+  _agent_codex_run "$HOME/.local/bin/codex-expert" codex-expert "$@"
 }
 claude() {
   local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'

@@ -5,6 +5,6 @@ developer_instructions = "Team delegation mode is enabled. Apply the opt-in agen
 
 [agents]
 enabled = true
-default_subagent_model = "gpt-6-astra"
-default_subagent_reasoning_effort = "low"
+default_subagent_model = "gpt-6-sol"
+default_subagent_reasoning_effort = "high"
 max_concurrent_threads_per_session = 2
