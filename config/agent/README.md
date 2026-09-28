@@ -16,6 +16,18 @@ agents. `./init sync` installs the entrypoints and applies the managed settings.
 Do not add credentials, per-project permissions, MCP secrets, or absolute
 machine-specific paths to these shared files.
 
+### Codex shortcuts
+
+Plain `codex` uses the model and effort in the local Codex config. The
+`agent-team` checkout installs `codex-budget` (GPT-6 Luna Max for bounded,
+low-cost tasks) and `codex-expert` (GPT-6 Astra Medium for demanding work) as
+solo CLI wrappers. The zsh integration calls them through the same approval and
+resume-history helper as plain `codex`. These Codex model shortcuts do not imply
+`--yolo`; pass it explicitly when needed. The `codex-team` and `codex-team-budget`
+commands below launch separate, opt-in team presets.
+The `traex-budget` shell alias preserves its TraeX-specific GPT-5.6 Luna High
+and `--yolo` settings.
+
 ### Agent teams
 
 The implementation, adapters, collaboration protocol and tests live in the
@@ -30,13 +42,11 @@ interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned
 by the standalone installer. The shared AGENTS.md only authorizes the opt-in
 mode; the standalone CLI injects the full collaboration rules.
 
-The standalone `agent-team/config/teams.json` is the source of truth for the
-normal/budget model combinations. Direct shortcuts use the same resolver:
-`agent-team run codex`, `agent-team run codex --budget`, and the corresponding
-TraeX, Claude, and OpenCode commands. Keep model changes there (or in the
-documented XDG override), not in shell aliases. Agent-specific environment
-defaults live alongside those presets; an externally supplied environment
-variable always wins.
+The standalone `agent-team/config/teams.json` owns Team, Team Budget, and the
+Codex solo budget/expert presets. Direct Codex shortcuts use
+`agent-team solo codex budget` and `agent-team solo codex expert`; other coding
+agents currently have Team presets only. Machine-local overrides belong in
+`$XDG_CONFIG_HOME/agent-team/config.json`.
 
 Personal Codex defaults remain in `team.config.toml` and
 `team-budget.config.toml` as initialization templates. `codex-settings-apply`
@@ -44,8 +54,7 @@ seeds independent files in `${CODEX_HOME:-~/.codex}` and converts the old
 symlinks into regular files, preserving existing trust and local settings.
 Existing regular profiles are never overwritten by sync. They remain compatible
 with direct `codex --profile` use, but `agent-team` launches pass the resolved
-model and reasoning settings explicitly, so those profiles are not the source
-of truth for normal/budget selection. Codex may write project trust to these
+model and reasoning settings explicitly. Codex may write project trust to these
 runtime profiles; those paths must never be linked back into dotfiles.
 The standalone CLI can also
 run without these profiles using its bundled defaults. Machine-local overrides
