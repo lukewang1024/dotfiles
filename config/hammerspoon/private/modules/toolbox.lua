@@ -100,9 +100,9 @@ function M.new(options)
       }},
     }
   end
-  self.menu=hs.menubar.new()
+  -- Keep the native menu for the shortcut without occupying menu bar space.
+  self.menu=hs.menubar.new(false)
   if self.menu then
-    self.menu:setTitle('图片同步'):setTooltip('图片同步 · Ctrl+Alt+Shift+V')
     self.menu:setMenu(function()return self:items()end)
   end
   function self:toggle()
@@ -115,7 +115,7 @@ function M.new(options)
   if hs.hotkey.assignable({'ctrl','alt','shift'},'v') then
     -- Open after release so modifiers do not affect native menu navigation.
     self.hotkey=hs.hotkey.bind({'ctrl','alt','shift'},'v',function()end,function()self:toggle()end)
-  else alert('Ctrl+Alt+Shift+V 已被占用，请点击菜单栏“图片同步”') end
+  else alert('Ctrl+Alt+Shift+V 已被占用，可用 Hyper+0 → C 选择图片同步') end
   function self:stop()
     if self.stopped then return end
     self.stopped=true

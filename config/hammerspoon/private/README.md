@@ -5,7 +5,7 @@
 
 ## 图片同步入口
 
-菜单栏 **图片同步** 或 **Ctrl+Option+Shift+V** 打开原生菜单，方向键/鼠标选择、Enter 执行、Esc 关闭。
+**Ctrl+Option+Shift+V** 打开原生图片同步菜单，方向键/鼠标选择、Enter 执行、Esc 关闭。菜单栏不常驻显示同步入口。
 不再使用 chooser 搜索弹窗，因此没有 Cmd+数字提示或绑定。
 只保留三个动作：发送已有剪贴板图片、选择同步目标、查看上次同步结果。
 Ctrl+Option+V 直接发送当前剪贴板图片，不必打开菜单。原 Ctrl+Option+C、Ctrl+Option+Z 和 Ctrl+Option+/ 已释放。
