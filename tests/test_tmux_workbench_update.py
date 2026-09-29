@@ -128,19 +128,30 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertIn('installed tmux-agent-workbench v2.0.0-beta.28', update.stdout)
         self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
-    def test_workbench_without_upstream_keeps_checkout_and_installs_release(self):
+    def test_workbench_without_upstream_is_rejected_before_updates(self):
         workbench = self.repos['tmux-agent-workbench']
         self.git('-C', workbench, 'branch', '--unset-upstream')
 
-        check = self.run_update('--check')
-        self.assertIn('tmux-agent-workbench: no upstream branch', check.stdout)
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('tmux-agent-workbench main has no upstream', update.stderr)
+        self.assertNotIn('fetching repositories', update.stdout)
+        self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
+        self.assertFalse((self.state / 'synced').exists())
 
-        update = self.run_update()
-        self.assertIn('tmux-agent-workbench: warning: local/unreleased changes', update.stderr)
+    def test_workbench_feature_branch_is_rejected_before_updates(self):
+        workbench = self.repos['tmux-agent-workbench']
+        self.git('-C', workbench, 'switch', '-c', 'ship/local-change')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('tmux-agent-workbench checkout is on ship/local-change', update.stderr)
+        self.assertNotIn('fetching repositories', update.stdout)
         self.assertEqual('v1\n', (workbench / 'version.txt').read_text())
-        self.assertEqual('v2\n', (self.repos['agent-team'] / 'version.txt').read_text())
-        self.assertEqual('1', (self.bin_dir / 'workbench-installed').read_text())
-        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
+        self.assertFalse((self.state / 'synced').exists())
 
 
 if __name__ == '__main__':
