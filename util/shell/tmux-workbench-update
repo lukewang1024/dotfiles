@@ -68,6 +68,23 @@ require_repo()
     die "not a Git checkout: $repo"
 }
 
+require_main_checkout()
+{
+  repo=$1
+  branch=$(git -C "$repo" symbolic-ref --quiet --short HEAD) ||
+    die "$(repo_label "$repo") checkout has a detached HEAD; use a main or master checkout"
+  case $branch in
+    main|master) ;;
+    *) die "$(repo_label "$repo") checkout is on $branch; use a separate worktree for changes" ;;
+  esac
+  upstream=$(git -C "$repo" rev-parse --symbolic-full-name '@{upstream}' 2>/dev/null) ||
+    die "$(repo_label "$repo") $branch has no upstream; track a remote $branch branch"
+  case $upstream in
+    refs/remotes/*/"$branch") ;;
+    *) die "$(repo_label "$repo") $branch tracks $upstream; track a remote $branch branch" ;;
+  esac
+}
+
 run_quiet()
 {
   if "$@" >"$log_file" 2>&1; then
@@ -103,14 +120,7 @@ update_repo()
 report_repo()
 {
   repo=$1
-  upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null) ||
-    {
-      if [ "$repo" = "$workbench_dir" ]; then
-        printf '%s: no upstream branch; keeping checkout and using the latest GitHub release\n' "$(repo_label "$repo")"
-        return 0
-      fi
-      die "$(repo_label "$repo") has no upstream branch"
-    }
+  upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}')
   counts=$(git -C "$repo" rev-list --left-right --count "HEAD...$upstream")
   ahead=$(printf '%s\n' "$counts" | awk '{print $1}')
   behind=$(printf '%s\n' "$counts" | awk '{print $2}')
@@ -131,7 +141,7 @@ report_repo()
 workbench_has_unreleased_changes()
 {
   repo=$1
-  upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}' 2>/dev/null) || return 0
+  upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}')
   ahead=$(git -C "$repo" rev-list --count "$upstream..HEAD")
 
   [ -n "$(git -C "$repo" status --porcelain)" ] || [ "$ahead" -gt 0 ]
@@ -146,7 +156,8 @@ latest_workbench_release_tag()
 {
   command -v curl >/dev/null 2>&1 || die 'curl is required'
   workbench_release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/tmux-workbench-release.XXXXXX")
-  run_quiet curl -fsSL 'https://api.github.com/repos/lukewang1024/tmux-agent-workbench/releases?per_page=20' \
+  run_quiet curl -fsSL --retry 3 --retry-all-errors --retry-delay 1 \
+    'https://api.github.com/repos/lukewang1024/tmux-agent-workbench/releases?per_page=20' \
     -o "$workbench_release_tmp/releases.json" || die 'failed to list tmux-agent-workbench releases'
   workbench_release_tag=$(python3 -c '
 import json, re, sys
@@ -197,7 +208,8 @@ install_workbench_release()
   target=$(workbench_release_target) || die 'no tmux-agent-workbench release asset for this platform'
   archive=$workbench_release_tmp/archive.tar.gz
   url="https://github.com/lukewang1024/tmux-agent-workbench/releases/download/$tag/tmux-agent-workbench-$target.tar.gz"
-  run_quiet curl -fsSL "$url" -o "$archive" || die "failed to download tmux-agent-workbench $tag"
+  run_quiet curl -fsSL --retry 3 --retry-all-errors --retry-delay 1 "$url" -o "$archive" ||
+    die "failed to download tmux-agent-workbench $tag"
   run_quiet tar -xzf "$archive" -C "$workbench_release_tmp" || die 'failed to unpack tmux-agent-workbench release'
   release_binary=$workbench_release_tmp/tmux-agent-workbench
   [ -x "$release_binary" ] || die 'tmux-agent-workbench release binary is missing'
@@ -226,10 +238,11 @@ esac
 command -v git >/dev/null 2>&1 || die 'git is required'
 command -v python3 >/dev/null 2>&1 || die 'python3 is required'
 
-# Check every checkout before changing any of them. The workbench checkout is
-# allowed to contain experiments: those are reported and never built here.
+# Check every checkout before changing any of them. Feature work belongs in
+# separate worktrees; these installation checkouts track main or master.
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
   require_repo "$repo"
+  require_main_checkout "$repo"
 done
 
 printf '%s\n' 'tmux-workbench-update: fetching repositories'
