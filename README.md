@@ -204,6 +204,7 @@ then restarts the Workbench daemon and existing sidebar panes before reloading
 a running tmux server. Set `AGENT_TEAM_REPO` if its checkout is elsewhere.
 The workbench checkout is left untouched when it has local or unreleased
 commits, or no upstream branch; the installer still installs the latest GitHub release.
+The updater selects the most recently published release, including prereleases.
 
 Machine Fabric is separate from the tmux workbench plugin. Use its own
 `bootstrap-fabric.sh` with an exact release version and selected SSH nodes to

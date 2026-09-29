@@ -6,10 +6,14 @@
 set -eu
 
 log_file=$(mktemp "${TMPDIR:-/tmp}/tmux-workbench-update.XXXXXX")
+workbench_release_tmp=
+workbench_core_stage=
 
 cleanup()
 {
   rm -f "$log_file"
+  [ -z "$workbench_release_tmp" ] || rm -rf "$workbench_release_tmp"
+  [ -z "$workbench_core_stage" ] || rm -f "$workbench_core_stage"
 }
 
 trap cleanup 0 1 2 3 15
@@ -37,6 +41,7 @@ plugins_dir=$(expand_home "$plugins_dir")
 bin_dir=$(expand_home "$bin_dir")
 workbench_dir=$plugins_dir/tmux-agent-workbench
 theme_dir=$plugins_dir/tmux-adaptive-theme
+workbench_core=$xdg_data_home/tmux-agent-workbench/bin/tmux-agent-workbench-core
 
 usage()
 {
@@ -137,6 +142,79 @@ warn_workbench_unreleased()
   printf '%s\n' 'tmux-agent-workbench: warning: local/unreleased changes detected; keeping checkout and installing the latest GitHub release' >&2
 }
 
+latest_workbench_release_tag()
+{
+  command -v curl >/dev/null 2>&1 || die 'curl is required'
+  workbench_release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/tmux-workbench-release.XXXXXX")
+  run_quiet curl -fsSL 'https://api.github.com/repos/lukewang1024/tmux-agent-workbench/releases?per_page=20' \
+    -o "$workbench_release_tmp/releases.json" || die 'failed to list tmux-agent-workbench releases'
+  workbench_release_tag=$(python3 -c '
+import json, re, sys
+with open(sys.argv[1], encoding="utf-8") as source:
+    releases = json.load(source)
+published = [item for item in releases if not item.get("draft") and item.get("published_at")]
+if not published:
+    raise SystemExit("no published tmux-agent-workbench release")
+tag = max(published, key=lambda item: item["published_at"])["tag_name"]
+if not re.fullmatch(r"v[0-9][A-Za-z0-9._-]*", tag):
+    raise SystemExit("invalid tmux-agent-workbench release tag")
+print(tag)
+' "$workbench_release_tmp/releases.json") || die 'failed to select tmux-agent-workbench release'
+}
+
+workbench_release_target()
+{
+  android=0
+  [ -z "${TERMUX_VERSION:-}" ] || android=1
+  case ${PREFIX:-} in /data/data/com.termux/*) android=1 ;; esac
+  case $(uname -o 2>/dev/null || true) in Android) android=1 ;; esac
+  if [ "$android" -eq 1 ]; then
+    case $(uname -m) in
+      aarch64|arm64) printf '%s\n' aarch64-linux-android ;;
+      x86_64|amd64) printf '%s\n' x86_64-linux-android ;;
+      *) return 1 ;;
+    esac
+  else
+    case "$(uname -s)-$(uname -m)" in
+      Darwin-arm64) printf '%s\n' aarch64-apple-darwin ;;
+      Darwin-x86_64) printf '%s\n' x86_64-apple-darwin ;;
+      Linux-aarch64|Linux-arm64) printf '%s\n' aarch64-unknown-linux-gnu ;;
+      Linux-x86_64) printf '%s\n' x86_64-unknown-linux-musl ;;
+      *) return 1 ;;
+    esac
+  fi
+}
+
+install_workbench_release()
+{
+  tag=$1
+  installed_version=
+  if [ -x "$workbench_core" ]; then
+    installed_version=$("$workbench_core" --version 2>/dev/null | awk '{print $2}')
+  fi
+  [ "$installed_version" != "${tag#v}" ] || return 0
+
+  target=$(workbench_release_target) || die 'no tmux-agent-workbench release asset for this platform'
+  archive=$workbench_release_tmp/archive.tar.gz
+  url="https://github.com/lukewang1024/tmux-agent-workbench/releases/download/$tag/tmux-agent-workbench-$target.tar.gz"
+  run_quiet curl -fsSL "$url" -o "$archive" || die "failed to download tmux-agent-workbench $tag"
+  run_quiet tar -xzf "$archive" -C "$workbench_release_tmp" || die 'failed to unpack tmux-agent-workbench release'
+  release_binary=$workbench_release_tmp/tmux-agent-workbench
+  [ -x "$release_binary" ] || die 'tmux-agent-workbench release binary is missing'
+  release_version=$("$release_binary" --version | awk '{print $2}')
+  [ "$release_version" = "${tag#v}" ] || die "tmux-agent-workbench release version mismatch: $release_version"
+  mkdir -p "$(dirname "$workbench_core")"
+  workbench_core_stage=$workbench_core.new.$$
+  run_quiet cp "$release_binary" "$workbench_core_stage" || die 'failed to stage tmux-agent-workbench release'
+  chmod 755 "$workbench_core_stage"
+  if [ "$(uname -s)" = Darwin ]; then
+    run_quiet codesign --force --sign - "$workbench_core_stage" || die 'failed to sign tmux-agent-workbench release'
+  fi
+  mv -f "$workbench_core_stage" "$workbench_core"
+  workbench_core_stage=
+  printf 'tmux-workbench-update: installed tmux-agent-workbench %s\n' "$tag"
+}
+
 mode=update
 case ${1:-} in
   '') ;;
@@ -158,12 +236,14 @@ printf '%s\n' 'tmux-workbench-update: fetching repositories'
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
   fetch_repo "$repo"
 done
+latest_workbench_release_tag
 
 if [ "$mode" = check ]; then
   printf '%s\n' 'tmux-workbench-update: checking updates'
   for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
     report_repo "$repo"
   done
+  printf 'tmux-agent-workbench release: %s published\n' "$workbench_release_tag"
   exit 0
 fi
 
@@ -187,10 +267,11 @@ run_quiet python3 "$agent_team_dir/install.py" --bin-dir "$bin_dir" ||
 printf '%s\n' 'tmux-workbench-update: agent-team commands installed'
 
 if [ -x "$workbench_dir/install" ]; then
-  printf '%s\n' 'tmux-workbench-update: installing latest GitHub release'
+  printf '%s\n' 'tmux-workbench-update: installing workbench commands'
   run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 "$workbench_dir/install" "$bin_dir" ||
-    die 'failed to install the latest tmux-agent-workbench GitHub release'
+    die 'failed to install tmux-agent-workbench commands'
 fi
+install_workbench_release "$workbench_release_tag"
 
 # Existing daemon and sidebar processes keep the old executable mapped after
 # it is replaced. Stop the daemon, reload the plugin, and respawn sidebar panes
