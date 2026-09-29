@@ -1,7 +1,10 @@
 """Exercise the updater against disposable local Git repositories."""
 import os
+import io
+import json
 from pathlib import Path
 import subprocess
+import tarfile
 import tempfile
 import unittest
 
@@ -19,14 +22,47 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.bin_dir.mkdir()
         self.state = self.root / 'state'
         self.state.mkdir()
+        self.data = self.root / 'data'
+        self.core = self.data / 'tmux-agent-workbench/bin/tmux-agent-workbench-core'
+        self.core.parent.mkdir(parents=True)
+        self.core.write_text('#!/bin/sh\nprintf "tmux-agent-workbench 2.0.0-beta.27\\n"\n')
+        self.core.chmod(0o755)
+        release_json = self.root / 'releases.json'
+        release_json.write_text(json.dumps([
+            {'tag_name': 'v2.0.0-beta.28', 'draft': False,
+             'published_at': '2026-09-29T12:00:00Z', 'prerelease': True},
+            {'tag_name': 'v2.0.0-beta.27', 'draft': False,
+             'published_at': '2026-09-28T12:00:00Z', 'prerelease': False},
+        ]))
+        release_archive = self.root / 'release.tar.gz'
+        binary = b'#!/bin/sh\nprintf "tmux-agent-workbench 2.0.0-beta.28\\n"\n'
+        with tarfile.open(release_archive, 'w:gz') as archive:
+            member = tarfile.TarInfo('tmux-agent-workbench')
+            member.mode = 0o755
+            member.size = len(binary)
+            archive.addfile(member, io.BytesIO(binary))
         self.env = os.environ.copy()
         self.env.update(DOTFILES_DIR=str(self.root / 'dotfiles'),
                         AGENT_TEAM_REPO=str(self.root / 'agent-team'),
                         TMUX_PLUGIN_MANAGER_PATH=str(self.plugins),
                         XDG_BIN_HOME=str(self.bin_dir),
-                        XDG_STATE_HOME=str(self.state))
+                        XDG_STATE_HOME=str(self.state),
+                        XDG_DATA_HOME=str(self.data),
+                        TEST_RELEASE_JSON=str(release_json),
+                        TEST_RELEASE_ARCHIVE=str(release_archive))
         (self.bin_dir / 'tmux').write_text('#!/bin/sh\nexit 1\n')
         (self.bin_dir / 'tmux').chmod(0o755)
+        (self.bin_dir / 'curl').write_text(
+            '#!/usr/bin/env python3\n'
+            'import os, shutil, sys\n'
+            'url = next(arg for arg in sys.argv[1:] if arg.startswith("https://"))\n'
+            'destination = sys.argv[sys.argv.index("-o") + 1]\n'
+            'source = os.environ["TEST_RELEASE_JSON"] if "api.github.com" in url '
+            'else os.environ["TEST_RELEASE_ARCHIVE"]\n'
+            'shutil.copyfile(source, destination)\n')
+        (self.bin_dir / 'curl').chmod(0o755)
+        (self.bin_dir / 'codesign').write_text('#!/bin/sh\nexit 0\n')
+        (self.bin_dir / 'codesign').chmod(0o755)
         self.env['PATH'] = str(self.bin_dir) + os.pathsep + self.env['PATH']
 
         self.repos = {}
@@ -78,6 +114,8 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         for name, checkout in self.repos.items():
             self.assertIn(f'{name}: 1 update(s) available', check.stdout)
             self.assertEqual('v1\n', (checkout / 'version.txt').read_text())
+        self.assertIn('tmux-agent-workbench release: v2.0.0-beta.28 published', check.stdout)
+        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
         self.assertFalse((self.bin_dir / 'agent-team-installed').exists())
 
         update = self.run_update()
@@ -87,6 +125,8 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertEqual('sync', (self.state / 'synced').read_text())
         self.assertEqual('ok', (self.bin_dir / 'agent-team-installed').read_text())
         self.assertEqual('1', (self.bin_dir / 'workbench-installed').read_text())
+        self.assertIn('installed tmux-agent-workbench v2.0.0-beta.28', update.stdout)
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
     def test_workbench_without_upstream_keeps_checkout_and_installs_release(self):
         workbench = self.repos['tmux-agent-workbench']
@@ -100,6 +140,7 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertEqual('v1\n', (workbench / 'version.txt').read_text())
         self.assertEqual('v2\n', (self.repos['agent-team'] / 'version.txt').read_text())
         self.assertEqual('1', (self.bin_dir / 'workbench-installed').read_text())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
 
 if __name__ == '__main__':
