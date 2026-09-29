@@ -36,7 +36,8 @@ standalone `~/Code/github/agent-team` checkout. `./init core` clones or updates
 that checkout and links its commands into `~/.local/bin`; set `AGENT_TEAM_REPO`
 for a different checkout location. `agent-team-install` can be run directly
 to repair the entrypoints. `./init sync` only installs this helper and applies
-the lightweight configuration links.
+the lightweight configuration links. `tmux-workbench-update` also fetches,
+fast-forwards, and reinstalls agent-team alongside the tmux workbench stack.
 
 Run `agent-team` to select a coding agent and preset, or `agent-team --tmux` for
 interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned
