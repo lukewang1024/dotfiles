@@ -198,11 +198,12 @@ tmux-workbench-update --check
 tmux-workbench-update
 ```
 
-This fast-forwards `dotfiles`, `tmux-agent-workbench`, and
-`tmux-adaptive-theme`, runs the dotfiles sync and workbench command installer,
+This fast-forwards `dotfiles`, `agent-team`, `tmux-agent-workbench`, and
+`tmux-adaptive-theme`, runs the dotfiles sync and both command installers,
 then restarts the Workbench daemon and existing sidebar panes before reloading
-a running tmux server. It refuses to start when any checkout has local changes,
-avoiding a partially updated stack.
+a running tmux server. Set `AGENT_TEAM_REPO` if its checkout is elsewhere.
+The workbench checkout is left untouched when it has local or unreleased
+commits, or no upstream branch; the installer still installs the latest GitHub release.
 
 Machine Fabric is separate from the tmux workbench plugin. Use its own
 `bootstrap-fabric.sh` with an exact release version and selected SSH nodes to
