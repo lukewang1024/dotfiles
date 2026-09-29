@@ -183,24 +183,28 @@ unalias codex codex-budget codex-expert claude traex traex-budget opencode 2>/de
 _agent_codex_run() {
   local executable=$1 command_name=$2
   shift 2
-  local arg permission_mode=auto resume_prefix="$command_name --approve-for-me resume"
+  local arg requires_embedded=0 explicit_embedded=0 resume_prefix="$command_name resume"
   for arg in "$@"; do
     case "$arg" in
+      -c|--config|--config=*|--enable|--enable=*|--disable|--disable=*|--search)
+        requires_embedded=1
+        ;;
+      --no-daemon)
+        explicit_embedded=1
+        ;;
       --yolo|--dangerously-bypass-approvals-and-sandbox)
-        permission_mode=explicit
         resume_prefix="$command_name --yolo resume"
         ;;
       --approve-for-me)
-        permission_mode=explicit
+        resume_prefix="$command_name --approve-for-me resume"
         ;;
       -a|--ask-for-approval|--ask-for-approval=*)
-        permission_mode=explicit
         resume_prefix="$command_name resume"
         ;;
     esac
   done
-  if [ "$permission_mode" = auto ]; then
-    set -- --approve-for-me "$@"
+  if [ "$requires_embedded" -eq 1 ] && [ "$explicit_embedded" -eq 0 ]; then
+    set -- --no-daemon "$@"
   fi
   _agent_run_and_remember codex "$executable" "$resume_prefix" "$HOME/.codex/sessions" "$@"
 }
