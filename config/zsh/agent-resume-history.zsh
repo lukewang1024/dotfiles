@@ -1,4 +1,5 @@
 # Put an agent's exact resume command at the top of zsh history when its TUI exits.
+typeset -g _agent_capture_session_helper=${${(%):-%x}:A:h}/agent-capture-session.py
 
 _agent_add_history() {
   local entry=$1
@@ -72,12 +73,13 @@ _agent_session_id_from_jsonl() {
   local -a files
 
   [ -d "$root" ] || return 1
+  session_cwd=${session_cwd:A}
   marker_mtime=$(_agent_stat_time mtime "$marker") || return 1
   files=("${(@f)$(find "$root" -type f -name 'rollout-*.jsonl' -newer "$marker" -print 2>/dev/null)}")
   for file in "${files[@]}"; do
     [ -n "$file" ] || continue
     file_cwd=$(head -n 1 "$file" | jq -r '.payload.cwd // empty' 2>/dev/null)
-    [ "$file_cwd" = "$session_cwd" ] || continue
+    [ -n "$file_cwd" ] && [ "${file_cwd:A}" = "$session_cwd" ] || continue
     # Resuming an existing session updates its rollout in place, so its birth
     # time can predate the marker by hours or days. `find -newer` above already
     # proves that this invocation touched it; use mtime only to choose between
@@ -100,12 +102,13 @@ _agent_claude_session_id() {
   local -a files
 
   [ -d "$HOME/.claude/projects" ] || return 1
+  session_cwd=${session_cwd:A}
   marker_mtime=$(_agent_stat_time mtime "$marker") || return 1
   files=("${(@f)$(find "$HOME/.claude/projects" -mindepth 2 -maxdepth 2 -type f -name '*.jsonl' -newer "$marker" -print 2>/dev/null)}")
   for file in "${files[@]}"; do
     [ -n "$file" ] || continue
     file_cwd=$(tail -n 40 "$file" | jq -r 'select(.cwd != null) | .cwd' 2>/dev/null | tail -n 1)
-    [ "$file_cwd" = "$session_cwd" ] || continue
+    [ -n "$file_cwd" ] && [ "${file_cwd:A}" = "$session_cwd" ] || continue
     mtime=$(_agent_stat_time mtime "$file") || continue
     [ "$mtime" -ge "$marker_mtime" ] || continue
     if [ "$mtime" -ge "$newest_mtime" ]; then
@@ -153,11 +156,20 @@ _agent_run_and_remember() {
   # Ctrl-C kills the child TUI and would normally abort the rest of this shell
   # function too. Keep the trap local so cleanup and history insertion still run.
   trap 'interrupted=1' INT
-  _agent_exec_with_clipboard_env "$executable" "$@"
+  if [ "$agent" = codex ] && (( $+commands[python3] )); then
+    _agent_exec_with_clipboard_env python3 "$_agent_capture_session_helper" "$marker" "$executable" "$@"
+  else
+    _agent_exec_with_clipboard_env "$executable" "$@"
+  fi
   exit_status=$?
   [ "$interrupted" -eq 1 ] && exit_status=130
 
   case "$agent" in
+    codex)
+      # Only this process's explicit hint identifies its connected task. Other
+      # daemon tasks can keep updating rollouts after their TUI disconnects.
+      session_id=$(cat "$marker")
+      ;;
     claude)
       session_id=$(_agent_claude_session_id "$marker" "$session_cwd")
       ;;
@@ -179,7 +191,7 @@ _agent_run_and_remember() {
   return "$exit_status"
 }
 
-unalias codex codex-budget codex-expert claude traex traex-budget opencode 2>/dev/null
+unalias codex codex-yolo codex-budget codex-expert codex-team codex-team-budget codex-team-expert claude traex traex-budget opencode 2>/dev/null
 _agent_codex_run() {
   local executable=$1 command_name=$2
   shift 2
@@ -206,7 +218,7 @@ _agent_codex_run() {
   if [ "$requires_embedded" -eq 1 ] && [ "$explicit_embedded" -eq 0 ]; then
     set -- --no-daemon "$@"
   fi
-  _agent_run_and_remember codex "$executable" "$resume_prefix" "$HOME/.codex/sessions" "$@"
+  _agent_run_and_remember codex "$executable" "$resume_prefix" "${CODEX_HOME:-$HOME/.codex}/sessions" "$@"
 }
 codex() {
   _agent_codex_run "$HOME/.local/bin/codex" codex "$@"
@@ -216,6 +228,18 @@ codex-budget() {
 }
 codex-expert() {
   _agent_codex_run "$HOME/.local/bin/codex-expert" codex-expert "$@"
+}
+codex-yolo() {
+  _agent_codex_run "$HOME/.local/bin/codex-yolo" codex-yolo "$@"
+}
+codex-team() {
+  _agent_codex_run "$HOME/.local/bin/codex-team" codex-team "$@"
+}
+codex-team-budget() {
+  _agent_codex_run "$HOME/.local/bin/codex-team-budget" codex-team-budget "$@"
+}
+codex-team-expert() {
+  _agent_codex_run "$HOME/.local/bin/codex-team-expert" codex-team-expert "$@"
 }
 claude() {
   local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'

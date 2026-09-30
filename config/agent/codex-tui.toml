@@ -1,3 +1,4 @@
 theme = "catppuccin-mocha"
 status_line = ["model-with-reasoning", "current-dir"]
 status_line_use_colors = true
+alternate_screen = "never"
