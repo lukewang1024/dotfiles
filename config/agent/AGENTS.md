@@ -102,6 +102,24 @@ as permission to launch a workbench dev server in an independent background
 process. This restriction applies only to dev servers that require the workbench
 task-pane workflow; other agent tasks use background execution by default.
 
+## Proxy inheritance for agent-initiated processes
+
+When this machine has an HTTP proxy configured, pass it to the **actual process
+environment** of agent-initiated commands that need network access, including
+commands that create, start, or resume background work. Child processes and
+independently launched workers must inherit it too. Carry `HTTP_PROXY`,
+`HTTPS_PROXY`, and `ALL_PROXY` in both uppercase and lowercase forms, plus
+`NO_PROXY` / `no_proxy` when configured. Apply this throughout the launch and
+continuation flow, including any step that may start execution implicitly.
+
+Read the existing machine-local proxy configuration or inherited environment;
+never hard-code proxy addresses or credentials in this file or a repository.
+Check presence in the launch environment and, when diagnosing a failure, in
+the resulting worker processes. Report only whether variables are present,
+never their values. Configuration in one application does not automatically
+configure independently launched processes. If the required variables are
+missing, fix the launch environment before retrying the work.
+
 ## Where generated files go — keep `$HOME` clean, honour XDG
 
 The human keeps `$HOME` tidy: most tool state is redirected into XDG dirs via
