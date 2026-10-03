@@ -1,0 +1,22 @@
+name: Code ship regression
+on:
+  pull_request:
+    paths:
+      - config/agent/skills/code-ship/**
+      - .github/workflows/code-ship.yml
+  push:
+    branches: [main]
+    paths:
+      - config/agent/skills/code-ship/**
+      - .github/workflows/code-ship.yml
+permissions:
+  contents: read
+jobs:
+  code-ship:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: python3 -B -m unittest discover -s config/agent/skills/code-ship/tests -v
