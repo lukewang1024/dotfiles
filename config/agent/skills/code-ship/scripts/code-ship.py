@@ -218,6 +218,13 @@ def main():
     ahead = int(run('git', 'rev-list', '--count', base + '..HEAD'))
     if not ahead:
         raise ValueError('no commits to ship')
+    # Squash merges preserve content but not ancestry. Do not recreate an already
+    # delivered PR merely because the feature commits are absent from main.
+    if strategy != 'direct-push' and run('git', 'rev-parse', base + '^{tree}') == run('git', 'rev-parse', 'HEAD^{tree}'):
+        print(json.dumps({'status': 'no-content-change', 'repository': key,
+                          'strategy': strategy, 'targetBranch': target,
+                          'commitsAhead': ahead, 'dryRun': dry}))
+        return 0
     if strategy == 'direct-push':
         if subprocess.run(['git', 'merge-base', '--is-ancestor', base, 'HEAD'], capture_output=True).returncode:
             raise ValueError('direct-push requires a fast-forward; integrate the remote target before retrying')

@@ -247,6 +247,38 @@ class ShippingTest(unittest.TestCase):
         self.assertEqual(self.git('branch', '--show-current'), 'main')
         self.assertEqual(self.remote_head(), before)
 
+    def test_squash_delivered_content_does_not_republish(self):
+        self.setup_repo()
+        self.git('checkout', '-b', 'feature')
+        self.commit('feature')
+        feature_head = self.git('rev-parse', 'HEAD')
+        self.git('checkout', '-b', 'integrated', 'origin/main')
+        self.git('merge', '--squash', 'feature')
+        self.git('commit', '-m', 'squashed delivery')
+        self.git('push', 'origin', 'HEAD:main')
+        self.git('checkout', 'feature')
+        bindir = self.root / 'bin'
+        bindir.mkdir()
+        marker = self.root / 'published'
+        adapter = bindir / 'code-ship-provider-example'
+        adapter.write_text('#!/bin/sh\nset -eu\n[ "${1:-}" != --check ] || exit 0\ntouch "$PUBLISH_MARKER"\n')
+        adapter.chmod(0o755)
+        self.env['PATH'] = str(bindir) + ':' + self.env['PATH']
+        self.env['PUBLISH_MARKER'] = str(marker)
+        self.configure('auto-merge', '--provider', 'example')
+        before = self.remote_head()
+        for args in [(), ('--dry-run',)]:
+            result = self.ship(*args)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            receipt = json.loads(result.stdout)
+            self.assertEqual(receipt['status'], 'no-content-change')
+            self.assertGreater(receipt['commitsAhead'], 0)
+            self.assertFalse(marker.exists())
+            self.assertEqual(self.remote_head(), before)
+            self.assertEqual(self.git('rev-parse', 'HEAD'), feature_head)
+            self.assertEqual(self.git('branch', '--show-current'), 'feature')
+            self.assertEqual(self.git('status', '--porcelain'), '')
+
     def test_provider_receives_resolved_context(self):
         self.setup_repo()
         bindir = self.root / 'bin'
