@@ -5,7 +5,14 @@ local paletteModule = require 'private/modules/hyper-rust-palette'
 local appsModule = require 'private/modules/hyper-apps'
 local rolesModule = require 'private/modules/hyper-roles'
 local i18n = require 'private/modules/hyper-i18n'
-local t=i18n.t
+local macLabels = {
+  ['system.awayGuard'] = {en='Enable away guard', zh='开启离开守护'},
+  ['system.awayReturn'] = {en='Away guard: lock and return', zh='离开守护：锁屏并退出（解锁后恢复）'},
+}
+local function t(key, values)
+  local label=macLabels[key]
+  return label and label[i18n.language()] or i18n.t(key, values)
+end
 local function copy(v) return hs.json.decode(hs.json.encode(v)) end
 M.actionTitle=t
 
@@ -52,6 +59,10 @@ function M.new(options)
   self.palette=paletteModule.new()
   self.apps=appsModule.new()
   local data = copy(defaults)
+  if self.options.awayGuard then
+    data.menus.system[#data.menus.system+1]={'g','Enable away guard','system.awayGuard'}
+    data.menus.system[#data.menus.system+1]={'e','Away guard: lock and return','system.awayReturn'}
+  end
   local overrides = hs.settings.get('hyper.apps') or {}
   for id, app in pairs(overrides) do data.apps[id] = app end
   self.roles=rolesModule.new(data,self.apps)
@@ -159,6 +170,12 @@ function M.new(options)
     elseif name=='apps' then
       choices=self.apps:choices()
     elseif name=='all' or name=='help' then
+      if self.options.awayGuard then
+        for _,action in ipairs({'system.awayGuard','system.awayReturn'}) do
+          choices[#choices+1]={text=t(action),subText='H+0 → X',action=action,
+            keywords=macLabels[action].en..' '..macLabels[action].zh..' 离开守护 黑屏 away guard'}
+        end
+      end
       for _,b in ipairs(data.bindings) do
         if b.action~='menu.all' and b.action~='menu.help' then
           local role=b.action:match('^app%.(.+)$')
@@ -417,6 +434,8 @@ function M.new(options)
     elseif kind=='clipboardtarget' and self.options.clipboard then self.options.clipboard.selectTarget(arg)
     elseif kind=='system' then
       if arg=='lock' then hs.caffeinate.lockScreen()
+      elseif arg=='awayGuard' and self.options.awayGuard then self.options.awayGuard:arm()
+      elseif arg=='awayReturn' and self.options.awayGuard then self.options.awayGuard:returnAndLock()
       elseif arg=='audioOutput' or arg=='audioInput' then
         local input=arg=='audioInput'
         local devices=input and hs.audiodevice.allInputDevices() or hs.audiodevice.allOutputDevices()
