@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+source_dir=$(CDPATH='' cd -P "$(dirname "$0")" && pwd)
+cache_dir=${XDG_CACHE_HOME:-"$HOME/.cache"}/away-guard
+binary=$cache_dir/away-guard-display
+mkdir -p "$cache_dir"
+if [ ! -x "$binary" ] || [ -n "$(find "$source_dir/away-guard-display.swift" -newer "$binary" -print)" ]; then
+    temporary=$binary.$$
+    trap 'rm -f "$temporary"' 0 HUP INT TERM
+    /usr/bin/swiftc -O -module-cache-path "$cache_dir/swift-modules" "$source_dir/away-guard-display.swift" -o "$temporary"
+    mv -f "$temporary" "$binary"
+fi
+exec "$binary" "$@"
