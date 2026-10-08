@@ -10,9 +10,10 @@ Hyper+Space 在当前活动窗口所在的显示器打开菜单；子菜单保�
 
 **Hyper+Space** 搜索“离开守护”，或 **H+0 → X → G** 开启离开守护。
 没有常驻菜单栏按钮。保持 MacBook 开盖，建议接电源。
-开启时保存内屏亮度和当前在线外屏的硬件身份，自动禁用这些外屏的信号输出，
+开启时保存普通窗口的位置/大小/屏幕、内屏亮度与自动亮度开关，以及当前在线外屏的硬件身份，
+临时关闭并验证内屏自动亮度，自动禁用这些外屏的信号输出，
 确认只剩内屏后将内屏亮度降到 0；无需拔线。准备完成后会提示“离开守护已开启”。
-外屏禁用通过 macOS 私有 SkyLight 接口实现，系统更新后可能失效；
+外屏禁用与自动亮度开关通过 macOS 私有 SkyLight / DisplayServices 接口实现，系统更新后可能失效；
 准备失败或超时会请求锁屏，认证解锁后尝试恢复。
 如果 Windows App（Microsoft RDP）有原生全屏会话，启动前会先保存其窗口/屏幕身份、
 暂时退出全屏，并等待 Space 切换稳定；保持远程连接，认证解锁并恢复外屏后重新进入全屏。
@@ -30,10 +31,15 @@ Hyper+Space 在当前活动窗口所在的显示器打开菜单；子菜单保�
 不拦截点击/输入，不遮盖桌面，不修改截图内容。
 
 每 300ms 检查内屏亮度和屏幕身份；内屏亮度严格大于 0、无法读取、任意外屏插拔或显示器配置变化、
-保活/屏幕监视进程退出、监视心跳中断或系统睡眠/唤醒时请求锁屏。自动亮度升高同样触发；建议事先关闭自动亮度。
+保活/屏幕监视进程退出、监视心跳中断或系统睡眠/唤醒时请求锁屏。亮度检测不区分手动和系统变化；
+守护期间关闭自动亮度，恢复时还原原开关。
+Hammerspoon 的显示通知会比对屏幕身份、位置、分辨率、缩放和刷新率；未改变这些配置的重复通知不触发锁屏，
+底层显示事件和物理插拔检测仍然生效。
 收到锁屏通知前继续重试；认证解锁后恢复原亮度及本次禁用的外屏、释放保活并退出守护。
 已拔掉的外屏会跳过；恢复失败会保留信息，再次锁屏并解锁可重试。
-禁用外屏会让窗口移到内屏，当前不保存和恢复窗口位置、镜像关系或桌面排列。
+禁用外屏会让窗口移到内屏；恢复外屏后等待布局稳定，再恢复开启前可访问的普通窗口位置和大小，逐个验证并有限重试。
+窗口关闭/进程替换会跳过；原屏幕缺失、布局改变或应用拒绝调整会记录失败并保留快照，不保证所有应用都能完全复原。
+原生全屏 RDP 单独恢复；其他全屏窗口、隐藏/最小化窗口、Space 归属、层叠顺序、镜像关系和桌面排列不在恢复范围内。
 回来时调亮屏幕即可触发此流程，也可在 Hyper+Space 搜索“离开守护：锁屏并退出”，
 或用 **H+0 → X → E**（认证解锁后恢复）。
 守护期间重载/退出 Hammerspoon 会请求锁屏；持久化会话用于下次加载时再次锁屏，
@@ -46,10 +52,18 @@ Hyper+Space 在当前活动窗口所在的显示器打开菜单；子菜单保�
 并实际验证调亮内屏，以及对已禁用外屏拔线、接入新外屏均会锁屏。
 解锁后如自动化仍在发送点击输入，需先暂停任务再恢复人工操作。
 
-验证：`luajit config/hammerspoon/private/tests/away-guard.lua`。
+触发和恢复日志写入 `$XDG_STATE_HOME/away-guard/events.jsonl`（默认 `~/.local/state/away-guard/events.jsonl`），
+超过 5 MiB 保留一份 `.1`；只记录生命周期和事件，不每 300ms 写盘。
+记录时间、触发原因、亮度/屏幕身份、心跳延迟、原生显示事件 ID/flags，以及窗口恢复结果；不记录窗口标题。
+`lock_requested` 表示 guard 请求锁屏；`lock_observed` 的 `system_or_external_lock` 表示先观察到系统/其他来源锁屏，无法推断具体系统策略。
+解锁恢复后提示本次原因；Hammerspoon console 可运行 `workbenchAwayGuard:lastTrigger()` 查看最近一次记录，
+或用 `tail -n 30 ~/.local/state/away-guard/events.jsonl` 查完整过程。显示事件并不等于人为插拔，亮度升高也不等于有人操作。
+
+验证：`luajit config/hammerspoon/private/tests/away-guard.lua` 与 `luajit config/hammerspoon/private/tests/away-guard-windows.lua`。
 辅助进程只读检查：`/bin/sh config/hammerspoon/private/helpers/away-guard-display status`。
 如需在终端恢复，使用会话 `awayGuard.session.external` 中保存的硬件身份：
-`/bin/sh config/hammerspoon/private/helpers/away-guard-display restore '<硬件身份>' ...`。
+`/bin/sh config/hammerspoon/private/helpers/away-guard-display restore '<硬件身份>' ...`；
+如会话保存了 `awayGuard.session.autoBrightness`，加上 `--auto-brightness=on` 或 `--auto-brightness=off` 还原其原值。
 
 ## 图片同步入口
 
