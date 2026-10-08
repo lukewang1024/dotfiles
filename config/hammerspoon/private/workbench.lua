@@ -10,7 +10,9 @@ if toolbox.features().workbench then
   clipboard = require 'private/modules/workbench-clipboard'
 end
 workbenchToolbox = toolbox.new({clipboard = clipboard})
-workbenchAwayGuard = require('private/modules/away-guard').new()
+workbenchAwayGuard = require('private/modules/away-guard').new({
+  remoteWindows=function()return remote.remote_desktop_window_filter:getWindows()end,
+})
 workbenchHyper = require('private/modules/hyper').new({toolbox=workbenchToolbox, clipboard=clipboard, remote=remote, awayGuard=workbenchAwayGuard})
 hs.shutdownCallback = function()
   workbenchAwayGuard:stop()

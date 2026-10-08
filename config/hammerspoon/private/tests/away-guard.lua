@@ -1,5 +1,10 @@
 local stored, locks, brightness, now = nil, 0, 0.4, 100
 local count, allowStart, allowDarken, pending = 3, true, true, nil
+local remoteFullscreen, remoteVisible, remoteMoves = true, false, 0
+local remoteApp = {bundleID=function()return 'com.microsoft.rdc.macos' end}
+local remoteWindow = {title=function()return 'Test RDP session' end,id=function()return 77 end, application=function()return remoteApp end, screen=function()return {getUUID=function()return 'external-screen' end}end,
+  isFullScreen=function()return remoteFullscreen end,setFullScreen=function(_,value)remoteFullscreen=value end,moveToScreen=function()remoteMoves=remoteMoves+1 end}
+remoteApp.allWindows=function()return {remoteWindow} end
 local display = {}
 function display:name() return 'Built-in Retina Display' end
 function display:getUUID() return 'internal' end
@@ -10,10 +15,12 @@ local function watcher(callback)
   return {callback=callback,start=function(self)return self end,stop=function()end}
 end
 local events={screensDidLock=1,screensDidUnlock=2,systemWillSleep=3,systemDidWake=4,new=watcher}
-hs={configdir='/config',
+hs={spaces={windowSpaces=function()return {42}end,allSpaces=function()return {['space-screen']={42}}end},axuielement={applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}} end}end},configdir='/config',
   settings={get=function()return stored end,set=function(_,v)stored=v end,clear=function()stored=nil end},
   alert={show=function()end},printf=function()end,
-  json={decode=function()return pending end},
+  json={decode=function()return pending end,encode=function()return '[]' end},
+  window={get=function(id)if remoteVisible and id==77 then return remoteWindow end end},
+  application={get=function()return remoteVisible and remoteApp end,runningApplications=function()return remoteVisible and {remoteApp} or {} end},
   screen={allScreens=function()return count==0 and {external} or count==1 and {display} or {display,external} end,
     find=function()return display end,watcher={new=watcher}},
   task={new=function(path,callback,stream,args)
@@ -65,7 +72,7 @@ local recovered=module.new();assert(recovered.state=='locking' and recovered.ext
 unlock(recovered,1);assert(recovered.state=='restoreFailed' and stored)
 recovered:returnAndLock();assert(recovered.state=='locking');unlock(recovered);assert(not stored)
 assert(recovered:arm());send(recovered,'snapshot',{internal='internal',external={'external'}})
-now=now+21;recovered:check();assert(recovered.state=='locking');unlock(recovered)
+now=now+26;recovered:check();assert(recovered.state=='locking');unlock(recovered)
 assert(recovered:arm());send(recovered,'snapshot',{internal='wrong',external={}})
 assert(recovered.state=='locking');recovered:stop()
 -- A late setup completion cannot arm after another event requested a lock.
@@ -79,4 +86,32 @@ local dark=module.new();assert(dark:arm());send(dark,'snapshot',{internal='inter
 allowDarken=false;send(dark,'ready');assert(dark.state=='locking' and stored.external[1]=='external')
 allowDarken=true;unlock(dark);dark:stop()
 assert(not stored)
+-- RDP native fullscreen is left BEFORE disabling displays and restored only after unlock.
+remoteVisible=true;remoteFullscreen=true
+local rdp=module.new({remoteWindows=function()return {remoteWindow}end});assert(rdp:arm() and rdp.remotePreparing and not rdp.monitor)
+assert(not remoteFullscreen and stored.remoteWindows[1].id==77 and stored.remoteWindows[1].screen=='space-screen')
+local originalGet=hs.window.get
+hs.window.get=function()return nil end
+remoteApp.allWindows=function()return {} end
+hs.axuielement.applicationElement=function()return {attributeValue=function()return {}end}end -- Only the window-filter cache sees the inactive Space.
+rdp:check();rdp:check();assert(not rdp.monitor)
+rdp:check();assert(rdp.monitor and not rdp.remotePreparing)
+send(rdp,'snapshot',{internal='internal',external={'external'}})
+send(rdp,'progress',{online={1}})
+count=1;send(rdp,'ready');assert(rdp.state=='armed' and brightness==0)
+brightness=0.01;rdp:check();assert(rdp.state=='locking')
+rdp.power.callback(events.screensDidLock);rdp.power.callback(events.screensDidUnlock)
+assert(not remoteFullscreen and rdp.state=='restoring')
+rdp.restorer.callback(0,'','');assert(remoteFullscreen and remoteMoves==1 and not stored)
+rdp:stop();hs.window.get=originalGet
+hs.axuielement.applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}}end}end
+-- A failed/slow fullscreen exit cannot disable screens prematurely.
+remoteFullscreen=true
+local stuck=module.new();assert(stuck:arm());remoteFullscreen=true
+now=now+21;stuck:check();assert(stuck.state=='locking' and not stuck.monitor)
+stuck:stop()
+local restart=module.new();assert(restart.remoteWindows[1].id==77)
+restart.power.callback(events.screensDidLock);restart.power.callback(events.screensDidUnlock)
+restart.restorer.callback(0,'','');assert(remoteFullscreen and not stored)
+restart:stop();remoteVisible=false
 print('Away guard: async setup, persistence, exact positive brightness, display events, topology changes, watchdogs, lock retry, unlock restore, reload recovery and restore failure passed')
