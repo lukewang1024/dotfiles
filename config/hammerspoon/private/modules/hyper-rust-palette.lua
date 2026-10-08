@@ -49,6 +49,9 @@ function M.new()
       self.rid=tostring(hs.timer.absoluteTime())..'-'..self.serial
       self.entries={};self.queue={};self.waiting=false
       self.target=options.target or hs.window.focusedWindow();self.onClose=options.onClose
+      -- Capture before the palette takes focus. Nested pages keep this target.
+      local screen=self.target and self.target:screen() or hs.screen.mainScreen()
+      self.targetDisplay=screen and screen:id()
     end
     self.serial=self.serial+1
     local page='page-'..self.serial
@@ -60,7 +63,7 @@ function M.new()
         shortcut=choice.shortcut or '',keywords=choice.keywords or '',disabled=choice.valid==false,
         navigate=choice.navigate==true,keep_open=choice.navigate==true or options.continuous==true}
     end
-    local request={request_id=self.rid,root=page,menus={[page]={title=options.title or 'Hyper',items=items,quick=options.quick==true}}}
+    local request={request_id=self.rid,target_display=self.targetDisplay,root=page,menus={[page]={title=options.title or 'Hyper',items=items,quick=options.quick==true}}}
     if not push then
       local buffer=''
       local task

@@ -1,8 +1,10 @@
 package.path='config/hammerspoon/?.lua;'..package.path
 local messages,tasks={},{}
 local focused=0
-local target={focus=function()focused=focused+1 end}
+local activeDisplay=2
+local target={focus=function()focused=focused+1 end,screen=function()return {id=function()return activeDisplay end}end}
 hs={fs={attributes=function()return {} end},window={focusedWindow=function()return target end},
+  screen={mainScreen=function()return {id=function()return 1 end}end},
   timer={absoluteTime=function()return 123 end},alert={show=function(message)error(message)end},
   json={encode=function(value)messages[#messages+1]=value;return 'json' end},task={new=function(_,done,stream,args)
     local task={done=done,stream=stream,args=args}
@@ -22,12 +24,14 @@ end)
 local root=messages[1].request
 local rid=palette.rid
 assert(root.menus[root.root].quick and root.menus[root.root].items[1].navigate)
-assert(palette.visible)
+assert(palette.visible and root.target_display==2)
+activeDisplay=3 -- Renderer focus or another screen must not move a child page.
 palette:dispatch({type='shown',request_id=rid})
 palette:dispatch({type='action',request_id='stale',action=root.root..'-1',keep_open=true})
 assert(#messages==1)
 palette:dispatch({type='action',request_id=rid,action=root.root..'-1',keep_open=true})
 assert(messages[2].type=='push' and palette.visible and focused==0)
+assert(messages[2].request.target_display==2)
 palette:dispatch({type='ack',request_id=rid})
 palette:navigate('back');assert(messages[3].action=='back')
 palette:dispatch({type='ack',request_id=rid})
@@ -38,6 +42,7 @@ palette:dispatch({type='action',request_id=rid,action=child.root..'-1'})
 assert(picked==1 and not palette.visible and focused==1 and closed==1)
 palette:show({{text='Resize'}},{continuous=true},function()picked=picked+1 end)
 local request=messages[4].request
+assert(request.target_display==3) -- A fresh invocation follows the active window.
 palette:dispatch({type='shown',request_id=palette.rid})
 palette:dispatch({type='action',request_id=palette.rid,action=request.root..'-1',keep_open=true})
 assert(palette.visible and picked==2)
@@ -50,5 +55,8 @@ palette:closeThen(function()afterClose=afterClose+1 end)
 assert(messages[#messages].action=='close')
 palette:dispatch({type='dismissed',request_id=closeRid,reason='escape'})
 assert(afterClose==1 and not palette.visible)
+hs.window.focusedWindow=function()return nil end
+palette:show({{text='No focused window'}},{},function()end)
+assert(messages[#messages].request.target_display==1)
 palette:stop()
 print('Rust adapter: opaque IDs, dynamic push, ack queue, callbacks, continuous actions and blur passed')
