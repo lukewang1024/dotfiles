@@ -109,13 +109,34 @@ do {
         // Hammerspoon must persist the snapshot before allowing any display changes.
         guard readLine() == "disable" else { throw Failure(message: "No disable authorization") }
         guard try topology() == baseline else { throw Failure(message: "Topology changed before disabling") }
-        try configure(external, enabled: false)
-        let deadline = Date().addingTimeInterval(6)
+        do { try configure(external, enabled: false) } catch {
+            emit("progress", ["online": try online(), "reason": "Initial disable needs verification: \(error)"])
+        }
+        let deadline = Date().addingTimeInterval(15)
         var stable = 0
-        while stable < 3 {
+        var lastOnline: [UInt32]?
+        var lastDisable = Date()
+        while stable < 5 {
             guard try topology() == baseline else { throw Failure(message: "Physical topology changed during setup") }
-            if try online() == [internalID] { stable += 1 } else { stable = 0 }
-            guard Date() < deadline else { throw Failure(message: "External displays stayed online") }
+            let currentOnline = try online()
+            if currentOnline != lastOnline { emit("progress", ["online": currentOnline]); lastOnline = currentOnline }
+            if currentOnline == [internalID] {
+                stable += 1
+            } else {
+                stable = 0
+                guard currentOnline.contains(internalID) else { throw Failure(message: "Internal display went offline") }
+                // Space/fullscreen migrations can partially apply or undo the first
+                // transaction. Converge only during setup and only for saved targets.
+                if Date().timeIntervalSince(lastDisable) >= 0.6 {
+                    for id in external where currentOnline.contains(id) {
+                        do { try configure([id], enabled: false) } catch {
+                            emit("progress", ["online": currentOnline, "reason": "Retry disabling \(id): \(error)"])
+                        }
+                    }
+                    lastDisable = Date()
+                }
+            }
+            guard Date() < deadline else { throw Failure(message: "External displays stayed online: \(currentOnline)") }
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
         }
         guard CGDisplayRegisterReconfigurationCallback(callback, nil) == .success else { throw Failure(message: "Cannot watch display changes") }
