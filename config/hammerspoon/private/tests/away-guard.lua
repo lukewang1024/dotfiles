@@ -1,22 +1,33 @@
+local records, lastTrigger = {}, nil
+package.preload['private/modules/away-guard-log'] = function()
+  return {new=function()return {path='/test/events.jsonl',write=function(event,fields)
+    fields=fields or {};fields.event=event;records[#records+1]=fields;return fields
+  end}end}
+end
+local layoutFailure = false
+package.preload['private/modules/away-guard-windows'] = function()
+  return {new=function()return {capture=function()return {windows={},screens={}}end,stop=function()end,
+    restore=function(_,_,callback) callback({restored=0,closed=0,failed=layoutFailure and {{reason='display_missing'}} or {}}) end}end}
+end
 local stored, locks, brightness, now = nil, 0, 0.4, 100
 local count, allowStart, allowDarken, pending = 3, true, true, nil
 local remoteFullscreen, remoteVisible, remoteMoves = true, false, 0
 local remoteApp = {bundleID=function()return 'com.microsoft.rdc.macos' end}
-local remoteWindow = {title=function()return 'Test RDP session' end,id=function()return 77 end, application=function()return remoteApp end, screen=function()return {getUUID=function()return 'external-screen' end}end,
+local remoteWindow = {frame=function()return {x=0,y=0,w=100,h=100}end,title=function()return 'Test RDP session' end,id=function()return 77 end, application=function()return remoteApp end, screen=function()return {getUUID=function()return 'external-screen' end}end,
   isFullScreen=function()return remoteFullscreen end,setFullScreen=function(_,value)remoteFullscreen=value end,moveToScreen=function()remoteMoves=remoteMoves+1 end}
 remoteApp.allWindows=function()return {remoteWindow} end
-local display = {}
+local display = {fullFrame=function()return {x=0,y=0,w=1728,h=1117}end,currentMode=function()return {}end}
 function display:name() return 'Built-in Retina Display' end
 function display:getUUID() return 'internal' end
 function display:getBrightness() return brightness end
 function display:setBrightness(value) if value ~= 0 or allowDarken then brightness = value end end
-local external = {name=function()return 'External' end,getUUID=function()return 'external' end}
+local external = {fullFrame=function()return {x=-2000,y=0,w=2000,h=1000}end,currentMode=function()return {}end,getBrightness=function()return nil end,name=function()return 'External' end,getUUID=function()return 'external' end}
 local function watcher(callback)
   return {callback=callback,start=function(self)return self end,stop=function()end}
 end
 local events={screensDidLock=1,screensDidUnlock=2,systemWillSleep=3,systemDidWake=4,new=watcher}
 hs={spaces={windowSpaces=function()return {42}end,allSpaces=function()return {['space-screen']={42}}end},axuielement={applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}} end}end},configdir='/config',
-  settings={get=function()return stored end,set=function(_,v)stored=v end,clear=function()stored=nil end},
+  settings={get=function(key)if key=='awayGuard.session' then return stored else return lastTrigger end end,set=function(key,v)if key=='awayGuard.session' then stored=v else lastTrigger=v end end,clear=function()stored=nil end},
   alert={show=function()end},printf=function()end,
   json={decode=function()return pending end,encode=function()return '[]' end},
   window={get=function(id)if remoteVisible and id==77 then return remoteWindow end end},
@@ -41,7 +52,7 @@ local function send(guard,event,fields)
 end
 local function setup(guard)
   assert(guard:arm() and guard.state=='preparing' and brightness==0.4)
-  send(guard,'snapshot',{internal='internal',external={'external'}})
+  send(guard,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
   assert(stored.external[1]=='external' and guard.monitor.input=='disable\n')
   guard.displays.callback();assert(guard.state=='preparing') -- own disable is expected
   count=1;send(guard,'ready');assert(guard.state=='armed' and brightness==0)
@@ -50,17 +61,19 @@ local function unlock(guard,code)
   guard.power.callback(events.screensDidLock)
   guard.power.callback(events.screensDidUnlock)
   assert(guard.state=='restoring' and brightness==0.4 and not guard.keepAwake and not guard.monitor)
-  assert(guard.restorer.args[3]=='external')
+  assert(guard.restorer.args[3]=='external' and guard.restorer.args[4]=='--auto-brightness=on')
   guard.restorer.callback(code or 0,'','')
 end
 local guard=module.new()
 count=0;assert(not guard:arm() and not stored);count=3
 setup(guard);guard:check();assert(locks==0)
 brightness=0.00001;guard:check();assert(guard.state=='locking' and locks==1)
+assert(guard:lastTrigger().reason:find('brightness') and stored.trigger and stored.autoBrightness==true)
 guard:check();assert(locks==2)
 guard.power.callback(events.screensDidLock);guard:check();assert(locks==2)
 unlock(guard);assert(guard.state=='idle' and not stored)
-setup(guard);guard.displays.callback();assert(guard.state=='locking');unlock(guard)
+setup(guard);guard.displays.callback();assert(guard.state=='armed') -- unchanged macOS notification
+count=2;guard.displays.callback();assert(guard.state=='locking');unlock(guard);count=1
 setup(guard);send(guard,'changed',{reason='disabled screen unplugged'});assert(guard.state=='locking');unlock(guard)
 setup(guard);guard.keepAwake.running=false;guard:check();assert(guard.state=='locking');unlock(guard)
 setup(guard);guard.monitor.callback(1,'','');assert(guard.state=='locking');unlock(guard)
@@ -71,21 +84,32 @@ setup(guard);guard:stop();assert(stored and not guard.keepAwake and not guard.mo
 local recovered=module.new();assert(recovered.state=='locking' and recovered.external[1]=='external')
 unlock(recovered,1);assert(recovered.state=='restoreFailed' and stored)
 recovered:returnAndLock();assert(recovered.state=='locking');unlock(recovered);assert(not stored)
-assert(recovered:arm());send(recovered,'snapshot',{internal='internal',external={'external'}})
+assert(recovered:arm());send(recovered,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
 now=now+26;recovered:check();assert(recovered.state=='locking');unlock(recovered)
 assert(recovered:arm());send(recovered,'snapshot',{internal='wrong',external={}})
 assert(recovered.state=='locking');recovered:stop()
 -- A late setup completion cannot arm after another event requested a lock.
 stored=nil;brightness=0.4
 local late=module.new();assert(late:arm())
-send(late,'snapshot',{internal='internal',external={'external'}})
+send(late,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
 late.power.callback(events.systemWillSleep);send(late,'ready');assert(late.state=='locking' and brightness==0.4)
 unlock(late);late:stop()
 -- Failed darkening fails closed and keeps the external restore snapshot.
-local dark=module.new();assert(dark:arm());send(dark,'snapshot',{internal='internal',external={'external'}})
+local dark=module.new();assert(dark:arm());send(dark,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
 allowDarken=false;send(dark,'ready');assert(dark.state=='locking' and stored.external[1]=='external')
 allowDarken=true;unlock(dark);dark:stop()
 assert(not stored)
+guard=module.new();setup(guard);layoutFailure=true;unlock(guard);assert(guard.state=='restoreFailed' and stored.windowLayout)
+layoutFailure=false;guard:returnAndLock();unlock(guard);assert(not stored)
+setup(guard);guard.power.callback(events.screensDidLock)
+assert(guard:lastTrigger().reason=='system_or_external_lock')
+unlock(guard);assert(not stored)
+-- False is a saved setting, not an absent setting.
+assert(guard:arm());send(guard,'snapshot',{internal='internal',external={'external'},autoBrightness=false})
+assert(stored.autoBrightness==false)
+guard.power.callback(events.screensDidLock);guard.power.callback(events.screensDidUnlock)
+assert(guard.restorer.args[4]=='--auto-brightness=off')
+guard.restorer.callback(0,'','');assert(not stored)
 -- RDP native fullscreen is left BEFORE disabling displays and restored only after unlock.
 remoteVisible=true;remoteFullscreen=true
 local rdp=module.new({remoteWindows=function()return {remoteWindow}end});assert(rdp:arm() and rdp.remotePreparing and not rdp.monitor)
@@ -96,13 +120,18 @@ remoteApp.allWindows=function()return {} end
 hs.axuielement.applicationElement=function()return {attributeValue=function()return {}end}end -- Only the window-filter cache sees the inactive Space.
 rdp:check();rdp:check();assert(not rdp.monitor)
 rdp:check();assert(rdp.monitor and not rdp.remotePreparing)
-send(rdp,'snapshot',{internal='internal',external={'external'}})
+send(rdp,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
 send(rdp,'progress',{online={1}})
 count=1;send(rdp,'ready');assert(rdp.state=='armed' and brightness==0)
 brightness=0.01;rdp:check();assert(rdp.state=='locking')
 rdp.power.callback(events.screensDidLock);rdp.power.callback(events.screensDidUnlock)
 assert(not remoteFullscreen and rdp.state=='restoring')
+local validFrame=remoteWindow.frame
+remoteWindow.frame=function()return {w=0,h=0}end
+local replacement=setmetatable({id=function()return 78 end,frame=validFrame},{__index=remoteWindow})
+hs.axuielement.applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return replacement end}}end}end
 rdp.restorer.callback(0,'','');assert(remoteFullscreen and remoteMoves==1 and not stored)
+remoteWindow.frame=validFrame
 rdp:stop();hs.window.get=originalGet
 hs.axuielement.applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}}end}end
 -- A failed/slow fullscreen exit cannot disable screens prematurely.

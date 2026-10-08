@@ -17,6 +17,30 @@ func symbol<T>(_ name: String, _: T.Type) throws -> T {
     }
     return unsafeBitCast(pointer, to: T.self)
 }
+// Same DisplayServices SPI used by Lunar; resolve dynamically for OS compatibility.
+let brightnessFramework = dlopen("/System/Library/PrivateFrameworks/DisplayServices.framework/DisplayServices", RTLD_LAZY)
+func autoBrightness(_ id: UInt32, set value: Bool? = nil) throws -> Bool {
+    typealias Get = @convention(c) (UInt32, UnsafeMutablePointer<Bool>) -> Int32
+    typealias Set = @convention(c) (UInt32, Bool) -> Int32
+    guard let brightnessFramework,
+          let getPointer = dlsym(brightnessFramework, "DisplayServicesAmbientLightCompensationEnabled"),
+          let setPointer = dlsym(brightnessFramework, "DisplayServicesEnableAmbientLightCompensation") else {
+        throw Failure(message: "Auto-brightness API unavailable")
+    }
+    let get = unsafeBitCast(getPointer, to: Get.self)
+    let set = unsafeBitCast(setPointer, to: Set.self)
+    if let value, set(id, value) != 0 { throw Failure(message: "Cannot set auto-brightness") }
+    var enabled = false
+    guard get(id, &enabled) == 0 else { throw Failure(message: "Cannot read auto-brightness") }
+    if let value, enabled != value { throw Failure(message: "Auto-brightness verification failed") }
+    return enabled
+}
+func internalDisplay() throws -> UInt32 {
+    guard let id = try displays().first(where: { CGDisplayIsBuiltin($0) != 0 }) else {
+        throw Failure(message: "Internal display unavailable")
+    }
+    return id
+}
 typealias List = @convention(c) (UInt32, UnsafeMutablePointer<UInt32>?, UnsafeMutablePointer<UInt32>?) -> Int32
 typealias Enable = @convention(c) (CGDisplayConfigRef?, UInt32, Bool) -> Int32
 func displays() throws -> [UInt32] {
@@ -86,16 +110,21 @@ func restore(_ wanted: [String]) throws {
     throw Failure(message: "External displays did not return online")
 }
 var armed = false
-let callback: CGDisplayReconfigurationCallBack = { _, flags, _ in
-    if armed && !flags.contains(.beginConfigurationFlag) { emit("changed", ["reason": "display reconfiguration"]) }
+let callback: CGDisplayReconfigurationCallBack = { id, flags, _ in
+    if armed && !flags.contains(.beginConfigurationFlag) { emit("changed", ["reason": "display reconfiguration", "displayID": id, "flags": flags.rawValue]) }
 }
 do {
     let args = Array(CommandLine.arguments.dropFirst())
     switch args.first {
     case "status":
-        emit("status", ["topology": try topology(), "online": try online()])
+        emit("status", ["topology": try topology(), "online": try online(), "autoBrightness": try autoBrightness(internalDisplay())])
     case "restore":
-        try restore(Array(args.dropFirst())); emit("restored")
+        let identities = args.dropFirst().filter { !$0.hasPrefix("--auto-brightness=") }
+        try restore(Array(identities))
+        if let setting = args.first(where: { $0.hasPrefix("--auto-brightness=") }) {
+            _ = try autoBrightness(internalDisplay(), set: setting == "--auto-brightness=on")
+        }
+        emit("restored")
     case "watch":
         let ids = try displays()
         guard let internalID = ids.first(where: { CGDisplayIsBuiltin($0) != 0 && CGDisplayIsOnline($0) != 0 }) else {
@@ -105,10 +134,13 @@ do {
         let external = ids.filter { CGDisplayIsBuiltin($0) == 0 && CGDisplayIsOnline($0) != 0 }
         let saved = external.map { identity($0) }
         _ = try symbol("SLSConfigureDisplayEnabled", Enable.self)
-        emit("snapshot", ["external": saved, "internal": try uuid(internalID)])
+        let automatic = try autoBrightness(internalID)
+        emit("snapshot", ["external": saved, "internal": try uuid(internalID), "autoBrightness": automatic])
         // Hammerspoon must persist the snapshot before allowing any display changes.
         guard readLine() == "disable" else { throw Failure(message: "No disable authorization") }
         guard try topology() == baseline else { throw Failure(message: "Topology changed before disabling") }
+        _ = try autoBrightness(internalID, set: false)
+        emit("auto_brightness_disabled", ["previous": automatic])
         do { try configure(external, enabled: false) } catch {
             emit("progress", ["online": try online(), "reason": "Initial disable needs verification: \(error)"])
         }
@@ -145,7 +177,7 @@ do {
         let timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { _ in
             do {
                 if try topology() != baseline || online() != [internalID] {
-                    emit("changed", ["reason": "physical or online topology changed"])
+                    emit("changed", ["reason": "physical or online topology changed", "online": try online(), "topology": try topology()])
                 }
                 emit("heartbeat")
             } catch { emit("error", ["reason": String(describing: error)]); exit(1) }
