@@ -148,55 +148,49 @@ class ShippingTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)['policy']['provider'], 'github')
 
-    def test_builtin_github_auto_merge_polls_until_merged(self):
-        statuses = iter([
-            {'state': 'OPEN', 'headRefOid': 'head-sha', 'statusCheckRollup': []},
-            {'state': 'MERGED', 'headRefOid': 'head-sha',
-             'mergeCommit': {'oid': 'merge-sha'}, 'statusCheckRollup': []},
-        ])
+    def test_builtin_github_merge_waits_for_all_checks_and_exact_head(self):
+        pending = {'state': 'OPEN', 'headRefOid': 'head-sha',
+                   'statusCheckRollup': [{'status': 'IN_PROGRESS', 'conclusion': ''}]}
+        ready = {**pending, 'statusCheckRollup': [{'status': 'COMPLETED', 'conclusion': 'SUCCESS'}]}
+        statuses = iter([{**pending, 'statusCheckRollup': []}, pending, ready,
+                         {**ready, 'state': 'MERGED', 'mergeCommit': {'oid': 'merge-sha'}}])
         calls = []
-
         def fake_run(*args, capture=True):
             calls.append(args)
-            if args[:3] == ('gh', 'pr', 'view'):
-                return json.dumps(next(statuses))
-            return ''
+            return json.dumps(next(statuses)) if args[:3] == ('gh', 'pr', 'view') else ''
+        with patch.object(ship_module, 'run', side_effect=fake_run), patch.object(ship_module.time, 'sleep'):
+            result = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha', 'Title', 'Body', 1, 10)
+        merges = [c for c in calls if c[:3] == ('gh', 'pr', 'merge')]
+        self.assertEqual(result['mergeCommit']['oid'], 'merge-sha')
+        self.assertEqual(len(merges), 1)
+        self.assertEqual(calls.index(merges[0]), 3)
+        self.assertIn('--match-head-commit', merges[0])
+        self.assertNotIn('--auto', merges[0])
 
-        with patch.object(ship_module, 'run', side_effect=fake_run), \
-             patch.object(ship_module.time, 'sleep') as sleep:
-            status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha',
-                                                   'Ship it', 'Description', 5, 30)
-        self.assertEqual(status['mergeCommit']['oid'], 'merge-sha')
-        self.assertEqual(calls[0][:5], ('gh', 'pr', 'merge', '7', '--repo'))
-        self.assertNotIn('--match-head-commit', calls[0])
-        self.assertIn('--subject', calls[0])
-        self.assertIn('--body', calls[0])
-        sleep.assert_called_once_with(5)
-
-    def test_builtin_github_auto_merge_retries_transient_merge_error(self):
-        statuses = iter([
-            {'state': 'MERGED', 'headRefOid': 'head-sha',
-             'mergeCommit': {'oid': 'merge-sha'}, 'statusCheckRollup': []},
-        ])
-        merge_attempts = []
-
+    def test_builtin_github_merge_does_not_replay_unknown_mutation(self):
+        ready = {'state': 'OPEN', 'headRefOid': 'head-sha',
+                 'statusCheckRollup': [{'status': 'COMPLETED', 'conclusion': 'SUCCESS'}]}
+        statuses = iter([ready, {**ready, 'state': 'MERGED'}])
+        attempts = []
         def fake_run(*args, capture=True):
             if args[:3] == ('gh', 'pr', 'merge'):
-                merge_attempts.append(args)
-                if len(merge_attempts) == 1:
-                    raise subprocess.CalledProcessError(1, args)
-                return ''
-            if args[:3] == ('gh', 'pr', 'view'):
-                return json.dumps(next(statuses))
-            return ''
+                attempts.append(args)
+                raise subprocess.CalledProcessError(1, args)
+            return json.dumps(next(statuses))
+        with patch.object(ship_module, 'run', side_effect=fake_run), patch.object(ship_module.time, 'sleep'):
+            ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha', '', '', 1, 10)
+        self.assertEqual(len(attempts), 1)
 
-        with patch.object(ship_module, 'run', side_effect=fake_run), \
-             patch.object(ship_module.time, 'sleep') as sleep:
-            status = ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha',
-                                                   'Ship it', 'Description', 5, 30)
-        self.assertEqual(status['mergeCommit']['oid'], 'merge-sha')
-        self.assertEqual(len(merge_attempts), 2)
-        self.assertEqual(sleep.call_count, 1)
+    def test_builtin_github_merge_refuses_failed_changed_or_unverified_merged(self):
+        for status in [
+            {'state': 'OPEN', 'headRefOid': 'other', 'statusCheckRollup': []},
+            {'state': 'OPEN', 'headRefOid': 'head-sha', 'statusCheckRollup': [{'conclusion': 'FAILURE'}]},
+            {'state': 'MERGED', 'headRefOid': 'head-sha', 'statusCheckRollup': []},
+        ]:
+            with self.subTest(status=status), patch.object(ship_module, 'run', return_value=json.dumps(status)) as run:
+                with self.assertRaises(ValueError):
+                    ship_module.github_auto_merge('Owner/Repo', '7', 'head-sha', '', '', 1, 10)
+                self.assertEqual(run.call_count, 1)
 
     def test_saved_identity_contains_no_credentials(self):
         self.setup_repo()

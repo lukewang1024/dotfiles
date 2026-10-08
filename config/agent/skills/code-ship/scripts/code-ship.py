@@ -45,39 +45,48 @@ def is_github_host(host):
 
 
 def github_auto_merge(repo, pull, head, title, description, poll_interval, poll_timeout):
-    # GitHub's auto-merge mutation rejects --match-head-commit for some
-    # repositories even when the pull request is clean. The head SHA is still
-    # checked while polling below, before treating a merge as ours.
-    args = ['gh', 'pr', 'merge', pull, '--repo', repo, '--auto', '--squash']
-    if title:
-        args.extend(['--subject', title])
-    if description:
-        args.extend(['--body', description])
-    try:
-        run(*args, capture=False)
-    except subprocess.CalledProcessError:
-        # gh may return non-zero while GitHub is still applying the mutation.
-        # Retry once before surfacing a real failure to the caller.
-        time.sleep(min(poll_interval, 5))
-        run(*args, capture=False)
     waited = 0
+    submitted = False
     while waited < poll_timeout:
         status = json.loads(run('gh', 'pr', 'view', pull, '--repo', repo,
                                 '--json', 'state,headRefOid,mergeCommit,statusCheckRollup,autoMergeRequest'))
-        if status.get('state') == 'MERGED':
-            return status
-        if status.get('state') != 'OPEN' or status.get('headRefOid') != head:
-            raise ValueError('PR closed or head changed; inspect before continuing')
+        if status.get('headRefOid') != head:
+            raise ValueError('PR head changed; inspect before continuing')
         checks = status.get('statusCheckRollup') or []
         failures = [check for check in checks if check.get('conclusion') in
-                     ('FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED') or
-                     check.get('state') in ('FAILURE', 'ERROR')]
+                    ('FAILURE', 'CANCELLED', 'TIMED_OUT', 'ACTION_REQUIRED', 'STARTUP_FAILURE', 'STALE')
+                    or check.get('state') in ('FAILURE', 'ERROR')]
         if failures:
-            names = ', '.join(check.get('name', check.get('context', '?')) for check in failures)
-            raise ValueError('PR checks failed; auto-merge remains blocked: ' + names)
+            raise ValueError('PR checks failed; merge prohibited: ' + ', '.join(
+                check.get('name', check.get('context', '?')) for check in failures))
+        ready = bool(checks) and all(
+            (check.get('status') == 'COMPLETED' and check.get('conclusion') in
+             ('SUCCESS', 'SKIPPED', 'NEUTRAL')) or check.get('state') == 'SUCCESS'
+            for check in checks)
+        if status.get('state') == 'MERGED':
+            if not ready:
+                raise ValueError('PR merged without completed checks; release prohibited')
+            return status
+        if status.get('state') != 'OPEN':
+            raise ValueError('PR closed; inspect before continuing')
+        if ready and not submitted:
+            # --auto can merge immediately on repositories without required checks.
+            # Observe all checks first and bind the mutation to the verified head.
+            args = ['gh', 'pr', 'merge', pull, '--repo', repo, '--squash',
+                    '--match-head-commit', head]
+            if title:
+                args.extend(['--subject', title])
+            if description:
+                args.extend(['--body', description])
+            submitted = True
+            try:
+                run(*args, capture=False)
+            except subprocess.CalledProcessError:
+                # Outcome may be unknown. Observe this PR; never replay merge.
+                pass
         time.sleep(poll_interval)
         waited += poll_interval
-    raise ValueError('PR has not merged before timeout; GitHub auto-merge remains enabled')
+    raise ValueError('PR merge observation timed out; inspect this PR before continuing')
 
 
 def config_path():
