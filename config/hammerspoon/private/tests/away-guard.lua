@@ -1,4 +1,6 @@
+package.path='config/hammerspoon/?.lua;'..package.path
 local records, lastTrigger = {}, nil
+local preferred, lastAlert = {'en-US'}, nil
 package.preload['private/modules/away-guard-log'] = function()
   return {new=function()return {path='/test/events.jsonl',write=function(event,fields)
     fields=fields or {};fields.event=event;records[#records+1]=fields;return fields
@@ -26,9 +28,9 @@ local function watcher(callback)
   return {callback=callback,start=function(self)return self end,stop=function()end}
 end
 local events={screensDidLock=1,screensDidUnlock=2,systemWillSleep=3,systemDidWake=4,new=watcher}
-hs={spaces={windowSpaces=function()return {42}end,allSpaces=function()return {['space-screen']={42}}end},axuielement={applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}} end}end},configdir='/config',
+hs={host={locale={preferredLanguages=function()return preferred end}},spaces={windowSpaces=function()return {42}end,allSpaces=function()return {['space-screen']={42}}end},axuielement={applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}} end}end},configdir='/config',
   settings={get=function(key)if key=='awayGuard.session' then return stored else return lastTrigger end end,set=function(key,v)if key=='awayGuard.session' then stored=v else lastTrigger=v end end,clear=function()stored=nil end},
-  alert={show=function()end},printf=function()end,
+  alert={show=function(message)lastAlert=message end},printf=function()end,
   json={decode=function()return pending end,encode=function()return '[]' end},
   window={get=function(id)if remoteVisible and id==77 then return remoteWindow end end},
   application={get=function()return remoteVisible and remoteApp end,runningApplications=function()return remoteVisible and {remoteApp} or {} end},
@@ -143,4 +145,7 @@ local restart=module.new();assert(restart.remoteWindows[1].id==77)
 restart.power.callback(events.screensDidLock);restart.power.callback(events.screensDidUnlock)
 restart.restorer.callback(0,'','');assert(remoteFullscreen and not stored)
 restart:stop();remoteVisible=false
+restart:returnAndLock();assert(lastAlert=='Away guard is not active.')
+preferred={'zh-Hans'}
+restart:returnAndLock();assert(lastAlert=='离开守护尚未开启。')
 print('Away guard: async setup, persistence, exact positive brightness, display events, topology changes, watchdogs, lock retry, unlock restore, reload recovery and restore failure passed')

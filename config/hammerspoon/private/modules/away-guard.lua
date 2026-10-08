@@ -1,5 +1,6 @@
 -- Opt-in guard for unattended GUI automation. Never consumes mouse/key events.
 local M = {}
+local i18n = require('private/modules/away-guard-i18n')
 function M.new(options)
   options = options or {}
   local self = {state = 'idle', external = {}}
@@ -9,7 +10,7 @@ function M.new(options)
   local marker = 'awayGuard.session'
   local saved = hs.settings.get(marker)
   local helper = hs.configdir .. '/private/helpers/away-guard-display'
-  local function notify(message) hs.alert.show(message, 4) end
+  local function notify(key, values) hs.alert.show(i18n.t(key, values), 4) end
   local function persist()
     hs.settings.set(marker, {screen = self.screen, brightness = self.originalBrightness, external = self.external, remoteWindows = self.remoteWindows, windowLayout = self.windowLayout, trigger = self.trigger, autoBrightness = self.autoBrightness})
   end
@@ -136,28 +137,28 @@ function M.new(options)
           if not ok then
             self.state = 'restoreFailed'
             audit.write('restore_failed', {reason=tostring(error),stage='rdp_fullscreen'})
-            notify('RDP 全屏恢复失败，已保留恢复信息；再次锁屏并解锁可重试。')
+            notify('rdpRestoreFailed')
             return
           end
           if #report.failed > 0 then
             self.state = 'restoreFailed'
-            notify('部分窗口未能恢复，已记录原因并保留快照；再次锁屏并解锁可重试。')
+            notify('windowsRestoreFailed')
             return
           end
           hs.settings.clear(marker)
           self.state = 'idle'
           audit.write('restore_complete', {reason=self.trigger and self.trigger.reason})
-          notify('已恢复亮度、外屏和窗口。锁屏原因：' .. (self.trigger and self.trigger.reason or '系统锁屏'))
+          notify('restored', {reason=i18n.reason(self.trigger and self.trigger.reason)})
         end)
       else
         self.state = 'restoreFailed'
         audit.write('restore_failed', {stage='displays',code=code,stdout=stdout,stderr=stderr})
-        notify('外屏恢复失败，已保留恢复信息；再次锁屏并解锁可重试。')
+        notify('displaysRestoreFailed')
       end
     end, args)
     if not self.restorer or not self.restorer:start() then
       self.restorer = nil; self.state = 'restoreFailed'
-      notify('无法启动外屏恢复，已保留恢复信息。')
+      notify('restoreStartFailed')
     end
   end
   function self:check()
@@ -223,7 +224,7 @@ function M.new(options)
           self.state = 'armed'
           audit.write('armed', {screen=self.screen,external=self.external})
           self:check()
-          if self.state == 'armed' then notify('离开守护已开启：外屏已禁用，内屏亮度为 0。') end
+          if self.state == 'armed' then notify('armed') end
         elseif event.event == 'auto_brightness_disabled' then
           audit.write('auto_brightness_disabled', {previous=event.previous})
         elseif event.event == 'progress' then
@@ -239,21 +240,21 @@ function M.new(options)
     end, {helper, 'watch'})
     self.monitor = monitor
     if not self.monitor or not self.monitor:start() then
-      self.monitor = nil; restore(); notify('无法启动外屏控制，未开启守护。'); return false
+      self.monitor = nil; restore(); notify('monitorFailed'); return false
     end
     return true
   end
   function self:arm()
-    if self.state ~= 'idle' then notify('离开守护已开启；调亮屏幕并认证解锁后退出。'); return false end
+    if self.state ~= 'idle' then notify('alreadyArmed'); return false end
     local screen
     for _,candidate in ipairs(hs.screen.allScreens()) do
       if candidate:name():find('Built%-in') then screen = candidate; break end
     end
-    if not screen then notify('请打开 MacBook 内屏后再开启守护。'); return false end
+    if not screen then notify('openLid'); return false end
     local brightness = screen:getBrightness()
-    if brightness == nil then notify('无法读取内屏亮度，未开启守护。'); return false end
+    if brightness == nil then notify('brightnessUnavailable'); return false end
     local ok, snapshot = pcall(function() return layout:capture() end)
-    if not ok then audit.write('capture_failed', {reason=tostring(snapshot)});notify('无法保存窗口布局，未开启守护。');return false end
+    if not ok then audit.write('capture_failed', {reason=tostring(snapshot)});notify('captureFailed');return false end
     self.windowLayout, self.trigger, self.autoBrightness, self.nativeIncident = snapshot, nil, nil, false
     self.unchangedDisplayLogged = false
     self.screen, self.originalBrightness, self.external = screen:getUUID(), brightness, {}
@@ -274,14 +275,14 @@ function M.new(options)
       if self.state == 'armed' or self.state == 'preparing' then trip('keep-awake process exited') end
     end, {'-d', '-i'})
     self.keepAwake = keepAwake
-    if not self.keepAwake or not self.keepAwake:start() then release(); notify('无法阻止休眠，未开启守护。'); return false end
+    if not self.keepAwake or not self.keepAwake:start() then release(); notify('keepAwakeFailed'); return false end
     self.state = 'preparing'
     audit.write('preparing', {windows=#self.windowLayout.windows,rdpWindows=#self.remoteWindows})
     self.deadline = hs.timer.secondsSinceEpoch() + 20
     persist()
     if self.remotePreparing then
       hs.printf('[away-guard] Leaving %d RDP fullscreen window(s) before display changes', #self.remoteWindows)
-      notify('正在准备离开守护：先退出 RDP 全屏，再禁用外屏。')
+      notify('preparingRdp')
       for _,savedWindow in ipairs(self.remoteWindows) do
         local window = remoteWindow(savedWindow)
         if window then window:setFullScreen(false) end
@@ -322,7 +323,7 @@ function M.new(options)
   end):start()
   function self:lastTrigger() return hs.settings.get('awayGuard.lastTrigger') end
   function self:returnAndLock()
-    if self.state == 'idle' then notify('离开守护尚未开启。'); return end
+    if self.state == 'idle' then notify('inactive'); return end
     trip('manual return')
   end
   function self:stop()
