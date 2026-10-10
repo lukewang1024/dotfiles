@@ -192,6 +192,27 @@ class ContractTests(unittest.TestCase):
         adapter = (generate.ROOT / 'config/autohotkey/lib/hyper.ahk').read_bytes()
         self.assertTrue(adapter.startswith(b'\xef\xbb\xbf'))
 
+    def test_platform_outputs_keep_shared_actions_and_only_native_config(self):
+        original = copy.deepcopy(self.data)
+        for platform in ('mac', 'windows', 'linux'):
+            filtered = generate.platform_config(self.data, platform)
+            self.assertEqual(filtered['roles'], self.data['roles'])
+            self.assertEqual(filtered['menus'], self.data['menus'])
+            self.assertEqual(filtered['bindings'], self.data['bindings'])
+            self.assertEqual(set(filtered['apps']), set(self.data['apps']))
+            self.assertEqual(filtered['defaults'], {platform: self.data['defaults'][platform]})
+            for name, app in filtered['apps'].items():
+                self.assertEqual(app.get(platform), self.data['apps'][name].get(platform))
+                self.assertFalse(({'mac', 'windows', 'linux'} - {platform}) & app.keys())
+        self.assertEqual(self.data, original)
+        outputs = generate.outputs(self.data)
+        ahk = outputs['config/autohotkey/lib/hyper-generated.ahk']
+        lua = outputs['config/hammerspoon/private/modules/hyper-generated.lua']
+        self.assertNotIn('["mac"]', ahk)
+        self.assertNotIn('["linux"]', ahk)
+        self.assertNotIn('["windows"]=', lua)
+        self.assertNotIn('["linux"]=', lua)
+
     def test_generated_input_does_not_spawn_python(self):
         output = generate.outputs(self.data)['config/hyper/i3.conf']
         self.assertIn('Mod3+Shift+h exec --no-startup-id xdotool mousemove_relative -- -10 0', output)
