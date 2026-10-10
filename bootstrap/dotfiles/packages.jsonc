@@ -246,13 +246,13 @@
         "iterm2",                         // Terminal emulator as alternative to Apple's Terminal app
         "jordanbaird-ice",                // Menu bar manager
         "karabiner-elements",             // Keyboard customiser
-        "macpass",                        // Open-source, KeePass-client and password manager
+        "keepassxc",                      // Password manager app
         "maczip",                         // Utility to open, create and modify archive files
         "mos",                            // Smooths scrolling and set mouse scroll directions independently
         "obsidian",                       // Knowledge base that works on top of a local folder of plain text Markdown files
         "oomol-lab/tap/lockime",          // Menu-bar app that locks the keyboard input source
         "pika",                           // Colour picker for colours onscreen
-        "rectangle",                      // Move and resize windows using keyboard shortcuts or snap areas
+        "resilio-sync",                   // File sync and share software
         "shottr",                         // Screenshot measurement and annotation tool
         "snipaste",                       // Snip or pin screenshots
         "squirrel",                       // Rime input method engine
@@ -383,8 +383,8 @@
         "qutebrowser",                             // Keyboard-driven, vim-like browser based on PyQt5
         "rapidapi",                                // HTTP client that helps testing and describing APIs
         "raycast",                                 // Control your tools with a few keystrokes
+        "rectangle",                               // Move and resize windows using keyboard shortcuts or snap areas
         "redisinsight",                            // GUI for streamlined Redis application development
-        "resilio-sync",                            // File sync and share software
         "sequel-ace",                              // MySQL/MariaDB database management
         "shifty",                                  // Menu bar app that provides more control over Night Shift
         "skim",                                    // PDF reader and note-taking application
@@ -451,7 +451,6 @@
     "pkgs": [
       [
         "anyenv",     // All in one for **env
-        "deno",       // Secure runtime for JavaScript and TypeScript
         "go",         // Open source programming language to build simple/reliable/efficient software
         "node",       // Platform built on V8 to build network applications
         "php",        // General-purpose scripting language
@@ -1229,7 +1228,6 @@
         "cloc",          // Count Lines of Code - Tool that counts lines of source code in many languages
         "cowsay",        // Fun command-line program that generates ASCII pictures of a cow saying text
         "csvlens",       // Command line csv viewer
-        "deno",          // Modern JavaScript and TypeScript runtime built on V8
         "duf",           // Disk Usage/Free utility - Modern replacement for 'df'
         "dum",           // Simple duplicate file finder
         "far",           // File and Archive manager - Advanced file manager for Windows

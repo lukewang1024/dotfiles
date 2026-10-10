@@ -45,7 +45,7 @@
     "music":{"title":"Music", "mac":"com.apple.Music", "windows":{"exe":"foobar2000.exe","launch":"foobar2000.exe"}, "linux":{"i3":{"activation":"summon"},"class":"lx-music-desktop","argv":["gtk-launch","lx-music-desktop"]}},
     "qqmusic":{"title":"QQ Music", "mac":"com.tencent.QQMusicMac", "windows":{"exe":"QQMusic.exe","launch":"QQMusic.exe"}, "linux":{"i3":{"activation":"summon"},"class":"qqmusic","argv":["qqmusic"]}},
     "spotify":{"title":"Spotify", "mac":"com.spotify.client", "windows":{"exe":"Spotify.exe","launch":"Spotify.exe"}, "linux":{"class":"Spotify","argv":["spotify"]}},
-    "passwords":{"title":"Passwords", "mac":"com.hicknhacksoftware.MacPass", "windows":{"exe":"KeePassXC.exe","launch":"keepassxc.exe"}, "linux":{"i3":{"activation":"summon"},"class":"keepassxc","argv":["keepassxc"]}},
+    "passwords":{"title":"KeePassXC", "mac":"org.keepassxc.keepassxc", "windows":{"exe":"KeePassXC.exe","launch":"keepassxc.exe"}, "linux":{"i3":{"activation":"summon"},"class":"keepassxc","argv":["keepassxc"]}},
     "nomachine":{"title":"NoMachine", "mac":"com.nomachine.nxdock", "windows":{"exe":"nxplayer.exe","launch":"nxplayer.exe"}, "linux":{"class":"Nxplayer","argv":["nxplayer"]}},
     "windows-app":{"title":"Windows App", "mac":"com.microsoft.rdc.macos"},
     "reeder":{"title":"Reeder", "mac":"com.reederapp.macOS"},

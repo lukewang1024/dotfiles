@@ -5,6 +5,9 @@ layouts, and menu actions; `locales.json` holds the shared English/Chinese UI
 catalog. Native input tools feed platform action adapters; H+0 uses the required
 resident Rust palette through a Python bridge. Generated shortcut tables remain
 committed, while H+0 additionally needs Python and the pinned renderer artifact.
+Generated Lua and AutoHotkey tables retain shared bindings and metadata, but
+include only their platform's application targets and defaults. Linux adapters
+read the shared `keys.json` directly.
 
 ## Daily use
 
