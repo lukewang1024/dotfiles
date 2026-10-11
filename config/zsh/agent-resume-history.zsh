@@ -149,6 +149,12 @@ _agent_run_and_remember() {
   setopt localtraps
   local agent=$1 executable=$2 resume_prefix=$3 session_root=$4
   shift 4
+  # Resolve external commands without recursing into these shell functions.
+  local command_name=$executable
+  executable=$(whence -p "$command_name") || {
+    print -u2 -- "$command_name: executable not found in PATH"
+    return 127
+  }
   local session_cwd=$PWD marker exit_status=0 interrupted=0 session_id= marker_mtime escaped_cwd opencode_db
 
   _agent_pending_resume=
@@ -221,30 +227,25 @@ _agent_codex_run() {
   _agent_run_and_remember codex "$executable" "$resume_prefix" "${CODEX_HOME:-$HOME/.codex}/sessions" "$@"
 }
 codex() {
-  local executable
-  executable=$(whence -p codex) || {
-    print -u2 -- 'codex: executable not found in PATH'
-    return 127
-  }
-  _agent_codex_run "$executable" codex "$@"
+  _agent_codex_run codex codex "$@"
 }
 codex-budget() {
-  _agent_codex_run "$HOME/.local/bin/codex-budget" codex-budget "$@"
+  _agent_codex_run codex-budget codex-budget "$@"
 }
 codex-expert() {
-  _agent_codex_run "$HOME/.local/bin/codex-expert" codex-expert "$@"
+  _agent_codex_run codex-expert codex-expert "$@"
 }
 codex-yolo() {
-  _agent_codex_run "$HOME/.local/bin/codex-yolo" codex-yolo "$@"
+  _agent_codex_run codex-yolo codex-yolo "$@"
 }
 codex-team() {
-  _agent_codex_run "$HOME/.local/bin/codex-team" codex-team "$@"
+  _agent_codex_run codex-team codex-team "$@"
 }
 codex-team-budget() {
-  _agent_codex_run "$HOME/.local/bin/codex-team-budget" codex-team-budget "$@"
+  _agent_codex_run codex-team-budget codex-team-budget "$@"
 }
 codex-team-expert() {
-  _agent_codex_run "$HOME/.local/bin/codex-team-expert" codex-team-expert "$@"
+  _agent_codex_run codex-team-expert codex-team-expert "$@"
 }
 claude() {
   local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'
@@ -263,7 +264,7 @@ claude() {
   if [ "$permission_mode" = auto ]; then
     set -- --permission-mode auto "$@"
   fi
-  _agent_run_and_remember claude "$HOME/.local/bin/claude" "$resume_prefix" '' "$@"
+  _agent_run_and_remember claude claude "$resume_prefix" '' "$@"
 }
 traex() {
   # TraeX persists its approval reviewer in the session. Injecting a default
@@ -279,22 +280,18 @@ traex() {
         ;;
     esac
   done
-  _agent_run_and_remember traex "$HOME/.local/bin/traex" "$resume_prefix" "$HOME/.trae/cli/sessions" "$@"
+  _agent_run_and_remember traex traex "$resume_prefix" "$HOME/.trae/cli/sessions" "$@"
 }
 traex-budget() {
-  _agent_run_and_remember traex "$HOME/.local/bin/traex-budget" 'traex-budget resume' "$HOME/.trae/cli/sessions" "$@"
+  _agent_run_and_remember traex traex-budget 'traex-budget resume' "$HOME/.trae/cli/sessions" "$@"
 }
 opencode() {
-  local arg has_auto=0 executable
-  executable=$(whence -p opencode) || {
-    print -u2 -- 'opencode: executable not found in PATH'
-    return 127
-  }
+  local arg has_auto=0
   for arg in "$@"; do
     [ "$arg" = "--auto" ] && has_auto=1
   done
   if [ "$has_auto" -eq 0 ]; then
     set -- --auto "$@"
   fi
-  _agent_run_and_remember opencode "$executable" 'opencode --auto --session' '' "$@"
+  _agent_run_and_remember opencode opencode 'opencode --auto --session' '' "$@"
 }

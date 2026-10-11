@@ -15,21 +15,51 @@ SCRIPT = Path(__file__).resolve().parents[1] / "config/zsh/agent-resume-history.
 class AgentResumeHistoryTest(unittest.TestCase):
     def test_codex_shortcuts_capture_output_and_preserve_command_name(self):
         session = "01a0f092-a417-7d91-8d46-32ce516fed67"
-        for command in ["codex-yolo", "codex-team", "codex-team-budget", "codex-team-expert"]:
+        for command in ["codex", "codex-budget", "codex-expert", "codex-yolo", "codex-team", "codex-team-budget", "codex-team-expert"]:
             with self.subTest(command=command), tempfile.TemporaryDirectory() as directory:
                 child = Path(directory) / command
                 child.write_text(f'#!/bin/sh\nprintf "Session ID: {session}\\n"\n')
                 child.chmod(0o755)
                 result = subprocess.run([
                     shutil.which("zsh"), "-f", "-c",
-                    'source "$1"; _test_executable="$2/$3"; '
-                    '_agent_exec_with_clipboard_env() { '
-                    'local -a args; args=("$@"); args[4]=$_test_executable; command "${args[@]}"; }; '
+                    'source "$1"; path=("$2" $path); '
                     '_agent_add_history() { print -r -- "HISTORY:$1"; }; "$3"',
                     "test", str(SCRIPT), directory, command,
                 ], stdin=subprocess.DEVNULL, text=True, capture_output=True, timeout=10)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertIn(f"HISTORY:{command} resume {session}", result.stdout)
+
+    def test_other_agents_resolve_commands_from_path_and_preserve_arguments(self):
+        for command, expected in [
+            ("claude", ["--permission-mode", "auto", "hello world"]),
+            ("traex", ["hello world"]),
+            ("traex-budget", ["hello world"]),
+            ("opencode", ["--auto", "hello world"]),
+        ]:
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as directory:
+                child = Path(directory) / command
+                child.write_text('#!/bin/sh\nprintf "%s\\n" "$0" "$@"\n')
+                child.chmod(0o755)
+                result = subprocess.run([
+                    shutil.which("zsh"), "-f", "-c",
+                    'source "$1"; path=("$2" $path); '
+                    '_agent_claude_session_id() { return 1; }; '
+                    '_agent_session_id_from_jsonl() { return 1; }; '
+                    '"$3" "hello world"',
+                    "test", str(SCRIPT), directory, command,
+                ], text=True, capture_output=True, timeout=10)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.splitlines(), [str(child), *expected])
+
+    def test_missing_command_returns_127_before_starting_session(self):
+        result = subprocess.run([
+            shutil.which("zsh"), "-f", "-c",
+            'source "$1"; '
+            '_agent_run_and_remember claude absent-agent-test-command resume ""',
+            "test", str(SCRIPT),
+        ], text=True, capture_output=True, timeout=10)
+        self.assertEqual(result.returncode, 127)
+        self.assertIn("absent-agent-test-command: executable not found in PATH", result.stderr)
 
     def test_codex_remembers_its_exit_hint_instead_of_background_rollout(self):
         correct = "01a0f084-47b9-7e00-9e1f-2d144b004fb3"
