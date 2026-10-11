@@ -11,7 +11,7 @@
 # theme-sync, or reported natively via mode 2031); we ship that answer over and
 # the remote just applies it — no macOS-appearance guessing on the remote.
 #
-# Transport reuses the peon-ping LocalForward: ~/.ssh/config.local forwards each
+# Transport prefers the peon-ping LocalForward: ~/.ssh/config.local forwards each
 # box's tmux control socket to ~/.ssh/tmux-<alias>.sock, and that same socket
 # lets the LOCAL tmux client drive the REMOTE tmux server in one round-trip (no
 # extra ssh). We ask the remote tmux to run its OWN `theme-sync <want>`, which
@@ -57,24 +57,100 @@ else
    }
 fi
 
+# Workbench connections disable forwards, and mobile SSH config may contain
+# desktop-only socket paths. Discover live SSH destinations as a second route.
+# Report only destination and connection identity, never command contents.
+records=$(python3 - <<'PYCODE'
+import os
+from pathlib import Path
+import re
+import shlex
+import subprocess
+
+targets = {}
+proc = Path('/proc')
+if proc.is_dir():
+    rows = []
+    for entry in proc.iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            if entry.stat().st_uid != os.getuid():
+                continue
+            args = [x.decode(errors='replace') for x in (entry / 'cmdline').read_bytes().split(b'\0') if x]
+            rows.append((entry.name, args))
+        except OSError:
+            continue
+else:
+    rows = []
+    result = subprocess.run(['ps', '-U', str(os.getuid()), '-o', 'pid=,command='], capture_output=True, text=True)
+    for line in result.stdout.splitlines():
+        try:
+            pid, command = line.strip().split(None, 1)
+            rows.append((pid, shlex.split(command)))
+        except ValueError:
+            continue
+for pid, args in rows:
+    if not args or Path(args[0]).name != 'ssh':
+        continue
+    if any(arg == '-N' or arg.startswith('-W') for arg in args[1:]):
+        continue  # Tunnel-only clients and ProxyJump transports are not attached devboxes.
+    index = 1
+    while index < len(args) and args[index].startswith('-'):
+        option = args[index]
+        index += 1
+        if option == '--':
+            break
+        if len(option) == 2 and option[1] in 'BbcDEeFIiJLlmOopQRSWw':
+            index += 1
+    if index >= len(args):
+        continue
+    host = args[index]
+    command = ' '.join(args[index + 1:])
+    if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.@:-]*', host):
+        continue
+    if 'theme-sync' in command:
+        continue  # Exclude this script's own transport from discovery.
+    if command and 'tmux' not in command:
+        continue
+    targets.setdefault(host, []).append(pid)
+for sock in (Path.home() / '.ssh').glob('tmux-*.sock'):
+    if sock.is_socket():
+        host = sock.name[5:-5]
+        if re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.@:-]*', host):
+            targets.setdefault(host, []).append('socket-' + str(sock.stat().st_mtime_ns))
+for host, identities in sorted(targets.items()):
+    print(host, ','.join(sorted(identities)))
+PYCODE
+) || exit 0
+
+state_dir=${XDG_STATE_HOME:-$HOME/.local/state}/appearance-remotes
+mkdir -p "$state_dir" || exit 0
 n=0
-for sock in "$HOME"/.ssh/tmux-*.sock; do
-   [ -S "$sock" ] || continue          # the glob itself when nothing matches
-   alias=${sock##*/tmux-}; alias=${alias%.sock}
+while read -r alias connection; do
+   [ -n "$alias" ] || continue
+   stamp=$state_dir/$alias
+   signature="$want $connection"
+   [ "$(cat "$stamp" 2>/dev/null || :)" != "$signature" ] || continue
    n=$((n + 1))
    (
-      # Preferred path: drive the remote tmux server over the forwarded socket.
-      # run-shell -b returns as soon as the remote has queued it, so this is one
-      # quick round-trip; the deadline only guards a stale/handshaking socket.
-      if deadline 6 tmux -S "$sock" run-shell -b "$remote_cmd" >/dev/null 2>&1; then
-         exit 0
+      sock=$HOME/.ssh/tmux-$alias.sock
+      if [ -S "$sock" ] && deadline 6 tmux -S "$sock" run-shell -b "$remote_cmd" >/dev/null 2>&1; then
+         applied=yes
+      elif deadline 8 ssh -o ClearAllForwardings=yes -o BatchMode=yes -o ConnectTimeout=5 "$alias" "$remote_cmd" >/dev/null 2>&1; then
+         applied=yes
+      else
+         applied=no
       fi
-      # Fallback: a fresh, short ssh exec. BatchMode so it never prompts.
-      deadline 8 ssh -o BatchMode=yes -o ConnectTimeout=5 "$alias" "$remote_cmd" \
-         >/dev/null 2>&1 || true
+      # Do not cache failures: the next check retries. A new connection identity
+      # forces initial sync even when the system mode has stayed unchanged.
+      if [ "$applied" = yes ]; then
+         printf '%s\n' "$signature" > "$stamp.$$" && mv "$stamp.$$" "$stamp"
+      fi
    ) &
-done
+done <<EOF
+$records
+EOF
 wait
-
-[ "$n" -gt 0 ] && echo "theme-push-remotes: $want -> $n devbox(es)" >&2
+[ "$n" -gt 0 ] && echo "theme-push-remotes: $want -> $n devbox(es) attempted" >&2
 exit 0

@@ -162,8 +162,8 @@ _agent_run_and_remember() {
   # Ctrl-C kills the child TUI and would normally abort the rest of this shell
   # function too. Keep the trap local so cleanup and history insertion still run.
   trap 'interrupted=1' INT
-  if [ "$agent" = codex ] && (( $+commands[python3] )); then
-    _agent_exec_with_clipboard_env python3 "$_agent_capture_session_helper" "$marker" "$executable" "$@"
+  if [[ "$agent" = codex || "$agent" = traex ]] && (( $+commands[python3] )); then
+    _agent_exec_with_clipboard_env python3 "$_agent_capture_session_helper" --agent "$agent" "$marker" "$executable" "$@"
   else
     _agent_exec_with_clipboard_env "$executable" "$@"
   fi
@@ -171,7 +171,7 @@ _agent_run_and_remember() {
   [ "$interrupted" -eq 1 ] && exit_status=130
 
   case "$agent" in
-    codex)
+    codex|traex)
       # Only this process's explicit hint identifies its connected task. Other
       # daemon tasks can keep updating rollouts after their TUI disconnects.
       session_id=$(cat "$marker")
