@@ -10,14 +10,17 @@ import signal
 import sys
 import termios
 
+import agent_theme_restart
 
-def session_id(output):
+
+def session_id(output, agent="codex"):
     text = output.decode("utf-8", errors="replace")
     text = re.sub(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)", "", text)
     text = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", text)
     uuid = r"[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"
+    executable = r"codex" if agent == "codex" else r"(?:traex|traecli)"
     matches = re.findall(
-        rf"(?:codex resume|Session ID:)\s+({uuid})\s*$", text, re.MULTILINE
+        rf"(?:{executable} resume|Session ID:)\s+({uuid})\s*$", text, re.MULTILINE
     )
     return matches[-1] if matches else ""
 
@@ -28,7 +31,17 @@ def main():
         if size:
             fcntl.ioctl(0, termios.TIOCSWINSZ, bytes.fromhex(size))
         os.execvp(command[0], command)
-    target, *command = sys.argv[1:]
+    args = sys.argv[1:]
+    agent = "codex"
+    if args[:1] == ["--agent"]:
+        agent, *args = args[1:]
+    target, *command = args
+    get_session_id = lambda output: session_id(output, agent)
+    if agent_theme_restart.enabled(command, agent):
+        status, output = agent_theme_restart.run(command, get_session_id, agent)
+        Path(target).write_text(get_session_id(output), encoding="utf-8")
+        code = os.waitstatus_to_exitcode(status)
+        return code if code >= 0 else 128 - code
     tail = bytearray()
     master = None
 
@@ -58,7 +71,7 @@ def main():
     status = pty.spawn(
         [sys.executable, __file__, "--child", size, *command], master_read=read_output
     )
-    Path(target).write_text(session_id(tail), encoding="utf-8")
+    Path(target).write_text(get_session_id(tail), encoding="utf-8")
     code = os.waitstatus_to_exitcode(status)
     return code if code >= 0 else 128 - code
 

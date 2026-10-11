@@ -23,3 +23,84 @@ The same variables can be used with `./init machine-fabric`. The installer
 configures the local Controller/Executor through `termux-services`; peer
 topology remains owned by Machine Fabric's release/bootstrap tools. The old
 distributed-workbench peer bootstrap is no longer part of dotfiles.
+
+## Follow Android light/dark mode
+
+`util/termux/termux-system-theme` checks Android's resolved `am get-config`
+night mode every 10 seconds and switches `~/.termux/colors.properties` between
+`config/termux/theme-light.properties` (Catppuccin Latte) and
+`theme-dark.properties` (Catppuccin Mocha), copied from the default iTerm2 profile.
+It retries the Termux reload every check, including when the palette link is
+already correct: Termux unregisters its reload receiver in the background, so a
+one-shot broadcast can be lost. A transient reload failure does not stop the
+service. It needs no root.
+Install it in `~/.local/bin/termux-system-theme`, link
+`config/termux/system-theme.run` to `$PREFIX/var/service/termux-system-theme/run`,
+then run `sv-enable termux-system-theme` with `termux-services` installed.
+Use `sv-disable termux-system-theme` to stop following the system. Running
+`./init core` restores the static color link; run
+`termux-system-theme --once` to restore the system-selected palette immediately.
+Android may suspend the service in the background; it catches up after resuming.
+Applications drawing their own backgrounds may require a restart to adapt.
+The service also calls `theme-push-remotes` to synchronize attached SSH devboxes.
+The relay discovers live SSH/workbench connections even when forwards are
+cleared; forwarded tmux sockets remain an optional fast path. Successful
+mode/connection pairs are cached under `$XDG_STATE_HOME/appearance-remotes`;
+new connections synchronize immediately and failures retry at the next check.
+The remote must already have `~/.local/bin/theme-sync`. Fresh SSH relay commands
+clear forwards so desktop-specific `LocalForward` paths do not break mobile sync.
+
+### Agent refresh after a theme change
+
+Normal `codex`, `traex` and `traex-budget` launches through the zsh
+resume-history wrapper now monitor the
+effective terminal colors from `config/zsh/agent_theme_restart.py`. It queries
+the displayed foreground/background using OSC 10/11 every five seconds as well
+as watching the palette file. A delayed reload therefore triggers refresh even
+when the file was already correct, and a supported color query prevents
+restarting before the new palette is actually displayed. Query replies do not
+count as typing or postpone the idle guard. The PTY
+supervisor reads the agent's own OSC terminal title (`Working`, `Thinking`, `Ready`),
+waits for `Ready`, an attached thread ID and two seconds without input, then requests a graceful Ctrl+D
+exit. It resumes only when that exit succeeds and prints an exact session ID;
+manual exits, errors and missing IDs never trigger an automatic relaunch.
+The exit hint must also match the attached thread ID shown in the title.
+The supervisor does not issue a stop command to a separate shared app-server.
+Launch arguments and proxy environment are preserved, while the original prompt is not sent again.
+
+Pasted input and unconfirmed submissions defer the refresh. The Codex adapter
+can make one guarded Ctrl+D attempt even with a stale draft flag: Codex itself
+accepts this only with an empty composer and no active modal/popup. A refusal
+blocks further attempts until actual input changes. TraeX retains the conservative
+draft guard pending validation of its native empty-composer behavior. A subsequent
+submission confirmed by `Working`/`Thinking` clears the conservative draft guard.
+For restored drafts or popups, the native empty-composer check can refuse the
+exit; no timeout kills the UI. The supervised frontend reserves Ctrl+D for
+quitting and leaves Delete/Shift+Delete for deleting forward, so a refused quit
+cannot remove draft text. These keymap and title overrides affect this launch
+only. Unknown options, embedded (`--no-daemon`) servers, image inputs, worktrees
+and noninteractive commands use the original launch path without auto-refresh.
+Automatic reconnects also skip the startup update prompt and select the saved
+session directory through temporary overrides; permanent settings are unchanged.
+
+An already-running wrapper needs one normal exit/resume to load the new helper.
+Run `AGENT_THEME_RESTART=0 codex` (or `traex`) to disable automatic refresh.
+The individual `CODEX_THEME_RESTART=0` and `TRAEX_THEME_RESTART=0` switches
+are also supported.
+
+This supervisor also runs on macOS/Linux POSIX terminals; it has no Android
+requirement. There, OSC 10/11 replies are the sole color source, so it follows
+the actual terminal palette, including over SSH, rather than guessing from the
+local OS. Termux adds its palette file as a reload-delivery check. The terminal
+must answer the color queries and the CLI must emit a supported Ready title
+with a thread ID. Unsupported states never authorize a restart.
+
+TraeX 0.209.1 release inspection confirmed the terminal-title/keymap configuration
+fields. TraeX title/exit/resume behavior is covered by PTY contract tests; an
+actual installed TraeX session still needs validation on a supported machine.
+
+Desktop terminal palette switching is independent: iTerm2 uses separate
+light/dark profile colors, Kitty uses its native `*-theme.auto.conf` files, and
+Alacritty uses the macOS `appearance-daemon` / `dark-notify` callback to rewrite
+its imported theme. These switches do not themselves refresh cached agent UI
+colors. The shared supervisor handles that subsequent step.

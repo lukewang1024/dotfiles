@@ -95,6 +95,24 @@ class AgentResumeHistoryTest(unittest.TestCase):
                 else:
                     self.assertNotIn("HISTORY:", result.stdout)
 
+    def test_traex_remembers_exact_exit_hint_without_jsonl_guessing(self):
+        session = "01a0f084-47b9-7e00-9e1f-2d144b004fb3"
+        for executable in ("traex", "traecli"):
+            with self.subTest(executable=executable), tempfile.TemporaryDirectory() as directory:
+                child = Path(directory) / "child.py"
+                child.write_text(f"print('To continue this session, run: {executable} resume {session}')\n")
+                result = subprocess.run([
+                    shutil.which("zsh"), "-f", "-c",
+                    'source "$1"; '
+                    '_agent_session_id_from_jsonl() { print WRONG-BACKGROUND-SESSION; }; '
+                    '_agent_add_history() { print -r -- "HISTORY:$1"; }; '
+                    '_agent_run_and_remember traex "$2" "traex resume" "$4/sessions" "$3"',
+                    "test", str(SCRIPT), sys.executable, str(child), directory,
+                ], stdin=subprocess.DEVNULL, text=True, capture_output=True, timeout=10)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"HISTORY:traex resume {session}", result.stdout)
+                self.assertNotIn("WRONG-BACKGROUND-SESSION", result.stdout)
+
     def test_output_is_remembered_without_persisted_session(self):
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run([

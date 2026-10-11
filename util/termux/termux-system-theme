@@ -1,0 +1,40 @@
+#!/bin/sh
+# Follow Android's resolved configuration, including scheduled dark mode.
+set -eu
+PATH="${PREFIX:-/data/data/com.termux/files/usr}/bin:/system/bin:$PATH"
+export PATH
+palette_dir=${TERMUX_THEME_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/config/termux}
+apply_theme() {
+    config=$("${TERMUX_THEME_AM:-/system/bin/am}" get-config 2>/dev/null) || return 0
+    case "$config" in
+        *-notnight-*) mode=light ;;
+        *-night-*) mode=dark ;;
+        *) return 0 ;;
+    esac
+    palette=$palette_dir/theme-$mode.properties
+    [ -r "$palette" ] || return 1
+    target=$HOME/.termux/colors.properties
+    if [ "$(readlink "$target" 2>/dev/null || :)" != "$palette" ]; then
+        ln -sfn "$palette" "$target"
+    fi
+    # The Activity unregisters its receiver while stopped. A successful
+    # broadcast is not an acknowledgement that the palette was displayed.
+    # Retry even when the link is correct, so returning to the foreground
+    # recovers a reload missed while Android settings were open.
+    termux-reload-settings || :
+    # Push both changes and new SSH attachments. The relay caches successful
+    # mode/connection pairs, so unchanged connections create no extra SSH calls.
+    if command -v theme-push-remotes >/dev/null 2>&1; then
+        theme-push-remotes "$mode" || :
+    fi
+}
+case "${1:-}" in
+    --once) apply_theme ;;
+    '')
+        while :; do
+            apply_theme
+            sleep 10
+        done
+        ;;
+    *) printf 'Usage: termux-system-theme [--once]\n' >&2; exit 2 ;;
+esac
