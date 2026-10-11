@@ -221,7 +221,12 @@ _agent_codex_run() {
   _agent_run_and_remember codex "$executable" "$resume_prefix" "${CODEX_HOME:-$HOME/.codex}/sessions" "$@"
 }
 codex() {
-  _agent_codex_run "$HOME/.local/bin/codex" codex "$@"
+  local executable
+  executable=$(whence -p codex) || {
+    print -u2 -- 'codex: executable not found in PATH'
+    return 127
+  }
+  _agent_codex_run "$executable" codex "$@"
 }
 codex-budget() {
   _agent_codex_run "$HOME/.local/bin/codex-budget" codex-budget "$@"
