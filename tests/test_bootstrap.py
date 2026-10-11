@@ -152,13 +152,31 @@ class BootstrapTests(unittest.TestCase):
         self.assertFalse(any('1452453066' in argv for argv in package_commands))
 
     def test_core_reconciles_agent_team_checkout_and_entrypoints(self):
-        c = self.context('debian')
-        for name, arguments in select_tasks('debian', 'core', []):
-            c.task(name, *arguments)
-        commands = [event['argv'] for event in c.events if event['kind'] == 'command']
-        self.assertTrue(any('https://github.com/lukewang1024/agent-team.git' in command for command in commands))
-        self.assertTrue(any('agent-team/install.py' in str(value).replace('\\', '/')
-                            for command in commands for value in command))
+        url = 'https://github.com/lukewang1024/agent-team.git'
+        for state in ('missing', 'checkout', 'worktree'):
+            with self.subTest(state=state):
+                repo = self.home / 'isolated checkouts' / state / 'agent-team'
+                if state == 'checkout':
+                    (repo / '.git').mkdir(parents=True)
+                elif state == 'worktree':
+                    repo.mkdir(parents=True)
+                    (repo / '.git').write_text('gitdir: /unused/dry-run-worktree\n', encoding='utf-8')
+                c = self.context('debian')
+                # Never inspect the real checkout inherited from the shell.
+                c.env['AGENT_TEAM_REPO'] = str(repo)
+                for name, arguments in select_tasks('debian', 'core', []):
+                    c.task(name, *arguments)
+                commands = [event['argv'] for event in c.events if event['kind'] == 'command']
+                clone = ['git', 'clone', '--depth', '1', url, str(repo)]
+                pull = ['git', '-C', str(repo), 'pull', '--ff-only']
+                if state == 'missing':
+                    self.assertIn(clone, commands)
+                    self.assertNotIn(pull, commands)
+                    self.assertFalse(repo.exists())  # Dry run cannot create a checkout.
+                else:
+                    self.assertIn(pull, commands)
+                    self.assertNotIn(clone, commands)
+                self.assertIn([sys.executable, str(repo / 'install.py'), '--bin-dir', str(c.bin)], commands)
 
     def test_machine_fabric_install_is_pinned_and_uses_release_cdn(self):
         c = self.context('debian')
