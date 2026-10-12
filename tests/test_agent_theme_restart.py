@@ -23,6 +23,52 @@ def title(value):
     return f"\x1b]0;codex | {value} | 01a12a2b-3287-7bf2-8fc1-661e52ea78b1\x07".encode()
 
 
+@unittest.skipUnless(sys.platform.startswith("linux"), "Linux inotify")
+class ThemeNotificationsTest(unittest.TestCase):
+    def test_atomic_replacement_ignores_same_mode_and_other_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "appearance"
+            path.write_text("dark\n")
+            watch = theme.ThemeNotifications(path)
+            try:
+                for mode, expected in (("dark", False), ("light", True), ("light", False), ("dark", True)):
+                    temporary = path.with_name("appearance.new")
+                    temporary.write_text(mode + "\n")
+                    temporary.replace(path)
+                    self.assertTrue(select.select([watch.fd], [], [], 1)[0])
+                    self.assertEqual(watch.drain(), expected)
+                path.with_name("unrelated").write_text("hello")
+                self.assertFalse(watch.drain())
+            finally:
+                watch.close()
+
+    def test_missing_state_keeps_polling_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with mock.patch.dict(os.environ, {"TMUX": "test", "XDG_STATE_HOME": directory}):
+                self.assertIsNone(theme.theme_notifications(None))
+                Path(directory, "appearance").write_text("dark")
+                watch = theme.theme_notifications(None)
+                self.assertIsNotNone(watch)
+                watch.close()
+                self.assertIsNone(theme.theme_notifications(Path(directory, "colors.properties")))
+
+    def test_removed_watch_directory_requests_polling_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory) / "state"
+            parent.mkdir()
+            path = parent / "appearance"
+            path.write_text("dark")
+            watch = theme.ThemeNotifications(path)
+            try:
+                path.unlink()
+                parent.rmdir()
+                self.assertTrue(select.select([watch.fd], [], [], 1)[0])
+                with self.assertRaises(OSError):
+                    watch.drain()
+            finally:
+                watch.close()
+
+
 class RestartGateTest(unittest.TestCase):
     def test_waits_for_explicit_ready_and_never_uses_silence(self):
         gate = theme.RestartGate(0)
@@ -202,9 +248,18 @@ class SupervisorTest(unittest.TestCase):
         self.check_pty_agent("traex")
 
     def test_terminal_only_pty_refresh_without_a_palette_file(self):
+        self.check_terminal_only_refresh(False)
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux inotify")
+    def test_tmux_idle_stops_queries_and_state_event_resumes_exact_thread(self):
+        self.check_terminal_only_refresh(True)
+
+    def check_terminal_only_refresh(self, watched):
         session = "01a12a2b-3287-7bf2-8fc1-661e52ea78b1"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            state = root / "appearance"
+            state.write_text("dark")
             child = root / "traex"
             child.write_text(
                 f"#!{sys.executable}\n"
@@ -216,7 +271,7 @@ class SupervisorTest(unittest.TestCase):
                 "while time.monotonic()<deadline:\n"
                 " if select.select([0],[],[],0.05)[0] and b'\\x04' in os.read(0,4096):sys.exit(91)\n"
                 f"os.write(1,b'DISPLAY_LIGHT\\x1b]0;traex | Ready | {session}\\x07')\n"
-                "deadline=time.monotonic()+10\n"
+                "deadline=time.monotonic()+18\n"
                 "while time.monotonic()<deadline:\n"
                 " if select.select([0],[],[],0.1)[0] and b'\\x04' in os.read(0,4096):\n"
                 f"  os.write(1,b'\\r\\ntraecli resume {session}\\r\\n');sys.exit(0)\n"
@@ -235,14 +290,26 @@ class SupervisorTest(unittest.TestCase):
                 "sys.exit(os.waitstatus_to_exitcode(status))\n"
             )
             master, slave = pty.openpty()
-            process = subprocess.Popen([sys.executable, str(launcher)], stdin=slave, stdout=slave, stderr=slave)
+            env = dict(os.environ)
+            env.pop("TMUX", None)
+            if watched:
+                env.update(TMUX="test", XDG_STATE_HOME=str(root))
+            process = subprocess.Popen([sys.executable, str(launcher)], stdin=slave, stdout=slave, stderr=slave, env=env)
             os.close(slave)
             output = bytearray()
             pending = bytearray()
             light = False
-            deadline = time.monotonic() + 14
+            started = time.monotonic()
+            deadline = started + 24
+            initial_queries = 0
             try:
                 while time.monotonic() < deadline:
+                    if watched and not light and time.monotonic() - started >= 6:
+                        self.assertEqual(initial_queries, 2, "Idle tmux wrapper must query only at startup")
+                        temporary = root / "appearance.new"
+                        temporary.write_text("light")
+                        temporary.replace(state)
+                        light = True
                     if select.select([master], [], [], 0.1)[0]:
                         try:
                             chunk = os.read(master, 65536)
@@ -250,11 +317,13 @@ class SupervisorTest(unittest.TestCase):
                             break
                         output.extend(chunk)
                         pending.extend(chunk)
-                        if b"DISPLAY_LIGHT" in output:
+                        if not watched and b"DISPLAY_LIGHT" in output:
                             light = True
                         for code in (10, 11):
                             query = f"\x1b]{code};?\x07".encode()
                             while query in pending:
+                                if not light:
+                                    initial_queries += 1
                                 start = pending.index(query)
                                 del pending[start:start + len(query)]
                                 color = ("4c/4f/69" if code == 10 else "ef/f1/f5") if light else (
