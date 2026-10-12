@@ -32,6 +32,17 @@ case "${1:-}" in
    *) echo "theme-sync: usage: ${0##*/} [light|dark]" >&2; exit 2 ;;
 esac
 
+# Within tmux, OSC 11 is answered from tmux's cached pane background,
+# which can disagree with the attached terminal after an appearance change.
+# Prefer the invoking pane's current client when it reports a native theme.
+# Do not inspect every client: another attached terminal may use a different mode.
+if [ -z "$want" ] && [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
+   client_theme=$(tmux display-message -p '#{client_theme}' 2>/dev/null || :)
+   case "$client_theme" in
+      light|dark) want=$client_theme; detect_source=client-theme ;;
+   esac
+fi
+
 if [ -z "$want" ]; then
    [ -t 1 ] || { echo "theme-sync: needs an interactive terminal (a tty), or pass light|dark." >&2; exit 1; }
 
