@@ -7,6 +7,8 @@ import pty
 import re
 import select
 import signal
+import struct
+import sys
 import termios
 import time
 import tty
@@ -250,6 +252,71 @@ def write_all(fd, data):
         data = data[count:]
 
 
+class ThemeNotifications:
+    """Watch atomic appearance-file replacements with Linux inotify."""
+
+    def __init__(self, path):
+        import ctypes
+        self.path = path
+        self.value = self.read()
+        if self.value not in {b"light", b"dark"}:
+            raise OSError("No published appearance; keep terminal polling")
+        libc = ctypes.CDLL(None, use_errno=True)
+        self.fd = libc.inotify_init1(os.O_NONBLOCK | os.O_CLOEXEC)
+        if self.fd < 0:
+            raise OSError(ctypes.get_errno(), "inotify_init1")
+        # Watch the directory: publishers replace the file with an atomic mv.
+        # CLOSE_WRITE | MOVED_TO | CREATE | DELETE | DELETE_SELF | MOVE_SELF
+        mask = 0x8 | 0x80 | 0x100 | 0x200 | 0x400 | 0x800
+        if libc.inotify_add_watch(self.fd, os.fsencode(path.parent), mask) < 0:
+            self.close()
+            raise OSError(ctypes.get_errno(), "inotify_add_watch")
+
+    def read(self):
+        try:
+            with self.path.open("rb") as stream:
+                return stream.read(64).strip()
+        except OSError:
+            return None
+
+    def drain(self):
+        relevant = False
+        invalid = False
+        while True:
+            try:
+                data = os.read(self.fd, 65536)
+            except BlockingIOError:
+                break
+            offset = 0
+            while offset + 16 <= len(data):
+                _, mask, _, length = struct.unpack_from("iIII", data, offset)
+                name = data[offset + 16:offset + 16 + length].split(b"\0", 1)[0]
+                offset += 16 + length
+                relevant |= name == os.fsencode(self.path.name)
+                # Overflow, removed/moved directory or lost watch: fall back.
+                invalid |= bool(mask & (0x4000 | 0x400 | 0x800 | 0x8000))
+        if invalid:
+            raise OSError("Appearance watch lost")
+        value = self.read() if relevant else self.value
+        changed = value != self.value
+        self.value = value
+        return changed
+
+    def close(self):
+        os.close(self.fd)
+
+
+def theme_notifications(palette):
+    # Termux still verifies its palette reload; unsupported hosts keep polling.
+    if palette is not None or not os.environ.get("TMUX") or not sys.platform.startswith("linux"):
+        return None
+    path = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state"))) / "appearance"
+    try:
+        return ThemeNotifications(path)
+    except (OSError, AttributeError):
+        return None
+
+
 def spawn_once(command, palette, baseline, agent="codex"):
     """Forward a real PTY, requesting graceful exit only after a safe state."""
     pid, master = pty.fork()
@@ -267,6 +334,8 @@ def spawn_once(command, palette, baseline, agent="codex"):
     pending_theme = None
     theme_changed_at = None
     next_color_query = 0
+    notifications = theme_notifications(palette)
+    confirmation_until = 0
     refused_input_at = None
 
     def resize(*_):
@@ -284,8 +353,36 @@ def spawn_once(command, palette, baseline, agent="codex"):
         while True:
             # Leave typing buffered in the outer terminal once exit begins;
             # the resumed UI receives it after the child has exited.
-            readable, _, _ = select.select([master] if requested else [0, master], [], [], 0.25)
             now = time.monotonic()
+            deadlines = []
+            if requested:
+                deadlines.append(request_deadline)
+            elif next_color_query is not None:
+                deadlines.append(next_color_query)
+            if (
+                not requested and theme_changed_at is not None
+                and (refused_input_at is None or gate.last_input != refused_input_at)
+                and gate.can_quit(now + 2, probe_empty=agent == "codex")
+            ):
+                deadlines.append(max(theme_changed_at + 2, gate.ready_since + 2, gate.last_input + 2))
+            timeout = max(0, min(deadlines) - now) if deadlines else None
+            readers = [master] if requested else [0, master]
+            if notifications is not None:
+                readers.append(notifications.fd)
+            readable, _, _ = select.select(readers, [], [], timeout)
+            now = time.monotonic()
+            if notifications is not None and notifications.fd in readable:
+                try:
+                    changed = notifications.drain()
+                except OSError:
+                    notifications.close()
+                    notifications = None
+                    changed = True
+                if changed:
+                    # theme-sync publishes before repainting tmux. Debounce and
+                    # confirm a few times to cover that asynchronous apply.
+                    next_color_query = now + 2
+                    confirmation_until = now + 17
             if 0 in readable:
                 data = os.read(0, 65536)
                 if not data:
@@ -305,9 +402,9 @@ def spawn_once(command, palette, baseline, agent="codex"):
                 tail.extend(data)
                 del tail[:-65536]
                 gate.output(data, now)
-            if now >= next_color_query and not requested:
+            if next_color_query is not None and now >= next_color_query and not requested:
                 write_all(1, b"\x1b]10;?\x07\x1b]11;?\x07")
-                next_color_query = now + 5
+                next_color_query = now + 5 if notifications is None or now < confirmation_until else None
             current = theme_signature(palette)
             refresh = gate.refresh_signature(current, baseline)
             if refresh is None:
@@ -339,6 +436,8 @@ def spawn_once(command, palette, baseline, agent="codex"):
                 refused_input_at = gate.last_input
                 gate.dirty = True
     finally:
+        if notifications is not None:
+            notifications.close()
         termios.tcsetattr(0, termios.TCSADRAIN, original)
         signal.signal(signal.SIGWINCH, previous_handler)
         os.close(master)
