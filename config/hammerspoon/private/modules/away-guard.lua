@@ -6,6 +6,18 @@ function M.new(options)
   local self = {state = 'idle', external = {}}
   local layout = options.layout or require('private/modules/away-guard-windows').new(options)
   local audit = options.audit or require('private/modules/away-guard-log').new()
+  local function diagnostic(error) pcall(hs.printf, '[away-guard] %s', tostring(error)) end
+  local function write(event, fields)
+    local ok, record = pcall(audit.write, event, fields)
+    if ok then return record end
+    diagnostic(record)
+    fields = fields or {}; fields.event = event
+    return fields
+  end
+  local function requestLock()
+    local ok, error = pcall(hs.caffeinate.lockScreen)
+    if not ok then diagnostic(error) end
+  end
   self.logPath = audit.path
   local marker = 'awayGuard.session'
   local saved = hs.settings.get(marker)
@@ -18,9 +30,12 @@ function M.new(options)
     local task = self.keepAwake; self.keepAwake = nil
     if task then task:terminate() end
   end
-  local function stopMonitor()
+  local function stopMonitor(authenticated)
     local task = self.monitor; self.monitor = nil
-    if task then task:terminate() end
+    if task then
+      if authenticated then task:setInput('disarm\n')
+      else task:terminate() end
+    end
   end
   local function displaySignature()
     local result = {}
@@ -35,18 +50,36 @@ function M.new(options)
   end
   local function trip(reason)
     if self.state == 'idle' or self.state == 'locked' or self.state == 'restoring' then return end
-    if self.state ~= 'locking' then
-      local screens = {}
-      for _,screen in ipairs(hs.screen.allScreens()) do
-        screens[#screens+1] = {uuid=screen:getUUID(),brightness=screen:getBrightness()}
-      end
-      self.trigger = audit.write('lock_requested', {reason=reason,state=self.state,screens=screens,
-        heartbeatAge=self.lastHeartbeat and hs.timer.secondsSinceEpoch()-self.lastHeartbeat})
-      hs.settings.set('awayGuard.lastTrigger', self.trigger)
-      persist()
-      self.state = 'locking'
+    local previous = self.state
+    self.state = 'locking'
+    requestLock() -- Safety action precedes every fallible diagnostic operation.
+    if previous ~= 'locking' then
+      self.trigger = {reason=reason,state=previous}
+      local ok, error = pcall(function()
+        local screens = {}
+        for _,screen in ipairs(hs.screen.allScreens()) do
+          screens[#screens+1] = {uuid=screen:getUUID(),brightness=screen:getBrightness()}
+        end
+        self.trigger = write('lock_requested', {reason=reason,state=previous,screens=screens,
+          heartbeatAge=self.lastHeartbeat and hs.timer.secondsSinceEpoch()-self.lastHeartbeat})
+        hs.settings.set('awayGuard.lastTrigger', self.trigger)
+        persist()
+      end)
+      if not ok then diagnostic(error) end
     end
-    hs.caffeinate.lockScreen()
+  end
+  local function protect(callback)
+    return function(...)
+      local ok, result = pcall(callback, ...)
+      if not ok then
+        if self.state ~= 'idle' and self.state ~= 'restoreFailed' then
+          self.state = 'locking'; requestLock()
+        end
+        diagnostic(result)
+        return false
+      end
+      return result
+    end
   end
   local function remoteWindowsFor(application)
     -- application:allWindows()/window.get() omit inactive/fullscreen Spaces.
@@ -116,8 +149,11 @@ function M.new(options)
   local function restore()
     if self.state == 'restoring' then return end
     self.state = 'restoring'
-    audit.write('restore_started')
-    stopMonitor()
+    self.restoreGeneration = (self.restoreGeneration or 0) + 1
+    local generation = self.restoreGeneration
+    local function current() return not self.stopped and self.state == 'restoring' and generation == self.restoreGeneration end
+    write('restore_started')
+    stopMonitor(true)
     if self.screen and self.originalBrightness ~= nil then
       local screen = hs.screen.find(self.screen)
       if screen then screen:setBrightness(self.originalBrightness) end
@@ -126,44 +162,44 @@ function M.new(options)
     local args = {helper, 'restore'}
     for _,identity in ipairs(self.external) do args[#args+1] = identity end
     if self.autoBrightness ~= nil then args[#args+1] = '--auto-brightness=' .. (self.autoBrightness and 'on' or 'off') end
-    self.restorer = hs.task.new('/bin/sh', function(code, stdout, stderr)
+    self.restorer = hs.task.new('/bin/sh', protect(function(code, stdout, stderr)
+      if not current() then return end
       self.restorer = nil
-      if self.stopped then return end
       if code == 0 then
-        layout:restore(self.windowLayout, function(report)
-          if self.stopped then return end
-          audit.write('windows_restored', report)
+        local function complete(report)
+          if not current() then return end
+          write('windows_restored', report)
           local ok, error = pcall(restoreRemoteWindows)
-          if not ok then
-            self.state = 'restoreFailed'
-            audit.write('restore_failed', {reason=tostring(error),stage='rdp_fullscreen'})
-            notify('rdpRestoreFailed')
-            return
-          end
-          if #report.failed > 0 then
-            self.state = 'restoreFailed'
-            notify('windowsRestoreFailed')
-            return
+          if not ok or #report.failed > 0 then
+            -- Window geometry is best effort; never retain an active guard for it.
+            local retained, error = pcall(hs.settings.set, 'awayGuard.lastWindowRecovery', {snapshot=self.windowLayout,
+              remoteWindows=self.remoteWindows,report=report,rdpError=not ok and tostring(error) or nil})
+            if not retained then diagnostic(error) end
+            write('window_recovery_incomplete', {report=report,rdpError=not ok and tostring(error) or nil})
           end
           hs.settings.clear(marker)
           self.state = 'idle'
-          audit.write('restore_complete', {reason=self.trigger and self.trigger.reason})
-          notify('restored', {reason=i18n.reason(self.trigger and self.trigger.reason)})
-        end)
+          write('restore_complete', {reason=self.trigger and self.trigger.reason})
+          if not ok or #report.failed > 0 then notify('windowsRestoreIncomplete')
+          else notify('restored', {reason=i18n.reason(self.trigger and self.trigger.reason)}) end
+        end
+        local ok, error = pcall(function() layout:restore(self.windowLayout, protect(complete)) end)
+        if not ok then complete({restored=0,closed=0,failed={{reason=tostring(error)}}}) end
       else
         self.state = 'restoreFailed'
-        audit.write('restore_failed', {stage='displays',code=code,stdout=stdout,stderr=stderr})
+        write('restore_failed', {stage='displays',code=code,stdout=stdout,stderr=stderr})
         notify('displaysRestoreFailed')
       end
-    end, args)
+    end), args)
     if not self.restorer or not self.restorer:start() then
       self.restorer = nil; self.state = 'restoreFailed'
       notify('restoreStartFailed')
     end
   end
   function self:check()
-    if self.state == 'locking' then hs.caffeinate.lockScreen(); return end
+    if self.state == 'locking' then requestLock(); return end
     if self.state ~= 'armed' and self.state ~= 'preparing' then return end
+    if self.monitor and self.monitorAuthorized then self.monitor:setInput('heartbeat\n') end
     if not self.keepAwake or not self.keepAwake:isRunning() then trip('keep-awake process stopped'); return end
     if self.state == 'preparing' and self.remotePreparing then
       if hs.timer.secondsSinceEpoch() > self.deadline then trip('RDP fullscreen exit timed out'); return end
@@ -193,15 +229,16 @@ function M.new(options)
   end
   function self:beginDisplays()
     self.deadline = hs.timer.secondsSinceEpoch() + 25
+    self.monitorAuthorized = false
     local buffer = ''
     local monitor
-    monitor = hs.task.new('/bin/sh', function(code, stdout, stderr)
+    monitor = hs.task.new('/bin/sh', protect(function(code, stdout, stderr)
       if self.monitor ~= monitor or self.stopped then return end
       if self.state == 'armed' or self.state == 'preparing' then
-        hs.printf('[away-guard] Monitor exited (%s): %s', code, stderr or '')
         trip('display monitor exited')
+        hs.printf('[away-guard] Monitor exited (%s): %s', code, stderr or '')
       end
-    end, function(task, stdout, stderr)
+    end), protect(function(task, stdout, stderr)
       if self.stopped or self.monitor ~= task then return false end
       buffer = buffer .. (stdout or '')
       while buffer:find('\n', 1, true) do
@@ -214,6 +251,7 @@ function M.new(options)
           self.external, self.autoBrightness = event.external, event.autoBrightness
           persist() -- Persist before the helper can turn off any external display.
           task:setInput('disable\n')
+          self.monitorAuthorized = true
         elseif event.event == 'ready' and self.state == 'preparing' then
           local internal = hs.screen.find(self.screen)
           if not internal then trip('internal screen disappeared'); return false end
@@ -222,22 +260,22 @@ function M.new(options)
           self.lastHeartbeat = hs.timer.secondsSinceEpoch()
           self.displayBaseline = displaySignature()
           self.state = 'armed'
-          audit.write('armed', {screen=self.screen,external=self.external})
+          write('armed', {screen=self.screen,external=self.external})
           self:check()
           if self.state == 'armed' then notify('armed') end
         elseif event.event == 'auto_brightness_disabled' then
-          audit.write('auto_brightness_disabled', {previous=event.previous})
+          write('auto_brightness_disabled', {previous=event.previous})
         elseif event.event == 'progress' then
           hs.printf('[away-guard] Display setup: online=%s %s', hs.json.encode(event.online or {}), event.reason or '')
         elseif event.event == 'heartbeat' then
           self.lastHeartbeat = hs.timer.secondsSinceEpoch()
         elseif event.event == 'changed' or event.event == 'error' then
-          if not self.nativeIncident then audit.write('native_display_event', {details=event});self.nativeIncident=true end
           trip(event.reason or 'display changed')
+          if not self.nativeIncident then write('native_display_event', {details=event});self.nativeIncident=true end
         end
       end
       return true
-    end, {helper, 'watch'})
+    end), {helper, 'watch'})
     self.monitor = monitor
     if not self.monitor or not self.monitor:start() then
       self.monitor = nil; restore(); notify('monitorFailed'); return false
@@ -245,7 +283,13 @@ function M.new(options)
     return true
   end
   function self:arm()
-    if self.state ~= 'idle' then notify('alreadyArmed'); return false end
+    if self.state ~= 'idle' then
+      write('arm_rejected', {state=self.state})
+      if self.state == 'restoreFailed' then notify('recoveryPending')
+      elseif self.state == 'restoring' then notify('restorePending')
+      else notify('alreadyArmed') end
+      return false
+    end
     local screen
     for _,candidate in ipairs(hs.screen.allScreens()) do
       if candidate:name():find('Built%-in') then screen = candidate; break end
@@ -254,7 +298,7 @@ function M.new(options)
     local brightness = screen:getBrightness()
     if brightness == nil then notify('brightnessUnavailable'); return false end
     local ok, snapshot = pcall(function() return layout:capture() end)
-    if not ok then audit.write('capture_failed', {reason=tostring(snapshot)});notify('captureFailed');return false end
+    if not ok then write('capture_failed', {reason=tostring(snapshot)});notify('captureFailed');return false end
     self.windowLayout, self.trigger, self.autoBrightness, self.nativeIncident = snapshot, nil, nil, false
     self.unchangedDisplayLogged = false
     self.screen, self.originalBrightness, self.external = screen:getUUID(), brightness, {}
@@ -277,7 +321,7 @@ function M.new(options)
     self.keepAwake = keepAwake
     if not self.keepAwake or not self.keepAwake:start() then release(); notify('keepAwakeFailed'); return false end
     self.state = 'preparing'
-    audit.write('preparing', {windows=#self.windowLayout.windows,rdpWindows=#self.remoteWindows})
+    write('preparing', {windows=#self.windowLayout.windows,rdpWindows=#self.remoteWindows})
     self.deadline = hs.timer.secondsSinceEpoch() + 20
     persist()
     if self.remotePreparing then
@@ -292,44 +336,58 @@ function M.new(options)
     end
     return true -- Setup completes asynchronously; the ready message confirms arming.
   end
-  self.poll = hs.timer.doEvery(0.3, function() self:check() end)
-  self.displays = hs.screen.watcher.new(function()
+  self.arm = protect(self.arm)
+  self.poll = hs.timer.doEvery(0.3, protect(function() self:check() end))
+  self.displays = hs.screen.watcher.new(protect(function()
     -- Our own initial disable emits configuration changes; helper verifies physical topology during setup.
     if self.state == 'armed' then
       local signature = displaySignature()
       if signature ~= self.displayBaseline then
-        audit.write('display_configuration_changed', {before=self.displayBaseline,after=signature})
         trip('display configuration changed')
+        write('display_configuration_changed', {before=self.displayBaseline,after=signature})
       elseif not self.unchangedDisplayLogged then
         self.unchangedDisplayLogged = true
-        audit.write('display_notification_unchanged', {signature=signature})
+        write('display_notification_unchanged', {signature=signature})
       end
     end
-  end):start()
+  end)):start()
   local events = hs.caffeinate.watcher
-  self.power = events.new(function(event)
+  self.power = events.new(protect(function(event)
+    if event == events.screensDidLock and self.state == 'restoring' then
+      self.restoreGeneration = (self.restoreGeneration or 0) + 1
+      self.state = 'locked'
+      layout:stop()
+      local task = self.restorer; self.restorer = nil
+      if task then task:terminate() end
+      write('restore_interrupted', {reason='screen locked during recovery'})
+      return
+    end
     if event == events.screensDidLock and self.state ~= 'idle' and self.state ~= 'restoring' and self.state ~= 'locked' then
-      local observed = audit.write('lock_observed', {reason=self.state == 'locking' and 'guard_requested' or 'system_or_external_lock',state=self.state})
-      if self.state ~= 'locking' then
+      local previous = self.state
+      self.state = 'locked'
+      local observed = write('lock_observed', {reason=previous == 'locking' and 'guard_requested' or 'system_or_external_lock',state=previous})
+      if previous ~= 'locking' then
         self.trigger = observed
         hs.settings.set('awayGuard.lastTrigger', self.trigger)
         persist()
       end
-      self.state = 'locked'
-    elseif event == events.screensDidUnlock and self.state ~= 'idle' then
+    elseif event == events.screensDidUnlock and self.state == 'locked' then
       restore()
+    elseif event == events.screensDidUnlock and self.state ~= 'idle' and self.state ~= 'restoring' then
+      trip('unlock without observed lock')
     elseif event == events.systemWillSleep then trip('system sleep')
     elseif event == events.systemDidWake then trip('system wake') end
-  end):start()
+  end)):start()
   function self:lastTrigger() return hs.settings.get('awayGuard.lastTrigger') end
   function self:returnAndLock()
     if self.state == 'idle' then notify('inactive'); return end
+    if self.state == 'restoring' then requestLock(); return end
     trip('manual return')
   end
   function self:stop()
     self.stopped = true
-    if self.state ~= 'idle' then hs.caffeinate.lockScreen() end
-    audit.write('stopped', {state=self.state})
+    if self.state ~= 'idle' then requestLock() end
+    write('stopped', {state=self.state})
     layout:stop()
     self.poll:stop(); self.displays:stop(); self.power:stop()
     stopMonitor(); release()
@@ -339,9 +397,9 @@ function M.new(options)
     self.screen, self.originalBrightness, self.external = saved.screen, saved.brightness, saved.external or {}
     self.remoteWindows = saved.remoteWindows or {}
     self.windowLayout, self.trigger, self.autoBrightness = saved.windowLayout, saved.trigger, saved.autoBrightness
-    audit.write('recovery_lock', {reason=self.trigger and self.trigger.reason})
     self.state = 'locking'
-    hs.caffeinate.lockScreen()
+    requestLock()
+    write('recovery_lock', {reason=self.trigger and self.trigger.reason})
   end
   return self
 end
