@@ -1,4 +1,5 @@
 import importlib.util
+import errno
 import os
 from pathlib import Path
 import pty
@@ -25,6 +26,17 @@ def title(value):
 
 @unittest.skipUnless(sys.platform.startswith("linux"), "Linux inotify")
 class ThemeNotificationsTest(unittest.TestCase):
+    def test_unavailable_watch_reports_reason_without_reporting_unsupported_hosts(self):
+        error = OSError(errno.EMFILE, "inotify_init1")
+        report = mock.Mock()
+        with mock.patch.dict(os.environ, {"TMUX": "test"}), \
+             mock.patch.object(theme, "ThemeNotifications", side_effect=error):
+            self.assertIsNone(theme.theme_notifications(None, report))
+            report.assert_called_once_with(error)
+            report.reset_mock()
+            self.assertIsNone(theme.theme_notifications(Path("colors.properties"), report))
+            report.assert_not_called()
+
     def test_atomic_replacement_ignores_same_mode_and_other_files(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "appearance"
@@ -173,6 +185,32 @@ class RestartGateTest(unittest.TestCase):
         self.assertIsNotNone(gate.refresh_signature(palette, palette))
         self.assertFalse(gate.dirty)
 
+    def test_pane_focus_foreground_changes_do_not_refresh(self):
+        gate = theme.RestartGate(0)
+        gate.input(b"\x1b]10;rgb:aa/b2/bf\x07\x1b]11;rgb:28/2c/34\x07", 0)
+        for foreground in (b"5c/63/70", b"aa/b2/bf", b"5c/63/70"):
+            gate.input(b"\x1b]10;rgb:" + foreground + b"\x07", 5)
+            self.assertIsNone(gate.refresh_signature(None, None))
+        self.assertFalse(gate.dirty)
+
+    def test_pane_focus_does_not_reset_background_change_debounce(self):
+        gate = theme.RestartGate(0)
+        gate.input(b"\x1b]10;rgb:aa/b2/bf\x07\x1b]11;rgb:28/2c/34\x07", 0)
+        gate.input(b"\x1b]10;rgb:38/3a/42\x07\x1b]11;rgb:fa/fa/fa\x07", 5)
+        refresh = gate.refresh_signature(None, None)
+        self.assertIsNotNone(refresh)
+        gate.input(b"\x1b]10;rgb:a0/a1/a7\x07", 6)
+        self.assertEqual(gate.refresh_signature(None, None), refresh)
+
+    def test_palette_file_foreground_change_still_waits_for_delivery(self):
+        baseline = b"foreground=#aab2bf\nbackground=#282c34\n"
+        current = b"foreground=#cdd6f4\nbackground=#282c34\n"
+        gate = theme.RestartGate(0)
+        gate.input(b"\x1b]10;rgb:aa/b2/bf\x07\x1b]11;rgb:28/2c/34\x07", 0)
+        self.assertIsNone(gate.refresh_signature(current, baseline))
+        gate.input(b"\x1b]10;rgb:cd/d6/f4\x07", 5)
+        self.assertIsNotNone(gate.refresh_signature(current, baseline))
+
     def test_file_change_waits_for_actual_terminal_reload(self):
         gate = theme.RestartGate(0)
         palette = b"foreground=#cdd6f4\nbackground=#1e1e2e\n"
@@ -241,6 +279,72 @@ class RestartGateTest(unittest.TestCase):
 
 @unittest.skipUnless(hasattr(os, "fork"), "PTY supervisor requires POSIX")
 class SupervisorTest(unittest.TestCase):
+    def test_pane_focus_foreground_change_never_quits_or_resumes(self):
+        session = "01a12a2b-3287-7bf2-8fc1-661e52ea78b1"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "appearance").write_text("dark")
+            child = root / "codex"
+            child.write_text(
+                f"#!{sys.executable}\n"
+                "import os,select,sys,time,tty\n"
+                "tty.setraw(0)\n"
+                "if 'resume' in sys.argv: print('UNEXPECTED_RESUME',flush=True);sys.exit(93)\n"
+                "os.write(1,b'\\x1b]0;codex | Working\\x07')\n"
+                f"os.write(1,b'\\x1b]0;codex | Ready | {session}\\x07')\n"
+                "start=time.monotonic();queried=False\n"
+                "while time.monotonic()-start<3.5:\n"
+                " if not queried and time.monotonic()-start>=0.5:\n"
+                "  os.write(1,b'INACTIVE\\x1b]10;?\\x07\\x1b]11;?\\x07');queried=True\n"
+                " if select.select([0],[],[],0.05)[0] and b'\\x04' in os.read(0,4096):\n"
+                f"  os.write(1,b'\\r\\nSession ID: {session}\\r\\n');sys.exit(0)\n"
+                "print('NO_RESTART',flush=True)\n"
+            )
+            child.chmod(0o755)
+            master, slave = pty.openpty()
+            env = dict(os.environ, TMUX="test", XDG_STATE_HOME=str(root))
+            env.pop("AGENT_THEME_RESTART", None)
+            env.pop("CODEX_THEME_RESTART", None)
+            process = subprocess.Popen(
+                [sys.executable, "-B", str(ROOT / "config/zsh/agent-capture-session.py"),
+                 str(root / "session"), str(child)],
+                stdin=slave, stdout=slave, stderr=slave, env=env,
+            )
+            os.close(slave)
+            output = bytearray()
+            pending = bytearray()
+            deadline = time.monotonic() + 8
+            try:
+                while time.monotonic() < deadline:
+                    if select.select([master], [], [], 0.1)[0]:
+                        try:
+                            chunk = os.read(master, 65536)
+                        except OSError:
+                            break
+                        output.extend(chunk)
+                        pending.extend(chunk)
+                        for code in (10, 11):
+                            query = f"\x1b]{code};?\x07".encode()
+                            while query in pending:
+                                start = pending.index(query)
+                                del pending[start:start + len(query)]
+                                foreground = "5c/63/70" if b"INACTIVE" in output else "aa/b2/bf"
+                                color = foreground if code == 10 else "28/2c/34"
+                                os.write(master, f"\x1b]{code};rgb:{color}\x07".encode())
+                        del pending[:-4096]
+                    if process.poll() is not None:
+                        break
+                self.assertEqual(process.wait(timeout=2), 0, output.decode(errors="replace"))
+                self.assertIn(b"INACTIVE", output)
+                self.assertIn(b"NO_RESTART", output)
+                self.assertNotIn(b"UNEXPECTED_RESUME", output)
+                self.assertNotIn(b"refreshing terminal theme", output)
+            finally:
+                if process.poll() is None:
+                    process.kill()
+                    process.wait()
+                os.close(master)
+
     def test_real_pty_waits_for_completion_and_resumes_exact_id(self):
         self.check_pty_agent("codex")
 
@@ -254,7 +358,15 @@ class SupervisorTest(unittest.TestCase):
     def test_tmux_idle_stops_queries_and_state_event_resumes_exact_thread(self):
         self.check_terminal_only_refresh(True)
 
-    def check_terminal_only_refresh(self, watched):
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux inotify")
+    def test_tmux_watch_recovers_after_initial_quota_failures(self):
+        self.check_terminal_only_refresh(True, "startup")
+
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux inotify")
+    def test_tmux_lost_watch_is_closed_and_recovers(self):
+        self.check_terminal_only_refresh(True, "lost")
+
+    def check_terminal_only_refresh(self, watched, watch_failure=None):
         session = "01a12a2b-3287-7bf2-8fc1-661e52ea78b1"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -279,6 +391,28 @@ class SupervisorTest(unittest.TestCase):
             )
             child.chmod(0o755)
             launcher = root / "launcher.py"
+            recovery_setup = ""
+            if watch_failure is not None:
+                recovery_setup = (
+                    "import errno,time\nfrom pathlib import Path\n"
+                    "t.THEME_WATCH_RETRY_SECONDS=0.3\n"
+                    "original=t.ThemeNotifications;attempts=0\n"
+                    "class FaultyNotifications(original):\n"
+                    " def __init__(self,path):\n"
+                    "  global attempts\n"
+                    "  attempts+=1;self.first=attempts==1\n"
+                    f"  with Path({str(root / 'watch-attempts')!r}).open('a') as f:f.write(str(time.monotonic())+'\\n')\n"
+                    + ("  if attempts<=3:raise OSError(errno.EMFILE,'inotify_init1')\n"
+                       if watch_failure == "startup" else "") +
+                    "  super().__init__(path)\n"
+                    " def drain(self):\n"
+                    + ("  if self.first:raise OSError('Appearance watch lost')\n"
+                       if watch_failure == "lost" else "") +
+                    "  changed=super().drain()\n"
+                    "  if changed:os.write(2,b'RECOVERED_WATCH_EVENT\\r\\n')\n"
+                    "  return changed\n"
+                    "t.ThemeNotifications=FaultyNotifications\n"
+                )
             launcher.write_text(
                 "import sys,os,importlib.util\n"
                 f"sys.path.insert(0,{str(ROOT / 'config/zsh')!r})\n"
@@ -286,6 +420,7 @@ class SupervisorTest(unittest.TestCase):
                 f"s=importlib.util.spec_from_file_location('capture',{str(ROOT / 'config/zsh/agent-capture-session.py')!r})\n"
                 "c=importlib.util.module_from_spec(s);s.loader.exec_module(c)\n"
                 "t.palette_path=lambda:None\n"
+                + recovery_setup +
                 f"status,_=t.run([{str(child)!r}],lambda o:c.session_id(o,'traex'),'traex')\n"
                 "sys.exit(os.waitstatus_to_exitcode(status))\n"
             )
@@ -302,10 +437,17 @@ class SupervisorTest(unittest.TestCase):
             started = time.monotonic()
             deadline = started + 24
             initial_queries = 0
+            lost_event_sent = False
             try:
                 while time.monotonic() < deadline:
+                    if watch_failure == "lost" and not lost_event_sent and time.monotonic() - started >= 1:
+                        temporary = root / "appearance.new"
+                        temporary.write_text("dark")
+                        temporary.replace(state)
+                        lost_event_sent = True
                     if watched and not light and time.monotonic() - started >= 6:
-                        self.assertEqual(initial_queries, 2, "Idle tmux wrapper must query only at startup")
+                        if watch_failure is None:
+                            self.assertEqual(initial_queries, 2, "Idle tmux wrapper must query only at startup")
                         temporary = root / "appearance.new"
                         temporary.write_text("light")
                         temporary.replace(state)
@@ -335,6 +477,15 @@ class SupervisorTest(unittest.TestCase):
                         break
                 self.assertEqual(process.wait(timeout=2), 0, output.decode(errors="replace"))
                 self.assertIn(b"RESUMED", output)
+                if watch_failure is not None:
+                    self.assertEqual(output.count(b"theme watch unavailable"), 1)
+                    self.assertEqual(output.count(b"theme watch restored"), 1)
+                    self.assertIn(b"RECOVERED_WATCH_EVENT", output)
+                    attempts = [float(value) for value in (root / "watch-attempts").read_text().splitlines()]
+                    if watch_failure == "startup":
+                        self.assertGreaterEqual(len(attempts), 4)
+                        self.assertTrue(all(b - a >= 0.2 for a, b in zip(attempts[:3], attempts[1:4])))
+                        self.assertIn(b"inotify_init1", output)
             finally:
                 if process.poll() is None:
                     process.kill()

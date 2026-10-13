@@ -55,7 +55,10 @@ clear forwards so desktop-specific `LocalForward` paths do not break mobile sync
 Normal `codex`, `traex` and `traex-budget` launches through the zsh
 resume-history wrapper now monitor the
 effective terminal colors from `config/zsh/agent_theme_restart.py`. It queries
-the displayed foreground/background using OSC 10/11. Inside Linux tmux, when
+the displayed foreground/background using OSC 10/11. Terminal-only refreshes
+follow background changes: tmux's foreground dimming on pane focus changes
+must not trigger a restart or reset the theme debounce. Foreground replies
+still verify delivery of Termux palette-file changes. Inside Linux tmux, when
 the host has published `${XDG_STATE_HOME:-~/.local/state}/appearance`, it watches
 atomic file replacements with inotify: one startup query, then queries only
 after the mode changes. Identical publications do not trigger queries. A
@@ -63,6 +66,10 @@ two-second debounce and bounded confirmation retries cover asynchronous tmux
 repainting. An unavailable/lost watch falls back to five-second queries, as do
 ordinary terminals, macOS and Termux's palette-reload path. Idle supervisors
 block on input, output and theme events instead of waking four times a second.
+On Linux tmux, unavailable watches are retried every 30 seconds. Each outage
+prints one diagnostic to stderr, and successful recovery prints one notice.
+Recovery confirms the displayed palette before returning to event-only queries;
+unsupported hosts keep their normal polling without watch retries.
 The Termux palette file is also checked. A delayed reload therefore triggers refresh even
 when the file was already correct, and a supported color query prevents
 restarting before the new palette is actually displayed. Query replies do not

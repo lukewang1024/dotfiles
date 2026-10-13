@@ -36,6 +36,7 @@ FLAG_OPTIONS = {
     "--strict-config", "--oss",
 }
 RESUME_FLAGS = {"--last", "--all", "--include-non-interactive"}
+THEME_WATCH_RETRY_SECONDS = 30
 NON_INTERACTIVE_COMMANDS = {
     "fork", "exec", "e", "review", "app-server", "agents", "queue",
     "archive", "delete", "migrate-rollouts", "unarchive", "cloud", "mcp",
@@ -180,14 +181,18 @@ class RestartGate:
 
     def refresh_signature(self, current, baseline):
         """Watch displayed colors too, and wait for reload delivery before exit."""
+        # tmux dims the default foreground when a pane loses focus. That is
+        # not a palette reload: use the background for terminal-only changes
+        # and debounce, retaining foreground replies for file verification.
         displayed_changed = (
             self.initial_terminal_colors is not None
-            and self.terminal_colors != self.initial_terminal_colors
+            and self.terminal_colors.get(11) != self.initial_terminal_colors.get(11)
         )
+        displayed = (self.terminal_colors[11],) if 11 in self.terminal_colors else ()
         if current == baseline and not displayed_changed:
             return None
         if current is None:
-            return (None, tuple(sorted(self.terminal_colors.items()))) if displayed_changed else None
+            return (None, displayed) if displayed_changed else None
         # When the terminal supports OSC queries, do not relaunch against an
         # old palette while the settings broadcast has not yet been delivered.
         for code, name in ((10, b"foreground"), (11, b"background")):
@@ -196,7 +201,7 @@ class RestartGate:
                 expected = tuple(bytes.fromhex(match[1].decode()))
                 if self.terminal_colors[code] != expected:
                     return None
-        return (current, tuple(sorted(self.terminal_colors.items())))
+        return (current, displayed)
 
     def output(self, data, now):
         self.title_bytes.extend(data)
@@ -306,14 +311,16 @@ class ThemeNotifications:
         os.close(self.fd)
 
 
-def theme_notifications(palette):
+def theme_notifications(palette, on_error=None):
     # Termux still verifies its palette reload; unsupported hosts keep polling.
     if palette is not None or not os.environ.get("TMUX") or not sys.platform.startswith("linux"):
         return None
     path = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state"))) / "appearance"
     try:
         return ThemeNotifications(path)
-    except (OSError, AttributeError):
+    except (OSError, AttributeError) as error:
+        if on_error is not None:
+            on_error(error)
         return None
 
 
@@ -334,7 +341,18 @@ def spawn_once(command, palette, baseline, agent="codex"):
     pending_theme = None
     theme_changed_at = None
     next_color_query = 0
-    notifications = theme_notifications(palette)
+    watch_retry_at = None
+
+    def watch_unavailable(error):
+        nonlocal watch_retry_at
+        if watch_retry_at is None:
+            write_all(2, (
+                f"\r\n[{agent}: theme watch unavailable ({error}); polling; "
+                f"retrying every {THEME_WATCH_RETRY_SECONDS:g}s]\r\n"
+            ).encode())
+        watch_retry_at = time.monotonic() + THEME_WATCH_RETRY_SECONDS
+
+    notifications = theme_notifications(palette, watch_unavailable)
     confirmation_until = 0
     refused_input_at = None
 
@@ -359,6 +377,8 @@ def spawn_once(command, palette, baseline, agent="codex"):
                 deadlines.append(request_deadline)
             elif next_color_query is not None:
                 deadlines.append(next_color_query)
+            if not requested and watch_retry_at is not None:
+                deadlines.append(watch_retry_at)
             if (
                 not requested and theme_changed_at is not None
                 and (refused_input_at is None or gate.last_input != refused_input_at)
@@ -374,9 +394,10 @@ def spawn_once(command, palette, baseline, agent="codex"):
             if notifications is not None and notifications.fd in readable:
                 try:
                     changed = notifications.drain()
-                except OSError:
+                except OSError as error:
                     notifications.close()
                     notifications = None
+                    watch_unavailable(error)
                     changed = True
                 if changed:
                     # theme-sync publishes before repainting tmux. Debounce and
@@ -402,6 +423,16 @@ def spawn_once(command, palette, baseline, agent="codex"):
                 tail.extend(data)
                 del tail[:-65536]
                 gate.output(data, now)
+            if not requested and watch_retry_at is not None and now >= watch_retry_at:
+                watch_retry_at = now + THEME_WATCH_RETRY_SECONDS
+                notifications = theme_notifications(palette, watch_unavailable)
+                if notifications is not None:
+                    watch_retry_at = None
+                    write_all(2, f"\r\n[{agent}: theme watch restored]\r\n".encode())
+                    # A mode change may have happened while the watch was down.
+                    # Verify the displayed palette before returning to idle.
+                    next_color_query = now + 2
+                    confirmation_until = now + 17
             if next_color_query is not None and now >= next_color_query and not requested:
                 write_all(1, b"\x1b]10;?\x07\x1b]11;?\x07")
                 next_color_query = now + 5 if notifications is None or now < confirmation_until else None
