@@ -81,6 +81,70 @@ class ThemeNotificationsTest(unittest.TestCase):
                 watch.close()
 
 
+class ColorRepliesTest(unittest.TestCase):
+    def test_consumes_own_replies_with_every_possible_read_split(self):
+        replies = b"\x1b]10;rgb:aaaa/b2b2/bfbf\x07\x1b]11;rgb:2828/2c2c/3434\x1b\\"
+        for split in range(len(replies) + 1):
+            with self.subTest(split=split):
+                parser = theme.ColorReplies()
+                parser.queried()
+                forwarded = parser.forward(b"\x04" + replies[:split])
+                forwarded += parser.forward(replies[split:] + b"next command\r")
+                self.assertEqual(forwarded, b"\x04next command\r")
+                self.assertFalse(parser.pending)
+
+    def test_real_pty_does_not_echo_monitor_replies_during_exit(self):
+        master, slave = pty.openpty()
+        command = [sys.executable, "-B", "-c",
+                   "import sys,time; print('EXITING',flush=True); time.sleep(0.3)"]
+        runner = (
+            "import sys; sys.path.insert(0,sys.argv[1]); "
+            "import agent_theme_restart as t; "
+            "t.spawn_once(sys.argv[2:],None,None)"
+        )
+        process = subprocess.Popen(
+            [sys.executable, "-B", "-c", runner, str(ROOT / "config/zsh"), *command],
+            stdin=slave, stdout=slave, stderr=slave,
+        )
+        os.close(slave)
+        output = bytearray()
+        try:
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                if select.select([master], [], [], 0.1)[0]:
+                    try:
+                        chunk = os.read(master, 65536)
+                    except OSError as error:
+                        if error.errno != errno.EIO:
+                            raise
+                        break
+                    output.extend(chunk)
+                    if b"\x1b]11;?\x07" in output:
+                        os.write(master, b"\x1b]10;rgb:aaaa/b2b2/bfbf\x07\x1b]11;rgb:2828/2c2c/3434\x07")
+                        # Respond only once, even if subsequent output arrives.
+                        output[:] = output.replace(b"\x1b]11;?\x07", b"QUERY")
+                if process.poll() is not None:
+                    break
+            self.assertEqual(process.wait(timeout=2), 0)
+            self.assertIn(b"EXITING", output)
+            self.assertIn(b"QUERY", output)
+            self.assertNotIn(b"rgb:", output)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+            os.close(master)
+
+    def test_preserves_child_replies_and_keyboard_sequences(self):
+        parser = theme.ColorReplies()
+        reply = b"\x1b]10;rgb:aa/bb/cc\x07"
+        self.assertEqual(parser.forward(reply), reply)
+        parser.queried()
+        keys = b"draft\x1b[A\x1bx\r"
+        self.assertEqual(parser.forward(keys), keys)
+        self.assertEqual(parser.forward(reply + reply), reply)
+
+
 class RestartGateTest(unittest.TestCase):
     def test_waits_for_explicit_ready_and_never_uses_silence(self):
         gate = theme.RestartGate(0)
