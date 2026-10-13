@@ -1,5 +1,5 @@
 package.path='config/hammerspoon/?.lua;'..package.path
-local records, lastTrigger = {}, nil
+local records, lastTrigger, lastWindowRecovery = {}, nil, nil
 local preferred, lastAlert = {'en-US'}, nil
 package.preload['private/modules/away-guard-log'] = function()
   return {new=function()return {path='/test/events.jsonl',write=function(event,fields)
@@ -29,7 +29,7 @@ local function watcher(callback)
 end
 local events={screensDidLock=1,screensDidUnlock=2,systemWillSleep=3,systemDidWake=4,new=watcher}
 hs={host={locale={preferredLanguages=function()return preferred end}},spaces={windowSpaces=function()return {42}end,allSpaces=function()return {['space-screen']={42}}end},axuielement={applicationElement=function()return {attributeValue=function()return {{asHSWindow=function()return remoteWindow end}} end}end},configdir='/config',
-  settings={get=function(key)if key=='awayGuard.session' then return stored else return lastTrigger end end,set=function(key,v)if key=='awayGuard.session' then stored=v else lastTrigger=v end end,clear=function()stored=nil end},
+  settings={get=function(key)if key=='awayGuard.session' then return stored else return lastTrigger end end,set=function(key,v)if key=='awayGuard.session' then stored=v elseif key=='awayGuard.lastWindowRecovery' then lastWindowRecovery=v else lastTrigger=v end end,clear=function()stored=nil end},
   alert={show=function(message)lastAlert=message end},printf=function()end,
   json={decode=function()return pending end,encode=function()return '[]' end},
   window={get=function(id)if remoteVisible and id==77 then return remoteWindow end end},
@@ -42,7 +42,10 @@ hs={host={locale={preferredLanguages=function()return preferred end}},spaces={wi
       start=function(self)self.running=allowStart;return allowStart and self or false end,
       terminate=function(self)self.running=false;callback(15,'','')end,
       isRunning=function(self)return self.running end,
-      setInput=function(self,value)assert(stored.external[1]=='external');self.input=value end}
+      setInput=function(self,value)
+        assert(stored.external[1]=='external');self.input=value
+        if value=='disarm\n' then self.running=false;callback(0,'','') end
+      end}
   end},
   timer={secondsSinceEpoch=function()return now end,doEvery=function(interval,callback)assert(interval==0.3);return watcher(callback)end},
   caffeinate={lockScreen=function()locks=locks+1 end,watcher=events},
@@ -85,6 +88,9 @@ setup(guard);count=2;guard:check();assert(guard.state=='locking');unlock(guard);
 setup(guard);guard:stop();assert(stored and not guard.keepAwake and not guard.monitor)
 local recovered=module.new();assert(recovered.state=='locking' and recovered.external[1]=='external')
 unlock(recovered,1);assert(recovered.state=='restoreFailed' and stored)
+local recoverySnapshot=stored
+assert(not recovered:arm() and recovered.state=='restoreFailed' and stored==recoverySnapshot)
+assert(lastAlert:find('recovery failed',1,true) and records[#records].state=='restoreFailed')
 recovered:returnAndLock();assert(recovered.state=='locking');unlock(recovered);assert(not stored)
 assert(recovered:arm());send(recovered,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
 now=now+26;recovered:check();assert(recovered.state=='locking');unlock(recovered)
@@ -101,8 +107,10 @@ local dark=module.new();assert(dark:arm());send(dark,'snapshot',{internal='inter
 allowDarken=false;send(dark,'ready');assert(dark.state=='locking' and stored.external[1]=='external')
 allowDarken=true;unlock(dark);dark:stop()
 assert(not stored)
-guard=module.new();setup(guard);layoutFailure=true;unlock(guard);assert(guard.state=='restoreFailed' and stored.windowLayout)
-layoutFailure=false;guard:returnAndLock();unlock(guard);assert(not stored)
+guard=module.new();setup(guard);layoutFailure=true;unlock(guard)
+assert(guard.state=='idle' and not stored and lastWindowRecovery.snapshot)
+assert(#lastWindowRecovery.report.failed==1 and lastAlert:find('guard ended',1,true))
+layoutFailure=false
 setup(guard);guard.power.callback(events.screensDidLock)
 assert(guard:lastTrigger().reason=='system_or_external_lock')
 unlock(guard);assert(not stored)
@@ -111,6 +119,8 @@ assert(guard:arm());send(guard,'snapshot',{internal='internal',external={'extern
 assert(stored.autoBrightness==false)
 guard.power.callback(events.screensDidLock);guard.power.callback(events.screensDidUnlock)
 assert(guard.restorer.args[4]=='--auto-brightness=off')
+assert(not guard:arm() and guard.state=='restoring' and stored)
+assert(lastAlert:find('in progress',1,true))
 guard.restorer.callback(0,'','');assert(not stored)
 -- RDP native fullscreen is left BEFORE disabling displays and restored only after unlock.
 remoteVisible=true;remoteFullscreen=true
@@ -148,4 +158,51 @@ restart:stop();remoteVisible=false
 restart:returnAndLock();assert(lastAlert=='Away guard is not active.')
 preferred={'zh-Hans'}
 restart:returnAndLock();assert(lastAlert=='离开守护尚未开启。')
+-- Unpaired unlock cannot release protection. Heartbeats follow disable authorization.
+stored=nil;brightness=0.4;count=1;preferred={'en-US'}
+local hardened=module.new();assert(hardened:arm())
+hardened:check();assert(not hardened.monitor.input)
+send(hardened,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
+send(hardened,'ready');hardened:check();assert(hardened.monitor.input=='heartbeat\n')
+hardened.power.callback(events.screensDidUnlock)
+assert(hardened.state=='locking' and hardened.monitor and not hardened.restorer)
+local native=hardened.monitor
+unlock(hardened);assert(native.input=='disarm\n' and not native.running and hardened.state=='idle')
+-- A new lock invalidates display AND delayed window completion callbacks.
+setup(hardened);hardened.power.callback(events.screensDidLock);hardened.power.callback(events.screensDidUnlock)
+local old=hardened.restorer
+hardened.power.callback(events.screensDidLock);assert(hardened.state=='locked' and stored)
+hardened.power.callback(events.screensDidUnlock);local fresh=hardened.restorer
+old.callback(0,'','');assert(hardened.state=='restoring' and hardened.restorer==fresh and stored)
+fresh.callback(0,'','');assert(hardened.state=='idle' and not stored)
+local delayed
+local asynchronous=module.new({layout={capture=function()return {windows={},screens={}}end,
+  stop=function()end,restore=function(_,_,callback)delayed=callback end}})
+setup(asynchronous);unlock(asynchronous)
+assert(asynchronous.state=='restoring')
+asynchronous.power.callback(events.screensDidLock)
+delayed({restored=0,closed=0,failed={}})
+assert(asynchronous.state=='locked' and stored)
+asynchronous.power.callback(events.screensDidUnlock);asynchronous.restorer.callback(0,'','')
+delayed({restored=0,closed=0,failed={}});assert(asynchronous.state=='idle' and not stored)
+-- Diagnostics, persistence and screen enumeration errors cannot prevent lock requests.
+local failing=module.new({audit={write=function()error('log unavailable')end}})
+setup(failing)
+local oldSet=hs.settings.set;hs.settings.set=function()error('settings unavailable')end
+local before=locks;brightness=0.1;failing:check();assert(locks==before+1 and failing.state=='locking')
+hs.settings.set=oldSet;unlock(failing)
+setup(failing);local oldScreens=hs.screen.allScreens
+hs.screen.allScreens=function()error('screen query failed')end
+before=locks;failing.poll.callback();assert(failing.state=='locking' and locks==before+1)
+hs.screen.allScreens=oldScreens;unlock(failing)
+local oldLock=hs.caffeinate.lockScreen;local calls=0
+setup(failing);hs.caffeinate.lockScreen=function()calls=calls+1;error('lock API raised')end
+brightness=0.1;failing.poll.callback();failing.poll.callback()
+assert(failing.state=='locking' and calls==2)
+hs.caffeinate.lockScreen=oldLock;unlock(failing)
+local brokenLayout=module.new({layout={capture=function()return {windows={},screens={}}end,
+  stop=function()end,restore=function()error('window restore raised')end}})
+setup(brokenLayout);unlock(brokenLayout)
+assert(brokenLayout.state=='idle' and not stored and lastWindowRecovery.report.failed[1].reason:find('window restore raised'))
 print('Away guard: async setup, persistence, exact positive brightness, display events, topology changes, watchdogs, lock retry, unlock restore, reload recovery and restore failure passed')
+print('Away guard hardening: authorization ordering, unpaired unlock, interrupted recovery, stale callbacks and diagnostic/API errors passed')

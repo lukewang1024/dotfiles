@@ -63,6 +63,12 @@ function M.new(options)
         local ok,status=pcall(function()
           -- Do not move a replacement window whose ID was recycled by another process.
           if not window or window:application():pid()~=saved.pid or window:application():bundleID()~=saved.bundle then return 'closed' end
+          local frame = window:frame()
+          -- The filter can retain a destroyed Windows App AX window indefinitely.
+          -- Wait through retries for transient zero geometry before treating it as closed.
+          if not frame or frame.w <= 0 or frame.h <= 0 then
+            return attempts >= 6 and 'closed' or 'window_unavailable'
+          end
           if not screen then return 'display_missing' end
           if not same(screen:fullFrame(),snapshot.screens[saved.screen]) then return 'display_layout_changed' end
           if window:isFullScreen() then return 'window_now_fullscreen' end
