@@ -91,7 +91,9 @@ inspection of the current environment, not a promise of successful provisioning.
   scope of preceding Host/Match blocks; no trailing reset is needed at EOF.
   The legacy link inventory is retained, but SSH entries dispatch to this setup.
   To migrate or refresh just SSH, run `./init run shell ssh_setup`.
-- Linux inotify settings use a dedicated sysctl drop-in. macOS Launchpad reset
+- Linux inotify settings use a dedicated sysctl drop-in with 524288 watched
+  paths and 1024 instances per user, covering concurrent agents and dev servers.
+  The task loads only that drop-in. macOS Launchpad reset
   uses its reset preference instead of deleting system cache trees.
 - XDG migration is implemented in Python. `util/dotfiles/migrate-xdg` is only a
   compatibility launcher. Interrupted migrations retain the compatibility link.
