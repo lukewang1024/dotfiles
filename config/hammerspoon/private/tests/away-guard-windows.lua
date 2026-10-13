@@ -35,6 +35,9 @@ run();assert(report.failed[1].reason=='display_layout_changed')
 frames.external=frame(-2000);currentFrame=frame(0);reject=10
 run();assert(report.failed[1].reason=='frame_not_applied')
 fullscreen=true;run();assert(report.failed[1].reason=='window_now_fullscreen');fullscreen=false
+currentFrame={x=0,y=0,w=0,h=0};reject=0
+run();assert(report.closed==1 and #report.failed==0)
+currentFrame=frame(0)
 windows={};run();assert(report.closed==1 and #report.failed==0)
 windows={window};app.pid=function()return 43 end
 run();assert(report.closed==1 and #report.failed==0)

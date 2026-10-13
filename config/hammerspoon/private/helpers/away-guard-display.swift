@@ -4,10 +4,84 @@ import CoreGraphics
 import Darwin
 
 struct Failure: Error { let message: String }
+// Independent of Hammerspoon's Lua loop and of display/logging work on the main thread.
+final class GuardWatchdog {
+    private let mutex = NSLock()
+    private var lastHeartbeat = ProcessInfo.processInfo.systemUptime
+    private var enabled = false
+    private var incident = false
+    private var lockObserved = false
+    private var disarmed = false
+    let lockScreen: () -> Void
+    let isLocked: () -> Bool
+    init(lockScreen: @escaping () -> Void, isLocked: @escaping () -> Bool) {
+        self.lockScreen = lockScreen; self.isLocked = isLocked
+    }
+    func enable(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        mutex.lock(); defer { mutex.unlock() }
+        enabled = true; lastHeartbeat = now
+    }
+    func heartbeat(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        mutex.lock(); defer { mutex.unlock() }
+        lastHeartbeat = now
+    }
+    func disarm() { mutex.lock(); disarmed = true; mutex.unlock() }
+    func trip() { mutex.lock(); incident = true; mutex.unlock(); check() }
+    func check(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        mutex.lock(); defer { mutex.unlock() }
+        guard enabled && !disarmed else { return }
+        if now - lastHeartbeat > 2 { incident = true }
+        guard incident && !lockObserved else { return }
+        if isLocked() { lockObserved = true; return }
+        lockScreen()
+    }
+}
+var watchdog: GuardWatchdog?
+var watchdogTimer: DispatchSourceTimer?
+func consumeCommands(_ fd: Int32, _ guardWatchdog: GuardWatchdog, disarm: () -> Void) {
+    var buffer = "", byte: UInt8 = 0
+    while true {
+        let count = read(fd, &byte, 1)
+        if count == -1 && errno == EINTR { continue }
+        guard count == 1 else { guardWatchdog.trip(); return }
+        if byte == 10 {
+            if buffer == "heartbeat" { guardWatchdog.heartbeat() }
+            else if buffer == "disarm" { guardWatchdog.disarm(); disarm(); return }
+            else { guardWatchdog.trip() }
+            buffer = ""
+        } else if buffer.count < 64 { buffer.append(Character(UnicodeScalar(byte))) }
+        else { guardWatchdog.trip() }
+    }
+}
+func lockFunction() throws -> @convention(c) () -> Void {
+    // Same login.framework entry point used by hs.caffeinate.lockScreen().
+    guard let framework = dlopen("/System/Library/PrivateFrameworks/login.framework/login", RTLD_NOW),
+          let pointer = dlsym(framework, "SACLockScreenImmediate") else {
+        throw Failure(message: "Independent lock API unavailable")
+    }
+    return unsafeBitCast(pointer, to: (@convention(c) () -> Void).self)
+}
+func screenIsLocked() -> Bool {
+    (CGSessionCopyCurrentDictionary() as? [String: Any])?["CGSSessionScreenIsLocked"] as? Bool == true
+}
+func brightness(_ id: UInt32) throws -> Float {
+    typealias Get = @convention(c) (UInt32, UnsafeMutablePointer<Float>) -> Int32
+    guard let brightnessFramework,
+          let pointer = dlsym(brightnessFramework, "DisplayServicesGetBrightness") else {
+        throw Failure(message: "Native brightness API unavailable")
+    }
+    var value: Float = 0
+    guard unsafeBitCast(pointer, to: Get.self)(id, &value) == 0, value.isFinite else {
+        throw Failure(message: "Cannot read native brightness")
+    }
+    return value
+}
 func emit(_ event: String, _ fields: [String: Any] = [:]) {
     var value = fields; value["event"] = event
     if let data = try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]) {
-        FileHandle.standardOutput.write(data + Data([10]))
+        let line = data + Data([10])
+        // Diagnostics cannot block locking or crash on a disconnected parent.
+        line.withUnsafeBytes { bytes in _ = write(STDOUT_FILENO, bytes.baseAddress, bytes.count) }
     }
 }
 let framework = dlopen("/System/Library/PrivateFrameworks/SkyLight.framework/SkyLight", RTLD_LAZY)
@@ -111,13 +185,54 @@ func restore(_ wanted: [String]) throws {
 }
 var armed = false
 let callback: CGDisplayReconfigurationCallBack = { id, flags, _ in
-    if armed && !flags.contains(.beginConfigurationFlag) { emit("changed", ["reason": "display reconfiguration", "displayID": id, "flags": flags.rawValue]) }
+    if armed && !flags.contains(.beginConfigurationFlag) {
+        watchdog?.trip()
+        emit("changed", ["reason": "display reconfiguration", "displayID": id, "flags": flags.rawValue])
+    }
 }
 do {
     let args = Array(CommandLine.arguments.dropFirst())
     switch args.first {
+    case "self-test":
+        var locks = 0, locked = false
+        let test = GuardWatchdog(lockScreen: { locks += 1 }, isLocked: { locked })
+        test.enable(now: 10); test.check(now: 11); precondition(locks == 0)
+        test.heartbeat(now: 11); test.check(now: 12.9); precondition(locks == 0)
+        test.check(now: 13.1); precondition(locks == 1)
+        test.check(now: 13.4); precondition(locks == 2)
+        locked = true; test.check(now: 13.7); locked = false
+        test.check(now: 14); precondition(locks == 2) // Allow authenticated return.
+        let disarmed = GuardWatchdog(lockScreen: { locks += 1 }, isLocked: { false })
+        disarmed.enable(now: 10); disarmed.disarm(); disarmed.check(now: 100); disarmed.trip()
+        precondition(locks == 2)
+        let disconnected = GuardWatchdog(lockScreen: { locks += 1 }, isLocked: { false })
+        disconnected.enable(); disconnected.trip(); precondition(locks == 3)
+        var descriptors: [Int32] = [0, 0]
+        precondition(pipe(&descriptors) == 0)
+        let commands = GuardWatchdog(lockScreen: { locks += 1 }, isLocked: { false })
+        commands.enable(); var didDisarm = false
+        let input = Array("heartbeat\ndisarm\n".utf8)
+        _ = input.withUnsafeBytes { write(descriptors[1], $0.baseAddress, $0.count) }
+        close(descriptors[1]);consumeCommands(descriptors[0], commands, disarm: { didDisarm = true });close(descriptors[0])
+        commands.trip();precondition(didDisarm && locks == 3)
+        precondition(pipe(&descriptors) == 0)
+        close(descriptors[1]);consumeCommands(descriptors[0], disconnected, disarm: {});close(descriptors[0])
+        precondition(locks == 4)
+        // The main thread can block while the independent timer still requests a lock.
+        let signalled = DispatchSemaphore(value: 0)
+        let asynchronous = GuardWatchdog(lockScreen: { signalled.signal() }, isLocked: { false })
+        asynchronous.enable(now: ProcessInfo.processInfo.systemUptime - 3)
+        let independent = DispatchSource.makeTimerSource(queue: DispatchQueue(label: "away-guard.test"))
+        independent.schedule(deadline: .now(), repeating: .milliseconds(100))
+        independent.setEventHandler { asynchronous.check() };independent.resume()
+        precondition(signalled.wait(timeout: .now() + 1) == .success)
+        asynchronous.disarm();independent.cancel()
+        _ = try lockFunction() // Resolve, never invoke, the actual API.
+        emit("self_test_passed", ["cases": "heartbeat timeout, retries, lock observation, disarm, pipe commands/EOF, independent queue, lock API resolution"])
     case "status":
-        emit("status", ["topology": try topology(), "online": try online(), "autoBrightness": try autoBrightness(internalDisplay())])
+        _ = try lockFunction()
+        emit("status", ["topology": try topology(), "online": try online(), "autoBrightness": try autoBrightness(internalDisplay()),
+                        "brightness": try brightness(internalDisplay()), "lockAPIAvailable": true])
     case "restore":
         let identities = args.dropFirst().filter { !$0.hasPrefix("--auto-brightness=") }
         try restore(Array(identities))
@@ -126,6 +241,13 @@ do {
         }
         emit("restored")
     case "watch":
+        let lock = try lockFunction()
+        let guardWatchdog = GuardWatchdog(lockScreen: { lock() }, isLocked: screenIsLocked)
+        watchdog = guardWatchdog
+        signal(SIGPIPE, SIG_IGN) // A closed stdout must not kill the independent watchdog.
+        guard fcntl(STDOUT_FILENO, F_SETFL, fcntl(STDOUT_FILENO, F_GETFL) | O_NONBLOCK) != -1 else {
+            throw Failure(message: "Cannot configure nonblocking monitor output")
+        }
         let ids = try displays()
         guard let internalID = ids.first(where: { CGDisplayIsBuiltin($0) != 0 && CGDisplayIsOnline($0) != 0 }) else {
             throw Failure(message: "Open the MacBook lid first")
@@ -135,9 +257,23 @@ do {
         let saved = external.map { identity($0) }
         _ = try symbol("SLSConfigureDisplayEnabled", Enable.self)
         let automatic = try autoBrightness(internalID)
+        _ = try brightness(internalID) // Fail before disabling displays if native monitoring is unavailable.
         emit("snapshot", ["external": saved, "internal": try uuid(internalID), "autoBrightness": automatic])
         // Hammerspoon must persist the snapshot before allowing any display changes.
-        guard readLine() == "disable" else { throw Failure(message: "No disable authorization") }
+        // Read exactly one line without stdio read-ahead; the background reader owns subsequent input.
+        var command = "", byte: UInt8 = 0
+        while read(STDIN_FILENO, &byte, 1) == 1 && byte != 10 { command.append(Character(UnicodeScalar(byte))) }
+        guard command == "disable" else { throw Failure(message: "No disable authorization") }
+        guardWatchdog.enable()
+        let queue = DispatchQueue(label: "away-guard.watchdog")
+        let independentTimer = DispatchSource.makeTimerSource(queue: queue)
+        watchdogTimer = independentTimer // Retain through setup errors and parent disconnects.
+        independentTimer.schedule(deadline: .now(), repeating: .milliseconds(300))
+        independentTimer.setEventHandler { guardWatchdog.check() }
+        independentTimer.resume()
+        DispatchQueue(label: "away-guard.commands").async {
+            consumeCommands(STDIN_FILENO, guardWatchdog, disarm: { exit(0) })
+        }
         guard try topology() == baseline else { throw Failure(message: "Topology changed before disabling") }
         _ = try autoBrightness(internalID, set: false)
         emit("auto_brightness_disabled", ["previous": automatic])
@@ -177,16 +313,27 @@ do {
         let timer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { _ in
             do {
                 if try topology() != baseline || online() != [internalID] {
+                    guardWatchdog.trip()
                     emit("changed", ["reason": "physical or online topology changed", "online": try online(), "topology": try topology()])
                 }
+                let value = try brightness(internalID)
+                if value > 0 {
+                    guardWatchdog.trip()
+                    emit("changed", ["reason": "brightness increased or unreadable: \(value)"])
+                }
                 emit("heartbeat")
-            } catch { emit("error", ["reason": String(describing: error)]); exit(1) }
+            } catch {
+                guardWatchdog.trip()
+                emit("error", ["reason": String(describing: error)])
+            }
         }
         RunLoop.current.add(timer, forMode: .common)
         RunLoop.current.run()
     default: throw Failure(message: "Usage: away-guard-display status|watch|restore [IDENTITY ...]")
     }
 } catch {
+    watchdog?.trip()
     emit("error", ["reason": (error as? Failure)?.message ?? String(describing: error)])
+    if watchdogTimer != nil { RunLoop.current.run() } // Keep retrying independently after setup failure.
     exit(1)
 }

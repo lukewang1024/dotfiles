@@ -8,8 +8,8 @@ agents. `./init sync` installs the entrypoints and applies the managed settings.
   `claude-settings-apply`. Unmanaged keys such as hooks, permissions, model, and
   machine-local state are preserved.
 - `codex-tui.toml` owns the marked UI block inside `[tui]` in
-  `~/.codex/config.toml`, with `alternate_screen = "never"` to preserve terminal
-  scrollback for tmux copying. Raw output mode remains a manual toggle.
+  `~/.codex/config.toml`. Alternate screen uses Codex's default; syncing removes
+  the previously managed override. Raw output mode remains a manual toggle.
   `codex-settings-apply` also removes two known ignored
   settings from existing configs: `profiles.<name>.review_model` and
   `projects.<path>.sandbox_mode`. Other local settings and comments are preserved.

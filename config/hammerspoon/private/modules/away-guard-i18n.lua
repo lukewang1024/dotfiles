@@ -3,6 +3,8 @@ local M = {}
 local messages = {
   armed = {en='Away guard enabled: external displays disabled, internal brightness at 0.', zh='离开守护已开启：外屏已禁用，内屏亮度为 0。'},
   alreadyArmed = {en='Away guard is active. Increase brightness and authenticate to return.', zh='离开守护已开启；调亮屏幕并认证解锁后退出。'},
+  recoveryPending = {en='Previous away guard recovery failed. Use “Away guard: lock and return”, then authenticate to retry. Recovery snapshot retained.', zh='上次离开守护恢复失败。请执行“离开守护：锁屏并退出”，认证解锁后重试恢复；恢复快照仍保留。'},
+  restorePending = {en='Away guard recovery is in progress. Wait for it to finish before enabling again.', zh='离开守护正在恢复，请等待恢复完成后再开启。'},
   inactive = {en='Away guard is not active.', zh='离开守护尚未开启。'},
   openLid = {en='Open the MacBook lid before enabling away guard.', zh='请打开 MacBook 内屏后再开启守护。'},
   brightnessUnavailable = {en='Cannot read internal display brightness. Away guard was not enabled.', zh='无法读取内屏亮度，未开启守护。'},
@@ -12,6 +14,7 @@ local messages = {
   preparingRdp = {en='Preparing away guard: leaving RDP fullscreen before disabling external displays.', zh='正在准备离开守护：先退出 RDP 全屏，再禁用外屏。'},
   rdpRestoreFailed = {en='RDP fullscreen restore failed. Recovery data retained; lock and unlock again to retry.', zh='RDP 全屏恢复失败，已保留恢复信息；再次锁屏并解锁可重试。'},
   windowsRestoreFailed = {en='Some windows could not be restored. Details logged and snapshot retained; lock and unlock again to retry.', zh='部分窗口未能恢复，已记录原因并保留快照；再次锁屏并解锁可重试。'},
+  windowsRestoreIncomplete = {en='Displays restored and away guard ended. Some windows could not be restored; diagnostics retained. You can enable away guard again.', zh='显示器已恢复，离开守护已退出。部分窗口未能恢复，已保留诊断信息；可以再次开启守护。'},
   displaysRestoreFailed = {en='Display restore failed. Recovery data retained; lock and unlock again to retry.', zh='外屏恢复失败，已保留恢复信息；再次锁屏并解锁可重试。'},
   restoreStartFailed = {en='Cannot start display restore. Recovery data retained.', zh='无法启动外屏恢复，已保留恢复信息。'},
   restored = {en='Brightness, displays and windows restored. Lock reason: {reason}', zh='已恢复亮度、外屏和窗口。锁屏原因：{reason}'},
@@ -37,6 +40,7 @@ local reasons = {
   ['system sleep'] = {en='System sleep', zh='系统进入睡眠'},
   ['system wake'] = {en='System wake', zh='系统唤醒'},
   ['manual return'] = {en='Manual return requested', zh='手动请求锁屏并退出'},
+  ['unlock without observed lock'] = {en='Unlock event without a preceding lock', zh='未观察到锁屏就收到解锁事件'},
   ['system_or_external_lock'] = {en='System or another application locked the screen', zh='系统或其他应用触发锁屏'},
 }
 local function render(entry, values, locale)
