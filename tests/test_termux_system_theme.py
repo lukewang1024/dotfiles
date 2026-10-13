@@ -28,6 +28,10 @@ class TermuxSystemThemeTests(unittest.TestCase):
             relay = bin_dir / 'theme-push-remotes'
             relay.write_text('#!/bin/sh\nprintf \"%s\\n\" \"$1\" >> \"$HOME/pushes\"\n')
             relay.chmod(0o755)
+            fallback = bin_dir / 'tmux-appearance-fallback'
+            fallback.write_text(
+                '#!/bin/sh\nprintf "%s %s\\n" "$1" "$2" >> "$HOME/local-syncs"\n')
+            fallback.chmod(0o755)
             env = dict(os.environ, HOME=str(root), PREFIX=str(root),
                        TERMUX_THEME_DIR=str(root), TERMUX_THEME_AM=str(am))
             for _ in range(2):
@@ -35,6 +39,7 @@ class TermuxSystemThemeTests(unittest.TestCase):
             self.assertEqual((root / 'reloads').read_text(), 'reload\nreload\n')
             self.assertEqual(target.resolve(), palette)
             self.assertEqual((root / 'pushes').read_text(), 'dark\ndark\n')
+            self.assertEqual((root / 'local-syncs').read_text(), 'dark all\ndark all\n')
 
 
 if __name__ == '__main__':
