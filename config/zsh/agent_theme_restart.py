@@ -324,6 +324,42 @@ def theme_notifications(palette, on_error=None):
         return None
 
 
+class ColorReplies:
+    """Consume our OSC replies without stealing child queries or user input."""
+
+    def __init__(self):
+        self.pending = set()
+        self.buffer = bytearray()
+
+    def queried(self):
+        self.pending.update((10, 11))
+
+    def forward(self, data):
+        self.buffer.extend(data)
+        result = bytearray()
+        while self.buffer:
+            match = re.match(
+                rb"\x1b\](10|11);rgb:[0-9a-fA-F]+/[0-9a-fA-F]+/[0-9a-fA-F]+(?:\x07|\x1b\\)",
+                self.buffer,
+            )
+            if match and int(match[1]) in self.pending:
+                self.pending.remove(int(match[1]))
+                del self.buffer[:match.end()]
+                continue
+            # Reads can split anywhere, including between ESC and ST's slash.
+            partial = any(
+                prefix.startswith(self.buffer) or (
+                    self.buffer.startswith(prefix)
+                    and re.fullmatch(rb"[0-9a-fA-F/]*(?:\x1b)?", self.buffer[len(prefix):])
+                )
+                for prefix in (f"\x1b]{code};rgb:".encode() for code in self.pending)
+            )
+            if partial and len(self.buffer) < 4096:
+                break
+            result.append(self.buffer.pop(0))
+        return bytes(result)
+
+
 def spawn_once(command, palette, baseline, agent="codex"):
     """Forward a real PTY, requesting graceful exit only after a safe state."""
     pid, master = pty.fork()
@@ -341,6 +377,7 @@ def spawn_once(command, palette, baseline, agent="codex"):
     pending_theme = None
     theme_changed_at = None
     next_color_query = 0
+    color_replies = ColorReplies()
     watch_retry_at = None
 
     def watch_unavailable(error):
@@ -414,7 +451,9 @@ def spawn_once(command, palette, baseline, agent="codex"):
                 if requested and gate.last_input != previous_input:
                     # A later manual exit must not be mistaken for our probe.
                     requested = False
-                write_all(master, data)
+                forwarded = color_replies.forward(data)
+                if forwarded:
+                    write_all(master, forwarded)
             if master in readable:
                 try:
                     data = os.read(master, 65536)
@@ -439,6 +478,7 @@ def spawn_once(command, palette, baseline, agent="codex"):
                     next_color_query = now + 2
                     confirmation_until = now + 17
             if next_color_query is not None and now >= next_color_query and not requested:
+                color_replies.queried()
                 write_all(1, b"\x1b]10;?\x07\x1b]11;?\x07")
                 next_color_query = now + 5 if notifications is None or now < confirmation_until else None
             current = theme_signature(palette)
