@@ -102,6 +102,30 @@ as permission to launch a workbench dev server in an independent background
 process. This restriction applies only to dev servers that require the workbench
 task-pane workflow; other agent tasks use background execution by default.
 
+## Computer-use window cleanup
+
+Application windows, documents, dialogs, and browser tabs opened or created by
+the agent are task resources. Close them when their use is finished and before
+reporting the task complete, unless the user explicitly asks to leave them open.
+This includes Microsoft Word documents opened for inspection, editing, rendering,
+and verification. Delivering a file does not imply leaving its application window open.
+
+Record the existing windows/documents/tabs before starting, and track those the
+task creates or opens. Reuse task-owned windows where practical rather than
+accumulating new ones. Preserve the user's pre-existing windows and unrelated
+work; close individual task-owned resources rather than quitting the whole app.
+
+Save requested outputs to their intended paths and verify the saves before
+closing their windows. Discard unsaved changes only in known disposable test or
+scratch documents. Never discard user edits or an unidentified unsaved document.
+If ownership or save status is uncertain, preserve that resource and report the
+specific cleanup blocker instead of silently leaving it behind.
+
+Perform cleanup on successful completion and on failure or cancellation when
+control is still available. Verify that task-owned resources have closed; do not
+treat issuing a close command as proof. If the user explicitly requested that a
+resource remain open, identify what was kept open in the final handoff.
+
 ## Proxy inheritance for agent-initiated processes
 
 When this machine has an HTTP proxy configured, pass it to the **actual process
