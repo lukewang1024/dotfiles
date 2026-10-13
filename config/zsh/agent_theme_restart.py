@@ -373,9 +373,9 @@ def spawn_once(command, palette, baseline, agent="codex"):
             # the resumed UI receives it after the child has exited.
             now = time.monotonic()
             deadlines = []
-            if requested:
+            if requested and request_deadline is not None:
                 deadlines.append(request_deadline)
-            elif next_color_query is not None:
+            elif not requested and next_color_query is not None:
                 deadlines.append(next_color_query)
             if not requested and watch_retry_at is not None:
                 deadlines.append(watch_retry_at)
@@ -386,7 +386,7 @@ def spawn_once(command, palette, baseline, agent="codex"):
             ):
                 deadlines.append(max(theme_changed_at + 2, gate.ready_since + 2, gate.last_input + 2))
             timeout = max(0, min(deadlines) - now) if deadlines else None
-            readers = [master] if requested else [0, master]
+            readers = [master] if requested and request_deadline is not None else [0, master]
             if notifications is not None:
                 readers.append(notifications.fd)
             readable, _, _ = select.select(readers, [], [], timeout)
@@ -407,8 +407,13 @@ def spawn_once(command, palette, baseline, agent="codex"):
             if 0 in readable:
                 data = os.read(0, 65536)
                 if not data:
+                    requested = False
                     break
+                previous_input = gate.last_input
                 gate.input(data, now)
+                if requested and gate.last_input != previous_input:
+                    # A later manual exit must not be mistaken for our probe.
+                    requested = False
                 write_all(master, data)
             if master in readable:
                 try:
@@ -460,10 +465,13 @@ def spawn_once(command, palette, baseline, agent="codex"):
                 requested_theme = current
                 requested_thread = gate.thread_prefix
                 request_deadline = now + 3
-            elif requested and now >= request_deadline:
+            elif requested and request_deadline is not None and now >= request_deadline:
                 # A restored draft or dialog can refuse Ctrl+D. Never repeat
                 # it, clear the draft, kill the child, or force a timeout exit.
-                requested = False
+                # Slow shutdown is not evidence that Ctrl+D was refused.
+                # Accept input again, but retain our exit identity until real
+                # user input cancels it. Never send a second probe meanwhile.
+                request_deadline = None
                 refused_input_at = gate.last_input
                 gate.dirty = True
     finally:

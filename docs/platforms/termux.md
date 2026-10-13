@@ -52,7 +52,7 @@ clear forwards so desktop-specific `LocalForward` paths do not break mobile sync
 
 ### Agent refresh after a theme change
 
-Normal `codex`, `traex` and `traex-budget` launches through the zsh
+Normal `codex` and `traex` launches through the zsh
 resume-history wrapper now monitor the
 effective terminal colors from `config/zsh/agent_theme_restart.py`. It queries
 the displayed foreground/background using OSC 10/11. Terminal-only refreshes
@@ -79,6 +79,9 @@ waits for `Ready`, an attached thread ID and two seconds without input, then req
 exit. It resumes only when that exit succeeds and prints an exact session ID;
 manual exits, errors and missing IDs never trigger an automatic relaunch.
 The exit hint must also match the attached thread ID shown in the title.
+After a three-second exit wait, input is accepted again without discarding the
+pending exit identity: a slow successful shutdown still resumes, while real
+user input cancels that identity and prevents a later manual exit from resuming.
 The supervisor does not issue a stop command to a separate shared app-server.
 Launch arguments and proxy environment are preserved, while the original prompt is not sent again.
 

@@ -246,6 +246,23 @@ class RestartGateTest(unittest.TestCase):
             with mock.patch.dict(theme.os.environ, {"TRAEX_THEME_RESTART": "0"}):
                 self.assertFalse(theme.enabled(["traex"], "traex"))
                 self.assertTrue(theme.enabled(["codex"], "codex"))
+            with mock.patch.dict(theme.os.environ, {"CODEX_THEME_RESTART": "1"}):
+                self.assertTrue(theme.enabled(["codex"], "codex"))
+                with mock.patch.dict(theme.os.environ, {"AGENT_THEME_RESTART": "0"}):
+                    self.assertFalse(theme.enabled(["codex"], "codex"))
+
+    def test_tmux_focus_foreground_changes_do_not_authorize_restart(self):
+        gate = theme.RestartGate(0)
+        gate.input(b"\x1b]10;rgb:aaaa/b2b2/bfbf\x07\x1b]11;rgb:2828/2c2c/3434\x07", 0)
+        gate.output(title("Working"), 0)
+        gate.output(title("Ready"), 1)
+        for foreground in (b"5c5c/6363/7070", b"aaaa/b2b2/bfbf"):
+            gate.input(b"\x1b]10;rgb:" + foreground + b"\x07", 5)
+            self.assertTrue(gate.can_quit(10))
+            self.assertIsNone(gate.refresh_signature(None, None))
+        # A real dark/light background transition must still refresh.
+        gate.input(b"\x1b]11;rgb:efef/f1f1/f5f5\x07", 15)
+        self.assertIsNotNone(gate.refresh_signature(None, None))
 
     def test_traex_identity_waits_for_its_own_ready_thread(self):
         session = "01a12a2b-3287-7bf2-8fc1-661e52ea78b1"
@@ -347,6 +364,9 @@ class SupervisorTest(unittest.TestCase):
 
     def test_real_pty_waits_for_completion_and_resumes_exact_id(self):
         self.check_pty_agent("codex")
+
+    def test_slow_shutdown_still_resumes_exact_id(self):
+        self.check_pty_agent("codex", shutdown_delay=4)
 
     def test_traex_pty_waits_for_completion_and_resumes_exact_id(self):
         self.check_pty_agent("traex")
@@ -561,7 +581,7 @@ class SupervisorTest(unittest.TestCase):
                     process.wait()
                 os.close(master)
 
-    def check_pty_agent(self, agent):
+    def check_pty_agent(self, agent, shutdown_delay=0):
         session = "01a12a2b-3287-7bf2-8fc1-661e52ea78b1"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -583,6 +603,7 @@ class SupervisorTest(unittest.TestCase):
                 f"os.write(1,b'\\x1b]0;{agent} | Ready | {session}\\x07')\n"
                 "if not select.select([0],[],[],5)[0]: sys.exit(92)\n"
                 "if os.read(0,1)!=b'\\x04': sys.exit(93)\n"
+                f"time.sleep({shutdown_delay!r})\n"
                 f"os.write(1,b'\\r\\nSession ID: {session}\\r\\n')\n"
             )
             child.chmod(0o755)
