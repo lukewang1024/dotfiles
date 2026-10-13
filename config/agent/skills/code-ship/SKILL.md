@@ -47,6 +47,8 @@ rewriting policy or bypassing repository rules.
   the target branch, create `ship/<sha>` without resetting the target branch.
 - `auto-merge`: provider-specific creation, checks, and merge. Built-in GitHub
   support uses authenticated `gh` for PR creation, CI polling, and auto-merge.
+  Merge directly when the PR has no CI checks. When checks exist, wait for all
+  to pass; failed checks stop shipping. GitHub branch protection still applies.
 
 Commit the intended changes and run appropriate project checks before shipping.
 Use `--description-file` for multiline PR descriptions. An invocation such as

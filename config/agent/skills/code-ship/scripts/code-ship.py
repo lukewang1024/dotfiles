@@ -59,19 +59,20 @@ def github_auto_merge(repo, pull, head, title, description, poll_interval, poll_
         if failures:
             raise ValueError('PR checks failed; merge prohibited: ' + ', '.join(
                 check.get('name', check.get('context', '?')) for check in failures))
-        ready = bool(checks) and all(
+        ready = all(
             (check.get('status') == 'COMPLETED' and check.get('conclusion') in
              ('SUCCESS', 'SKIPPED', 'NEUTRAL')) or check.get('state') == 'SUCCESS'
             for check in checks)
         if status.get('state') == 'MERGED':
             if not ready:
-                raise ValueError('PR merged without completed checks; release prohibited')
+                raise ValueError('PR merged with incomplete checks; release prohibited')
             return status
         if status.get('state') != 'OPEN':
             raise ValueError('PR closed; inspect before continuing')
         if ready and not submitted:
-            # --auto can merge immediately on repositories without required checks.
-            # Observe all checks first and bind the mutation to the verified head.
+            # No checks means there is no CI to wait for. Existing checks must
+            # finish first; GitHub still enforces branch protection on merge.
+            # Bind the mutation to the verified head and never bypass rules.
             args = ['gh', 'pr', 'merge', pull, '--repo', repo, '--squash',
                     '--match-head-commit', head]
             if title:
