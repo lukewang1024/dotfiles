@@ -22,6 +22,12 @@ apply_theme() {
     # Retry even when the link is correct, so returning to the foreground
     # recovers a reload missed while Android settings were open.
     termux-reload-settings || :
+    # Termux does not always report a native theme to tmux. Reconcile local
+    # servers on every check, including servers started since the last switch.
+    # Keep the native-client guard in the fallback for other attached terminals.
+    if command -v tmux-appearance-fallback >/dev/null 2>&1; then
+        tmux-appearance-fallback "$mode" all || :
+    fi
     # Push both changes and new SSH attachments. The relay caches successful
     # mode/connection pairs, so unchanged connections create no extra SSH calls.
     if command -v theme-push-remotes >/dev/null 2>&1; then
