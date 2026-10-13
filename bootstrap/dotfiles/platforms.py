@@ -30,8 +30,10 @@ def apply_linux_app_configs(c):
 @task()
 def fix_ENOSPC(c):
     target = Path('/etc/sysctl.d/40-max-user-watches.conf')
-    c.write(target, 'fs.inotify.max_user_watches=524288\n', mode=0o644, privileged=True)
-    c.command('sudo', 'sysctl', '--system')
+    # Parallel agents need separate instances as well as enough watched paths.
+    c.write(target, 'fs.inotify.max_user_watches=524288\nfs.inotify.max_user_instances=1024\n',
+            mode=0o644, privileged=True)
+    c.command('sudo', 'sysctl', '--load', str(target))
 
 
 @task()
