@@ -96,7 +96,19 @@ unlock(recovered,1);assert(recovered.state=='restoreFailed' and stored)
 local recoverySnapshot=stored
 assert(not recovered:arm() and recovered.state=='restoreFailed' and stored==recoverySnapshot)
 assert(lastAlert:find('recovery failed',1,true) and records[#records].state=='restoreFailed')
-recovered:returnAndLock();assert(recovered.state=='locking');unlock(recovered);assert(not stored)
+local retryAt=recovered.nextRestoreRetry
+recovered:check();assert(recovered.state=='restoreFailed' and not recovered.restorer)
+now=retryAt;recovered:check();assert(recovered.state=='restoring' and recovered.restorer)
+local inFlight=recovered.restorer
+recovered.displays.callback();recovered:check();assert(recovered.restorer==inFlight)
+local failureAlert=lastAlert
+inFlight.callback(1,'','');assert(recovered.state=='restoreFailed' and stored==recoverySnapshot and lastAlert==failureAlert)
+hs.caffeinate.sessionProperties=function()return {CGSSessionScreenIsLocked=true}end
+recovered.displays.callback();assert(recovered.state=='restoreFailed' and not recovered.restorer)
+hs.caffeinate.sessionProperties=function()return {CGSSessionScreenIsLocked=false}end
+recovered.displays.callback();assert(recovered.state=='restoring')
+recovered.restorer.callback(0,'','');assert(recovered.state=='idle' and not stored)
+print('Away guard recovery: retry cooldown, single-flight, quiet failures, lock gating and reconnect retry passed')
 assert(recovered:arm());send(recovered,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
 now=now+26;recovered:check();assert(recovered.state=='locking');unlock(recovered)
 assert(recovered:arm());send(recovered,'snapshot',{internal='wrong',external={}})
@@ -211,3 +223,19 @@ setup(brokenLayout);unlock(brokenLayout)
 assert(brokenLayout.state=='idle' and not stored and lastWindowRecovery.report.failed[1].reason:find('window restore raised'))
 print('Away guard: async setup, persistence, exact positive brightness, display events, topology changes, watchdogs, lock retry, unlock restore, reload recovery and restore failure passed')
 print('Away guard hardening: authorization ordering, unpaired unlock, interrupted recovery, stale callbacks and diagnostic/API errors passed')
+
+-- Live handover may resume only with an explicitly observed unlocked session.
+stored={screen='internal',brightness=0.4,external={'external'}}
+local beforeResume=locks
+local resumed=module.new({resumeFailedRecovery=true})
+assert(resumed.state=='restoreFailed' and locks==beforeResume)
+resumed:check();assert(resumed.state=='restoring')
+resumed.restorer.callback(0,'','');assert(resumed.state=='idle' and not stored)
+stored={screen='internal',brightness=0.4,external={'external'}}
+hs.caffeinate.sessionProperties=function()return {CGSSessionScreenIsLocked=true}end
+local lockedResume=module.new({resumeFailedRecovery=true})
+assert(lockedResume.state=='locking' and locks==beforeResume+1)
+hs.caffeinate.sessionProperties=function()return {CGSSessionScreenIsLocked=false}end
+local ordinaryReload=module.new()
+assert(ordinaryReload.state=='locking' and locks==beforeResume+2)
+print('Away guard: explicit unlocked live handover preserves ordinary reload locking')
