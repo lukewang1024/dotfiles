@@ -51,6 +51,11 @@ hs={host={locale={preferredLanguages=function()return preferred end}},spaces={wi
   caffeinate={lockScreen=function()locks=locks+1 end,watcher=events},
 }
 local module=dofile('config/hammerspoon/private/modules/away-guard.lua')
+assert(not module.suspendsWindowLayout('idle'))
+assert(not module.suspendsWindowLayout('restoreFailed'), 'failed recovery must not disable remote window movement')
+for _,state in ipairs({'preparing','armed','locking','locked','restoring'}) do
+  assert(module.suspendsWindowLayout(state), 'active guard must retain layout ownership: '..state)
+end
 local function send(guard,event,fields)
   pending=fields or {};pending.event=event
   guard.monitor.stream(guard.monitor,'message\n','')

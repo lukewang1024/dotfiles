@@ -1,5 +1,10 @@
 -- Opt-in guard for unattended GUI automation. Never consumes mouse/key events.
 local M = {}
+-- Failed recovery retains its retry snapshot but has no active display/window
+-- operation. Let the user arrange windows while keeping that recovery available.
+function M.suspendsWindowLayout(state)
+  return state ~= 'idle' and state ~= 'restoreFailed'
+end
 local i18n = require('private/modules/away-guard-i18n')
 function M.new(options)
   options = options or {}
