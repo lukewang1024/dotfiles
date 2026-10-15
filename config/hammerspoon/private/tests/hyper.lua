@@ -236,7 +236,7 @@ end
 assert(navigate=='edit.down' and stroke==nil)
 instance.palette.visible=false
 remote=true;instance.remoteTimer.fire()
-for _,key in ipairs(keys) do assert(key.enabled==(key.key=='escape')) end
+for _,key in ipairs(keys) do assert(key.enabled==(key.key=='escape' or (key.key=='r' and #key.mods==3))) end
 remote=false;instance.remoteTimer.fire()
 for _,key in ipairs(keys) do assert(key.enabled) end
 local choices
@@ -335,3 +335,46 @@ clipCount=3;types={'public.utf8-plain-text'}
 instance.clipTimer.fire();assert(reads==1 and #instance.clips==1)
 instance:stop()
 print('Hyper: toggle, ratios, undo/max restore, selection, directional screen and remote ownership passed')
+
+local delegated
+instance.options.remoteStack={
+  canHandle=function(_,action)return action=='window.left' end,
+  screen=function()return primary end,
+  place=function(_,unit)delegated=unit end,
+}
+instance:run('window.left')
+assert(delegated and delegated[3]==.5)
+instance.options.remoteStack=nil
+print('Hyper remote group: layout delegation passed')
+
+local groupUnit,groupUndo
+instance.options.remoteStack={
+  canHandle=function(_,action)return action=='window.up' or action=='window.down' end,
+  screen=function()return primary end,
+  place=function(_,unit)groupUnit=unit end,
+  undo=function()groupUndo=true end,
+}
+instance:run('window.up')
+assert(groupUnit and groupUnit[3]==1 and groupUnit[4]==1)
+instance:run('window.down')
+assert(groupUndo)
+instance.options.remoteStack=nil
+print('Hyper remote group: Up maximizes, Down restores passed')
+
+local toggled=0
+instance.options.remoteStack={toggle=function()toggled=toggled+1;return true end}
+instance:run('app.remote')
+assert(toggled==1)
+instance.options.remoteStack=nil
+print('Hyper remote role: toggles group instead of launching default app passed')
+
+local remoteSpec=require('private/modules/hyper-generated').apps['windows-app']
+instance.apps.apps={{title=remoteSpec.title,bundle=remoteSpec.mac,path='/Applications/Windows App.app'},
+  {title='Unrelated app',bundle='test.unrelated',path='/Applications/Unrelated.app'}}
+local emptyChoices
+instance.palette.show=function(_,rows)emptyChoices=rows end
+instance.options.remoteStack={toggle=function()return false end}
+instance:run('app.remote')
+assert(emptyChoices and #emptyChoices==1 and emptyChoices[1].action=='installed./Applications/Windows App.app')
+instance.options.remoteStack=nil
+print('Hyper empty remote group: installed clients only passed')

@@ -209,6 +209,46 @@ function M.new(options)
     end
     -- Pointer movement must not wait for an application's Accessibility reply.
     local win=kind~='mouse' and window() or nil
+    local group=self.options.remoteStack
+    if action=='app.remote' and group then
+      if not group:toggle() then
+        local choices,seen={},{}
+        for _,id in ipairs(data.roles.remote.apps) do
+          local spec=data.apps[id]
+          for _,app in ipairs(self.apps.apps) do
+            if spec and (app.bundle==spec.mac or app.title:lower()==spec.title:lower()) and not seen[app.path] then
+              seen[app.path]=true
+              choices[#choices+1]={text=app.title,subText='当前远程桌面组为空 · 打开应用选择连接',action='installed.'..app.path}
+            end
+          end
+        end
+        if #choices==0 then alert('远程桌面组为空，未找到已安装的远程桌面应用')
+        else showChoices(choices,'远程桌面组为空 · 选择应用') end
+      end
+      return
+    end
+    if group and group:canHandle(action,win,data.layouts) then
+      local cycle=data.layoutCycles[arg]
+      if cycle then
+        local selected=cycle[1]
+        for i,name in ipairs(cycle) do
+          local unit=M.layout(data,name,group:screen():frame())
+          local same=true
+          for j=1,4 do if math.abs(unit[j]-group.unit[j])>.001 then same=false end end
+          if same then selected=cycle[i % #cycle+1];break end
+        end
+        arg=selected
+      end
+      if arg=='undo' or arg=='down' then group:undo()
+      elseif kind=='screen' then
+        local destination=screenInDirection(group:screen(),arg)
+        if destination then group:place(group.unit,destination) end
+      else
+        local unit=data.layouts[arg] and M.layout(data,arg,group:screen():frame()) or {0,0,1,1}
+        group:place(unit)
+      end
+      return
+    end
     if kind=='app' then
       local choice=self.roles:get(arg)
       if choice:match('^installed%.') then self:run(choice) else toggleApp(choice) end
@@ -511,11 +551,13 @@ function M.new(options)
         elseif b.action:match('^edit%.') or b.action:match('^select%.') then self.palette:navigate(b.action);return
         elseif b.key=='return' then self.palette:navigate('accept');return
         elseif b.key=='escape' or b.key=='space' then self.palette:close();return end
-        if b.action~='remote.escape' and self.options.remote and self.options.remote.isFocused() then return end
+        if b.action~='remote.escape' and b.action~='app.remote' and self.options.remote and self.options.remote.isFocused()
+          and not (self.options.remoteStack and self.options.remoteStack:canHandle(b.action,window(),data.layouts)) then return end
         self.palette:closeThen(run)
         return
       end
-      if b.action~='remote.escape' and self.options.remote and self.options.remote.isFocused() then return end
+      if b.action~='remote.escape' and b.action~='app.remote' and self.options.remote and self.options.remote.isFocused()
+          and not (self.options.remoteStack and self.options.remoteStack:canHandle(b.action,window(),data.layouts)) then return end
       run()
     end
     local input=b.action:match('^edit%.') or b.action:match('^select%.') or b.action:match('^mouse%.')
@@ -529,11 +571,14 @@ function M.new(options)
   -- Disabled bindings allow remote clients to receive the original chord.
   self.remoteTimer=hs.timer.doEvery(.2,function()
     local focused=self.options.remote and self.options.remote.isFocused()
-    if focused==self.remoteFocused then return end
+    local groupWindow=self.options.remoteStack and hs.window.focusedWindow()
+    local groupID=groupWindow and groupWindow:id()
+    if focused==self.remoteFocused and groupID==self.remoteGroupWindow then return end
+    self.remoteGroupWindow=groupID
     self.remoteFocused=focused
     for i,b in ipairs(data.bindings) do
-      if b.action~='remote.escape' then
-        if focused then self.keys[i]:disable() else self.keys[i]:enable() end
+      if b.action~='remote.escape' and b.action~='app.remote' then
+        if focused and not (self.options.remoteStack and self.options.remoteStack:canHandle(b.action,window(),data.layouts)) then self.keys[i]:disable() else self.keys[i]:enable() end
       end
     end
   end)
