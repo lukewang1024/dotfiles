@@ -21,6 +21,7 @@ function M.new(options)
   local function position(rect)
     local win = originalWindow()
     if not win then alert('原窗口已关闭或不可操作'); return end
+    if self.options.remoteStack and self.options.remoteStack:contains(win) then self.options.remoteStack:place(rect);return end
     if win:isFullScreen() then alert('请先退出系统全屏模式'); return end
     remember(win)
     local frame = win:screen():frame()
@@ -44,12 +45,16 @@ function M.new(options)
     end)
     register('window.next','窗口','移到下一块屏幕','next screen monitor',function()
       local win=originalWindow(); if not win then alert('原窗口已关闭'); return end
+      local group=self.options.remoteStack
+      if group and group:contains(win) then group:place(group.unit,group:screen():next());return end
       local nextScreen=win:screen():next()
       if nextScreen == win:screen() then alert('当前只有一块屏幕'); return end
       remember(win); win:moveToScreen(nextScreen, false, true, 0)
     end)
     register('window.previous','窗口','移到上一块屏幕','previous screen monitor',function()
       local win=originalWindow(); if not win then alert('原窗口已关闭'); return end
+      local group=self.options.remoteStack
+      if group and group:contains(win) then group:place(group.unit,group:screen():previous());return end
       local previous=win:screen():previous()
       if previous == win:screen() then alert('当前只有一块屏幕'); return end
       remember(win); win:moveToScreen(previous, false, true, 0)

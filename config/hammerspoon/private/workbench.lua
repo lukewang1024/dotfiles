@@ -13,8 +13,13 @@ workbenchToolbox = toolbox.new({clipboard = clipboard})
 workbenchAwayGuard = require('private/modules/away-guard').new({
   remoteWindows=function()return remote.remote_desktop_window_filter:getWindows()end,
 })
-workbenchHyper = require('private/modules/hyper').new({toolbox=workbenchToolbox, clipboard=clipboard, remote=remote, awayGuard=workbenchAwayGuard})
+workbenchRemoteStack = require('private/modules/remote-window-stack').new({
+  suspended=function()return workbenchAwayGuard.state ~= 'idle' end,
+})
+workbenchToolbox.options.remoteStack=workbenchRemoteStack
+workbenchHyper = require('private/modules/hyper').new({toolbox=workbenchToolbox, clipboard=clipboard, remote=remote, remoteStack=workbenchRemoteStack, awayGuard=workbenchAwayGuard})
 hs.shutdownCallback = function()
+  workbenchRemoteStack:stop()
   workbenchAwayGuard:stop()
   workbenchHyper:stop()
   workbenchToolbox:stop()
