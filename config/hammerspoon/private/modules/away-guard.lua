@@ -153,6 +153,7 @@ function M.new(options)
   end
   local function restore()
     if self.state == 'restoring' then return end
+    local retry = self.state == 'restoreFailed'
     self.state = 'restoring'
     self.restoreGeneration = (self.restoreGeneration or 0) + 1
     local generation = self.restoreGeneration
@@ -184,6 +185,7 @@ function M.new(options)
           end
           hs.settings.clear(marker)
           self.state = 'idle'
+          self.nextRestoreRetry = nil
           write('restore_complete', {reason=self.trigger and self.trigger.reason})
           if not ok or #report.failed > 0 then notify('windowsRestoreIncomplete')
           else notify('restored', {reason=i18n.reason(self.trigger and self.trigger.reason)}) end
@@ -192,16 +194,32 @@ function M.new(options)
         if not ok then complete({restored=0,closed=0,failed={{reason=tostring(error)}}}) end
       else
         self.state = 'restoreFailed'
+        self.nextRestoreRetry = hs.timer.secondsSinceEpoch() + 15
         write('restore_failed', {stage='displays',code=code,stdout=stdout,stderr=stderr})
-        notify('displaysRestoreFailed')
+        if not retry then notify('displaysRestoreFailed') end
       end
     end), args)
     if not self.restorer or not self.restorer:start() then
       self.restorer = nil; self.state = 'restoreFailed'
-      notify('restoreStartFailed')
+      self.nextRestoreRetry = hs.timer.secondsSinceEpoch() + 15
+      if not retry then notify('restoreStartFailed') end
     end
   end
+  function self:retryRestore()
+    if self.stopped or self.state ~= 'restoreFailed' then return false end
+    local session = hs.caffeinate.sessionProperties and hs.caffeinate.sessionProperties()
+    if session and session.CGSSessionScreenIsLocked then return false end
+    write('restore_retry')
+    restore()
+    return true
+  end
   function self:check()
+    -- Disabled displays can stay absent from hs.screen, even after reconnection.
+    -- Retry the native hardware enumeration without relying on a screen event.
+    if self.state == 'restoreFailed' then
+      if hs.timer.secondsSinceEpoch() >= (self.nextRestoreRetry or 0) then self:retryRestore() end
+      return
+    end
     if self.state == 'locking' then requestLock(); return end
     if self.state ~= 'armed' and self.state ~= 'preparing' then return end
     if self.monitor and self.monitorAuthorized then self.monitor:setInput('heartbeat\n') end
@@ -344,6 +362,7 @@ function M.new(options)
   self.arm = protect(self.arm)
   self.poll = hs.timer.doEvery(0.3, protect(function() self:check() end))
   self.displays = hs.screen.watcher.new(protect(function()
+    if self.state == 'restoreFailed' then self:retryRestore(); return end
     -- Our own initial disable emits configuration changes; helper verifies physical topology during setup.
     if self.state == 'armed' then
       local signature = displaySignature()
@@ -402,9 +421,17 @@ function M.new(options)
     self.screen, self.originalBrightness, self.external = saved.screen, saved.brightness, saved.external or {}
     self.remoteWindows = saved.remoteWindows or {}
     self.windowLayout, self.trigger, self.autoBrightness = saved.windowLayout, saved.trigger, saved.autoBrightness
-    self.state = 'locking'
-    requestLock()
-    write('recovery_lock', {reason=self.trigger and self.trigger.reason})
+    local session = hs.caffeinate.sessionProperties and hs.caffeinate.sessionProperties()
+    if options.resumeFailedRecovery and session and not session.CGSSessionScreenIsLocked then
+      -- Explicit live handover of an already-unlocked failed recovery. Ordinary
+      -- startup/reload still locks before recovering a persisted session.
+      self.state = 'restoreFailed'
+      self.nextRestoreRetry = 0
+    else
+      self.state = 'locking'
+      requestLock()
+    end
+    write(self.state == 'restoreFailed' and 'recovery_resumed' or 'recovery_lock', {reason=self.trigger and self.trigger.reason})
   end
   return self
 end
