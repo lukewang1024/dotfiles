@@ -1,152 +1,311 @@
-[Hammerspoon](http://www.hammerspoon.org/)
-====
+# Hammerspoon
 
-[Mac神器hammerspoon](http://seanxp.com/2016/mac-hammerspoon/)
+[Hammerspoon](https://www.hammerspoon.org/) · [Original configuration article](http://seanxp.com/2016/mac-hammerspoon/)
 
-Hyper+Space 在当前活动窗口所在的显示器打开菜单；子菜单保持在同一显示器，
-下一次打开时重新跟随活动窗口。没有活动窗口时使用当前主屏。
+Hyper+Space opens its menu on the display containing the active window. Submenus
+stay on that display; the next invocation follows the active window again. With
+no active window, it uses the current main display.
 
-## 离开守护（桌面自动化）
+## Away guard for desktop automation
 
-**Hyper+Space** 搜索“离开守护”，或 **H+0 → X → G** 开启离开守护。
-没有常驻菜单栏按钮。保持 MacBook 开盖，建议接电源。
-提示和锁屏原因根据系统首选语言显示中文或英文（中文地区变体统一使用中文，其他语言回退英文）；诊断日志保留固定英文标识。
-开启时保存普通窗口的位置/大小/屏幕、内屏亮度与自动亮度开关，以及当前在线外屏的硬件身份，
-临时关闭并验证内屏自动亮度，自动禁用这些外屏的信号输出，
-确认只剩内屏后将内屏亮度降到 0；无需拔线。准备完成后会提示“离开守护已开启”。
-外屏禁用与自动亮度开关通过 macOS 私有 SkyLight / DisplayServices 接口实现，系统更新后可能失效；
-准备失败或超时会请求锁屏，认证解锁后尝试恢复。
-如果 Windows App（Microsoft RDP）有原生全屏会话，启动前会先保存其窗口/屏幕身份、
-暂时退出全屏，并等待 Space 切换稳定；保持远程连接，认证解锁并恢复外屏后重新进入全屏。
-识别会话同时使用远程窗口过滤器缓存和直接 AX 查询，覆盖未激活 Space 中的 RDP 窗口；
-原屏幕按 Space 归属保存，避免使用跨 Space 时可能过期的窗口坐标。
-此过程会改变 RDP 窗口大小，远端启用了动态分辨率时可能随之调整分辨率。
-启动阶段最多用 15 秒确认外屏离线；若 Space 迁移只禁用了一部分外屏，
-只对本次记录的外屏重试禁用，并要求只剩内屏的状态连续稳定 1.5 秒才将亮度降为 0。
-开启后的屏幕变化和亮度升高不会被重试或忽略，仍按 300ms 检查锁屏。
-启动失败日志会记录仍在线的显示器 ID，便于区分亮度触发与显示切换超时。
-原生辅助进程每 300ms 检查包含已禁用外屏的底层显示器列表和在线列表，
-并监听显示配置事件，因此已禁用外屏的物理拔插也纳入检测。
-首次使用会用系统 `swiftc` 编译辅助进程到 `$XDG_CACHE_HOME/away-guard`（默认 `~/.cache/away-guard`）。
-开启后保存原亮度、降到 0，并运行独立的 `caffeinate -d -i` 阻止空闲屏幕和系统休眠。
-不拦截点击/输入，不遮盖桌面，不修改截图内容。
+Search for “Enable away guard” with **Hyper+Space**, or use **H+0 → X → G**.
+There is no permanent menu bar button. Keep the MacBook lid open; external power
+is recommended. Notifications and lock reasons follow the system's preferred
+language: Chinese variants use Chinese, and other languages fall back to English.
+Diagnostic logs use stable English identifiers.
 
-每 300ms 检查内屏亮度和屏幕身份；内屏亮度严格大于 0、无法读取、任意外屏插拔或显示器配置变化、
-保活/屏幕监视进程退出、监视心跳中断或系统睡眠/唤醒时请求锁屏。亮度检测不区分手动和系统变化；
-守护期间关闭自动亮度，恢复时还原原开关。
-Hammerspoon 的显示通知会比对屏幕身份、位置、分辨率、缩放和刷新率；未改变这些配置的重复通知不触发锁屏，
-底层显示事件和物理插拔检测仍然生效。
-收到锁屏通知前继续重试；认证解锁后恢复原亮度及本次禁用的外屏、释放保活并退出守护。
-锁屏请求先于屏幕读取、日志和状态写入；这些操作异常不能阻止本次锁屏，Lua 事件处理异常也会请求锁屏。
-只允许已观察到锁屏的会话响应后续解锁事件；未配对的解锁事件会重新请求锁屏。
-恢复中再次锁屏会取消当前恢复并使旧回调失效，下一次解锁重新恢复。
-已拔掉的外屏会跳过；恢复失败会保留信息，再次锁屏并解锁可重试。
-恢复失败时再次选择“开启离开守护”会提示恢复未完成；此时使用“离开守护：锁屏并退出”（H+0 → X → E），认证解锁后重试。
-恢复期间再次开启会提示等待；被拒绝的开启请求会记录 `arm_rejected` 和实际状态。
-禁用外屏会让窗口移到内屏；恢复外屏后等待布局稳定，再恢复开启前可访问的普通窗口位置和大小，逐个验证并有限重试。
-窗口关闭/进程替换会跳过；缓存的零尺寸窗口经过有限重试后按已关闭处理。
-窗口位置和 RDP 全屏恢复属于弱依赖：失败会记录到日志，并将最近一次失败快照保存到 `awayGuard.lastWindowRecovery`，不阻止退出或下一次开启。
-原屏幕缺失、布局改变或应用拒绝调整时，不保证所有应用都能完全复原；外屏恢复失败仍保留活动会话供重试。
-原生全屏 RDP 单独恢复；其他全屏窗口、隐藏/最小化窗口、Space 归属、层叠顺序、镜像关系和桌面排列不在恢复范围内。
-回来时调亮屏幕即可触发此流程，也可在 Hyper+Space 搜索“离开守护：锁屏并退出”，
-或用 **H+0 → X → E**（认证解锁后恢复）。
-守护期间重载/退出 Hammerspoon 会请求锁屏；持久化会话用于下次加载时再次锁屏，
-不要通过退出 Hammerspoon 来解除守护。
+On activation, the guard saves ordinary window frames and displays, internal
+display brightness and automatic brightness, and the hardware identities of
+online external displays. It temporarily disables and verifies automatic
+brightness, disables signal output to those external displays, and lowers the
+internal display brightness to zero after confirming that only it remains online.
+No cables need to be unplugged. A notification confirms successful activation.
+Display disabling and automatic brightness use private macOS SkyLight and
+DisplayServices interfaces, which may stop working after an OS update. Preparation
+failure or timeout requests a screen lock; restoration is attempted after an
+authenticated unlock.
 
-原生辅助进程也直接检测内屏亮度和显示器变化，并独立请求系统锁屏。
-Lua 授权禁用显示器后每 300ms 向辅助进程发送心跳；辅助进程在独立队列检查心跳，超过 2 秒无心跳或输入管道关闭时请求锁屏。
-它在观察到系统已锁屏前继续重试；认证解锁后的恢复路径显式发送 `disarm`，正常解除监视。
-监视消息使用非阻塞输出，父进程不读消息不能阻塞独立心跳检查。独立锁屏 API 不可用时拒绝启用。
-这是运行在用户会话中的尽力检测，300ms 是检查间隔而非锁屏完成保证。
-Hammerspoon 卡住或退出时原生进程可兜底，但两个进程都被终止、系统卡死或私有锁屏 API 失效时仍无法保证保护。
-亮度为零也不禁止他人盲操作；为保持 GUI 自动化继续运行，不拦截键鼠输入。
-合盖、断电、强制睡眠和系统既有的自动锁屏策略不会被取消。
-首次应在现场确认外屏无信号、内屏完全变暗、桌面自动化继续运行，
-并实际验证调亮内屏，以及对已禁用外屏拔线、接入新外屏均会锁屏。
-解锁后如自动化仍在发送点击输入，需先暂停任务再恢复人工操作。
+For native fullscreen Windows App (Microsoft RDP) sessions, preparation saves
+window and display identities, temporarily exits fullscreen, and waits for the
+Space transition to settle. Connections stay active. Fullscreen is restored after
+authenticated unlock and external display restoration. Session discovery combines
+the remote-window filter cache with direct Accessibility (AX) queries, including
+RDP windows in inactive Spaces. Original displays are recorded through Space
+membership rather than potentially stale cross-Space coordinates. This changes
+RDP window sizes and may change remote resolution when dynamic resolution is on.
 
-触发和恢复日志写入 `$XDG_STATE_HOME/away-guard/events.jsonl`（默认 `~/.local/state/away-guard/events.jsonl`），
-超过 5 MiB 保留一份 `.1`；只记录生命周期和事件，不每 300ms 写盘。
-记录时间、触发原因、亮度/屏幕身份、心跳延迟、原生显示事件 ID/flags，以及窗口恢复结果；不记录窗口标题。
-`lock_requested` 表示 guard 请求锁屏；`lock_observed` 的 `system_or_external_lock` 表示先观察到系统/其他来源锁屏，无法推断具体系统策略。
-解锁恢复后提示本次原因；Hammerspoon console 可运行 `workbenchAwayGuard:lastTrigger()` 查看最近一次记录，
-或用 `tail -n 30 ~/.local/state/away-guard/events.jsonl` 查完整过程。显示事件并不等于人为插拔，亮度升高也不等于有人操作。
+Preparation allows up to 15 seconds to confirm that external displays are offline.
+If a Space transition disables only some displays, retries target only displays
+recorded for this activation. The internal-only state must remain stable for
+1.5 seconds before brightness is lowered. Once armed, display changes or increased
+brightness are not retried or ignored: the guard checks for lock triggers every
+300 ms. Preparation failure logs include IDs of displays still online.
 
-验证：`luajit config/hammerspoon/private/tests/away-guard.lua` 与 `luajit config/hammerspoon/private/tests/away-guard-windows.lua`。
-原生 watchdog 无锁屏自测：`/bin/sh config/hammerspoon/private/helpers/away-guard-display self-test`（验证心跳、重试、锁屏观察、解除、管道命令及 EOF；仅解析实际锁屏符号，不调用）。
-辅助进程只读检查：`/bin/sh config/hammerspoon/private/helpers/away-guard-display status`。
-如需在终端恢复，使用会话 `awayGuard.session.external` 中保存的硬件身份：
-`/bin/sh config/hammerspoon/private/helpers/away-guard-display restore '<硬件身份>' ...`；
-如会话保存了 `awayGuard.session.autoBrightness`，加上 `--auto-brightness=on` 或 `--auto-brightness=off` 还原其原值。
+The native helper checks both the underlying display list, including disabled
+external displays, and the online list every 300 ms. It also listens for display
+configuration events, so physically disconnecting a disabled display is detected.
+On first use, system `swiftc` compiles the helper into
+`$XDG_CACHE_HOME/away-guard` (default: `~/.cache/away-guard`). The guard saves the
+original brightness, lowers it to zero, and runs a separate `caffeinate -d -i`
+process to prevent idle display and system sleep. It does not intercept input,
+cover the desktop, or alter screenshots.
 
-## 图片同步入口
+### Lock triggers and restoration
 
-**Ctrl+Option+Shift+V** 打开原生图片同步菜单，方向键/鼠标选择、Enter 执行、Esc 关闭。菜单栏不常驻显示同步入口。
-不再使用 chooser 搜索弹窗，因此没有 Cmd+数字提示或绑定。
-只保留三个动作：发送已有剪贴板图片、选择同步目标、查看上次同步结果。
-Ctrl+Option+V 直接发送当前剪贴板图片，不必打开菜单。原 Ctrl+Option+C、Ctrl+Option+Z 和 Ctrl+Option+/ 已释放。
+Every 300 ms, the guard checks internal brightness and display identity. It
+requests a lock if brightness becomes greater than zero or unreadable, an external
+display is connected or disconnected, display configuration changes, a keep-awake
+or display-monitor process exits, a heartbeat is lost, or the system sleeps or
+wakes. Brightness detection does not distinguish manual changes from system
+changes. Automatic brightness stays off while armed and is restored afterward.
 
-Hyper 键位现在由 [共享配置](../../hyper/README.md) 统一管理。
-菜单内搜索框为空时，Backspace 返回上一级；有文字时正常删除，顶层不退出，Esc 关闭整个面板。
-Q/W 分别是个人与工作浏览器：H+Q/H+Shift+Q 为 Firefox/Safari，H+W/H+Shift+W 为 Edge/Chrome。
-H+E/H+Shift+E 为 Sublime Text/VS Code，H+A/H+S 为 ChatGPT/豆包，
-H+D/H+Shift+D 为 Dictionary/DevDocs，H+Z 为 Finder，H+X/H+Shift+X 为 Feishu/Feishu Meetings，
-H+C/H+Shift+C 为微信/Telegram。剪贴板历史统一使用 H+3，原 H+Shift+V 的剪贴板工具菜单移到 H+0 → C。
-数字行恢复为 H+1 窗口搜索、2 应用搜索、3 剪贴板历史、4 区域截图、5 录屏入口，
-6 音频输出、7 麦克风、0 Hyper 配置；Shift+数字释放，H+8/9 也释放。
-H+0 → S/V/D/F/X 分别为截图、录屏、显示器设置、专注设置和系统菜单；H+3 首次使用需确认开启内存文本历史。
-横屏 H+左右方向键贴左/右半屏，半屏接 H+上/下进入对应上/下角 1/4；普通窗口 H+上最大化，H+下最小化，
-H+上优先恢复最近由 Hyper 最小化的窗口。H+Shift+上循环左/右 2/3，
-H+Shift+下按右→中→左循环 1/3；H+Backspace 撤销，H+Shift+左右跨屏。
-竖屏按当前屏幕可用区域高度大于宽度自动识别：H+左右改为上/下半屏，
-H+Shift+上循环上/下 2/3，H+Shift+下循环下/中/上 1/3。
-竖屏 H+上/下保留最大化、恢复和最小化，不触发横屏的半屏/四分屏转换；切屏按键不变。
-H+分号切换主终端，H+Shift+分号切换副终端；Enter 和 backtick 两组终端绑定已移除。
-H+Home/End 居中/最大化恢复，H+PageUp/PageDown 保留为完整键盘的固定上下半屏补充入口；这四键加 Shift 后按左/右/上/下聚焦窗口。
-H+Shift+Space 系统全屏；H+方括号减小/增加宽度，加 Shift 调高度，均不弹菜单。
-Hammerspoon 独占 Hyper 窗口动作；首次迁移需执行共享配置中的 Rectangle 迁移脚本。
-H+Space 搜索，H+/ 速查；窗口菜单、旧分号分屏和单引号入口已取消，应用键再次按下仍隐藏应用。
-H+Shift+/ 或 H+0 后按 A 配置应用角色，显示当前应用与快捷键，选择后立即保存生效，也可恢复默认。
-无快捷键的角色可从 H+Space 搜索执行；修改角色配置立即影响该角色动作，固定应用直达键保持不变。
-配置候选包含已安装应用的缓存索引。旧 chat 偏好迁移为 workChat，不影响 dailyChat。
-H+R 为 Windows App，H+Shift+R 为 Reeder，H+Shift+N 为 NoMachine。
-菜单随系统首选语言显示中文或英文，重载后更新；中英文功能名都能搜索。
-Hyper 为 Ctrl+Option+Command。保留远程桌面的 Karabiner 自动切换和图片同步入口。
+Hammerspoon display notifications compare display identity, position, resolution,
+scaling, and refresh rate. Duplicate notifications with no configuration change do
+not trigger a lock; native display events and physical connection detection remain
+active. Lock requests continue until a lock notification is observed. After an
+authenticated unlock, the guard restores brightness and the external displays it
+disabled, releases the keep-awake process, and exits.
 
-新入口不加载旧 ModalMgr、appM、ClipShow、HSearch、KSheet、时钟和倒计时面板。
+Lock requests precede display reads, logging, and state writes. Failures in those
+operations cannot prevent the request; Lua event-handler failures also request a
+lock. Only a session that observed a lock may handle a subsequent unlock. An
+unpaired unlock requests another lock. Locking again during restoration cancels
+that attempt and invalidates its callbacks; the next unlock starts a new attempt.
+Disconnected displays are skipped. Restoration failures retain recovery data so
+another lock/unlock cycle can retry.
 
-安装由 `bootstrap/dotfiles/platforms.py` 配置：将本目录上一级的 `init.lua` 链接到
-`$XDG_CONFIG_HOME/hammerspoon/init.lua` 和 `workbench-init.lua`，并把 Hammerspoon 的
-`MJConfigFile` 指向此路径。首次切换后使用 Hammerspoon 菜单 Reload Config。
-本机迁移前的旧入口备份在 `$XDG_CONFIG_HOME/hammerspoon/legacy-init.lua`。
-两种入口路径均指向新配置，避免运行中的 Hammerspoon 重载缓存的旧路径。无需依赖旧 awesome-hammerspoon 启动器或 Spoons。
+Trying to enable the guard after a restoration failure reports pending recovery.
+Use “Away guard: lock and return” (**H+0 → X → E**) and authenticate to retry.
+Activation during restoration asks you to wait. Rejected activation attempts log
+`arm_rejected` with the actual state.
 
-## Workbench 图片同步
+Disabling external displays moves windows onto the internal display. After the
+external displays return and the layout settles, the guard restores accessible
+ordinary windows to their saved positions and sizes, verifies each result, and
+retries a bounded number of times. Closed windows and replaced processes are
+skipped. Cached zero-size windows are treated as closed after bounded retries.
+Window and RDP fullscreen restoration are best effort: failures are logged and
+the latest failure snapshot is saved in `awayGuard.lastWindowRecovery`, without
+blocking exit or the next activation. Missing displays, changed layouts, or apps
+that reject resizing can prevent exact restoration. Failed external display
+restoration keeps the active session available for another attempt.
 
-`modules/workbench-clipboard.lua` 通过 Machine Fabric CLI 获取已连接的远端节点；
-菜单每 30 秒刷新节点元数据，不读取或监听剪贴板。选择目标后按 `Ctrl+Option+V`
-（不含 Command，不使用 Hyper/HyperAlt），直接发送当前剪贴板中的图片。
-不会模拟 Cmd-C，也不要求剪贴板刚刚发生更新；截图或复制图片后都可以发送。
-`Ctrl+Option+Shift+V` 打开同步菜单，用于选择目标、发送图片和查看状态。
-只有远端确认写入才提示成功；无图片、节点未就绪、断线或超时会显示原因，不自动重试或改发其他设备。
-文本仍通过终端正常粘贴。
+Native fullscreen RDP windows are restored separately. Other fullscreen windows,
+hidden or minimized windows, Space membership, stacking order, mirroring, and
+virtual desktop arrangement are outside this recovery scope.
 
-依赖支持 `machine-fabric clipboard targets --json` 和
-`machine-fabric clipboard push --target ID --image-only --json` 的版本。默认 CLI
-路径为 `~/.local/bin/machine-fabric`；开发调试可设置
-`hs.settings.set('machine-fabric.clipboard.binary', '/absolute/path/to/machine-fabric')`
-后重载配置。旧的 `workbench.clipboard.binary` 设置仍兼容。
-清除该设置即可恢复默认路径。节点尚未安装图片支持时会置灰。
-dotfiles 的 agent shell 函数直接启动 agent，不调用 workbench CLI 或 updater。
-启动前可读取 `${XDG_CONFIG_HOME:-$HOME/.config}/machine-fabric/clipboard-env`，
-仅把其中的 `DISPLAY`、`XAUTHORITY` 字面值传给子进程，并清除子进程的
-`WAYLAND_DISPLAY`；不执行文件内容，也不修改当前 shell 环境。
-`AGENT_CLIPBOARD_ENV_FILE` 可指定其他提供方的环境文件，设为空字符串可禁用此集成。
-文件缺失、包含未知字段或缺少非空必需值时，保留原环境并正常启动 agent。
-图片同步本身仍由上述 Machine Fabric 剪贴板功能提供。
-已有终端需重新加载 `config/zsh/agent-resume-history.zsh`，并退出后重新启动 agent。
+Raise internal brightness to trigger the return flow, search for “Away guard:
+lock and return” in Hyper+Space, or use **H+0 → X → E**. Restoration follows
+authenticated unlock. Reloading or quitting Hammerspoon while armed requests a
+lock; a persisted session requests another lock on the next load. Do not quit
+Hammerspoon as a way to disarm the guard.
 
-运行逻辑测试：
+### Native watchdog and limitations
+
+The native helper independently monitors brightness and display changes and
+requests a system lock. Once Lua authorizes display disabling, it sends a
+heartbeat every 300 ms. The helper checks heartbeats on an independent queue and
+requests a lock after more than two seconds without one, or when its input pipe
+closes. It retries until it observes a locked system. The authenticated recovery
+path explicitly sends `disarm` to end monitoring normally.
+
+Monitor messages use nonblocking output: a parent that stops reading cannot block
+heartbeat checks. Activation is refused if the independent lock API is unavailable.
+This is best-effort monitoring within the user's session; 300 ms is a polling
+interval, not a guarantee of lock completion. The helper can cover a stalled or
+exited Hammerspoon process, but cannot guarantee protection if both processes are
+terminated, the system stalls, or private lock APIs fail.
+
+Zero brightness does not prevent blind interaction. Keyboard and mouse input stay
+enabled so GUI automation can continue. Lid closure, power loss, forced sleep,
+and existing system lock policies are not overridden. During initial acceptance,
+verify in person that external displays lose signal, the internal display is dark,
+and automation continues. Confirm that raising brightness, unplugging a disabled
+display, and connecting a new display each trigger a lock. If automation is still
+sending input after unlock, pause it before resuming manual interaction.
+
+### Logs and diagnostics
+
+Lifecycle and trigger events are written to `$XDG_STATE_HOME/away-guard/events.jsonl`
+(default: `~/.local/state/away-guard/events.jsonl`). At 5 MiB, one `.1` backup is
+retained. Logs are event-driven, not written every 300 ms. They include timestamps,
+trigger reasons, brightness and display identities, heartbeat delay, native display
+event IDs/flags, and window recovery results. Window titles are not logged.
+
+`lock_requested` means the guard requested a lock. A `lock_observed` event with
+`system_or_external_lock` means a system or external lock was observed first; it
+does not identify the responsible policy. After recovery, a notification shows
+the trigger reason. Run `workbenchAwayGuard:lastTrigger()` in the Hammerspoon
+console, or inspect the full sequence with:
+
+```sh
+tail -n 30 ~/.local/state/away-guard/events.jsonl
+```
+
+Display events do not necessarily mean physical interaction, and increased
+brightness does not necessarily mean someone touched the computer.
+
+Run the logic tests:
+
+```sh
+luajit config/hammerspoon/private/tests/away-guard.lua
+luajit config/hammerspoon/private/tests/away-guard-windows.lua
+```
+
+The native watchdog self-test checks heartbeats, retries, lock observation,
+disarming, pipe commands, and EOF. It resolves the real lock symbol but never
+invokes it:
+
+```sh
+/bin/sh config/hammerspoon/private/helpers/away-guard-display self-test
+/bin/sh config/hammerspoon/private/helpers/away-guard-display status
+```
+
+For terminal recovery, use the hardware identities recorded in
+`awayGuard.session.external`:
+
+```sh
+/bin/sh config/hammerspoon/private/helpers/away-guard-display restore '<hardware-identity>' ...
+```
+
+If `awayGuard.session.autoBrightness` was saved, add `--auto-brightness=on` or
+`--auto-brightness=off` to restore its original value.
+
+## Image synchronization and Hyper shortcuts
+
+**Ctrl+Option+Shift+V** opens the native image synchronization menu. Select with
+arrow keys or the mouse, press Enter to run, and Esc to close. There is no permanent
+menu bar entry. This no longer uses a searchable chooser, so there are no Cmd+number
+hints or bindings. The menu has three actions: send the existing clipboard image,
+choose a destination, and inspect the last result. **Ctrl+Option+V** sends the
+current clipboard image directly. Ctrl+Option+C, Ctrl+Option+Z, and Ctrl+Option+/
+are released.
+
+Hyper bindings are owned by the [shared configuration](../../hyper/README.md).
+In a menu with an empty search field, Backspace goes back one level. With text in
+the field, it deletes normally. Backspace does not exit the top-level menu; Esc
+closes the entire panel.
+
+Application bindings:
+
+| Keys | Applications |
+| --- | --- |
+| H+Q / H+Shift+Q | Firefox / Safari |
+| H+W / H+Shift+W | Edge / Chrome |
+| H+E / H+Shift+E | Sublime Text / VS Code |
+| H+A / H+S | ChatGPT / Doubao |
+| H+D / H+Shift+D | Dictionary / DevDocs |
+| H+Z | Finder |
+| H+X / H+Shift+X | Feishu / Feishu Meetings |
+| H+C / H+Shift+C | WeChat / Telegram |
+| H+R | Toggle the remote desktop group |
+| H+Shift+R / H+Shift+N | Reeder / NoMachine |
+| H+semicolon / H+Shift+semicolon | Primary / secondary terminal |
+
+Enter and backtick terminal bindings have been removed. Repeating an application
+shortcut still hides that application, except H+R, which operates on the group.
+
+The number row uses H+1 for window search, H+2 for application search, H+3 for
+clipboard history, H+4 for region capture, H+5 for recording, H+6 for audio output,
+H+7 for microphone selection, and H+0 for Hyper configuration. Shift+number and
+H+8/9 are unassigned. The old H+Shift+V clipboard tools menu is now at H+0 → C.
+H+0 → S/V/D/F/X opens screenshot, recording, display settings, Focus settings, and
+the system menu respectively. H+3 requires first-use consent for in-memory text
+history.
+
+On landscape displays, H+Left/Right selects the left/right half. H+Up/Down from a
+half-screen window selects the corresponding upper/lower quarter. On ordinary
+windows, H+Up maximizes and H+Down minimizes; H+Up first restores the most recent
+window minimized by Hyper. H+Shift+Up cycles left/right two-thirds, while
+H+Shift+Down cycles right/middle/left thirds. H+Backspace undoes placement and
+H+Shift+Left/Right moves between displays.
+
+Portrait mode is detected when the current usable display height exceeds its
+width. H+Left/Right then selects the upper/lower half; H+Shift+Up cycles upper/lower
+two-thirds, and H+Shift+Down cycles lower/middle/upper thirds. H+Up/Down retains
+maximize, restore, and minimize behavior without landscape half/quarter transitions.
+Display-movement bindings are unchanged.
+
+H+Home centers a window, H+End toggles maximize/restore, and H+PageUp/PageDown
+provides fixed upper/lower halves on full keyboards. With Shift, these four keys
+focus windows to the left/right/up/down. H+Shift+Space toggles native fullscreen.
+H+brackets decreases/increases width; adding Shift adjusts height. These actions
+do not open menus.
+
+Hammerspoon exclusively owns Hyper window actions. On first migration, run the
+Rectangle migration script documented in the shared configuration. H+Space opens
+search and H+/ opens the shortcut reference. The old window menu, semicolon split
+bindings, and single-quote entry have been removed.
+
+H+Shift+/ or H+0 followed by A configures application roles, showing the current
+application and shortcut. Changes save immediately; defaults can be restored.
+Roles without a shortcut remain searchable through H+Space. Role overrides affect
+role actions immediately, while fixed application shortcuts retain their targets.
+Candidates include a cached index of installed apps. The old `chat` preference
+migrates to `workChat` without affecting `dailyChat`.
+
+Menus follow the system's preferred Chinese or English language after reload;
+features remain searchable in both languages. Hyper means Ctrl+Option+Command.
+Automatic Karabiner switching for remote desktops and image synchronization remain
+available. The new entry point does not load legacy ModalMgr, appM, ClipShow,
+HSearch, KSheet, clocks, or countdown panels.
+
+### Installation
+
+`bootstrap/dotfiles/platforms.py` links the parent directory's `init.lua` to
+`$XDG_CONFIG_HOME/hammerspoon/init.lua` and `workbench-init.lua`, and points
+Hammerspoon's `MJConfigFile` to that path. Use Reload Config from the Hammerspoon
+menu after the first switch. The previous local entry point is backed up at
+`$XDG_CONFIG_HOME/hammerspoon/legacy-init.lua`. Both entry paths target the new
+configuration, preventing a running Hammerspoon from reloading its cached legacy
+path. The legacy awesome-hammerspoon launcher and Spoons are not required.
+
+## Workbench image synchronization
+
+`modules/workbench-clipboard.lua` obtains connected remote nodes through the
+Machine Fabric CLI. The menu refreshes node metadata every 30 seconds without
+reading or watching the clipboard. After choosing a destination, press
+**Ctrl+Option+V** (without Command; not Hyper or HyperAlt) to send the current
+clipboard image. It does not simulate Cmd-C or require a recent clipboard change;
+both screenshots and copied images work. **Ctrl+Option+Shift+V** opens the menu
+for destination selection, sending, and status.
+
+Success is reported only after the destination acknowledges the write. Missing
+images, unavailable nodes, disconnects, and timeouts show a reason without
+retrying automatically or switching to another device. Text continues to use
+normal terminal paste.
+
+The installed CLI must support:
+
+```sh
+machine-fabric clipboard targets --json
+machine-fabric clipboard push --target ID --image-only --json
+```
+
+The default executable is `~/.local/bin/machine-fabric`. For development, set the
+following and reload:
+
+```lua
+hs.settings.set('machine-fabric.clipboard.binary', '/absolute/path/to/machine-fabric')
+```
+
+The legacy `workbench.clipboard.binary` setting is still accepted. Clear the
+setting to restore the default. Nodes without image support are disabled in the
+menu.
+
+The dotfiles agent shell functions launch agents directly, without the Workbench
+CLI or updater. Before launching, they may read
+`${XDG_CONFIG_HOME:-$HOME/.config}/machine-fabric/clipboard-env`. Only literal
+`DISPLAY` and `XAUTHORITY` values are passed to children, whose `WAYLAND_DISPLAY`
+is cleared. File content is never executed, and the current shell environment is
+unchanged. `AGENT_CLIPBOARD_ENV_FILE` selects an alternative provider file; an empty
+string disables this integration. Missing files, unknown fields, or missing
+nonempty required values preserve the inherited environment and do not prevent
+agent startup. Image synchronization itself remains the Machine Fabric feature
+described above. Existing terminals must reload
+`config/zsh/agent-resume-history.zsh` and restart the agent.
+
+Run the logic tests:
 
 ```sh
 luajit config/hammerspoon/private/tests/workbench-clipboard.lua
@@ -154,37 +313,72 @@ luajit config/hammerspoon/private/tests/toolbox.lua
 luajit config/hammerspoon/private/tests/window-shortcuts.lua
 ```
 
-## 远程桌面堆叠
+## Remote desktop group
 
-`remote-window-stack` 默认持续管理 Windows App 的远程会话和标题以 ` - NoMachine`
-结尾的 NoMachine 会话，排除连接列表、无标题内容窗口与设置窗口。
-每 2 秒校正一次，屏幕变化时立即重算；最小化/隐藏的窗口不拉起，拖动鼠标时暂缓。
-默认放在主显示器；可用 `hs.settings.set('remoteStack.screenUUID', '<屏幕 UUID>')`
-指定其他显示器，目标离线时回退主屏。
-不设置固定四周留白，窗口标题栏相隔 28 点。
-Dock 常显时使用 macOS 可用区域，不额外留白；自动隐藏时仅在 Dock 所在的左、右或底边
-保留 2 点触发带。每轮读取 Dock 配置，位置和隐藏模式变化后自动重算。
-NoMachine 限制画面比例时，以它接受的尺寸统一所有窗口，水平居中，因此左右留白可能增大。
-前台远程窗口放在堆叠最下方，使其余标题栏保持可见；不主动抢焦点。
-自动退出远程会话的原生全屏，新连接可能短暂进入全屏后才被纠正；
-要完全避免该过程，还需在 Windows App 的连接显示设置中关闭启动全屏。
-离开守护非 idle 时暂停，恢复后重新应用布局。此规则会覆盖手动调整；
-临时停用：`workbenchRemoteStack:stop()`，重载配置后恢复。
+`remote-window-stack` continuously manages Windows App remote sessions and
+NoMachine sessions whose titles end in ` - NoMachine`. Connection libraries,
+untitled content windows, and settings windows are excluded. It reconciles every
+two seconds and immediately after display changes. Hidden or minimized windows
+are not raised; updates pause while the mouse is being dragged.
 
-远程会话作为一个组保存屏幕和单位布局（`remoteStack.unit`）。当任一远程会话获得焦点，
-Hyper 的半屏、1/3、2/3、最大化/全屏操作调整整个组，跨屏方向操作移动整个组并保持布局比例。
-Hyper+↑ 铺满整组，Hyper+↓ 恢复上次组布局（无历史时不操作）。
-这里全屏表示铺满可用区域，不进入原生全屏 Space；其他快捷键仍按原远程键盘策略处理。
-新增会话加入该组，N 个窗口统一高度为组区域高度减去 `(N-1) × 28` 点，
-再遵守 NoMachine 的比例约束；因此三个窗口比两个窗口的高度上限少 28 点。
-屏幕与布局随配置重载保留；`window.undo` 可撤销本次组布局/跨屏操作。
+The group defaults to the primary display. Set
+`hs.settings.set('remoteStack.screenUUID', '<display-UUID>')` to choose another;
+if that display is offline, the group falls back to the primary display. There are
+no fixed outer margins. Titlebars are staggered by 28 points. A visible Dock uses
+macOS's usable display area without additional padding. An auto-hidden Dock gets
+only a two-point activation strip on its left, right, or bottom edge. Dock settings
+are read on each reconciliation to follow orientation and visibility changes.
 
-Hyper+R 切换远程桌面组：组内窗口激活时最小化所有会话，其他应用激活时恢复并前置整组，
-连接不会断开。仅操作会话窗口，不最小化连接列表。组为空时列出应用索引中已安装的远程客户端，
-选择后打开该应用；没有客户端时提示。此入口不再使用 remote 角色的默认应用。
+When NoMachine constrains the aspect ratio, all sessions use its accepted size and
+are horizontally centered; additional unused space may remain. The foremost
+remote session occupies the lowest slot so the other titlebars stay exposed. The
+layout does not steal focus. Native fullscreen sessions are automatically returned
+to windowed mode, so a new connection may briefly enter fullscreen before being
+corrected. Disable startup fullscreen in the Windows App connection's display
+settings to avoid that transition entirely.
 
-显隐使用隐藏前逐窗口快照（AX 引用、窗口/PID 身份、位置尺寸、前后顺序和焦点），
-恢复时暂停布局校正，等待取消最小化与尺寸变化完成，最多 12 轮、间隔 200ms。
-不依赖最小化期间可能缺项的实时窗口枚举；关闭或进程已替换的成员跳过。
-`workbenchRemoteStack.restoreReport` 提供恢复完成状态；显示器拓扑变化或客户端拒绝原尺寸时
-可能无法原样恢复，随后按当前组规则重新布局。
+Layout management pauses while away guard is not `idle`, and resumes after
+recovery. It overrides manual placement. To disable it temporarily, run
+`workbenchRemoteStack:stop()`; reloading the configuration enables it again.
+
+### Group layouts and display movement
+
+The group saves its display and normalized layout (`remoteStack.unit`). With any
+remote session focused, Hyper half-screen, one-third, two-thirds, maximize, and
+fullscreen actions operate on the entire group. Directional display actions move
+the group while retaining its layout proportions. Hyper+Up fills the available
+area; Hyper+Down restores the previous group layout, or does nothing without
+history. For the group, fullscreen means filling the usable area, not entering a
+native fullscreen Space. Other shortcuts retain the existing remote-keyboard
+policy.
+
+New sessions join the group. For N windows, the common height limit is the group
+region height minus `(N-1) × 28` points, subject to NoMachine's aspect constraint.
+Three windows therefore have a height limit 28 points smaller than two windows.
+Display and layout selection survive configuration reloads. `window.undo` undoes
+the preceding group layout or display move.
+
+### Visibility and restoration
+
+Hyper+R toggles the group. With a group session active, it minimizes all session
+windows; from another application, it restores and raises the group. Connections
+remain active. Connection libraries are not minimized. An empty group presents
+installed remote clients from the application index; selecting one opens it. If no
+client is found, a notification explains this. This entry point no longer launches
+the default application assigned to the remote role.
+
+Hiding captures each window's AX reference, window/PID identity, frame, stacking
+order, and focus. Restoration pauses layout reconciliation, waits for unminimizing
+and frame changes to settle, and retries up to 12 times at 200 ms intervals. It
+does not depend on a live window enumeration that may temporarily omit minimized
+clients. Closed windows and replaced processes are skipped.
+`workbenchRemoteStack.restoreReport` exposes completion status. Display topology
+changes or clients rejecting their original size may prevent exact restoration;
+the group then returns to its current layout rules.
+
+Run the group and shortcut regression tests:
+
+```sh
+luajit config/hammerspoon/private/tests/remote-window-stack.lua
+luajit config/hammerspoon/private/tests/hyper.lua
+```
