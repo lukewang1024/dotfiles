@@ -10,11 +10,12 @@ if toolbox.features().workbench then
   clipboard = require 'private/modules/workbench-clipboard'
 end
 workbenchToolbox = toolbox.new({clipboard = clipboard})
-workbenchAwayGuard = require('private/modules/away-guard').new({
+local awayGuard = require('private/modules/away-guard')
+workbenchAwayGuard = awayGuard.new({
   remoteWindows=function()return remote.remote_desktop_window_filter:getWindows()end,
 })
 workbenchRemoteStack = require('private/modules/remote-window-stack').new({
-  suspended=function()return workbenchAwayGuard.state ~= 'idle' end,
+  suspended=function()return awayGuard.suspendsWindowLayout(workbenchAwayGuard.state) end,
 })
 workbenchToolbox.options.remoteStack=workbenchRemoteStack
 workbenchHyper = require('private/modules/hyper').new({toolbox=workbenchToolbox, clipboard=clipboard, remote=remote, remoteStack=workbenchRemoteStack, awayGuard=workbenchAwayGuard})
