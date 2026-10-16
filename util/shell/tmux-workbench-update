@@ -74,14 +74,15 @@ require_main_checkout()
   branch=$(git -C "$repo" symbolic-ref --quiet --short HEAD) ||
     die "$(repo_label "$repo") checkout has a detached HEAD; use a main or master checkout"
   case $branch in
-    main|master) ;;
+    main|master) remote_branch=$branch ;;
+    upstream-main) remote_branch=main ;;
     *) die "$(repo_label "$repo") checkout is on $branch; use a separate worktree for changes" ;;
   esac
   upstream=$(git -C "$repo" rev-parse --symbolic-full-name '@{upstream}' 2>/dev/null) ||
-    die "$(repo_label "$repo") $branch has no upstream; track a remote $branch branch"
+    die "$(repo_label "$repo") $branch has no upstream; track a remote $remote_branch branch"
   case $upstream in
-    refs/remotes/*/"$branch") ;;
-    *) die "$(repo_label "$repo") $branch tracks $upstream; track a remote $branch branch" ;;
+    refs/remotes/*/"$remote_branch") ;;
+    *) die "$(repo_label "$repo") $branch tracks $upstream; track a remote $remote_branch branch" ;;
   esac
 }
 
@@ -156,9 +157,18 @@ latest_workbench_release_tag()
 {
   command -v curl >/dev/null 2>&1 || die 'curl is required'
   workbench_release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/tmux-workbench-release.XXXXXX")
-  run_quiet curl -fsSL --retry 3 --retry-all-errors --retry-delay 1 \
-    'https://api.github.com/repos/lukewang1024/tmux-agent-workbench/releases?per_page=20' \
-    -o "$workbench_release_tmp/releases.json" || die 'failed to list tmux-agent-workbench releases'
+  # Reuse gh authentication instead of exhausting the shared anonymous API quota.
+  # Keep the curl fallback for machines without gh or a usable GitHub login.
+  if command -v gh >/dev/null 2>&1 &&
+    gh api --hostname github.com 'repos/lukewang1024/tmux-agent-workbench/releases?per_page=20' \
+      >"$workbench_release_tmp/releases.json" 2>"$log_file"; then
+    :
+  else
+    run_quiet curl -fsSL --retry 3 --retry-all-errors --retry-delay 1 \
+      'https://api.github.com/repos/lukewang1024/tmux-agent-workbench/releases?per_page=20' \
+      -o "$workbench_release_tmp/releases.json" ||
+      die 'failed to list tmux-agent-workbench releases; if the GitHub API is rate-limited, authenticate with gh auth login'
+  fi
   workbench_release_tag=$(python3 -c '
 import json, re, sys
 with open(sys.argv[1], encoding="utf-8") as source:
@@ -239,7 +249,8 @@ command -v git >/dev/null 2>&1 || die 'git is required'
 command -v python3 >/dev/null 2>&1 || die 'python3 is required'
 
 # Check every checkout before changing any of them. Feature work belongs in
-# separate worktrees; these installation checkouts track main or master.
+# separate worktrees; installation checkouts track remote main or master.
+# upstream-main is a maintenance alias that preserves a local development main.
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
   require_repo "$repo"
   require_main_checkout "$repo"
