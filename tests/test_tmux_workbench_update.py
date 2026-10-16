@@ -52,6 +52,16 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
                         TEST_RELEASE_ARCHIVE=str(release_archive))
         (self.bin_dir / 'tmux').write_text('#!/bin/sh\nexit 1\n')
         (self.bin_dir / 'tmux').chmod(0o755)
+        # Never use the host's GitHub login or restart its appearance service.
+        (self.bin_dir / 'gh').write_text(
+            '#!/usr/bin/env python3\n'
+            'import os, pathlib, sys\n'
+            'if os.environ.get("TEST_GH_AUTHENTICATED") != "1": sys.exit(1)\n'
+            'pathlib.Path(os.environ["XDG_STATE_HOME"], "gh-used").touch()\n'
+            'print(pathlib.Path(os.environ["TEST_RELEASE_JSON"]).read_text())\n')
+        (self.bin_dir / 'gh').chmod(0o755)
+        (self.bin_dir / 'launchctl').write_text('#!/bin/sh\nexit 1\n')
+        (self.bin_dir / 'launchctl').chmod(0o755)
         (self.bin_dir / 'curl').write_text(
             '#!/usr/bin/env python3\n'
             'import os, shutil, sys\n'
@@ -139,6 +149,41 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertNotIn('fetching repositories', update.stdout)
         self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
         self.assertFalse((self.state / 'synced').exists())
+
+    def test_authenticated_release_lookup_avoids_anonymous_api(self):
+        self.env['TEST_GH_AUTHENTICATED'] = '1'
+        (self.bin_dir / 'curl').write_text('#!/bin/sh\necho "anonymous API quota exhausted" >&2\nexit 22\n')
+        check = self.run_update('--check')
+        self.assertIn('tmux-agent-workbench release: v2.0.0-beta.28 published', check.stdout)
+        self.assertTrue((self.state / 'gh-used').exists())
+        self.assertFalse((self.state / 'synced').exists())
+
+    def test_workbench_upstream_main_alias_can_update_without_touching_main(self):
+        workbench = self.repos['tmux-agent-workbench']
+        original_main = self.git('-C', workbench, 'rev-parse', 'main').stdout.strip()
+        self.git('-C', workbench, 'switch', '-c', 'upstream-main', '--track', 'origin/main')
+
+        self.assertIn('tmux-agent-workbench: 1 update(s) available',
+                      self.run_update('--check').stdout)
+        self.run_update()
+
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertEqual(original_main,
+                         self.git('-C', workbench, 'rev-parse', 'main').stdout.strip())
+        self.assertEqual('upstream-main',
+                         self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+
+    def test_workbench_upstream_main_alias_rejects_wrong_remote_branch(self):
+        workbench = self.repos['tmux-agent-workbench']
+        self.git('-C', workbench, 'branch', '-m', 'upstream-main')
+        self.git('-C', workbench, 'fetch', 'origin', 'main:refs/remotes/origin/feature')
+        self.git('-C', workbench, 'branch', '--set-upstream-to=origin/feature')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('track a remote main branch', update.stderr)
+        self.assertNotIn('fetching repositories', update.stdout)
 
     def test_workbench_feature_branch_is_rejected_before_updates(self):
         workbench = self.repos['tmux-agent-workbench']
