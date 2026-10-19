@@ -215,7 +215,7 @@ host=$(choose_host "$choices_file") || exit 1
 if [ "$print_only" -eq 1 ]; then
   printf '%s\n' "$host"
 elif [ "$attach_tmux" -eq 1 ]; then
-  exec ssh "$@" -t "$host" 'tmux new-session -A -s main'
+  exec ssh "$@" -t "$host" 'if command -v tmux-agent-workbench >/dev/null 2>&1; then exec tmux-agent-workbench client attach; else tmux attach-session || exec tmux new-session; fi'
 elif [ "$attach_workbench" -eq 1 ]; then
   [ "$#" -eq 0 ] || {
     printf '%s\n' 'ssh-connect: SSH_OPTIONS are not supported with --workbench; put them in SSH config' >&2
