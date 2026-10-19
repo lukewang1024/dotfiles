@@ -9,10 +9,16 @@ local i18n = require('private/modules/away-guard-i18n')
 function M.new(options)
   options = options or {}
   local self = {state = 'idle', external = {}}
+  local availability = options.availability or require('private/modules/away-guard-availability').new(options.availabilityOptions)
   local layout = options.layout or require('private/modules/away-guard-windows').new(options)
   local audit = options.audit or require('private/modules/away-guard-log').new()
   local function diagnostic(error) pcall(hs.printf, '[away-guard] %s', tostring(error)) end
+  local function publishAvailability()
+    local ok, error = pcall(availability.publish, availability, self)
+    if not ok then diagnostic(error) end -- Never prevent the guard's lock action.
+  end
   local function write(event, fields)
+    publishAvailability()
     local ok, record = pcall(audit.write, event, fields)
     if ok then return record end
     diagnostic(record)
@@ -80,9 +86,11 @@ function M.new(options)
         if self.state ~= 'idle' and self.state ~= 'restoreFailed' then
           self.state = 'locking'; requestLock()
         end
+        publishAvailability()
         diagnostic(result)
         return false
       end
+      publishAvailability()
       return result
     end
   end
@@ -433,6 +441,7 @@ function M.new(options)
     end
     write(self.state == 'restoreFailed' and 'recovery_resumed' or 'recovery_lock', {reason=self.trigger and self.trigger.reason})
   end
+  publishAvailability()
   return self
 end
 return M

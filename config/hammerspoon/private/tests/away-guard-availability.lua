@@ -1,0 +1,26 @@
+package.path='config/hammerspoon/?.lua;'..package.path
+local now, locked, propertiesReadable = 100, nil, true
+hs={timer={secondsSinceEpoch=function()return now end},caffeinate={sessionProperties=function()if propertiesReadable then return {CGSSessionScreenIsLocked=locked} end end}}
+local module=require('private/modules/away-guard-availability')
+local snapshots, notifications = {}, {}
+local publisher=module.new({generation='instance',sink=function(s)snapshots[#snapshots+1]=s end,
+  broadcast=function(s)notifications[#notifications+1]=s end})
+local live={isRunning=function()return true end}
+local guard={state='idle',monitor=live,keepAwake=live,lastHeartbeat=100}
+assert(not publisher:publish(guard).available)
+guard.state='armed';assert(publisher:publish(guard).available)
+assert(#notifications==2)
+now=100.3;assert(publisher:publish(guard).available and #notifications==2)
+locked=true;assert(not publisher:publish(guard).available and #notifications==3)
+locked=nil;now=102;assert(not publisher:publish(guard).available)
+guard.lastHeartbeat=102;assert(publisher:publish(guard).available)
+propertiesReadable=false;assert(not publisher:publish(guard).available)
+propertiesReadable=true;guard.stopped=true;assert(not publisher:publish(guard).available)
+guard.stopped=false;guard.monitor=nil;assert(not publisher:publish(guard).available)
+guard.monitor=live;guard.lastHeartbeat=103;assert(not publisher:publish(guard).available)
+assert(snapshots[1].sequence==1 and snapshots[#snapshots].sequence==#snapshots)
+assert(snapshots[1].expiresAtMs-snapshots[1].observedAtMs==1500)
+-- A failed sink must never broadcast an uncommitted grant.
+local bad=module.new({generation='bad',sink=function()error('disk full')end,broadcast=function()error('must not broadcast')end})
+assert(not pcall(bad.publish,bad,guard))
+print('Away Guard availability: transition broadcast, heartbeat expiry, lock and helper gating passed')
