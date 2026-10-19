@@ -8,44 +8,74 @@ struct Failure: Error { let message: String }
 final class GuardWatchdog {
     private let mutex = NSLock()
     private var lastHeartbeat = ProcessInfo.processInfo.systemUptime
+    private var heartbeatTimeout: TimeInterval = 2
+    private var monitoring = false
     private var enabled = false
     private var incident = false
+    private var incidentReason: String?
+    private var incidentReported = false
     private var lockObserved = false
     private var disarmed = false
     let lockScreen: () -> Void
     let isLocked: () -> Bool
-    init(lockScreen: @escaping () -> Void, isLocked: @escaping () -> Bool) {
+    let reportIncident: (String) -> Void
+    init(lockScreen: @escaping () -> Void, isLocked: @escaping () -> Bool,
+         reportIncident: @escaping (String) -> Void = { _ in }) {
         self.lockScreen = lockScreen; self.isLocked = isLocked
+        self.reportIncident = reportIncident
     }
-    func enable(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+    func enable(now: TimeInterval = ProcessInfo.processInfo.systemUptime, timeout: TimeInterval = 2) {
         mutex.lock(); defer { mutex.unlock() }
-        enabled = true; lastHeartbeat = now
+        enabled = true; lastHeartbeat = now; heartbeatTimeout = timeout
+    }
+    func beginMonitoring(now: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Bool {
+        mutex.lock(); defer { mutex.unlock() }
+        guard enabled && !incident && !disarmed else { return false }
+        monitoring = true; heartbeatTimeout = 2; lastHeartbeat = now
+        return true
+    }
+    var isMonitoring: Bool {
+        mutex.lock(); defer { mutex.unlock() }
+        return monitoring
     }
     func heartbeat(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         mutex.lock(); defer { mutex.unlock() }
         lastHeartbeat = now
     }
     func disarm() { mutex.lock(); disarmed = true; mutex.unlock() }
-    func trip() { mutex.lock(); incident = true; mutex.unlock(); check() }
+    func trip(_ reason: String = "display monitor incident") {
+        mutex.lock()
+        if !incident { incident = true; incidentReason = reason }
+        mutex.unlock()
+        check()
+    }
     func check(now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         mutex.lock(); defer { mutex.unlock() }
         guard enabled && !disarmed else { return }
-        if now - lastHeartbeat > 2 { incident = true }
+        if now - lastHeartbeat > heartbeatTimeout && !incident {
+            incident = true
+            incidentReason = monitoring ? "parent heartbeat timed out while armed" : "parent heartbeat timed out during display setup"
+        }
         guard incident && !lockObserved else { return }
         if isLocked() { lockObserved = true; return }
-        lockScreen()
+        lockScreen() // Request the lock before any fallible diagnostics.
+        if !incidentReported {
+            incidentReported = true
+            reportIncident(incidentReason ?? "display monitor incident")
+        }
     }
 }
 var watchdog: GuardWatchdog?
 var watchdogTimer: DispatchSourceTimer?
-func consumeCommands(_ fd: Int32, _ guardWatchdog: GuardWatchdog, disarm: () -> Void) {
+func consumeCommands(_ fd: Int32, _ guardWatchdog: GuardWatchdog, arm: (() -> Void)? = nil, disarm: () -> Void) {
     var buffer = "", byte: UInt8 = 0
     while true {
         let count = read(fd, &byte, 1)
         if count == -1 && errno == EINTR { continue }
-        guard count == 1 else { guardWatchdog.trip(); return }
+        guard count == 1 else { guardWatchdog.trip("parent input pipe closed"); return }
         if byte == 10 {
             if buffer == "heartbeat" { guardWatchdog.heartbeat() }
+            else if buffer == "arm", let arm { arm() }
             else if buffer == "disarm" { guardWatchdog.disarm(); disarm(); return }
             else { guardWatchdog.trip() }
             buffer = ""
@@ -186,7 +216,7 @@ func restore(_ wanted: [String]) throws {
 var armed = false
 let callback: CGDisplayReconfigurationCallBack = { id, flags, _ in
     if armed && !flags.contains(.beginConfigurationFlag) {
-        watchdog?.trip()
+        watchdog?.trip("display reconfiguration")
         emit("changed", ["reason": "display reconfiguration", "displayID": id, "flags": flags.rawValue])
     }
 }
@@ -227,8 +257,42 @@ do {
         independent.setEventHandler { asynchronous.check() };independent.resume()
         precondition(signalled.wait(timeout: .now() + 1) == .success)
         asynchronous.disarm();independent.cancel()
+        // Reconfiguration can outlast the armed heartbeat budget. Preparation
+        // is bounded separately, and only a successful darkening handshake
+        // switches the independent watchdog to its strict two-second budget.
+        var handshakeLocks = 0, reasons: [String] = []
+        let setup = GuardWatchdog(lockScreen: { handshakeLocks += 1 }, isLocked: { false },
+            reportIncident: { reasons.append($0) })
+        setup.enable(now: 10, timeout: 25)
+        setup.check(now: 13); precondition(handshakeLocks == 0 && !setup.isMonitoring)
+        precondition(setup.beginMonitoring(now: 15) && setup.isMonitoring)
+        setup.check(now: 16.9); precondition(handshakeLocks == 0)
+        setup.check(now: 17.1); precondition(handshakeLocks == 1)
+        precondition(reasons.last == "parent heartbeat timed out while armed")
+        precondition(!setup.beginMonitoring(now: 18)) // An incident cannot be reset by a late ACK.
+        let stalledSetup = GuardWatchdog(lockScreen: { handshakeLocks += 1 }, isLocked: { false },
+            reportIncident: { reasons.append($0) })
+        stalledSetup.enable(now: 10, timeout: 25)
+        stalledSetup.check(now: 35.1); precondition(handshakeLocks == 2)
+        precondition(reasons.last == "parent heartbeat timed out during display setup")
+        let failedSetup = GuardWatchdog(lockScreen: { handshakeLocks += 1 }, isLocked: { false })
+        failedSetup.enable(timeout: 25);failedSetup.trip("topology changed during setup")
+        precondition(handshakeLocks == 3) // Physical failures still lock immediately.
+        precondition(pipe(&descriptors) == 0)
+        let handshakeInput = Array("arm\ndisarm\n".utf8)
+        _ = handshakeInput.withUnsafeBytes { write(descriptors[1], $0.baseAddress, $0.count) }
+        close(descriptors[1])
+        var acknowledged = false
+        let acknowledgedSetup = GuardWatchdog(lockScreen: { handshakeLocks += 1 }, isLocked: { false })
+        acknowledgedSetup.enable(timeout: 25)
+        consumeCommands(descriptors[0], acknowledgedSetup,
+            arm: { acknowledged = acknowledgedSetup.beginMonitoring() }, disarm: {})
+        close(descriptors[0]);precondition(acknowledged && handshakeLocks == 3)
+        let externalLock = GuardWatchdog(lockScreen: { preconditionFailure("already locked") },
+            isLocked: { true }, reportIncident: { _ in preconditionFailure("must not blame helper for an external lock") })
+        externalLock.enable();externalLock.trip("brightness rose after external lock")
         _ = try lockFunction() // Resolve, never invoke, the actual API.
-        emit("self_test_passed", ["cases": "heartbeat timeout, retries, lock observation, disarm, pipe commands/EOF, independent queue, lock API resolution"])
+        emit("self_test_passed", ["cases": "heartbeat timeout, retries, lock observation, disarm, pipe commands/EOF, independent queue, bounded setup/arming handshake, incident diagnostics, lock API resolution"])
     case "status":
         _ = try lockFunction()
         emit("status", ["topology": try topology(), "online": try online(), "autoBrightness": try autoBrightness(internalDisplay()),
@@ -241,8 +305,10 @@ do {
         }
         emit("restored")
     case "watch":
+        let handshake = args.contains("--arm-handshake")
         let lock = try lockFunction()
-        let guardWatchdog = GuardWatchdog(lockScreen: { lock() }, isLocked: screenIsLocked)
+        let guardWatchdog = GuardWatchdog(lockScreen: { lock() }, isLocked: screenIsLocked,
+            reportIncident: { emit("watchdog_lock", ["reason": $0]) })
         watchdog = guardWatchdog
         signal(SIGPIPE, SIG_IGN) // A closed stdout must not kill the independent watchdog.
         guard fcntl(STDOUT_FILENO, F_SETFL, fcntl(STDOUT_FILENO, F_GETFL) | O_NONBLOCK) != -1 else {
@@ -264,7 +330,12 @@ do {
         var command = "", byte: UInt8 = 0
         while read(STDIN_FILENO, &byte, 1) == 1 && byte != 10 { command.append(Character(UnicodeScalar(byte))) }
         guard command == "disable" else { throw Failure(message: "No disable authorization") }
-        guardWatchdog.enable()
+        // Display reconfiguration can briefly block the parent's Lua thread.
+        // Preparation has the same bounded 25s budget as the parent; explicit
+        // topology failures/EOF still trip immediately. Tighten to 2s only after
+        // the parent confirms zero brightness and the native reader verifies it.
+        guardWatchdog.enable(timeout: handshake ? 25 : 2)
+        if !handshake { _ = guardWatchdog.beginMonitoring() }
         let queue = DispatchQueue(label: "away-guard.watchdog")
         let independentTimer = DispatchSource.makeTimerSource(queue: queue)
         watchdogTimer = independentTimer // Retain through setup errors and parent disconnects.
@@ -272,7 +343,18 @@ do {
         independentTimer.setEventHandler { guardWatchdog.check() }
         independentTimer.resume()
         DispatchQueue(label: "away-guard.commands").async {
-            consumeCommands(STDIN_FILENO, guardWatchdog, disarm: { exit(0) })
+            consumeCommands(STDIN_FILENO, guardWatchdog, arm: {
+                do {
+                    guard try brightness(internalID) == 0 else {
+                        throw Failure(message: "Cannot arm before internal brightness reaches zero")
+                    }
+                    guard guardWatchdog.beginMonitoring() else { return }
+                    emit("armed")
+                } catch {
+                    guardWatchdog.trip("arming handshake failed")
+                    emit("error", ["reason": String(describing: error)])
+                }
+            }, disarm: { exit(0) })
         }
         guard try topology() == baseline else { throw Failure(message: "Topology changed before disabling") }
         _ = try autoBrightness(internalID, set: false)
@@ -317,8 +399,8 @@ do {
                     emit("changed", ["reason": "physical or online topology changed", "online": try online(), "topology": try topology()])
                 }
                 let value = try brightness(internalID)
-                if value > 0 {
-                    guardWatchdog.trip()
+                if guardWatchdog.isMonitoring && value > 0 {
+                    guardWatchdog.trip("brightness increased or unreadable: \(value)")
                     emit("changed", ["reason": "brightness increased or unreadable: \(value)"])
                 }
                 emit("heartbeat")

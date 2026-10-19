@@ -261,6 +261,7 @@ function M.new(options)
   function self:beginDisplays()
     self.deadline = hs.timer.secondsSinceEpoch() + 25
     self.monitorAuthorized = false
+    self.awaitingArm = false
     local buffer = ''
     local monitor
     monitor = hs.task.new('/bin/sh', protect(function(code, stdout, stderr)
@@ -288,12 +289,24 @@ function M.new(options)
           if not internal then trip('internal screen disappeared'); return false end
           internal:setBrightness(0)
           if internal:getBrightness() ~= 0 then trip('cannot darken internal screen'); return false end
-          self.lastHeartbeat = hs.timer.secondsSinceEpoch()
           self.displayBaseline = displaySignature()
+          self.awaitingArm = true
+          task:setInput('arm\n')
+        elseif event.event == 'armed' and self.state == 'preparing' and self.awaitingArm then
+          self.awaitingArm = false
+          self.lastHeartbeat = hs.timer.secondsSinceEpoch()
           self.state = 'armed'
           write('armed', {screen=self.screen,external=self.external})
           self:check()
           if self.state == 'armed' then notify('armed') end
+        elseif event.event == 'watchdog_lock' then
+          local incident=write('native_watchdog_lock', {reason=event.reason,state=self.state})
+          if self.state=='locked' then
+            -- The independent helper can lock before Lua receives its message.
+            self.trigger=incident
+            hs.settings.set('awayGuard.lastTrigger',incident)
+            persist()
+          else trip(event.reason or 'native watchdog requested lock') end
         elseif event.event == 'auto_brightness_disabled' then
           write('auto_brightness_disabled', {previous=event.previous})
         elseif event.event == 'progress' then
@@ -306,7 +319,7 @@ function M.new(options)
         end
       end
       return true
-    end), {helper, 'watch'})
+    end), {helper, 'watch', '--arm-handshake'})
     self.monitor = monitor
     if not self.monitor or not self.monitor:start() then
       self.monitor = nil; restore(); notify('monitorFailed'); return false

@@ -104,9 +104,14 @@ Hammerspoon as a way to disarm the guard.
 
 The native helper independently monitors brightness and display changes and
 requests a system lock. Once Lua authorizes display disabling, it sends a
-heartbeat every 300 ms. The helper checks heartbeats on an independent queue and
-requests a lock after more than two seconds without one, or when its input pipe
-closes. It retries until it observes a locked system. The authenticated recovery
+heartbeat every 300 ms. Display preparation uses a bounded 25-second parent
+heartbeat budget because macOS reconfiguration can block the Lua thread. The
+helper reports readiness after external displays settle; Lua sets and verifies
+zero internal brightness, then sends `arm`. The helper independently verifies zero
+brightness and acknowledges `armed` before Lua publishes the guard as available.
+Only then does the independent watchdog use its strict two-second heartbeat
+budget. Setup errors, topology violations and input-pipe closure still request an
+immediate lock in either phase. It retries until it observes a locked system. The authenticated recovery
 path explicitly sends `disarm` to end monitoring normally.
 
 Monitor messages use nonblocking output: a parent that stops reading cannot block
@@ -134,7 +139,9 @@ event IDs/flags, and window recovery results. Window titles are not logged.
 
 `lock_requested` means the guard requested a lock. A `lock_observed` event with
 `system_or_external_lock` means a system or external lock was observed first; it
-does not identify the responsible policy. After recovery, a notification shows
+does not identify the responsible policy. A subsequent `native_watchdog_lock`
+records the helper's exact trigger and corrects that attribution, including whether
+a parent heartbeat expired during setup or while armed. After recovery, a notification shows
 the trigger reason. Run `workbenchAwayGuard:lastTrigger()` in the Hammerspoon
 console, or inspect the full sequence with:
 
