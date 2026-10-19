@@ -181,3 +181,11 @@ job with no `LANG` and a bare `PATH`), so don't assume bash or a login shell.
 
 Exceptions: vendored third-party code keeps its upstream interpreter, and a
 compiled helper (Swift/Go/…) is fine when a shell genuinely can't do the job.
+
+## Private machine-local instructions
+
+Read `$XDG_CONFIG_HOME/agent/AGENTS.local.md` when it exists (use
+`~/.config/agent/AGENTS.local.md` when XDG_CONFIG_HOME is unset).
+Keep personal publishing identities, account/profile mappings, and other private
+machine policy in that local file outside this repository. Never copy its
+contents into tracked files, commits, pull requests, or public logs.

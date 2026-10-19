@@ -1,9 +1,11 @@
-# Launch tmux on remote session — attach to an existing session if one is
-# detached, else start a fresh one. Can't lean on OMZ tmux's autoconnect alias:
-# that plugin is Turbo-deferred (loads after the first prompt) while this snippet
-# runs synchronously, so the alias isn't defined yet and a bare `tmux` would just
-# `new-session` every login. Spell out attach-or-create so it's load-order-proof.
-is_ssh && ! is_tmux && { tmux attach || tmux new-session; }
+# Workbench owns attachment history; this file only opts SSH logins in.
+if is_ssh && ! is_tmux; then
+  if command -v tmux-agent-workbench >/dev/null 2>&1; then
+    tmux-agent-workbench client attach
+  else
+    tmux attach-session || tmux new-session
+  fi
+fi
 
 source "$config_dir/sh/profile.sh"
 
