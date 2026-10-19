@@ -24,3 +24,22 @@ assert(snapshots[1].expiresAtMs-snapshots[1].observedAtMs==1500)
 local bad=module.new({generation='bad',sink=function()error('disk full')end,broadcast=function()error('must not broadcast')end})
 assert(not pcall(bad.publish,bad,guard))
 print('Away Guard availability: transition broadcast, heartbeat expiry, lock and helper gating passed')
+
+-- Default transport retains one async poster and coalesces in-flight wakeups.
+local tasks, distributed = {}, 0
+hs.printf=function()end
+hs.distributednotifications={post=function()distributed=distributed+1 end}
+hs.task={new=function(path,callback,args)
+  assert(path=='/usr/bin/notifyutil' and args[1]=='-p' and args[2]==module.notification)
+  local task={running=false,callback=callback}
+  function task:start()self.running=true;return self end
+  function task:isRunning()return self.running end
+  tasks[#tasks+1]=task;return task
+end}
+local livePublisher=module.new({generation='transport',sink=function()end})
+guard={state='idle',lastHeartbeat=now,monitor=live,keepAwake=live}
+livePublisher:publish(guard);assert(#tasks==1 and distributed==1)
+guard.state='armed';livePublisher:publish(guard);assert(#tasks==1 and distributed==2)
+tasks[1].running=false;tasks[1].callback(0)
+guard.state='locked';livePublisher:publish(guard);assert(#tasks==2 and distributed==3)
+print('Away Guard broadcast: async Darwin wake retention and coalescing passed')
