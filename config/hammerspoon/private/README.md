@@ -313,12 +313,59 @@ luajit config/hammerspoon/private/tests/toolbox.lua
 luajit config/hammerspoon/private/tests/window-shortcuts.lua
 ```
 
+## Configured window groups
+
+`modules/window-groups.lua` declares which windows join each group.
+`modules/window-group.lua` implements membership, group activation, coordinated
+show/hide, stacking, and restoration. `remote-window-stack` uses this controller
+and adds the remote-specific cascade, aspect constraints, and layout shortcuts.
+Hyper+R continues to toggle the configured `remote` group; its saved layout and
+screen settings retain their existing `remoteStack.*` keys.
+
+Each application rule has a `bundleID`, an optional `appName` for immediate focus
+notifications, and a `selection`: `all` includes every matching standard window;
+`main` includes a single matching main window. Matchers can combine exact `title`,
+Lua `titlePattern`, `nonEmptyTitle`, `excludeTitles`, AX `role` / `subrole`, and
+an application-specific `match(window)` predicate. `main` never guesses from the
+frontmost or largest window: if multiple candidates match, that application is
+excluded and `group.selectionErrors` records the ambiguity. Missing applications
+or main windows are skipped without launching anything. Membership is refreshed
+for each operation, so newly opened matching windows join automatically.
+
+For example, a future personal-chat configuration can use different main-window
+rules per app (the bundle IDs and titles below are placeholders):
+
+```lua
+local group = require('private/modules/window-group').new({
+  id='personalChat',
+  apps={
+    {bundleID='com.example.chat',appName='Example Chat',selection='main',
+      title='Example Chat',role='AXWindow',subrole='AXStandardWindow'},
+    {bundleID='com.example.messenger',appName='Example Messenger',selection='main',
+      match=function(win) return win:title()=='Chats' end},
+  },
+}):start()
+group:toggle()
+-- Call group:stop() at shutdown.
+```
+
+The generic controller preserves existing window positions. Only the remote
+adapter applies automatic sizing and cascading. Show/hide operates on member
+windows, not the entire application, so connection libraries, separate chats,
+settings, and previews excluded by the rules are left alone. Activating a member
+raises the visible group together; focusing an excluded window does not activate
+the group. Personal-chat rules are not enabled until real per-app main-window
+selectors have been configured.
+
 ## Remote desktop group
 
 `remote-window-stack` continuously manages Windows App remote sessions and
 NoMachine sessions whose titles end in ` - NoMachine`. Connection libraries,
 untitled content windows, and settings windows are excluded. It reconciles every
-two seconds and immediately after display changes. Hidden or minimized windows
+two seconds and immediately after display changes or remote-window focus events.
+When a session is active, the visible group is raised together in its existing
+order so other applications cannot cover its inactive titlebars. Switching to
+another application stops group raising. Hidden or minimized windows
 are not raised; updates pause while the mouse is being dragged.
 
 The group defaults to the primary display. Set
@@ -367,18 +414,25 @@ installed remote clients from the application index; selecting one opens it. If 
 client is found, a notification explains this. This entry point no longer launches
 the default application assigned to the remote role.
 
-Hiding captures each window's AX reference, window/PID identity, frame, stacking
-order, and focus. Restoration pauses layout reconciliation, waits for unminimizing
-and frame changes to settle, and retries up to 12 times at 200 ms intervals. It
-does not depend on a live window enumeration that may temporarily omit minimized
-clients. Closed windows and replaced processes are skipped.
-`workbenchRemoteStack.restoreReport` exposes completion status. Display topology
-changes or clients rejecting their original size may prevent exact restoration;
-the group then returns to its current layout rules.
+Hiding retains each window's AX reference, window/PID identity, and focus.
+Before showing the remote group, the adapter computes its final frames from the
+configured screen/layout and cached accepted client sizes. It uses those same
+targets during restoration and subsequent polling, rather than restoring old
+coordinates and then deriving a second layout from their bounding rectangle.
+Logical slot order survives temporary CG stacking changes during unminimize;
+explicitly focusing another member moves that member to the lowest cascade slot.
+
+Restoration pauses layout reconciliation, sets targets before and immediately
+after unminimizing, and waits for two stable observations before completing. It
+retries up to 12 times at 200 ms intervals and does not depend on live enumeration
+that may temporarily omit minimized clients. Closed windows and replaced
+processes are skipped. `workbenchRemoteStack.restoreReport` exposes completion
+status; clients rejecting their rule targets may prevent exact restoration.
 
 Run the group and shortcut regression tests:
 
 ```sh
+luajit config/hammerspoon/private/tests/window-group.lua
 luajit config/hammerspoon/private/tests/remote-window-stack.lua
 luajit config/hammerspoon/private/tests/hyper.lua
 ```
