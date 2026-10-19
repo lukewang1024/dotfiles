@@ -8,6 +8,20 @@ function M.new(options)
   local path = options.path or root .. '/desktop-availability.json'
   local generation = options.generation or hs.host.uuid()
   local sequence, lastAvailable, lastState = 0, nil, nil
+  local notifyTask
+  local function wakeWorker()
+    -- NSDistributedNotificationCenter delivers on the main runloop; a headless
+    -- worker needs Darwin descriptor delivery instead. Keep the poster async so
+    -- notification IPC can never block the guard's lock/check loop.
+    if notifyTask and notifyTask:isRunning() then return end
+    local task
+    task = hs.task.new('/usr/bin/notifyutil', function(code)
+      if notifyTask == task then notifyTask = nil end
+      if code ~= 0 then hs.printf('[away-guard] Worker wake failed: %s', tostring(code)) end
+    end, {'-p', M.notification})
+    if task and task:start() then notifyTask = task
+    else hs.printf('[away-guard] Worker wake could not start; snapshot expiry remains authoritative') end
+  end
   local function write(snapshot)
     if options.sink then return options.sink(snapshot) end
     local directory = ''
@@ -40,7 +54,9 @@ function M.new(options)
     if lastAvailable ~= available or lastState ~= guard.state then
       lastAvailable, lastState = available, guard.state
       if options.broadcast then options.broadcast(snapshot)
-      else hs.distributednotifications.post(M.notification, 'dev.machine-fabric.away-guard',
+      else
+        wakeWorker()
+        hs.distributednotifications.post(M.notification, 'dev.machine-fabric.away-guard',
         {generation=generation,sequence=sequence,available=available,state=guard.state}) end
     end
     return snapshot
