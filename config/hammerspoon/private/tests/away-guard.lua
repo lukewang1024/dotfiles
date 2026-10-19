@@ -1,4 +1,5 @@
 package.path='config/hammerspoon/?.lua;'..package.path
+package.preload['private/modules/away-guard-availability'] = function() return {new=function() return {publish=function()end} end} end
 local records, lastTrigger, lastWindowRecovery = {}, nil, nil
 local preferred, lastAlert = {'en-US'}, nil
 package.preload['private/modules/away-guard-log'] = function()
