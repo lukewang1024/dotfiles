@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""Conservative cleanup of unused macOS code-signing clones.
+
+Default is read-only. --apply removes only unused macOS code-signing clones.
+"""
+import argparse
+import fcntl
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import time
+
+GIB = 1024 ** 3
+HOME = Path.home()
+STATE = Path(os.environ.get('XDG_STATE_HOME', HOME / '.local/state'))
+
+
+def eligible(path, root, cutoff, references, protected):
+    if path.is_symlink() or not path.is_dir() or path.parent != root:
+        return False
+    if not path.name.startswith('code_sign_clone.') or path in protected:
+        return False
+    prefix = str(path) + '/'
+    if any(value == str(path) or value.startswith(prefix) for value in references):
+        return False
+    # Directory mtime alone does not prove that its contents are old.
+    for base, dirs, files in os.walk(path, followlinks=False):
+        for name in ['.', *dirs, *files]:
+            item = Path(base) / name
+            if item.lstat().st_mtime >= cutoff:
+                return False
+    return True
+
+
+def references():
+    result = subprocess.run(['/usr/sbin/lsof', '-n', '-P', '-Fn', '-a', '-u', str(os.getuid())],
+                            capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        raise RuntimeError('Open-file inventory unavailable; cleanup refused')
+    refs = {os.path.realpath(line[1:]) for line in result.stdout.splitlines() if line.startswith('n/')}
+    processes = subprocess.run(['/bin/ps', '-axo', 'command='], capture_output=True, text=True, check=True).stdout
+    return refs, processes
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--apply', action='store_true')
+    parser.add_argument('--reserve-gib', type=int, default=30)
+    parser.add_argument('--retention-days', type=int, default=7)
+    parser.add_argument('--pressure-days', type=int, default=1)
+    parser.add_argument('--keep', type=int, default=2)
+    args = parser.parse_args()
+    if min(args.reserve_gib, args.retention_days, args.pressure_days, args.keep) < 0:
+        parser.error('Thresholds and retention values must be nonnegative')
+    free = shutil.disk_usage(HOME).free
+    report = {'time': time.time(), 'freeBeforeGiB': free / GIB,
+              'pressure': free < args.reserve_gib * GIB, 'deleted': [], 'candidates': [],
+              'scope': 'macOS code-signing clones only'}
+    user_cache = Path(subprocess.check_output(['/usr/bin/getconf', 'DARWIN_USER_CACHE_DIR'], text=True).strip()).resolve()
+    xroot = user_cache.parent / 'X'
+    refs, processes = references()
+    cutoff = time.time() - (args.pressure_days if report['pressure'] else args.retention_days) * 86400
+    for root in sorted(xroot.glob('*.code_sign_clone')):
+        if root.is_symlink() or not root.is_dir():
+            continue
+        children = sorted(root.iterdir(), key=lambda p: p.lstat().st_mtime, reverse=True)
+        protected = set(children[:args.keep])
+        for path in children:
+            if str(path) in processes or not eligible(path, root, cutoff, refs, protected):
+                continue
+            report['candidates'].append(str(path))
+            if args.apply:
+                # Refresh use/identity immediately before irreversible removal.
+                before = path.lstat()
+                current_refs, current_processes = references()
+                if (str(path) not in current_processes
+                        and eligible(path, root, cutoff, current_refs, protected)
+                        and path.lstat().st_ino == before.st_ino):
+                    shutil.rmtree(path)
+                    report['deleted'].append(str(path))
+    report['freeAfterGiB'] = shutil.disk_usage(HOME).free / GIB
+    report['belowReserve'] = report['freeAfterGiB'] < args.reserve_gib
+    if report['belowReserve']:
+        import sys
+        print('Storage below configured free-space reserve.', file=sys.stderr)
+    if args.apply:
+        folder = STATE / 'storage-maintain'
+        folder.mkdir(parents=True, exist_ok=True)
+        temporary = folder / 'last-run.tmp'
+        temporary.write_text(json.dumps(report, indent=2) + '\n')
+        temporary.replace(folder / 'last-run.json')
+    print(json.dumps(report, indent=2))
+    return 0
+
+
+if __name__ == '__main__':
+    import sys
+    if '--apply' in sys.argv:
+        folder = STATE / 'storage-maintain'
+        folder.mkdir(parents=True, exist_ok=True)
+        with (folder / 'cleanup.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            raise SystemExit(main())
+    raise SystemExit(main())

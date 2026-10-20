@@ -202,6 +202,15 @@ def set_macos_configs(c):
 
 
 @task()
+def setup_storage_maintenance(c):
+    links(c, 'macos/setup_storage_maintenance')
+    c.command(c.repo / 'util/macos/setup-launchagent',
+              '--label', 'dev.dotfiles.storage-maintain',
+              '--command', str(c.bin / 'storage-maintain') + ' --apply',
+              '--hours', ','.join(str(hour) for hour in range(24)))
+
+
+@task()
 def setup_alfred_prefs(c):
     if c.command(c.repo / 'util/macos/alfred-prefs-folder', check=False):
         c.note('Open Alfred once, then rerun alfred-prefs-folder.')

@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Check a filesystem's free-space budget before running a cooperating producer."""
+import argparse
+import fcntl
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+
+GIB = 1024 ** 3
+
+
+def check(path, working, reserve):
+    free = shutil.disk_usage(path).free
+    return {'admitted': free >= (working + reserve) * GIB,
+            'freeGiB': free / GIB, 'requiredGiB': working + reserve}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--path', type=Path, default=Path.home())
+    parser.add_argument('--working-gib', type=int, required=True)
+    parser.add_argument('--reserve-gib', type=int, default=30)
+    parser.add_argument('command', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+    if min(args.working_gib, args.reserve_gib) < 0:
+        parser.error('Space budgets must be nonnegative')
+    command = args.command[1:] if args.command[:1] == ['--'] else args.command
+
+    def run():
+        result = check(args.path, args.working_gib, args.reserve_gib)
+        print(json.dumps(result), flush=True)
+        if not result['admitted']:
+            return 2
+        return subprocess.run(command).returncode if command else 0
+
+    if not command:
+        return run()
+    state = Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state'))
+    folder = state / 'storage-admit'
+    folder.mkdir(parents=True, exist_ok=True)
+    with (folder / 'producer.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return run()
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

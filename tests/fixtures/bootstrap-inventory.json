@@ -850,6 +850,14 @@
         "$bin_dir/launchservices-prune"
       ],
       [
+        "$util_dir/macos/storage-maintain",
+        "$bin_dir/storage-maintain"
+      ],
+      [
+        "$util_dir/shell/storage-admit",
+        "$bin_dir/storage-admit"
+      ],
+      [
         "$util_dir/macos/virtualbox-kext",
         "$bin_dir/virtualbox-kext"
       ],
@@ -2569,5 +2577,18 @@
   "windows/print_usage": {
     "arrays": {},
     "links": []
+  },
+  "macos/setup_storage_maintenance": {
+    "arrays": {},
+    "links": [
+      [
+        "$util_dir/macos/storage-maintain",
+        "$bin_dir/storage-maintain"
+      ],
+      [
+        "$util_dir/shell/storage-admit",
+        "$bin_dir/storage-admit"
+      ]
+    ]
   }
 }
