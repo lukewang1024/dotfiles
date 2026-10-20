@@ -37,7 +37,7 @@ class TermuxSystemThemeTests(unittest.TestCase):
             for _ in range(2):
                 subprocess.run(['sh', str(SCRIPT), '--once'], env=env, check=True)
             self.assertEqual((root / 'reloads').read_text(), 'reload\nreload\n')
-            self.assertEqual(target.resolve(), palette)
+            self.assertEqual(target.resolve(), palette.resolve())
             self.assertEqual((root / 'pushes').read_text(), 'dark\ndark\n')
             self.assertEqual((root / 'local-syncs').read_text(), 'dark all\ndark all\n')
 

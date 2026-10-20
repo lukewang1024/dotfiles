@@ -1,4 +1,5 @@
 import os
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -17,7 +18,12 @@ class CodexTuiSettingsTests(unittest.TestCase):
                 home = Path(directory)
                 config = home / 'config.toml'
                 config.write_text('model = "local-model"\n' + existing)
-                env = dict(os.environ, CODEX_HOME=directory)
+                bin_dir = home / 'bin'; bin_dir.mkdir()
+                team = bin_dir / 'agent-team'
+                plan = json.dumps({'config': {'model':'daily-model','effort':'max','fast':True}})
+                team.write_text("#!/bin/sh\nprintf '%s\\n' '" + plan + "'\n")
+                team.chmod(0o755)
+                env = dict(os.environ, CODEX_HOME=directory, PATH=str(bin_dir) + os.pathsep + os.environ['PATH'])
                 previous = None
                 for _ in range(2):
                     result = subprocess.run(
@@ -27,7 +33,8 @@ class CodexTuiSettingsTests(unittest.TestCase):
                     self.assertEqual(result.returncode, 0, result.stderr)
                     contents = config.read_text()
                     values = tomllib.loads(contents)
-                    self.assertEqual(values['model'], 'local-model')
+                    self.assertEqual(values['model'], 'daily-model')
+                    self.assertEqual(values['service_tier'], 'fast')
                     self.assertNotIn('alternate_screen', values['tui'])
                     if existing:
                         self.assertIs(values['tui']['raw_output_mode'], False)

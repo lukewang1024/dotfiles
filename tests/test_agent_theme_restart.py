@@ -349,9 +349,14 @@ class RestartGateTest(unittest.TestCase):
         for command in ("acp", "mcp-server", "exec", "fork"):
             self.assertIsNone(theme.resume_options(["traex", command], "traex"))
 
+    def test_relaunch_retains_scene_and_temporary_adjustment(self):
+        self.assertEqual(theme.resume_options([
+            "codex-team", "--scene", "hard", "--adjust", "quick", "resume", "thread-id"
+        ]), ["--scene", "hard", "--adjust", "quick"])
+
     def test_relaunch_retains_settings_without_replaying_prompt(self):
         self.assertEqual(theme.resume_options([
-            "codex-expert", "--yolo", "-p", "expert", "-C", "/repo with spaces",
+            "codex", "--yolo", "-p", "expert", "-C", "/repo with spaces",
             "--add-dir=/other", "resume", "--last", "initial prompt",
         ]), ["--yolo", "-p", "expert", "-C", "/repo with spaces", "--add-dir=/other"])
         for option in ("--no-daemon", "--worktree", "-i", "--unknown", "fork"):

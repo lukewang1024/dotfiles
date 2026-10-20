@@ -1,4 +1,4 @@
-"""Codex-writable profiles must never write machine state into shared templates."""
+"""Scene defaults preserve machine-local config and retire old profiles."""
 import importlib.util
 from pathlib import Path
 import tempfile
@@ -10,46 +10,34 @@ SPEC = importlib.util.spec_from_file_location('codex_profiles', ROOT / 'util/age
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 
-
 class CodexProfileTests(unittest.TestCase):
-    def test_seed_migrate_and_repeat_preserve_local_state(self):
+    def test_scene_migration_preserves_local_settings_and_archives_profiles(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            templates, runtime = root / 'templates', root / 'codex'
-            templates.mkdir()
-            runtime.mkdir()
-            for name in ('team.config.toml', 'team-budget.config.toml'):
-                (templates / name).write_text('model = "shared"\n')
-            source = templates / 'team-budget.config.toml'
-            trust = '\n[projects."/local/project"]\ntrust_level = "trusted"\n'
-            source.write_text(source.read_text() + trust)
-            target = runtime / source.name
-            target.symlink_to(source)
-            MODULE.apply_profiles(templates, runtime)
-            self.assertFalse(target.is_symlink())
-            self.assertEqual(target.read_bytes(), source.read_bytes())
-            self.assertEqual(target.stat().st_mode & 0o777, 0o600)
-            source.write_text('model = "new-template"\n')
-            target.write_text(target.read_text() + '\n[notice]\nhide_warning = true\n')
-            before = target.read_bytes()
-            MODULE.apply_profiles(templates, runtime)
-            self.assertEqual(target.read_bytes(), before)
-            self.assertEqual(tomllib.loads(target.read_text())['projects']['/local/project']['trust_level'], 'trusted')
-            self.assertNotIn('projects', tomllib.loads(source.read_text()))
-            self.assertFalse((runtime / 'team.config.toml').is_symlink())
+            runtime = root / 'codex'; runtime.mkdir()
+            config = runtime / 'config.toml'
+            config.write_text('model = "old"\n# keep comment\n[projects."/repo"]\ntrust_level = "trusted"\n[agents]\nenabled = true\nmax_concurrent_threads_per_session = 2\n')
+            old = runtime / 'team-budget.config.toml'; old.write_text('model = "old-team"\n')
+            scene = {'model':'gpt-6.1-sol', 'effort':'max', 'fast':True}
+            archive = root / 'archive'
+            MODULE.apply_profiles(root, runtime, scene, archive)
+            parsed = tomllib.loads(config.read_text())
+            self.assertEqual(parsed['model'], scene['model'])
+            self.assertEqual(parsed['service_tier'], 'fast')
+            self.assertFalse(parsed['agents']['enabled'])
+            self.assertEqual(parsed['agents']['max_concurrent_threads_per_session'], 2)
+            self.assertEqual(parsed['projects']['/repo']['trust_level'], 'trusted')
+            self.assertIn('# keep comment', config.read_text())
+            self.assertFalse(old.exists())
+            self.assertEqual((archive / old.name).read_text(), 'model = "old-team"\n')
+            before = config.read_bytes()
+            MODULE.apply_profiles(root, runtime, scene, archive)
+            self.assertEqual(config.read_bytes(), before)
 
-    def test_unrelated_symlink_is_not_replaced(self):
+    def test_empty_config_and_missing_agents_table_are_valid(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            source = root / 'other.toml'
-            source.write_text('model = "local"\n')
-            target = root / 'team.config.toml'
-            target.symlink_to(source)
-            with self.assertRaisesRegex(RuntimeError, 'unrelated'):
-                MODULE.apply_profiles(root / 'templates', root)
-            self.assertTrue(target.is_symlink())
-            self.assertEqual(source.read_text(), 'model = "local"\n')
-
-    def test_shared_templates_contain_no_project_state(self):
-        for name in ('team.config.toml', 'team-budget.config.toml'):
-            self.assertNotIn('projects', tomllib.loads((ROOT / 'config/agent' / name).read_text()))
+            MODULE.apply_profiles(root, root / 'codex', {'model':'chosen','effort':'max','fast':False}, root / 'archive')
+            parsed = tomllib.loads((root / 'codex/config.toml').read_text())
+            self.assertEqual(parsed['service_tier'], 'default')
+            self.assertFalse(parsed['agents']['enabled'])

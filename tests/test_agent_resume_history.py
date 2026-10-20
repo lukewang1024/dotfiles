@@ -15,7 +15,7 @@ SCRIPT = Path(__file__).resolve().parents[1] / "config/zsh/agent-resume-history.
 class AgentResumeHistoryTest(unittest.TestCase):
     def test_codex_shortcuts_capture_output_and_preserve_command_name(self):
         session = "01a0f092-a417-7d91-8d46-32ce516fed67"
-        for command in ["codex", "codex-budget", "codex-expert", "codex-yolo", "codex-team", "codex-team-budget", "codex-team-expert"]:
+        for command in ["codex", "codex-yolo", "codex-team"]:
             with self.subTest(command=command), tempfile.TemporaryDirectory() as directory:
                 child = Path(directory) / command
                 child.write_text(f'#!/bin/sh\nprintf "Session ID: {session}\\n"\n')
@@ -28,6 +28,16 @@ class AgentResumeHistoryTest(unittest.TestCase):
                 ], stdin=subprocess.DEVNULL, text=True, capture_output=True, timeout=10)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertIn(f"HISTORY:{command} resume {session}", result.stdout)
+
+    def test_scene_and_temporary_adjustment_survive_resume_history(self):
+        result = subprocess.run([
+            shutil.which("zsh"), "-f", "-c",
+            'source "$1"; _agent_run_and_remember() { print -r -- "$3"; }; '
+            '_agent_codex_run /fake/codex-team codex-team --scene hard --adjust quick --yolo',
+            "test", str(SCRIPT),
+        ], text=True, capture_output=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), 'codex-team --yolo --scene hard --adjust quick resume')
 
     def test_other_agents_resolve_commands_from_path_and_preserve_arguments(self):
         for command, expected in [
@@ -165,12 +175,12 @@ class AgentResumeHistoryTest(unittest.TestCase):
             shutil.which("zsh"), "-f", "-c",
             'source "$1"; CODEX_HOME="/tmp/custom codex"; '
             '_agent_run_and_remember() { printf "%s\\n" "$@"; }; '
-            '_agent_codex_run /fake/codex codex-budget --yolo resume --last',
+            '_agent_codex_run /fake/codex codex --yolo resume --last',
             "test", str(SCRIPT),
         ], text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.splitlines(), [
-            "codex", "/fake/codex", "codex-budget --yolo resume",
+            "codex", "/fake/codex", "codex --yolo resume",
             "/tmp/custom codex/sessions", "--yolo", "resume", "--last",
         ])
 
