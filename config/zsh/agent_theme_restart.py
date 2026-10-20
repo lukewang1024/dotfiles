@@ -29,6 +29,7 @@ VALUE_OPTIONS = {
     "-c", "--config", "--enable", "--disable", "-m", "--model",
     "-p", "--profile", "-s", "--sandbox", "-a", "--ask-for-approval",
     "-C", "--cd", "--add-dir", "--remote", "--remote-auth-token-env",
+    "--scene", "--adjust",
 }
 FLAG_OPTIONS = {
     "--yolo", "--dangerously-bypass-approvals-and-sandbox", "--approve-for-me",
