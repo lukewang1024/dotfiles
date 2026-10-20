@@ -198,12 +198,26 @@ _agent_run_and_remember() {
 }
 
 unalias codex codex-yolo codex-budget codex-expert codex-team codex-team-budget codex-team-expert claude traex traex-budget opencode 2>/dev/null
+unfunction codex-budget codex-expert codex-team-budget codex-team-expert 2>/dev/null
 _agent_codex_run() {
   local executable=$1 command_name=$2
   shift 2
-  local arg requires_embedded=0 explicit_embedded=0 resume_prefix="$command_name resume"
+  local arg scene_flag="" scene_options="" requires_embedded=0 explicit_embedded=0 resume_prefix="$command_name resume"
   for arg in "$@"; do
+    if [ -n "$scene_flag" ]; then
+      scene_options="$scene_options $scene_flag ${(q)arg}"
+      scene_flag=""
+    fi
     case "$arg" in
+      --)
+        break
+        ;;
+      --scene|--adjust)
+        scene_flag=$arg
+        ;;
+      --scene=*|--adjust=*)
+        scene_options="$scene_options ${(q)arg}"
+        ;;
       -c|--config|--config=*|--enable|--enable=*|--disable|--disable=*|--search)
         requires_embedded=1
         ;;
@@ -224,28 +238,17 @@ _agent_codex_run() {
   if [ "$requires_embedded" -eq 1 ] && [ "$explicit_embedded" -eq 0 ]; then
     set -- --no-daemon "$@"
   fi
+  resume_prefix="${resume_prefix% resume}${scene_options} resume"
   _agent_run_and_remember codex "$executable" "$resume_prefix" "${CODEX_HOME:-$HOME/.codex}/sessions" "$@"
 }
 codex() {
   _agent_codex_run codex codex "$@"
-}
-codex-budget() {
-  _agent_codex_run codex-budget codex-budget "$@"
-}
-codex-expert() {
-  _agent_codex_run codex-expert codex-expert "$@"
 }
 codex-yolo() {
   _agent_codex_run codex-yolo codex-yolo "$@"
 }
 codex-team() {
   _agent_codex_run codex-team codex-team "$@"
-}
-codex-team-budget() {
-  _agent_codex_run codex-team-budget codex-team-budget "$@"
-}
-codex-team-expert() {
-  _agent_codex_run codex-team-expert codex-team-expert "$@"
 }
 claude() {
   local arg permission_mode=auto resume_prefix='claude --permission-mode auto --resume'

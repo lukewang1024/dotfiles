@@ -22,51 +22,35 @@ agents. `./init sync` installs the entrypoints and applies the managed settings.
 Do not add credentials, per-project permissions, MCP secrets, or absolute
 machine-specific paths to these shared files.
 
-### Codex shortcuts
+### Codex scenes and teams
 
-Plain `codex` uses the model and effort in the local Codex config. The
-`agent-team` checkout installs `codex-budget` (GPT-6 Luna Max for bounded,
-low-cost tasks) and `codex-expert` (GPT-6 Astra Medium for demanding work) as
-solo CLI wrappers. The zsh integration calls them through the same approval and
-resume-history helper as plain `codex`. These Codex model shortcuts do not imply
-`--yolo`; pass it explicitly when needed. The `codex-team` and `codex-team-budget`
-commands below launch separate, opt-in team presets.
-The `traex-budget` CLI wrapper uses the same installer and keeps its
-TraeX-specific GPT-5.6 Luna High and `--yolo` settings. The zsh integration
-also records its resume command.
+`agent-team/config/teams.json` is the shared source for daily, hard and batch
+scenes. Single and Team select the same scene, and Fast is scene-wide. Use:
 
-### Agent teams
+```sh
+agent start codex --scene daily
+agent start codex --scene hard --team
+agent start codex --scene batch --team --tmux
+```
 
-The implementation, adapters, collaboration protocol and tests live in the
-standalone `~/Code/github/agent-team` checkout. `./init core` clones or updates
-that checkout and links its commands into `~/.local/bin`; set `AGENT_TEAM_REPO`
-for a different checkout location. `agent-team-install` can be run directly
-to repair the entrypoints. `./init sync` only installs this helper and applies
-the lightweight configuration links. `tmux-workbench-update` also fetches,
-fast-forwards, and reinstalls agent-team alongside the tmux workbench stack.
+The `agent` entrypoint is supplied by tmux-agent-workbench and delegates scene
+resolution to `agent-team start codex`. `codex` defaults to daily Single after
+`codex-settings-apply`; `codex-team` starts daily Team and supports `--scene`.
+`codex-yolo` adds explicit YOLO to daily Single. Old expert/budget shortcuts
+and their Team variants are removed without aliases.
 
-Run `agent-team` to select a coding agent and preset, or `agent-team --tmux` for
-interactive pane teams. Tool-specific shortcuts such as `codex-team` are owned
-by the standalone installer. The shared AGENTS.md only authorizes the opt-in
-mode; the standalone CLI injects the full collaboration rules.
+`codex-settings-apply` reads the daily scene plan from agent-team, applies its
+model, effort, Fast and Single defaults to local Codex config while preserving
+unmanaged settings and comments, and archives retired writable Team profiles
+under `$XDG_STATE_HOME/agent-team/retired-profiles`. Shared profile templates
+are no longer seeded. Machine-local scene overrides belong in
+`$XDG_CONFIG_HOME/agent-team/config.json`, under `codex.scenes`.
 
-The standalone `agent-team/config/teams.json` owns Team, Team Budget, Codex solo
-budget/expert, and TraeX solo budget presets. Direct shortcuts use
-`agent-team solo codex budget`, `agent-team solo codex expert`, and
-`agent-team solo traex budget`. Machine-local overrides belong in
-`$XDG_CONFIG_HOME/agent-team/config.json`.
-
-Personal Codex defaults remain in `team.config.toml` and
-`team-budget.config.toml` as initialization templates. `codex-settings-apply`
-seeds independent files in `${CODEX_HOME:-~/.codex}` and converts the old
-symlinks into regular files, preserving existing trust and local settings.
-Existing regular profiles are never overwritten by sync. They remain compatible
-with direct `codex --profile` use, but `agent-team` launches pass the resolved
-model and reasoning settings explicitly. Codex may write project trust to these
-runtime profiles; those paths must never be linked back into dotfiles.
-The standalone CLI can also
-run without these profiles using its bundled defaults. Machine-local overrides
-for any supported tool belong in `$XDG_CONFIG_HOME/agent-team/config.json`.
+The implementation, adapters and collaboration protocol remain in the standalone
+`~/Code/github/agent-team` checkout. `./init core` installs it; `./init sync`
+applies lightweight settings. Native and tmux Team modes remain opt-in and
+never mix. Other tools keep their existing presets, including `traex-budget`.
+The shared AGENTS.md references the standalone collaboration rules.
 
 - `code-ship` and `skills/code-ship` implement repository shipping policies.
   First use asks for a strategy and saves it under XDG config, never in the
