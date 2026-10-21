@@ -197,7 +197,8 @@
     "pkgs": [
       [
         "colima",  // Container runtimes on MacOS (and Linux) with minimal setup
-        "mas"      // Mac App Store command-line interface
+        "mas",     // Mac App Store command-line interface
+        "mole"     // Deep clean and optimize your Mac
       ]
     ]
   },
