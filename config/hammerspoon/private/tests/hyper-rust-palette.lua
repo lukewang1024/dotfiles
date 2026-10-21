@@ -59,4 +59,37 @@ hs.window.focusedWindow=function()return nil end
 palette:show({{text='No focused window'}},{},function()end)
 assert(messages[#messages].request.target_display==1)
 palette:stop()
+local alerts={}
+local i18n=require('private/modules/hyper-i18n')
+local adapter=require('private/modules/hyper-rust-palette')
+local newTask=hs.task.new
+hs.alert.show=function(text)alerts[#alerts+1]=text end
+hs.timer.doAfter=function(_,callback)callback()end
+for _,language in ipairs({'en','zh'}) do
+  i18n.language=function()return language end
+  hs.fs.attributes=function()return nil end
+  local missing=adapter.new()
+  missing:show({}, {},function()end)
+  assert(alerts[#alerts]==i18n.t('error.palettePython') and not missing.visible)
+  missing:stop()
+  hs.fs.attributes=function()return {} end
+  hs.task.new=function()return nil end
+  local failed=adapter.new()
+  failed:show({}, {},function()end)
+  assert(alerts[#alerts]==i18n.t('error.paletteStart') and not failed.visible)
+  failed:stop()
+  hs.task.new=newTask
+  local broken=adapter.new()
+  broken:show({}, {},function()end)
+  broken:dispatch({type='error',message='external diagnostic'})
+  assert(alerts[#alerts]==i18n.t('error.paletteDetail',{name='external diagnostic'}))
+  broken:show({}, {},function()end)
+  broken:dispatch({type='error',message='Hyper Palette is not installed'})
+  assert(alerts[#alerts]==i18n.t('error.paletteDetail',{name=i18n.t('Hyper Palette is not installed')}))
+  broken:show({}, {},function()end)
+  tasks[#tasks].done(1)
+  assert(alerts[#alerts]==i18n.t('error.paletteFailed') and not broken.visible)
+  broken:stop()
+end
 print('Rust adapter: opaque IDs, dynamic push, ack queue, callbacks, continuous actions and blur passed')
+print('Rust adapter: bilingual missing-runtime, launch and renderer error feedback passed')

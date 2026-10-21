@@ -371,10 +371,23 @@ print('Hyper remote role: toggles group instead of launching default app passed'
 local remoteSpec=require('private/modules/hyper-generated').apps['windows-app']
 instance.apps.apps={{title=remoteSpec.title,bundle=remoteSpec.mac,path='/Applications/Windows App.app'},
   {title='Unrelated app',bundle='test.unrelated',path='/Applications/Unrelated.app'}}
-local emptyChoices
-instance.palette.show=function(_,rows)emptyChoices=rows end
+local emptyChoices,emptyOptions,emptyAlert
+instance.palette.show=function(_,rows,options)emptyChoices=rows;emptyOptions=options end
+hs.alert.show=function(text)emptyAlert=text end
 instance.options.remoteStack={toggle=function()return false end}
-instance:run('app.remote')
-assert(emptyChoices and #emptyChoices==1 and emptyChoices[1].action=='installed./Applications/Windows App.app')
+local i18n=require('private/modules/hyper-i18n')
+local installed=instance.apps.apps
+for _,language in ipairs({'en','zh'}) do
+  i18n.language=function()return language end
+  instance.apps.apps=installed
+  instance:run('app.remote')
+  assert(emptyChoices and #emptyChoices==1 and emptyChoices[1].action=='installed./Applications/Windows App.app')
+  assert(emptyChoices[1].text==remoteSpec.title) -- App identities stay unchanged.
+  assert(emptyChoices[1].subText==i18n.t('ui.remoteEmptyDetail'))
+  assert(emptyOptions.title==i18n.t('ui.remoteEmptyTitle'))
+  instance.apps.apps={}
+  instance:run('app.remote')
+  assert(emptyAlert==i18n.t('error.remoteEmpty'))
+end
 instance.options.remoteStack=nil
-print('Hyper empty remote group: installed clients only passed')
+print('Hyper empty remote group: bilingual title, guidance and no-installed-client alert passed')

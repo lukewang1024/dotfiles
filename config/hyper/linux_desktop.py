@@ -8,6 +8,10 @@ import re
 import shutil
 import subprocess
 import time
+from localize import catalog, translate
+from pathlib import Path
+
+LABELS = catalog(json.loads(Path(__file__).with_name('keys.json').read_text()))
 
 
 class X11Desktop:
@@ -72,9 +76,9 @@ class X11Desktop:
         result = dict(spec)
         result.update(spec.get(self.name, {}))
         if result.get('activation', 'focus') not in ('focus', 'summon'):
-            raise ValueError('Application activation must be focus or summon')
+            raise ValueError(translate(LABELS, 'error.appActivation'))
         if not isinstance(result.get('hide_on_active', True), bool):
-            raise ValueError('Application hide_on_active must be a boolean')
+            raise ValueError(translate(LABELS, 'error.appHideOnActive'))
         return result
 
     def matches(self, window, spec):
@@ -179,7 +183,7 @@ class I3Desktop(X11Desktop):
                     return found
         wid = visit(json.loads(self.call('i3-msg','-t','get_tree')))
         if wid is None:
-            raise RuntimeError('No focused i3 window')
+            raise RuntimeError(translate(LABELS, 'error.i3NoWindow'))
         return wid
 
     def window_node(self, wid):
@@ -195,7 +199,7 @@ class I3Desktop(X11Desktop):
                     return found
         node = visit(json.loads(self.call('i3-msg','-t','get_tree')))
         if node is None:
-            raise RuntimeError('Window is no longer managed by i3')
+            raise RuntimeError(translate(LABELS, 'error.i3WindowGone'))
         return node
 
     def frame(self, wid):

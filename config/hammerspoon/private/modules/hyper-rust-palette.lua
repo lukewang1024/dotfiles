@@ -1,5 +1,6 @@
 -- Data/action adapter only. All menu UI and parent navigation live in Rust.
 local M={}
+local t=require('private/modules/hyper-i18n').t
 function M.new()
   local self={visible=false,serial=0,entries={},queue={}}
   local root=(os.getenv('XDG_CONFIG_HOME') or (os.getenv('HOME')..'/.config'))..'/dotfiles/config/hyper/'
@@ -37,14 +38,14 @@ function M.new()
     elseif event.type=='dismissed' then self:closed(event.reason=='escape')
     elseif event.type=='error' then
       self.afterClose=nil
-      self:closed(false);hs.alert.show('Hyper Palette: '..(event.message or 'failed'))
+      self:closed(false);hs.alert.show(event.message and t('error.paletteDetail',{name=t(event.message)}) or t('error.paletteFailed'))
     end
   end
   function self:show(choices,options,callback)
     options=options or {}
     local push=self.visible
     if not push then
-      if not python then hs.alert.show('Hyper Palette requires Python 3');return end
+      if not python then hs.alert.show(t('error.palettePython'));return end
       self.serial=self.serial+1
       self.rid=tostring(hs.timer.absoluteTime())..'-'..self.serial
       self.entries={};self.queue={};self.waiting=false
@@ -73,7 +74,7 @@ function M.new()
           if self.task~=task then return end
           self.task=nil
           if self.visible then self:closed(false) end
-          if code~=0 then hs.alert.show('Hyper Palette failed; check host.log') end
+          if code~=0 then hs.alert.show(t('error.paletteFailed')) end
         end)
       end,function(_,out)
         if self.task~=task then return false end
@@ -86,7 +87,7 @@ function M.new()
         return true
       end,{'-B',root..'palette_bridge.py','--interactive'})
       self.task=task
-      if not task:start() then self.task=nil;hs.alert.show('Hyper Palette bridge failed to start');return end
+      if not task or not task:start() then self.task=nil;hs.alert.show(t('error.paletteStart'));return end
     end
     self.visible=true
     self:send({type=push and 'push' or 'show',request=request})
@@ -109,7 +110,7 @@ function M.new()
   end
   if python then
     self.warm=hs.task.new(python,function()self.warm=nil end,{'-B',root..'palette_bridge.py','--warm'})
-    self.warm:start()
+    if self.warm then self.warm:start() end
   end
   return self
 end

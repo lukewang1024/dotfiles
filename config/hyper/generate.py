@@ -149,9 +149,11 @@ def outputs(data):
 
 
 def main():
+    from check_i18n import validate_repository
     parser = argparse.ArgumentParser()
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
+    validate_repository(ROOT)
     stale = []
     for name, content in outputs(json.loads(SOURCE.read_text())).items():
         path = ROOT / name

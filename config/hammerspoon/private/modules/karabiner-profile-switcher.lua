@@ -1,3 +1,4 @@
+local t = require('private/modules/hyper-i18n').t
 local hotkey = require 'hs.hotkey'
 local eventtap = require 'hs.eventtap'
 local task = require 'hs.task'
@@ -77,7 +78,7 @@ module.update_remote_desktop_timer = timer.delayed.new(0.1, function()
 
   remote_desktop_window_focused = focused
   if not set_karabiner_variables({remote_desktop_window_focused = focused and 1 or 0}) then
-    hs.alert.show('Failed to update remote desktop keyboard mapping')
+    hs.alert.show(t('error.remoteMapping'))
   end
 end)
 
@@ -132,9 +133,9 @@ local function toggle_nomachine_f18_workaround()
 
   task.new('/opt/homebrew/bin/karabiner_cli', function(exit_code)
     if exit_code == 0 then
-      hs.alert.show('NoMachine F18 workaround: ' .. (nomachine_f18_workaround and 'ON' or 'OFF'))
+      hs.alert.show(t(nomachine_f18_workaround and 'ui.remoteCompatibilityOn' or 'ui.remoteCompatibilityOff'))
     else
-      hs.alert.show('Failed to update NoMachine F18 workaround')
+      hs.alert.show(t('error.remoteCompatibility'))
     end
   end, {'--set-variables', variables}):start()
 end
