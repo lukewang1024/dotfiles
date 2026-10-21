@@ -1,4 +1,6 @@
 -- Non-activating, single-line transfer feedback. No estimated progress.
+local i18n = require('private/modules/hyper-i18n')
+local t = i18n.t
 local M = {}
 function M.new()
   local self = {}
@@ -12,21 +14,19 @@ function M.new()
     if not self.canvas then return end
     local complete = self.stage=='success'
     local failed = self.stage=='failed'
-    local label = complete and '图片已传好' or (failed and '图片传输失败' or '正在传图片…')
+    local key = complete and 'clipboard.hud.success' or (failed and 'clipboard.hud.failed' or 'clipboard.hud.sending')
     if failed then
-      local error=tostring(self.error)
-      if error:find('没有可传输的图片',1,true) or error:find('NO_IMAGE',1,true) then
-        label='剪贴板中没有图片'
-      elseif error:find('尚未发送',1,true) then
-        label='连接超时，图片尚未发送'
-      elseif error:find('未确认写入',1,true) or error:find('结果未知',1,true)
-          or error:find('超时',1,true) then
-        label='远端未确认，结果未知'
+      -- Branch on protocol codes, never on translated diagnostic text.
+      if self.errorCode=='NO_IMAGE' then key='clipboard.hud.noImage'
+      elseif self.errorCode=='TARGET_CHECK_TIMEOUT' then key='clipboard.hud.notSent'
+      elseif self.errorCode=='CLIPBOARD_UNCONFIRMED' or self.errorCode=='RPC_TIMEOUT' then
+        key='clipboard.hud.unconfirmed'
       end
     end
+    local label=t(key)
     local elements = {
       {type='rectangle',action='fill',fillColor={hex='#272931'},roundedRectRadii={xRadius=12,yRadius=12}},
-      {type='text',text=label,textSize=14,textColor={hex='#EEF0F5'},frame={x=42,y=12,w=140,h=23}},
+      {type='text',text=label,textSize=14,textColor={hex='#EEF0F5'},frame={x=42,y=12,w=self.width-50,h=23}},
     }
     if complete then
       elements[#elements+1]={type='segments',action='stroke',strokeWidth=2,strokeColor={hex='#82D3A1'},
@@ -50,10 +50,11 @@ function M.new()
   end
   function self:start(target)
     self:close()
-    self.target=target; self.stage='reading'; self.error=nil
+    self.target=target; self.stage='reading'; self.error=nil; self.errorCode=nil
     self.started=hs.timer.secondsSinceEpoch()
     local screen=hs.screen.mainScreen():frame()
-    self.canvas=hs.canvas.new({x=screen.x+screen.w-210,y=screen.y+24,w=190,h=44})
+    self.width=i18n.language()=='zh' and 190 or 330
+    self.canvas=hs.canvas.new({x=screen.x+screen.w-self.width-20,y=screen.y+24,w=self.width,h=44})
     self.canvas:level(hs.canvas.windowLevels.overlay)
     self.canvas:behavior({'canJoinAllSpaces','fullScreenAuxiliary'})
     self:draw(); self.canvas:show()
@@ -63,9 +64,9 @@ function M.new()
     if not stages[event.stage] or self.stage=='success' or self.stage=='failed' then return end
     self.stage=event.stage
   end
-  function self:finish(result,err)
+  function self:finish(result,err,code)
     self.stage=result and 'success' or 'failed'
-    self.error=err
+    self.error=err; self.errorCode=code
     if self.timer then self.timer:stop(); self.timer=nil end
     self:draw()
     self.dismiss=hs.timer.doAfter(result and 2 or 5,function()self:close()end)

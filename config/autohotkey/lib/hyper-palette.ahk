@@ -63,7 +63,7 @@ hyperRustShow(rows, title, quick := false, continuous := false)
   if (ErrorLevel="ERROR")
   {
     hyperRustPending := ""
-    MsgBox, 48, Hyper Palette, Hyper Palette bridge failed to start.
+    MsgBox, 48, Hyper Palette, % hyperText("error.paletteStart")
     return
   }
   pending.pid := pid
@@ -106,7 +106,7 @@ hyperRustPoll()
       WinActivate, % "ahk_id " . pending.target
   }
   if (parts[1]="error")
-    MsgBox, 48, Hyper Palette, Hyper Palette failed. Check hyper-palette host.log.
+    MsgBox, 48, Hyper Palette, % hyperText("error.paletteFailed")
   if (action!="")
   {
     hyperTarget := pending.target

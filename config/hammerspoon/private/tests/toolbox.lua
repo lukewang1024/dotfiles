@@ -1,3 +1,4 @@
+package.path='config/hammerspoon/?.lua;'..package.path
 local frame={x=0,y=0,w=800,h=600}
 local win={id=function()return 1 end,isFullScreen=function()return false end,
   frame=function()return frame end,setFrame=function(_,f)frame=f end,
@@ -25,6 +26,14 @@ items[1].fn();assert(sent=='new')
 current.targets={};current.error='CLI needs upgrade'
 items=box:items();assert(items[1].disabled and items[2].menu[1].title=='CLI needs upgrade')
 items[2].menu[3].fn();assert(refreshed)
+local i18n=require('private/modules/hyper-i18n')
+current.error=nil
+for _,language in ipairs({'en','zh'}) do
+  i18n.language=function()return language end
+  items=box:items()
+  assert(items[2].menu[1].title==i18n.t('clipboard.noTargets'))
+  assert(items[2].title==i18n.t('clipboard.chooseTarget'))
+end
 box:runWindowAction('window.left');assert(frame.x==100 and frame.w==600)
 box:runWindowAction('window.undo');assert(frame.w==800)
 box.hotkey.press();assert(not menu.opened)

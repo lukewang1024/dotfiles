@@ -661,7 +661,7 @@ hyperRun(action)
       rows.Push(["S-" . key,"Fast " . direction,arg . ".fast-" . direction])
     }
     if (arg="mouse")
-      for _, row in [["return","Click","mouse.click"],["delete","Right click","mouse.rightclick"],["u","Scroll up","mouse.scrollup"],["o","Scroll down","mouse.scrolldown"]]
+      for _, row in [["return",hyperText("mouse.click"),"mouse.click"],["delete",hyperText("mouse.rightclick"),"mouse.rightclick"],["u",hyperText("mouse.scrollup"),"mouse.scrollup"],["o",hyperText("mouse.scrolldown"),"mouse.scrolldown"]]
         rows.Push(row)
     hyperMenu(rows,arg,true,true)
   }

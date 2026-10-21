@@ -576,7 +576,8 @@
       "pkgs": [
         [
           "colima",
-          "mas"
+          "mas",
+          "mole"
         ]
       ]
     },

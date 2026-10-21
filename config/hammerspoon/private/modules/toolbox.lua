@@ -1,4 +1,6 @@
 -- One searchable entry point. Choices contain IDs only, never callbacks/userdata.
+local i18n = require('private/modules/hyper-i18n')
+local t = i18n.t
 local M = {}
 local featureKey = 'workbench.toolbox.features'
 function M.features()
@@ -20,48 +22,48 @@ function M.new(options)
   end
   local function position(rect)
     local win = originalWindow()
-    if not win then alert('原窗口已关闭或不可操作'); return end
+    if not win then alert(t('error.originalWindow')); return end
     if self.options.remoteStack and self.options.remoteStack:contains(win) then self.options.remoteStack:place(rect);return end
-    if win:isFullScreen() then alert('请先退出系统全屏模式'); return end
+    if win:isFullScreen() then alert(t('Exit system fullscreen first')); return end
     remember(win)
     local frame = win:screen():frame()
     win:setFrame({x=frame.x+frame.w*rect[1], y=frame.y+frame.h*rect[2],
       w=frame.w*rect[3], h=frame.h*rect[4]}, 0)
   end
-  local function register(id, group, title, detail, run)
-    registry[#registry+1] = {id=id, group=group, title=title, detail=detail, run=run}
+  local function register(id, label, run)
+    registry[#registry+1] = {id=id, group=t('ui.windowGroup'), title=t(label or id), detail=i18n.keywords(label or id), run=run}
   end
   if features.windows then
-    register('window.left','窗口','窗口靠左','左半屏 · left half',function()position({0,0,.5,1})end)
-    register('window.right','窗口','窗口靠右','右半屏 · right half',function()position({.5,0,.5,1})end)
-    register('window.top','窗口','窗口上半屏','top half',function()position({0,0,1,.5})end)
-    register('window.bottom','窗口','窗口下半屏','bottom half',function()position({0,.5,1,.5})end)
-    register('window.twoThirds','窗口','窗口左侧三分之二','first two thirds',function()position({0,0,2/3,1})end)
-    register('window.lastThird','窗口','窗口右侧三分之一','last third',function()position({2/3,0,1/3,1})end)
-    register('window.max','窗口','窗口最大化','使用可用屏幕区域 · maximize',function()position({0,0,1,1})end)
-    register('window.center','窗口','窗口居中','居中并保留尺寸 · center',function()
-      local win=originalWindow(); if not win then alert('原窗口已关闭'); return end
+    register('window.left',nil,function()position({0,0,.5,1})end)
+    register('window.right',nil,function()position({.5,0,.5,1})end)
+    register('window.top',nil,function()position({0,0,1,.5})end)
+    register('window.bottom',nil,function()position({0,.5,1,.5})end)
+    register('window.twoThirds',nil,function()position({0,0,2/3,1})end)
+    register('window.lastThird',nil,function()position({2/3,0,1/3,1})end)
+    register('window.max',nil,function()position({0,0,1,1})end)
+    register('window.center',nil,function()
+      local win=originalWindow(); if not win then alert(t('error.originalWindow')); return end
       remember(win); win:centerOnScreen(nil, false, 0)
     end)
-    register('window.next','窗口','移到下一块屏幕','next screen monitor',function()
-      local win=originalWindow(); if not win then alert('原窗口已关闭'); return end
+    register('window.next','window.nextScreen',function()
+      local win=originalWindow(); if not win then alert(t('error.originalWindow')); return end
       local group=self.options.remoteStack
       if group and group:contains(win) then group:place(group.unit,group:screen():next());return end
       local nextScreen=win:screen():next()
-      if nextScreen == win:screen() then alert('当前只有一块屏幕'); return end
+      if nextScreen == win:screen() then alert(t('Only one screen detected')); return end
       remember(win); win:moveToScreen(nextScreen, false, true, 0)
     end)
-    register('window.previous','窗口','移到上一块屏幕','previous screen monitor',function()
-      local win=originalWindow(); if not win then alert('原窗口已关闭'); return end
+    register('window.previous','window.previousScreen',function()
+      local win=originalWindow(); if not win then alert(t('error.originalWindow')); return end
       local group=self.options.remoteStack
       if group and group:contains(win) then group:place(group.unit,group:screen():previous());return end
       local previous=win:screen():previous()
-      if previous == win:screen() then alert('当前只有一块屏幕'); return end
+      if previous == win:screen() then alert(t('Only one screen detected')); return end
       remember(win); win:moveToScreen(previous, false, true, 0)
     end)
-    register('window.undo','窗口','撤销上次窗口调整','恢复该窗口的上一个位置 · undo',function()
+    register('window.undo',nil,function()
       local win=originalWindow(); local frame=win and self.history[win:id()]
-      if not frame then alert('这个窗口没有可撤销的调整'); return end
+      if not frame then alert(t('error.noUndo')); return end
       self.history[win:id()]=nil; win:setFrame(frame,0)
     end)
   end
@@ -73,13 +75,13 @@ function M.new(options)
     for _,action in ipairs(registry) do
       if action.id==id then
         local ok,err=pcall(action.run)
-        if not ok then alert('窗口操作失败：'..tostring(err)) end
+        if not ok then alert(t('error.actionFailed',{name=tostring(err)})) end
         return
       end
     end
   end
   function self:items()
-    if not clipboard then return {{title='图片同步已关闭',disabled=true}} end
+    if not clipboard then return {{title=t('clipboard.disabled'),disabled=true}} end
     local status=clipboard.status()
     local targets={}
     local selectedReady=false
@@ -91,17 +93,17 @@ function M.new(options)
         fn=function()clipboard.selectTarget(id)end}
     end
     if #targets==0 then
-      targets[#targets+1]={title=status.error or '没有已连接的设备',disabled=true}
+      targets[#targets+1]={title=status.error or t('clipboard.noTargets'),disabled=true}
     end
     targets[#targets+1]={title='-'}
-    targets[#targets+1]={title=status.refreshing and '正在刷新…' or '刷新设备',disabled=status.refreshing,fn=clipboard.refresh}
+    targets[#targets+1]={title=status.refreshing and t('clipboard.refreshing') or t('clipboard.refresh'),disabled=status.refreshing,fn=clipboard.refresh}
     return {
-      {title=status.busy and '正在同步…' or ('发送已有图片 → '..(status.selected or '未选择目标')),
+      {title=status.busy and t('clipboard.busy') or t('clipboard.sendTo',{name=status.selected or t('clipboard.noSelection')}),
         disabled=status.busy or not selectedReady,fn=function()clipboard.push(status.selected)end},
-      {title='选择同步目标',menu=targets},
-      {title='同步状态',menu={
-        {title=status.lastResult or '还没有同步记录',disabled=true},
-        {title=status.lastError or status.error or ('目标：'..(status.selected or '未选择')),disabled=true},
+      {title=t('clipboard.chooseTarget'),menu=targets},
+      {title=t('clipboard.status'),menu={
+        {title=status.lastResult or t('clipboard.noHistory'),disabled=true},
+        {title=status.lastError or status.error or t('clipboard.target',{name=status.selected or t('clipboard.noSelection')}),disabled=true},
       }},
     }
   end
@@ -115,12 +117,12 @@ function M.new(options)
     self.menuOpen=true
     local ok,err=pcall(function()self.menu:popupMenu(hs.mouse.absolutePosition())end)
     self.menuOpen=false
-    if not ok then alert(tostring(err)) end
+    if not ok then alert(t('error.actionFailed',{name=tostring(err)})) end
   end
   if hs.hotkey.assignable({'ctrl','alt','shift'},'v') then
     -- Open after release so modifiers do not affect native menu navigation.
     self.hotkey=hs.hotkey.bind({'ctrl','alt','shift'},'v',function()end,function()self:toggle()end)
-  else alert('Ctrl+Alt+Shift+V 已被占用，可用 Hyper+0 → C 选择图片同步') end
+  else alert(t('clipboard.menuHotkeyBusy')) end
   function self:stop()
     if self.stopped then return end
     self.stopped=true
