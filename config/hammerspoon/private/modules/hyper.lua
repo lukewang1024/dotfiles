@@ -5,14 +5,7 @@ local paletteModule = require 'private/modules/hyper-rust-palette'
 local appsModule = require 'private/modules/hyper-apps'
 local rolesModule = require 'private/modules/hyper-roles'
 local i18n = require 'private/modules/hyper-i18n'
-local macLabels = {
-  ['system.awayGuard'] = {en='Enable away guard', zh='开启离开守护'},
-  ['system.awayReturn'] = {en='Away guard: lock and return', zh='离开守护：锁屏并退出（解锁后恢复）'},
-}
-local function t(key, values)
-  local label=macLabels[key]
-  return label and label[i18n.language()] or i18n.t(key, values)
-end
+local t = i18n.t
 local function copy(v) return hs.json.decode(hs.json.encode(v)) end
 M.actionTitle=t
 
@@ -60,8 +53,8 @@ function M.new(options)
   self.apps=appsModule.new()
   local data = copy(defaults)
   if self.options.awayGuard then
-    data.menus.system[#data.menus.system+1]={'g','Enable away guard','system.awayGuard'}
-    data.menus.system[#data.menus.system+1]={'e','Away guard: lock and return','system.awayReturn'}
+    data.menus.system[#data.menus.system+1]={'g',t('system.awayGuard'),'system.awayGuard'}
+    data.menus.system[#data.menus.system+1]={'e',t('system.awayReturn'),'system.awayReturn'}
   end
   local overrides = hs.settings.get('hyper.apps') or {}
   for id, app in pairs(overrides) do data.apps[id] = app end
@@ -157,7 +150,7 @@ function M.new(options)
     if name=='roles' then showChoices(self.roles:rows(),t('menu.roles'));return end
     if name=='config' then
       local rows=copy(data.menus.config)
-      rows[#rows+1]={'b','Sync Alfred blacklist','clipboard.syncBlacklist'}
+      rows[#rows+1]={'b',t('clipboard.syncBlacklist'),'clipboard.syncBlacklist'}
       modal(t('menu.config'),rows)
       return
     end
@@ -173,7 +166,7 @@ function M.new(options)
       if self.options.awayGuard then
         for _,action in ipairs({'system.awayGuard','system.awayReturn'}) do
           choices[#choices+1]={text=t(action),subText='H+0 → X',action=action,
-            keywords=macLabels[action].en..' '..macLabels[action].zh..' 离开守护 黑屏 away guard'}
+            keywords=i18n.keywords(action)..' '..i18n.keywords('search.awayGuard')}
         end
       end
       for _,b in ipairs(data.bindings) do
@@ -218,12 +211,12 @@ function M.new(options)
           for _,app in ipairs(self.apps.apps) do
             if spec and (app.bundle==spec.mac or app.title:lower()==spec.title:lower()) and not seen[app.path] then
               seen[app.path]=true
-              choices[#choices+1]={text=app.title,subText='当前远程桌面组为空 · 打开应用选择连接',action='installed.'..app.path}
+              choices[#choices+1]={text=app.title,subText=t('ui.remoteEmptyDetail'),action='installed.'..app.path}
             end
           end
         end
-        if #choices==0 then alert('远程桌面组为空，未找到已安装的远程桌面应用')
-        else showChoices(choices,'远程桌面组为空 · 选择应用') end
+        if #choices==0 then alert('error.remoteEmpty')
+        else showChoices(choices,t('ui.remoteEmptyTitle')) end
       end
       return
     end
@@ -424,7 +417,7 @@ function M.new(options)
         items[#items+1]={'S-'..entry[1],'fast '..entry[2],arg..'.fast-'..entry[2]}
       end
       if arg=='mouse' then
-        for _,entry in ipairs({{'return','Click','mouse.click'},{'delete','Right click','mouse.rightclick'},{'u','Scroll up','mouse.scrollup'},{'o','Scroll down','mouse.scrolldown'}}) do items[#items+1]=entry end
+        for _,entry in ipairs({{'return',t('mouse.click'),'mouse.click'},{'delete',t('mouse.rightclick'),'mouse.rightclick'},{'u',t('mouse.scrollup'),'mouse.scrollup'},{'o',t('mouse.scrolldown'),'mouse.scrolldown'}}) do items[#items+1]=entry end
       end
       modal(t('mode.'..arg),items,true)
     elseif kind=='mouse' then
@@ -542,7 +535,7 @@ function M.new(options)
     if b.shift then mods[#mods+1]='shift' end
     local function run()
       local ok,err=pcall(function()self:run(b.action)end)
-      if not ok then alert('Hyper: '..tostring(err)) end
+      if not ok then alert(t('error.actionFailed',{name=tostring(err)})) end
     end
     local function fire()
       if self.palette.visible then

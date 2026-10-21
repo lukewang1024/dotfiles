@@ -2,6 +2,31 @@
 import json
 import os
 from pathlib import Path
+import string
+
+
+def validate_pair(key, pair):
+    if not isinstance(pair, list) or len(pair) != 2 or any(
+        not isinstance(text, str) or not text.strip() for text in pair
+    ):
+        raise ValueError(f'{key}: provide nonempty English and Chinese translations')
+    fields = [{name for _, name, _, _ in string.Formatter().parse(text) if name}
+              for text in pair]
+    if fields[0] != fields[1]:
+        raise ValueError(f'{key}: English/Chinese placeholders differ')
+
+
+def load_source(path=None):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f'Duplicate translation key: {key}')
+            validate_pair(key, value)
+            result[key] = value
+        return result
+    return json.loads((path or Path(__file__).with_name('locales.json')).read_text(encoding='utf-8'),
+                      object_pairs_hook=unique)
 
 
 def language(value):
@@ -16,8 +41,8 @@ def system_language(env=None):
     return language((env.get('LANGUAGE') or locale).split(':')[0])
 
 
-def catalog(data):
-    source=json.loads(Path(__file__).with_name('locales.json').read_text(encoding='utf-8'))
+def catalog(data, source_path=None):
+    source=load_source(source_path)
     result={lang:{key:pair[index] for key,pair in source.items()} for index,lang in enumerate(('en','zh'))}
     for labels in result.values():
         for name,app in data['apps'].items():
@@ -30,6 +55,14 @@ def catalog(data):
                 labels.setdefault(kind+'.'+direction,labels['template.'+kind].format(name=labels['direction.'+direction]))
                 if kind in ('mouse','resize'):
                     labels[kind+'.fast-'+direction]=labels['template.fast'].format(name=labels['direction.'+direction])
+    required = {binding['action'] for binding in data['bindings']}
+    required.update(row[2] for rows in data['menus'].values() for row in rows)
+    required.update('menu.' + name for name in data['menus'])
+    required.update('role.' + name for name in data['roles'])
+    required.update('app.' + name for name in data['roles'])
+    for key in sorted(required):
+        if any(key not in result[lang] for lang in ('en', 'zh')):
+            raise ValueError(f'{key}: missing English/Chinese translation')
     return result
 
 

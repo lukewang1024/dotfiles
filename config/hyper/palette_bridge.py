@@ -71,7 +71,7 @@ def request(platform, lang):
     for name in ('config', 'clipboard'):
         rows = list(data['menus'][name])
         if name == 'config' and platform == 'mac':
-            rows.append(['b', 'Sync Alfred blacklist', 'clipboard.syncBlacklist'])
+            rows.append(['b', translate(labels, 'clipboard.syncBlacklist', lang), 'clipboard.syncBlacklist'])
         items = []
         for key, title, action in rows:
             item = dict(id=action, title=translate(labels, action, lang),
@@ -89,6 +89,15 @@ def allowed_actions(value):
             if not item.get('submenu') and not item.get('disabled')}
 
 
+def renderer_command():
+    command = [str(binary_path())]
+    # Match the action catalog's GNU message-locale precedence, including C.
+    # macOS and Windows use native UI preferences in the renderer itself.
+    if sys.platform.startswith('linux'):
+        command.append('--lang=' + system_language())
+    return command
+
+
 def daemon():
     root = state_home()
     token = secrets.token_hex(32)
@@ -96,7 +105,7 @@ def daemon():
     listener.bind(('127.0.0.1', 0))
     listener.listen(8)
     flags = {'creationflags': subprocess.CREATE_NO_WINDOW} if os.name == 'nt' else {}
-    process = subprocess.Popen([str(binary_path())], stdin=subprocess.PIPE,
+    process = subprocess.Popen(renderer_command(), stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE, **flags)
     ready = receive(process.stdout)
     if ready.get('type') != 'ready':

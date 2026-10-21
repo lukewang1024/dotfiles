@@ -214,7 +214,7 @@ class Hyper:
         self.palette_session=session
         try:
             for event in session.events():
-                if event['type']=='error':raise RuntimeError(event.get('message','Hyper Palette failed'))
+                if event['type']=='error':raise RuntimeError(tr('error.paletteDetail',name=tr(event['message'])) if event.get('message') else tr('error.paletteFailed'))
                 if event['type']=='dismissed':
                     if event.get('reason')=='escape' and self.target:self.desktop.focus(self.target)
                 if event['type']=='action':
@@ -286,7 +286,7 @@ class Hyper:
             rows=[]
             for key,direction in [('h','left'),('j','down'),('k','up'),('l','right')]:
                 rows += [(key,direction,arg+'.'+direction),('S-'+key,'Fast '+direction,arg+'.fast-'+direction)]
-            if arg=='mouse': rows += [('return','Click','mouse.click'),('delete','Right click','mouse.rightclick'),('u','Scroll up','mouse.scrollup'),('o','Scroll down','mouse.scrolldown')]
+            if arg=='mouse': rows += [('return',tr('mouse.click'),'mouse.click'),('delete',tr('mouse.rightclick'),'mouse.rightclick'),('u',tr('mouse.scrollup'),'mouse.scrollup'),('o',tr('mouse.scrolldown'),'mouse.scrolldown')]
             self.choose(rows,arg,quick=True,continuous=True);return
         if kind=='mouse':
             if arg in ('click','rightclick','scrollup','scrolldown'): call('xdotool','click',{'click':'1','rightclick':'3','scrollup':'4','scrolldown':'5'}[arg])
@@ -408,14 +408,14 @@ class Hyper:
             elif arg in self.data['layouts']:
                 if 'snap' not in saved:saved['snap']=saved.get('max',before)
                 saved.pop('max',None);self.desktop.move(wid,place(area,layout(self.data,arg,area)))
-            else:raise RuntimeError('Unknown action: '+action)
+            else:raise RuntimeError(tr('error.unknownAction',name=action))
             saved['managed']=self.desktop.frame(wid)
 
 
 def main():
     if len(sys.argv)!=2: raise SystemExit('Usage: hyper ACTION')
     if os.environ.get('XDG_SESSION_TYPE')=='wayland':
-        raise SystemExit('This adapter requires X11. A native Wayland window/input adapter is not installed.')
+        raise SystemExit(tr('error.x11Required'))
     try: Hyper().run(sys.argv[1])
     except (OSError,RuntimeError,ValueError,ImportError,subprocess.CalledProcessError) as err:
         notify(err);raise SystemExit(1)

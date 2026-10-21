@@ -251,6 +251,24 @@ diagnostics are not translated by Hyper.
 - Linux uses the standard message-locale environment (`LC_ALL`, `LC_MESSAGES`,
   `LANG`, and `LANGUAGE`); `C`/`POSIX` uses English.
 
+Built-in UI copy belongs in `locales.json` as `[English, Chinese]`, including
+empty states, failures, native menus and transfer HUDs. Branch on action/error
+codes, never on translated sentences. App/device names and external diagnostic
+details remain unchanged. Away guard's existing `away-guard-i18n.lua` catalog is
+validated alongside the shared catalog.
+
+`generate.py` (including `--check`), the repository test suite and the Hyper CI
+workflow enforce the i18n gate. It rejects missing/empty translations, duplicate
+keys, mismatched placeholders, untranslated bound/menu actions, unknown literal
+translation keys, and literal UI copy in audited adapters. Every new module must
+be classified in `i18n-sources.json`; UI modules need bilingual behavioral tests.
+Non-UI literals require an explicit reason. Retired modules cannot be loaded by
+the active macOS entry point without being audited again.
+
+This static check is a guard, not a full data-flow analyzer: review dynamically
+constructed text and exercise both languages when adding an interaction. Keep
+exceptions for protocol data, app identities or developer logs, never UI prose.
+
 ## Generate and validate
 
 Run from the repository root:
@@ -258,11 +276,15 @@ Run from the repository root:
 ```sh
 python3 config/hyper/generate.py
 python3 config/hyper/generate.py --check
+python3 -B config/hyper/check_i18n.py
 python3 -m unittest discover -s config/hyper -p 'test_*.py'
 luajit config/hammerspoon/private/tests/hyper.lua
 luajit config/hammerspoon/private/tests/hyper-i18n.lua
 luajit config/hammerspoon/private/tests/hyper-roles.lua
 luajit config/hammerspoon/private/tests/hyper-rust-palette.lua
+luajit config/hammerspoon/private/tests/clipboard-progress.lua
+luajit config/hammerspoon/private/tests/workbench-clipboard.lua
+luajit config/hammerspoon/private/tests/toolbox.lua
 ```
 
 Generation updates the Mac Lua table, Windows AHK table, i3 include,

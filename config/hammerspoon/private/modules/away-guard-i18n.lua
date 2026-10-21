@@ -22,6 +22,8 @@ local messages = {
   brightnessReason = {en='Internal brightness increased or could not be read ({value})', zh='内屏亮度升高或无法读取（{value}）'},
 }
 local reasons = {
+  ['native watchdog requested lock'] = {en='Display watchdog requested a lock', zh='显示器守护进程请求锁屏'},
+  ['screen locked during recovery'] = {en='Screen locked during recovery', zh='恢复过程中屏幕锁定'},
   ['keep-awake process stopped'] = {en='Keep-awake process stopped', zh='保活进程停止'},
   ['keep-awake process exited'] = {en='Keep-awake process exited', zh='保活进程退出'},
   ['RDP fullscreen exit timed out'] = {en='RDP fullscreen exit timed out', zh='退出 RDP 全屏超时'},

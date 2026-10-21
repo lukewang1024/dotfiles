@@ -1,0 +1,175 @@
+{
+  "config/autohotkey/lib/hyper-palette.ahk": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json."
+  },
+  "config/autohotkey/lib/hyper.ahk": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json."
+  },
+  "config/hammerspoon/private/modules/app-launch-toggle.lua": {
+    "kind": "legacy",
+    "reason": "Retired module; not loaded by init.lua/private/workbench.lua."
+  },
+  "config/hammerspoon/private/modules/away-guard-availability.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/away-guard-i18n.lua": {
+    "kind": "catalog",
+    "reason": "Away guard owns a bilingual en/zh catalog, validated here and by its language tests."
+  },
+  "config/hammerspoon/private/modules/away-guard-log.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/away-guard-windows.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/away-guard.lua": {
+    "kind": "ui",
+    "reason": "User notifications go through away-guard-i18n; other strings are state and protocol diagnostics.",
+    "catalog": "config/hammerspoon/private/modules/away-guard-i18n.lua",
+    "literals": {
+      "RDP original display missing: ": "Recovery diagnostic recorded in the log, not displayed as UI.",
+      "RDP session window unavailable during restore": "Recovery diagnostic recorded in the log, not displayed as UI.",
+      "brightness increased or unreadable: ": "Watchdog reason prefix; rendered through the bilingual brightnessReason template.",
+      "[away-guard] RDP fullscreen settled; disabling external displays": "Developer log record.",
+      "[away-guard] Monitor exited (%s): %s": "Developer log record.",
+      "[away-guard] Display setup: online=%s %s": "Developer log record.",
+      "[away-guard] Leaving %d RDP fullscreen window(s) before display changes": "Developer log record."
+    }
+  },
+  "config/hammerspoon/private/modules/clipboard-progress.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json."
+  },
+  "config/hammerspoon/private/modules/hyper-apps.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/hyper-clipboard-policy.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/hyper-i18n.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/hyper-roles.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json."
+  },
+  "config/hammerspoon/private/modules/hyper-rust-palette.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json."
+  },
+  "config/hammerspoon/private/modules/hyper.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json.",
+    "literals": {
+      "H+0 → X": "Physical shortcut notation.",
+      "H+": "Physical shortcut prefix.",
+      "Activity Monitor": "macOS application name required by launchOrFocus."
+    }
+  },
+  "config/hammerspoon/private/modules/karabiner-profile-switcher.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json.",
+    "literals": {
+      "Windows App": "OS application name used to identify remote windows."
+    }
+  },
+  "config/hammerspoon/private/modules/quick-screen-recording.lua": {
+    "kind": "legacy",
+    "reason": "Retired module; not loaded by init.lua/private/workbench.lua."
+  },
+  "config/hammerspoon/private/modules/remote-window-stack.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/toolbox.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json."
+  },
+  "config/hammerspoon/private/modules/window-group.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/window-groups.lua": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hammerspoon/private/modules/window-shortcuts.lua": {
+    "kind": "legacy",
+    "reason": "Retired module; not loaded by init.lua/private/workbench.lua."
+  },
+  "config/hammerspoon/private/modules/workbench-clipboard.lua": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json.",
+    "literals": {
+      "unrecognized subcommand": "External CLI diagnostic matched to a translated error code."
+    }
+  },
+  "config/hyper/app_index.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/check_i18n.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/generate.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/install_palette.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/linux_desktop.py": {
+    "kind": "ui",
+    "reason": "Desktop/renderer errors and menu data cross the user-facing adapter boundary; built-in diagnostics use catalog keys.",
+    "literals": {
+      "Absolute upper-left X": "Field name parsed from xwininfo output.",
+      "Absolute upper-left Y": "Field name parsed from xwininfo output."
+    }
+  },
+  "config/hyper/localize.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/migrate_rectangle.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/palette_bridge.py": {
+    "kind": "ui",
+    "reason": "Desktop/renderer errors and menu data cross the user-facing adapter boundary; built-in diagnostics use catalog keys.",
+    "literals": {
+      "Hyper Palette Prototype.app/Contents/MacOS/hyper-palette": "Installed application bundle path.",
+      "Use --session-dir for the Windows adapter": "Developer CLI invocation error, not interactive UI."
+    }
+  },
+  "config/hyper/roles.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/validate_palette.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "config/hyper/validate_x11.py": {
+    "kind": "internal",
+    "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
+  },
+  "util/linux/hyper": {
+    "kind": "ui",
+    "reason": "Active Hyper menus, feedback or action adapter; built-in UI uses locales.json.",
+    "literals": {
+      "clipboard:greenclip print": "External rofi mode command.",
+      "Usage: hyper ACTION": "Developer CLI usage, not an interactive notification."
+    }
+  }
+}

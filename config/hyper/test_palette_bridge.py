@@ -11,6 +11,17 @@ import palette_bridge as bridge
 
 
 class BridgeTests(unittest.TestCase):
+    def test_linux_renderer_uses_same_locale_as_action_catalog(self):
+        with patch.object(bridge.sys, 'platform', 'linux'):
+            for env, expected in (({'LC_ALL':'C','LANGUAGE':'zh'}, 'en'),
+                                  ({'LANG':'zh_CN.UTF-8'}, 'zh'),
+                                  ({'LANG':'en_US.UTF-8','LANGUAGE':'zh:en'}, 'zh')):
+                with patch.dict(os.environ, env, clear=True):
+                    self.assertEqual(bridge.renderer_command()[-1], '--lang=' + expected)
+        for platform in ('darwin', 'win32'):
+            with patch.object(bridge.sys, 'platform', platform):
+                self.assertEqual(bridge.renderer_command(), [str(bridge.binary_path())])
+
     def test_display_zero_alias_shares_endpoint_but_other_screens_do_not(self):
         with tempfile.TemporaryDirectory() as temp, patch.dict(os.environ, {'XDG_STATE_HOME':temp}):
             def state(display):

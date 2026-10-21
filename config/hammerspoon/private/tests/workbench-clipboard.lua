@@ -1,4 +1,7 @@
 -- Run with luajit. No live app, clipboard, or service is touched.
+package.path='config/hammerspoon/?.lua;'..package.path
+local i18n=require('private/modules/hyper-i18n')
+i18n.language=function()return 'zh' end
 local tasks, alerts = {}, {}
 local deferred={}
 local function flush()
@@ -9,7 +12,7 @@ local selected
 local hud={}
 function hud:start(id) self.target=id; self.active=true; self.result=nil; self.error=nil end
 function hud:update(event) self.event=event end
-function hud:finish(result,err) self.result=result; self.error=err end
+function hud:finish(result,err,code) self.result=result; self.error=err; self.code=code end
 function hud:close() self.active=false end
 package.loaded['private/modules/clipboard-progress']={new=function()return hud end}
 local menu = {}
@@ -74,11 +77,13 @@ module.hotkey.release()
 local failed=tasks[#tasks]
 failed.callback(1,{ok=false,error={message='NO_IMAGE'}},'')
 assert(not module.busy and module.status().lastError=='本机剪贴板没有可传输的图片，请先截图或复制图片')
+assert(hud.code=='NO_IMAGE')
 completeTargets({ready})
 local before=#tasks
 module.pushSelected();assert(#tasks==before+1)
 tasks[#tasks].callback(1,{},'RPC_TIMEOUT')
 assert(not module.busy and hud.error:find('不要立即重传',1,true))
+assert(hud.code=='RPC_TIMEOUT')
 completeTargets({old})
 before=#tasks
 module.pushSelected()
@@ -105,6 +110,24 @@ assert(module.busy)
 late.stream(nil,'timeout','')
 flush()
 assert(not module.busy and hud.error=='目标检查超时，图片尚未发送')
+assert(hud.code=='TARGET_CHECK_TIMEOUT')
 completeTargets({ready})
+for _,language in ipairs({'en','zh'}) do
+  i18n.language=function()return language end
+  for _,case in ipairs({
+    {'NO_IMAGE','clipboard.error.noImage'},
+    {'RPC_TIMEOUT','clipboard.error.timeout'},
+    {'TARGET_CHECK_TIMEOUT','clipboard.error.checkTimeout'},
+    {'CLIPBOARD_UNCONFIRMED','clipboard.error.unconfirmed'},
+  }) do
+    module.pushSelected()
+    tasks[#tasks].callback(1,{ok=false,error={message=case[1]}},'')
+    assert(hud.error==i18n.t(case[2]) and hud.code==case[1])
+    completeTargets({ready})
+  end
+  module.refresh();completeTargets({})
+  assert(menu.items()[4].title==i18n.t('clipboard.noTargets'))
+  module.refresh();completeTargets({ready})
+end
 module.stop()
 print('Image sync: existing clipboard send, no synthetic copy or change polling, busy guard, errors and disconnect passed')
