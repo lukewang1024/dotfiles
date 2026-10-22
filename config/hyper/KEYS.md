@@ -62,6 +62,7 @@ Generated from `keys.json`. H = hold Caps Lock; tap = Esc.
 | H+Shift+c | launch.telegram |
 | H+Shift+r | launch.reeder |
 | H+Shift+n | launch.nomachine |
+| H+Shift+m | launch.soda |
 | H+Shift+; | app.secondaryTerminal |
 | H+escape | remote.escape |
 | H+1 | menu.windows |

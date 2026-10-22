@@ -101,6 +101,7 @@
   "app.docs": ["Show / hide developer docs", "呼出 / 隐藏开发文档"],
   "launch.wechat": ["Show / hide WeChat", "呼出 / 隐藏微信"],
   "launch.doubao": ["Show / hide Doubao", "呼出 / 隐藏豆包"],
+  "launch.soda": ["Show / hide Soda Music", "呼出 / 隐藏汽水音乐"],
   "template.launch": ["Show / hide {name}", "呼出 / 隐藏 {name}"],
   "template.desktop": ["Switch to desktop {name}", "切换到桌面 {name}"],
   "template.desktopMove": ["Move window to desktop {name}", "移动窗口到桌面 {name}"],

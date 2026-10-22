@@ -28,6 +28,7 @@ Hold Caps Lock for H; tap it for Escape. [Full key table](KEYS.md).
 | H+X / H+Shift+X | Feishu / Feishu Meetings (macOS/Windows) direct toggle |
 | H+C / H+Shift+C | WeChat / Telegram direct toggle |
 | H+N / M / P | Notes / music / passwords toggle |
+| H+Shift+M | Soda Music desktop (macOS/Windows) direct toggle |
 | H+R / G | Remote / Git toggle |
 | H+Shift+R / N | Reeder (macOS) / NoMachine toggle |
 | H+H/J/K/L | Left/down/up/right; hold to repeat |
@@ -119,6 +120,10 @@ macOS (its installed bundle ID is still `com.microsoft.rdc.macos`), Windows
 Remote Desktop on Windows, and Remmina on Linux. H+Shift+R launches Reeder on
 macOS; other platforms report that it is unavailable. H+Shift+N launches
 NoMachine independently of the remote-role default.
+H+Shift+M launches the Soda Music desktop client on macOS/Windows, independently
+of the music-role default. The Mac target is `com.soda.music`; Windows matches
+`SodaMusic.exe` and launches the installed Start Menu shortcut. The iPhone
+employee build is a separate application and is not the desktop target.
 H+Space discovers applications from the local machine instead of presenting
 the configured catalog as if every entry were installed:
 
