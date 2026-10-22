@@ -171,5 +171,9 @@
       "clipboard:greenclip print": "External rofi mode command.",
       "Usage: hyper ACTION": "Developer CLI usage, not an interactive notification."
     }
+  },
+  "config/hammerspoon/private/modules/away-guard-timing.lua": {
+    "kind": "internal",
+    "reason": "Monotonic clock and watchdog constants only; no user-facing text or UI APIs."
   }
 }

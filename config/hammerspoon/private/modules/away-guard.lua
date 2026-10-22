@@ -6,6 +6,7 @@ function M.suspendsWindowLayout(state)
   return state ~= 'idle' and state ~= 'restoreFailed'
 end
 local i18n = require('private/modules/away-guard-i18n')
+local timing = require('private/modules/away-guard-timing')
 function M.new(options)
   options = options or {}
   local self = {state = 'idle', external = {}}
@@ -19,6 +20,14 @@ function M.new(options)
   end
   local function write(event, fields)
     publishAvailability()
+    fields = fields or {}
+    fields.monotonic = timing.now()
+    fields.health = {helperSequence=self.helperSequence,helperCheckUptime=self.lastHeartbeat,
+      helperHeartbeatAge=self.lastHeartbeat and timing.now()-self.lastHeartbeat,
+      parentSequence=self.parentSequence,parentSentUptime=self.parentSentUptime,
+      helperMaxGap=self.helperMaxGap,helperGapBuckets=self.helperGapBuckets,
+      native=self.nativeHealth,snapshotLifetimeMs=timing.snapshotLifetimeMs,
+      helperHeartbeatSeconds=timing.helperHeartbeatSeconds}
     local ok, record = pcall(audit.write, event, fields)
     if ok then return record end
     diagnostic(record)
@@ -72,7 +81,8 @@ function M.new(options)
           screens[#screens+1] = {uuid=screen:getUUID(),brightness=screen:getBrightness()}
         end
         self.trigger = write('lock_requested', {reason=reason,state=previous,screens=screens,
-          heartbeatAge=self.lastHeartbeat and hs.timer.secondsSinceEpoch()-self.lastHeartbeat})
+          heartbeatAge=self.lastHeartbeat and timing.now()-self.lastHeartbeat,
+          intentSource=reason=='manual return' and 'away_guard_return' or nil})
         hs.settings.set('awayGuard.lastTrigger', self.trigger)
         persist()
       end)
@@ -230,7 +240,11 @@ function M.new(options)
     end
     if self.state == 'locking' then requestLock(); return end
     if self.state ~= 'armed' and self.state ~= 'preparing' then return end
-    if self.monitor and self.monitorAuthorized then self.monitor:setInput('heartbeat\n') end
+    if self.monitor and self.monitorAuthorized then
+      self.parentSequence = (self.parentSequence or 0) + 1
+      self.parentSentUptime = timing.now()
+      self.monitor:setInput(string.format('heartbeat %d %.9f\n', self.parentSequence, self.parentSentUptime))
+    end
     if not self.keepAwake or not self.keepAwake:isRunning() then trip('keep-awake process stopped'); return end
     if self.state == 'preparing' and self.remotePreparing then
       if hs.timer.secondsSinceEpoch() > self.deadline then trip('RDP fullscreen exit timed out'); return end
@@ -252,7 +266,7 @@ function M.new(options)
       if hs.timer.secondsSinceEpoch() > self.deadline then trip('display setup timed out') end
       return
     end
-    if hs.timer.secondsSinceEpoch() - self.lastHeartbeat > 1.5 then trip('display monitor unresponsive'); return end
+    if timing.now() - self.lastHeartbeat > timing.helperHeartbeatSeconds then trip('display monitor heartbeat timed out'); return end
     local screens = hs.screen.allScreens()
     if #screens ~= 1 or screens[1]:getUUID() ~= self.screen then trip('display changed'); return end
     local brightness = screens[1]:getBrightness()
@@ -262,6 +276,30 @@ function M.new(options)
     self.deadline = hs.timer.secondsSinceEpoch() + 25
     self.monitorAuthorized = false
     self.awaitingArm = false
+    self.helperSequence, self.lastHeartbeat, self.helperMaxGap, self.nativeHealth = nil, nil, 0, nil
+    self.helperGapBuckets = {underHalfSecond=0,underTwoSeconds=0,underTenSeconds=0,overTenSeconds=0}
+    self.parentSequence, self.parentSentUptime = 0, nil
+    local function heartbeat(event)
+      local sequence, checked = event.sequence, event.checkedAtUptime
+      if type(sequence)~='number' or sequence<0 or sequence%1~=0 or type(checked)~='number'
+        or checked~=checked or checked<0 or checked>timing.now() then
+        trip('invalid display monitor heartbeat'); return false
+      end
+      -- Native send time, not pipe delivery time, is the freshness authority.
+      -- Old/reordered frames cannot revive the lease after a stalled Lua loop.
+      if self.helperSequence and sequence<=self.helperSequence then return false end
+      if self.lastHeartbeat and checked<self.lastHeartbeat then return false end
+      if self.lastHeartbeat then
+        local gap=checked-self.lastHeartbeat
+        self.helperMaxGap=math.max(self.helperMaxGap,gap)
+        local bucket=gap<=0.5 and 'underHalfSecond' or gap<=2 and 'underTwoSeconds'
+          or gap<=10 and 'underTenSeconds' or 'overTenSeconds'
+        self.helperGapBuckets[bucket]=self.helperGapBuckets[bucket]+1
+      end
+      self.helperSequence, self.lastHeartbeat = sequence, checked
+      self.nativeHealth = event.health
+      return true
+    end
     local buffer = ''
     local monitor
     monitor = hs.task.new('/bin/sh', protect(function(code, stdout, stderr)
@@ -294,25 +332,29 @@ function M.new(options)
           task:setInput('arm\n')
         elseif event.event == 'armed' and self.state == 'preparing' and self.awaitingArm then
           self.awaitingArm = false
-          self.lastHeartbeat = hs.timer.secondsSinceEpoch()
+          if not heartbeat(event) then return false end
           self.state = 'armed'
           write('armed', {screen=self.screen,external=self.external})
           self:check()
           if self.state == 'armed' then notify('armed') end
         elseif event.event == 'watchdog_lock' then
-          local incident=write('native_watchdog_lock', {reason=event.reason,state=self.state})
+          self.nativeHealth=event.health
+          local incident=write('native_watchdog_lock', {reason=event.reason,state=self.state,
+            incidentId=event.incidentId,requestedAtUptime=event.requestedAtUptime})
           if self.state=='locked' then
             -- The independent helper can lock before Lua receives its message.
-            self.trigger=incident
-            hs.settings.set('awayGuard.lastTrigger',incident)
-            persist()
+            if not self.trigger or self.trigger.reason=='system_or_external_lock' then
+              self.trigger=incident
+              hs.settings.set('awayGuard.lastTrigger',incident)
+              persist()
+            end
           else trip(event.reason or 'native watchdog requested lock') end
         elseif event.event == 'auto_brightness_disabled' then
           write('auto_brightness_disabled', {previous=event.previous})
         elseif event.event == 'progress' then
           hs.printf('[away-guard] Display setup: online=%s %s', hs.json.encode(event.online or {}), event.reason or '')
-        elseif event.event == 'heartbeat' then
-          self.lastHeartbeat = hs.timer.secondsSinceEpoch()
+        elseif event.event == 'heartbeat' and self.state == 'armed' then
+          heartbeat(event)
         elseif event.event == 'changed' or event.event == 'error' then
           trip(event.reason or 'display changed')
           if not self.nativeIncident then write('native_display_event', {details=event});self.nativeIncident=true end
@@ -381,7 +423,7 @@ function M.new(options)
     return true -- Setup completes asynchronously; the ready message confirms arming.
   end
   self.arm = protect(self.arm)
-  self.poll = hs.timer.doEvery(0.3, protect(function() self:check() end))
+  self.poll = hs.timer.doEvery(timing.pollSeconds, protect(function() self:check() end))
   self.displays = hs.screen.watcher.new(protect(function()
     if self.state == 'restoreFailed' then self:retryRestore(); return end
     -- Our own initial disable emits configuration changes; helper verifies physical topology during setup.
@@ -410,7 +452,8 @@ function M.new(options)
     if event == events.screensDidLock and self.state ~= 'idle' and self.state ~= 'restoring' and self.state ~= 'locked' then
       local previous = self.state
       self.state = 'locked'
-      local observed = write('lock_observed', {reason=previous == 'locking' and 'guard_requested' or 'system_or_external_lock',state=previous})
+      local observed = write('lock_observed', {reason=previous == 'locking' and 'guard_requested' or 'system_or_external_lock',
+        state=previous,request=self.trigger,source=previous=='locking' and 'away_guard' or 'unknown'})
       if previous ~= 'locking' then
         self.trigger = observed
         hs.settings.set('awayGuard.lastTrigger', self.trigger)
