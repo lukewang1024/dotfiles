@@ -35,6 +35,12 @@ local reasons = {
   ['parent input pipe closed'] = {en='Parent process input pipe closed', zh='主进程通信管道关闭'},
   ['arming handshake failed'] = {en='Guard activation handshake failed', zh='守护启用确认失败'},
   ['display monitor unresponsive'] = {en='Display monitor heartbeat timed out', zh='显示监视进程心跳超时'},
+  ['display monitor heartbeat timed out'] = {en='Display monitor heartbeat timed out', zh='显示监视进程心跳超时'},
+  ['invalid display monitor heartbeat'] = {en='Invalid display monitor heartbeat', zh='显示监视进程心跳无效'},
+  ['native display check progress timed out'] = {en='Native display checks stopped progressing', zh='原生屏幕安全检查停止推进'},
+  ['native display check failed'] = {en='Native display check failed', zh='原生屏幕安全检查失败'},
+  ['invalid parent command'] = {en='Invalid parent process command', zh='主进程命令无效'},
+  ['parent command exceeded size limit'] = {en='Parent process command exceeded its size limit', zh='主进程命令超过长度限制'},
   ['display changed'] = {en='Connected displays changed', zh='连接的显示器发生变化'},
   ['display configuration changed'] = {en='Display configuration changed', zh='显示器配置发生变化'},
   ['display reconfiguration'] = {en='Display reconfiguration detected', zh='检测到显示器重新配置'},
@@ -47,7 +53,7 @@ local reasons = {
   ['system wake'] = {en='System wake', zh='系统唤醒'},
   ['manual return'] = {en='Manual return requested', zh='手动请求锁屏并退出'},
   ['unlock without observed lock'] = {en='Unlock event without a preceding lock', zh='未观察到锁屏就收到解锁事件'},
-  ['system_or_external_lock'] = {en='System or another application locked the screen', zh='系统或其他应用触发锁屏'},
+  ['system_or_external_lock'] = {en='Screen lock observed; source unknown', zh='已观察到屏幕锁定，来源未知'},
 }
 local function render(entry, values, locale)
   local text = entry[language.normalize(locale or language.detect())] or entry.en

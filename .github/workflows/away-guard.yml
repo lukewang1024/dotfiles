@@ -4,12 +4,14 @@ on:
     paths:
       - config/hammerspoon/private/modules/away-guard*.lua
       - config/hammerspoon/private/tests/away-guard*.lua
+      - config/hammerspoon/private/helpers/away-guard-display*
       - .github/workflows/away-guard.yml
   push:
     branches: [main]
     paths:
       - config/hammerspoon/private/modules/away-guard*.lua
       - config/hammerspoon/private/tests/away-guard*.lua
+      - config/hammerspoon/private/helpers/away-guard-display*
       - .github/workflows/away-guard.yml
 permissions:
   contents: read
@@ -23,3 +25,10 @@ jobs:
           for test in config/hammerspoon/private/tests/away-guard*.lua; do
             lua5.4 "$test"
           done
+  native-watchdog:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          swiftc -O config/hammerspoon/private/helpers/away-guard-display.swift -o "$RUNNER_TEMP/away-guard-display-test"
+          "$RUNNER_TEMP/away-guard-display-test" self-test
