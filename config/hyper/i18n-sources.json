@@ -49,6 +49,10 @@
     "kind": "internal",
     "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."
   },
+  "config/hammerspoon/private/modules/hyper-config.lua": {
+    "kind": "internal",
+    "reason": "Loads and validates local configuration; errors return field paths for the adapter's bilingual notification. Custom binding titles require en and zh."
+  },
   "config/hammerspoon/private/modules/hyper-clipboard-policy.lua": {
     "kind": "internal",
     "reason": "No user-facing UI; configuration, transport, indexing, geometry or developer tooling."

@@ -43,4 +43,5 @@ config/x/.Xresources.d/custom
 config/hyper/local.json
 config/hyper/local.ini
 config/hyper/local.lock
+config/hyper/keys.local.json
 __pycache__/

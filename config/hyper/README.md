@@ -1,6 +1,6 @@
 # Shared Hyper shortcuts
 
-`keys.json` is the source of truth for physical chords, application roles,
+`keys.json` is the shared source of truth for physical chords, application roles,
 layouts, and menu actions; `locales.json` holds the shared English/Chinese UI
 catalog. Native input tools feed platform action adapters; H+0 uses the required
 resident Rust palette through a Python bridge. Generated shortcut tables remain
@@ -8,6 +8,8 @@ committed, while H+0 additionally needs Python and the pinned renderer artifact.
 Generated Lua and AutoHotkey tables retain shared bindings and metadata, but
 include only their platform's application targets and defaults. Linux adapters
 read the shared `keys.json` directly.
+On macOS, an optional, Git-ignored `keys.local.json` beside `keys.json` overrides
+application definitions and chords at load time; it is never used by generation.
 
 ## Daily use
 
@@ -279,6 +281,7 @@ python3 config/hyper/generate.py --check
 python3 -B config/hyper/check_i18n.py
 python3 -m unittest discover -s config/hyper -p 'test_*.py'
 luajit config/hammerspoon/private/tests/hyper.lua
+luajit config/hammerspoon/private/tests/hyper-config.lua
 luajit config/hammerspoon/private/tests/hyper-i18n.lua
 luajit config/hammerspoon/private/tests/hyper-roles.lua
 luajit config/hammerspoon/private/tests/hyper-rust-palette.lua
@@ -311,7 +314,44 @@ The migration backs up only affected preferences under
 Each saved entry can be restored with the `defaults write` command printed by
 the migration. The regular Mac bootstrap also performs this migration.
 
-Machine-local defaults and app definitions use Hammerspoon settings:
+Machine-local app definitions and chords belong in
+`$XDG_CONFIG_HOME/dotfiles/config/hyper/keys.local.json`
+(normally `~/.config/dotfiles/config/hyper/keys.local.json`). The file is ignored
+by Git and read by the Mac adapter when Hammerspoon loads. Example:
+
+```json
+{
+  "apps": {
+    "personal-music": {
+      "title": "Personal Music",
+      "mac": "com.example.music",
+      "arch": "arm64"
+    }
+  },
+  "bindings": [
+    {
+      "key": "m",
+      "shift": true,
+      "action": "launch.personal-music",
+      "arch": "arm64",
+      "title": {"en": "Show / hide Personal Music", "zh": "呼出 / 隐藏 Personal Music"}
+    }
+  ]
+}
+```
+
+`apps` replaces complete definitions by app ID; `bindings` adds or replaces a
+chord by lowercase `key` + `shift` (omitted means false). Both sections are
+optional. Set `arch` to `arm64` or `x86_64` to limit an entry to that architecture;
+omit it for either Mac architecture. Duplicate active chords are rejected.
+Custom actions need a `title` with nonempty `en` and `zh`; existing actions may
+reuse the shared translations. Invalid JSON or entries produce a bilingual
+notification and leave the defaults in place, without partially applying the file.
+Reload Hammerspoon after editing. Windows and Linux keep their existing local
+configuration formats; they do not load this Mac override file.
+
+Hammerspoon settings continue to hold preferences changed through the UI,
+including role defaults, and other runtime preferences:
 
 ```lua
 local preferences=hs.settings.get('hyper.defaults') or {}
@@ -319,10 +359,11 @@ preferences.browser='chrome'
 preferences.workChat='lark'
 preferences.dailyChat='wechat'
 hs.settings.set('hyper.defaults', preferences)
-hs.settings.set('hyper.apps', {docs={title='Docs', mac='com.apple.Dictionary'}})
 ```
 
 Manual settings edits require reload; the role-settings UI applies changes immediately.
+Existing `hyper.apps` settings remain readable for compatibility, but new app
+definitions should go in `keys.local.json`, which takes precedence over them.
 Text clipboard history is memory-only, capped
 at 50 entries of at most 64 KiB, and starts recording only when enabled with
 `hs.settings.set('hyper.clipboardHistory', true)`. It resets on reload.
