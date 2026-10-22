@@ -48,7 +48,7 @@ hs={host={locale={preferredLanguages=function()return preferred end}},spaces={wi
         if value=='disarm\n' then self.running=false;callback(0,'','') end
       end}
   end},
-  timer={secondsSinceEpoch=function()return now end,doEvery=function(interval,callback)assert(interval==0.3);return watcher(callback)end},
+  timer={secondsSinceEpoch=function()return now end,absoluteTime=function()return now*1000000000 end,doEvery=function(interval,callback)assert(interval==0.3);return watcher(callback)end},
   caffeinate={lockScreen=function()locks=locks+1 end,watcher=events},
 }
 local module=dofile('config/hammerspoon/private/modules/away-guard.lua')
@@ -59,6 +59,10 @@ for _,state in ipairs({'preparing','armed','locking','locked','restoring'}) do
 end
 local function send(guard,event,fields)
   pending=fields or {};pending.event=event
+  if event=='armed' or event=='heartbeat' then
+    pending.sequence=pending.sequence or ((guard.helperSequence or 0)+1)
+    pending.checkedAtUptime=pending.checkedAtUptime or now
+  end
   guard.monitor.stream(guard.monitor,'message\n','')
 end
 local function setup(guard)
@@ -90,7 +94,16 @@ count=2;guard.displays.callback();assert(guard.state=='locking');unlock(guard);c
 setup(guard);send(guard,'changed',{reason='disabled screen unplugged'});assert(guard.state=='locking');unlock(guard)
 setup(guard);guard.keepAwake.running=false;guard:check();assert(guard.state=='locking');unlock(guard)
 setup(guard);guard.monitor.callback(1,'','');assert(guard.state=='locking');unlock(guard)
-setup(guard);now=now+2;guard:check();assert(guard.state=='locking');unlock(guard)
+setup(guard);now=now+2;guard:check();assert(guard.state=='armed')
+local checked, sequence=guard.lastHeartbeat,guard.helperSequence
+send(guard,'heartbeat',{sequence=sequence,checkedAtUptime=now})
+assert(guard.lastHeartbeat==checked, 'duplicate sequence cannot renew availability')
+send(guard,'heartbeat',{sequence=sequence+1,checkedAtUptime=checked-1})
+assert(guard.lastHeartbeat==checked, 'out-of-order check cannot renew availability')
+now=now+7.999;guard:check();assert(guard.state=='armed')
+send(guard,'heartbeat',{sequence=sequence+2,checkedAtUptime=checked+0.001})
+assert(guard.lastHeartbeat==checked+0.001, 'buffered messages retain their original check timestamp')
+now=now+0.003;guard:check();assert(guard.state=='locking');unlock(guard)
 setup(guard);brightness=nil;guard:check();assert(guard.state=='locking');unlock(guard)
 setup(guard);count=2;guard:check();assert(guard.state=='locking');unlock(guard);count=1
 setup(guard);guard:stop();assert(stored and not guard.keepAwake and not guard.monitor)
@@ -183,7 +196,7 @@ stored=nil;brightness=0.4;count=1;preferred={'en-US'}
 local hardened=module.new();assert(hardened:arm())
 hardened:check();assert(not hardened.monitor.input)
 send(hardened,'snapshot',{internal='internal',external={'external'},autoBrightness=true})
-send(hardened,'ready');send(hardened,'armed');hardened:check();assert(hardened.monitor.input=='heartbeat\n')
+send(hardened,'ready');send(hardened,'armed');hardened:check();assert(hardened.monitor.input:match('^heartbeat %d+ [%d.]+\n$'))
 hardened.power.callback(events.screensDidUnlock)
 assert(hardened.state=='locking' and hardened.monitor and not hardened.restorer)
 local native=hardened.monitor
@@ -254,4 +267,20 @@ send(attributed,'watchdog_lock',{reason='parent heartbeat timed out during displ
 assert(attributed:lastTrigger().reason=='parent heartbeat timed out during display setup')
 assert(stored.trigger.event=='native_watchdog_lock')
 unlock(attributed);assert(attributed.state=='idle')
+setup(attributed);attributed:returnAndLock()
+attributed.power.callback(events.screensDidLock)
+send(attributed,'watchdog_lock',{reason='brightness increased after manual return',incidentId='fixture'})
+assert(attributed:lastTrigger().reason=='manual return', 'later native signals must not replace the first cause')
+assert(attributed:lastTrigger().intentSource=='away_guard_return')
+local observed=0
+for _,record in ipairs(records) do
+  if record.event=='lock_observed' and record.request and record.request.reason=='manual return' then observed=observed+1 end
+end
+attributed.power.callback(events.screensDidLock)
+local duplicate=0
+for _,record in ipairs(records) do
+  if record.event=='lock_observed' and record.request and record.request.reason=='manual return' then duplicate=duplicate+1 end
+end
+assert(observed==1 and duplicate==observed, 'one observation per lock episode')
+unlock(attributed)
 print('Away guard handshake: zero brightness before ACK, late ACK rejection and native timeout attribution passed')
