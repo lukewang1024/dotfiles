@@ -15,15 +15,17 @@ local function chord(data,key,shift)
   assert(count<=1,'A local override must replace the chord, not register it twice')
   return result
 end
+local defaultShiftM=chord(defaults,'m',true)
 local merged=config.merge(defaults,localConfig(),'arm64')
 assert(merged.apps.example.mac=='test.example.music')
 assert(chord(merged,'m',true).action=='launch.example')
 assert(chord(merged,'m',false).action=='app.music')
 assert(chord(merged,'q',false).action=='launch.example')
-assert(not defaults.apps.example and not chord(defaults,'m',true))
+assert(not defaults.apps.example and chord(defaults,'m',true)==defaultShiftM)
 assert(chord(defaults,'q',false).action=='launch.firefox')
 local intel=config.merge(defaults,localConfig(),'x86_64')
-assert(not intel.apps.example and not chord(intel,'m',true))
+assert(not intel.apps.example)
+assert((chord(intel,'m',true) or {}).action==(defaultShiftM or {}).action)
 assert(chord(intel,'q',false).action=='launch.firefox')
 local unscoped=localConfig();unscoped.apps.example.arch=nil
 for _,binding in ipairs(unscoped.bindings) do binding.arch=nil end
