@@ -78,7 +78,12 @@ final class GuardWatchdog {
     }
     func progress(now: TimeInterval = monotonicNow()) -> [String: Any] {
         mutex.lock(); defer { mutex.unlock() }
-        return ["sequence": nativeSequence, "checkedAtUptime": lastNativeCheck, "health": healthLocked(now: now)]
+        // Keep regular frames below PIPE_BUF even when Lua is briefly stalled.
+        // Full gap histograms belong only in the one-shot incident record.
+        return ["sequence": nativeSequence, "checkedAtUptime": lastNativeCheck,
+                "health": ["parentSequence": parentSequence, "lastParentSentUptime": lastHeartbeat,
+                           "parentHeartbeatAgeSeconds": now-lastHeartbeat,
+                           "nativeCheckAgeSeconds": now-lastNativeCheck]]
     }
     @discardableResult
     func heartbeat(sequence: UInt64, sentAt: TimeInterval, now: TimeInterval = monotonicNow()) -> Bool {
@@ -296,6 +301,8 @@ do {
         var locks = 0, locked = false, reports: [[String: Any]] = []
         let test = GuardWatchdog(lockScreen: { locks += 1 }, isLocked: { locked }, reportIncident: { reports.append($0) })
         test.enable(now: 100); precondition(test.beginMonitoring(now: 100))
+        let progressFrame = try JSONSerialization.data(withJSONObject: test.progress(now: 100))
+        precondition(progressFrame.count < 512)
         // A healthy native monitor outlives the old 2s parent budget, up to 10s.
         for index in 1...100 {
             let now = 100+Double(index)/10
