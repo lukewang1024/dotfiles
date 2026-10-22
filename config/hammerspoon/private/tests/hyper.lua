@@ -1,5 +1,7 @@
 -- Behavioral tests: toggle, spatial placement, undo, selection, remote ownership.
 package.path='config/hammerspoon/?.lua;'..package.path
+-- Local files belong to the user; configuration loading has separate tests.
+package.loaded['private/modules/hyper-config']={load=function(data)return data end}
 package.loaded['private/modules/hyper-rust-palette']={new=function()
   return {visible=false,show=function()end,stop=function()end,close=function(self)self.visible=false end,
     closeThen=function(self,callback)self.visible=false;callback()end}
