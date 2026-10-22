@@ -545,6 +545,7 @@ bindsym --release Mod3+c exec --no-startup-id hyper launch.wechat
 bindsym --release Mod3+Shift+c exec --no-startup-id hyper launch.telegram
 bindsym --release Mod3+Shift+r exec --no-startup-id hyper launch.reeder
 bindsym --release Mod3+Shift+n exec --no-startup-id hyper launch.nomachine
+bindsym --release Mod3+Shift+m exec --no-startup-id hyper launch.soda
 bindsym --release Mod3+Shift+semicolon exec --no-startup-id hyper app.secondaryTerminal
 bindsym --release Mod3+Escape exec --no-startup-id hyper remote.escape
 bindsym --release Mod3+1 exec --no-startup-id hyper menu.windows

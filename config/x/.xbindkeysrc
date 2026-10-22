@@ -356,6 +356,9 @@
 "hyper launch.nomachine"
   Shift+Mod3 + n + Release
 
+"hyper launch.soda"
+  Shift+Mod3 + m + Release
+
 "hyper app.secondaryTerminal"
   Shift+Mod3 + semicolon + Release
 
