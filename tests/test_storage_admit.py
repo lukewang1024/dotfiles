@@ -1,13 +1,17 @@
 import importlib.machinery
+import importlib.util
 from pathlib import Path
 from types import SimpleNamespace
 import tempfile
 import unittest
 from unittest import mock
 
-module = importlib.machinery.SourceFileLoader(
+loader = importlib.machinery.SourceFileLoader(
     'storage_admit', str(Path(__file__).parents[1] / 'util/shell/storage-admit')
-).load_module()
+)
+spec = importlib.util.spec_from_loader(loader.name, loader)
+module = importlib.util.module_from_spec(spec)
+loader.exec_module(module)
 
 
 class AdmissionTests(unittest.TestCase):

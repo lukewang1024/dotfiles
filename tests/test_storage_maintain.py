@@ -1,4 +1,5 @@
 import importlib.machinery
+import importlib.util
 import os
 from pathlib import Path
 import tempfile
@@ -6,9 +7,12 @@ import time
 import unittest
 
 
-module = importlib.machinery.SourceFileLoader(
+loader = importlib.machinery.SourceFileLoader(
     'storage_maintain', str(Path(__file__).parents[1] / 'util/macos/storage-maintain')
-).load_module()
+)
+spec = importlib.util.spec_from_loader(loader.name, loader)
+module = importlib.util.module_from_spec(spec)
+loader.exec_module(module)
 
 
 class CloneProtectionTests(unittest.TestCase):
