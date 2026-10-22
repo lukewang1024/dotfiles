@@ -157,6 +157,7 @@
   "error.paletteFailed": ["Hyper Palette failed; check host.log", "Hyper Palette 运行失败，请查看 host.log"],
   "error.paletteDetail": ["Hyper Palette failed: {name}", "Hyper Palette 运行失败：{name}"],
   "error.actionFailed": ["Hyper action failed: {name}", "Hyper 操作失败：{name}"],
+  "error.localConfig": ["Could not load Hyper local overrides; kept existing defaults: {name}", "无法加载 Hyper 本地覆盖，已保留原有默认配置：{name}"],
   "error.remoteMapping": ["Could not update remote desktop keyboard mapping", "无法更新远程桌面键盘映射"],
   "ui.remoteCompatibilityOn": ["NoMachine F18 compatibility: on", "NoMachine F18 兼容模式：开启"],
   "ui.remoteCompatibilityOff": ["NoMachine F18 compatibility: off", "NoMachine F18 兼容模式：关闭"],

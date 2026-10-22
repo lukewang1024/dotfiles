@@ -4,6 +4,7 @@ local defaults = require 'private/modules/hyper-generated'
 local paletteModule = require 'private/modules/hyper-rust-palette'
 local appsModule = require 'private/modules/hyper-apps'
 local rolesModule = require 'private/modules/hyper-roles'
+local configModule = require 'private/modules/hyper-config'
 local i18n = require 'private/modules/hyper-i18n'
 local t = i18n.t
 local function copy(v) return hs.json.decode(hs.json.encode(v)) end
@@ -57,7 +58,12 @@ function M.new(options)
     data.menus.system[#data.menus.system+1]={'e',t('system.awayReturn'),'system.awayReturn'}
   end
   local overrides = hs.settings.get('hyper.apps') or {}
-  for id, app in pairs(overrides) do data.apps[id] = app end
+  for id, app in pairs(overrides) do
+    if not app.arch or app.arch==hs.processInfo.arch then data.apps[id] = app end
+  end
+  local configError
+  data,configError=configModule.load(data)
+  if configError then hs.alert.show(t('error.localConfig',{name=configError}),5) end
   self.roles=rolesModule.new(data,self.apps)
   local function alert(s) hs.alert.show(t(s), 2) end
   local function window() return self.target or hs.window.focusedWindow() end
@@ -173,7 +179,9 @@ function M.new(options)
         if b.action~='menu.all' and b.action~='menu.help' then
           local role=b.action:match('^app%.(.+)$')
           local appTitle=role and self.roles:title(self.roles:get(role)) or ''
-          choices[#choices+1]={text=M.actionTitle(b.action),subText='H+'..(b.shift and 'Shift+' or '')..b.key..(role and ' · '..appTitle or ''),action=b.action,keywords=appTitle}
+          local title=b.title and b.title[i18n.language()] or M.actionTitle(b.action)
+          choices[#choices+1]={text=title,subText='H+'..(b.shift and 'Shift+' or '')..b.key..(role and ' · '..appTitle or ''),action=b.action,
+            keywords=appTitle..(b.title and (' '..b.title.en..' '..b.title.zh) or '')}
         end
       end
       if name=='all' then
