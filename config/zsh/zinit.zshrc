@@ -80,7 +80,7 @@ zinit wait lucid for \
   zsh-users/zsh-history-substring-search \
   lukewang1024/zsh-tmuxinator \
   atload'_zsh_autosuggest_start' zsh-users/zsh-autosuggestions \
-  atpull'zinit creinstall -q .' blockf zsh-users/zsh-completions
+  atpull'zinit cclear; zinit creinstall -q .' blockf zsh-users/zsh-completions
 
 # Multi-file OMZ plugins: a plain OMZP:: snippet only copies the .plugin.zsh and
 # leaves siblings behind, so these break at runtime (gitfast -> git-prompt.sh,
