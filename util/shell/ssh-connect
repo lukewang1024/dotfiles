@@ -13,17 +13,21 @@ hosts_file=${SSH_CONNECT_HOSTS_FILE:-"$xdg_config_home/ssh/hosts"}
 usage()
 {
   cat <<'EOF'
-usage: ssh-connect [--print] [--tmux | --workbench] [-- SSH_OPTIONS...]
+usage: ssh-connect [--print | --check | --tmux | --workbench] [-- SSH_OPTIONS...]
        ssh-connect hosts path
        ssh-connect hosts list
        ssh-connect hosts discover
        ssh-connect hosts edit [--discover]
-       ssh-connect connect HOST
+       ssh-connect connect HOST [--check | --tmux | --workbench] [-- SSH_OPTIONS...]
 
 Pick an alias from the SSH host inventory and connect. `--workbench` uses the
 client-aware tmux-agent-workbench SSH transport so mobile completion and input
 notifications return to this device. `hosts edit --discover` merges concrete
 Host aliases found in SSH config files before opening $EDITOR.
+Kerberos mappings: $XDG_CONFIG_HOME/ssh/kerberos, lines HOST PRINCIPAL [SESSION].
+Existing iSH user.conf is also supported. Only mapped hosts require a matching
+TGT; an interactive kinit is requested when needed. --check never prompts and
+runs whoami with trusted host keys. Passwords are never stored.
 EOF
 }
 
@@ -81,7 +85,12 @@ effective_hosts()
     validate_inventory "$hosts_file"
     inventory_hosts "$hosts_file"
   else
-    discover_hosts
+    ish_profile=${ISH_CONFIG_DIR:-$xdg_config_home/ish-kerberos}/user.conf
+    if [ -f "$ish_profile" ]; then
+      awk -F= '$1 == "SSH_HOST" && $2 ~ /^[A-Za-z0-9_][A-Za-z0-9_.:-]*$/ {print $2}' "$ish_profile"
+    else
+      discover_hosts
+    fi
   fi
 }
 
@@ -131,6 +140,10 @@ EOF
 choose_host()
 {
   choices_file=$1
+  if [ "$(wc -l <"$choices_file" | tr -d ' ')" -eq 1 ]; then
+    cat "$choices_file"
+    return
+  fi
   if command -v fzf >/dev/null 2>&1; then
     fzf --prompt='SSH host> ' --reverse <"$choices_file"
     return
@@ -174,20 +187,24 @@ if [ "${1:-}" = hosts ]; then
 fi
 
 if [ "${1:-}" = connect ]; then
-  [ "$#" -eq 2 ] || { usage >&2; exit 2; }
+  [ "$#" -ge 2 ] || { usage >&2; exit 2; }
   requested_host=$2
   effective_hosts | grep -Fxq "$requested_host" || {
     printf 'ssh-connect: host is not in the effective inventory: %s\n' "$requested_host" >&2
     exit 2
   }
-  exec ssh "$requested_host"
+  shift 2
+else
+  requested_host=''
 fi
 
 print_only=0
+check_only=0
 attach_tmux=0
 attach_workbench=0
 while [ "$#" -gt 0 ]; do
   case $1 in
+    --check) check_only=1; shift ;;
     --print) print_only=1; shift ;;
     --tmux) attach_tmux=1; shift ;;
     --workbench) attach_workbench=1; shift ;;
@@ -197,8 +214,8 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-[ "$attach_tmux" -eq 0 ] || [ "$attach_workbench" -eq 0 ] || {
-  printf '%s\n' 'ssh-connect: --tmux and --workbench are mutually exclusive' >&2
+[ "$((attach_tmux + attach_workbench + check_only + print_only))" -le 1 ] || {
+  printf '%s\n' 'ssh-connect: --print, --check, --tmux and --workbench are mutually exclusive' >&2
   exit 2
 }
 
@@ -210,22 +227,73 @@ effective_hosts >"$choices_file"
   exit 1
 }
 
-host=$(choose_host "$choices_file") || exit 1
+if [ -n "$requested_host" ]; then
+  host=$requested_host
+else
+  if [ "$check_only" = 1 ] && [ "$(wc -l <"$choices_file" | tr -d ' ')" -ne 1 ]; then
+    printf '%s\n' 'ssh-connect: --check requires one host; use: ssh-connect connect HOST --check' >&2
+    exit 2
+  fi
+  host=$(choose_host "$choices_file") || exit 1
+fi
+rm -f "$choices_file"
+trap - EXIT HUP INT TERM
 [ -n "$host" ] || exit 1
 if [ "$print_only" -eq 1 ]; then
   printf '%s\n' "$host"
-elif [ "$attach_tmux" -eq 1 ]; then
-  exec ssh "$@" -t "$host" 'if command -v tmux-agent-workbench >/dev/null 2>&1; then exec tmux-agent-workbench client attach; else tmux attach-session || exec tmux new-session; fi'
-elif [ "$attach_workbench" -eq 1 ]; then
-  [ "$#" -eq 0 ] || {
-    printf '%s\n' 'ssh-connect: SSH_OPTIONS are not supported with --workbench; put them in SSH config' >&2
-    exit 2
-  }
-  command -v tmux-agent-workbench >/dev/null 2>&1 || {
-    printf '%s\n' 'ssh-connect: tmux-agent-workbench is not installed' >&2
-    exit 127
-  }
+  exit 0
+fi
+
+# Resolve the installed symlink without requiring GNU readlink -f on macOS.
+script_path=$0
+while [ -L "$script_path" ]; do
+  link=$(readlink "$script_path")
+  case "$link" in /*) script_path=$link ;; *) script_path=$(dirname "$script_path")/$link ;; esac
+done
+script_dir=$(CDPATH='' cd -- "$(dirname "$script_path")" && pwd)
+# shellcheck source=util/shell/ssh-kerberos.sh
+. "$script_dir/ssh-kerberos.sh"
+load_ssh_kerberos
+
+if [ "$attach_workbench" -eq 1 ]; then
+  [ "$#" -eq 0 ] || die 'SSH_OPTIONS are not supported with --workbench; put them in SSH config.'
+  command -v tmux-agent-workbench >/dev/null 2>&1 || die 'tmux-agent-workbench is not installed; use --tmux.'
+  if [ "$kerberos_enabled" = 1 ]; then
+    check_workbench_policy
+    require_tgt
+  fi
   exec tmux-agent-workbench client attach "$host"
+fi
+
+if [ "$kerberos_enabled" = 1 ]; then
+  require_tgt
+  if [ "$check_only" = 1 ]; then
+    HOST_KEY_POLICY=yes
+  else
+    HOST_KEY_POLICY=ask
+    printf '%s\n' 'First connection: verify the host fingerprint through a trusted channel before accepting.' >&2
+  fi
+  if [ "$ish_connection" = 1 ]; then
+    set -- -F /dev/null -p "$SSH_PORT" -l "$SSH_USER" "$@"
+  fi
+fi
+
+connect_ssh() {
+  if [ "$kerberos_enabled" = 1 ]; then
+    ssh_gssapi_command "$@"
+  else
+    ssh "$@"
+  fi
+}
+
+if [ "$check_only" = 1 ]; then
+  connect_ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$@" "$host" whoami
+elif [ "$attach_tmux" -eq 1 ]; then
+  if [ "$kerberos_enabled" = 1 ]; then
+    connect_ssh "$@" -t "$host" "exec tmux new-session -A -s $TMUX_SESSION"
+  else
+    connect_ssh "$@" -t "$host" 'if command -v tmux-agent-workbench >/dev/null 2>&1; then exec tmux-agent-workbench client attach; else tmux attach-session || exec tmux new-session; fi'
+  fi
 else
-  exec ssh "$@" "$host"
+  connect_ssh "$@" "$host"
 fi

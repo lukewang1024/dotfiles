@@ -49,7 +49,7 @@ exec zsh -l
   不安装本地 Codex、agent-team 或 Machine Fabric；开发工具和完整工作台运行在远端。
 - 公共 zsh 插件首启可能继续下载；云端通过不代表 iPad mini 4 的启动速度可接受。
 
-`ish-connect`、`ish-doctor` 安装到 `~/.local/bin`。默认配置为
+`ssh-connect`、`ish-doctor` 安装到 `~/.local/bin`。默认配置为
 `~/.config/ish-kerberos/{user.conf,krb5.conf}`，票据缓存为
 `FILE:~/.cache/ish-kerberos/krb5cc`（环境变量中是展开后的绝对路径）。
 初始化后的 ash/zsh 登录环境会自动设置相同的 `KRB5_CONFIG` 和 `KRB5CCNAME`，
@@ -59,15 +59,20 @@ exec zsh -l
 kinit yourname@YOUR.REALM
 klist
 ish-doctor
-ish-connect                    # 需要时交互 kinit，然后进入/恢复远端 tmux
-ish-connect --check            # 非交互 GSSAPI 认证并执行 whoami
+ssh-connect --tmux              # 需要时交互 kinit，然后进入/恢复远端 tmux
+ssh-connect --check             # 非交互 GSSAPI 认证并执行 whoami
 ish-doctor --ssh               # 包含真实 SSH 认证的诊断
 ```
 
+普通 `ssh-connect` 打开远端 shell，`--tmux` 恢复 tmux，`--check` 非交互验证。
+已有 `user.conf` 无需迁移；`./init sync` 会移除旧的 dotfiles `ish-connect` 链接。
+Termux 和其他平台也使用同一命令，按 [Termux 配置说明](termux.md#kerberos-ssh) 绑定主机和 Principal。
+只在连接时检查票据；过期后仍需在 kinit 提示中输入密码，没有后台续票或密码保存。
+
 SSH 默认只尝试 `gssapi-with-mic`，不委派 TGT、不回退到密码/公钥，不自动接受新主机公钥。
-`ish-connect` 还禁用连接复用，防止旧的已认证连接绕过检查。首次连接必须通过可信渠道
+`ssh-connect --tmux` 还禁用连接复用，防止旧的已认证连接绕过检查。首次连接必须通过可信渠道
 核对指纹。普通 `ssh` 的明确本地主机设置可写在 `~/.ssh/config` 的 dotfiles Include 之前；
-`ish-connect` 始终强制上述认证策略。
+`ssh-connect --tmux` 始终强制上述认证策略。
 
 ## iPad mini 4 操作
 
@@ -125,7 +130,7 @@ umount /mnt/import
 vi ~/.config/ish-kerberos/user.conf
 kinit yourname@YOUR.REALM
 klist
-ish-connect
+ssh-connect --tmux
 ```
 
 只在 kinit 的提示中输入密码。确保 iPad VPN 能访问 KDC 和 SSH，开启自动日期时间。
@@ -147,10 +152,10 @@ ssh -vvv -F /dev/null -p 22 -l your-linux-user \
 应看到 `Authenticated to ... using "gssapi-with-mic"` 和正确用户名。端口连通不等于认证成功。
 `ish-doctor` 用 PASS/FAIL/SKIP 区分结果；UDP 探测明确 SKIP，不能把 `nc -u` 成功当作 KDC 响应。
 
-`ish-connect` 执行远端 `tmux new-session -A -s dev`，会话名可配置。在远端运行 Codex。
+`ssh-connect --tmux` 执行远端 `tmux new-session -A -s dev`，会话名可配置。在远端运行 Codex。
 默认 Ctrl+B 后按 `d` 分离；再次连接恢复同名会话。使用远端实际配置的 tmux 前缀。
 iSH 附加键行提供 Ctrl、Esc、Tab 和方向键；Esc 也可用 Ctrl+`[`。
-切换 App 或锁屏可能导致 SSH 断开；远端 tmux 保留工作，回来重新运行 `ish-connect`。
+切换 App 或锁屏可能导致 SSH 断开；远端 tmux 保留工作，回来重新运行 `ssh-connect --tmux`。
 SSH 卡住时可在行首输入 `~.` 断开；过期票据会重新请求交互 kinit。
 
 回滚时在 Filesystems 选择原 rootfs 启动。不要通过卸载 iSH 回滚，以免删除其他文件系统。
@@ -183,5 +188,17 @@ python3 -B -m unittest discover -s tests -v
 本次 Alpine 3.24 CLI 验证：两次 `core`、一次 `sync` 与配置保留通过；Docker 与真实
 iSH 各 15 项 Kerberos/GSSAPI 用例通过；fd 搜索、fzf、zoxide、Vim、tmux 和 zsh
 启动检查通过。完整初始化/插件运行使用了官方包及公开插件缓存；全新在线获取插件
-曾超时或停滞，尚未获得一次完整通过记录。发布前仓库回归 132 项，124 通过、8 项平台跳过。
+曾超时或停滞，尚未获得一次完整通过记录。此处为此前公共初始化的验证记录；共享连接入口的新增验证见下方。
 iPad 实机仍为 NOT TESTED。完整证据见外部环境的 `docs/DOTFILES_REPORT.md`。
+
+共享 `ssh-connect` 验证（2026-10-24）：
+
+- **PASS**：仓库回归 146 项，138 通过、8 项平台跳过；POSIX 语法、ShellCheck、两平台 sync dry-run。
+- **PASS**：Docker Alpine 3.24.3 x86 与真实 iSH CLI 各 17 项 Kerberos/GSSAPI 用例。
+  两层均有客户端 `using "gssapi-with-mic"`、远端 `whoami` 和 SSH 服务端认证日志。
+  新共享别名映射和旧 iSH 配置均通过；故意开启密码/公钥/委派的配置无法覆盖连接策略。
+- **PASS**：14 项共享入口回归包含 PTY 交互取票、重新校验身份、普通 SSH 与 workbench 交接。
+  这些是命令替身测试；不代表 Android 上实际运行过 workbench。
+- **NOT TESTED**：Termux 与 iPad 实机、workbench 完整远端交互；需按设备指南验收。
+
+复现环境继续留在仓库外，没有提交 Docker、KDC、keytab、rootfs 或测试日志。

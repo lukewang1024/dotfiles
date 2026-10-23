@@ -1,4 +1,4 @@
-# iSH defaults, included after explicit local host settings. ish-connect also enforces these.
+# iSH defaults, included after explicit local host settings. ssh-connect also enforces these.
 Host *
     GSSAPIAuthentication yes
     GSSAPIDelegateCredentials no

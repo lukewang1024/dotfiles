@@ -24,6 +24,62 @@ configures the local Controller/Executor through `termux-services`; peer
 topology remains owned by Machine Fabric's release/bootstrap tools. The old
 distributed-workbench peer bootstrap is no longer part of dotfiles.
 
+## Kerberos SSH
+
+Termux 和 iSH 共用 `ssh-connect`。在已有 Kerberos/KDC 配置基础上，为需要
+Kerberos 的 **SSH 别名**配置 Principal。没有映射的主机继续使用原来的 SSH 认证方式。
+以下均为占位值，请只在自己的设备上替换：
+
+```sh
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/ssh"
+umask 077
+# 用编辑器添加一行，保留已有主机；格式为 HOST PRINCIPAL [TMUX_SESSION]
+vi "${XDG_CONFIG_HOME:-$HOME/.config}/ssh/kerberos"
+```
+
+```text
+devbox yourname@YOUR.REALM dev
+```
+
+SSH HostName/User/Port 仍在 `~/.ssh/config` 中配置。若使用 Termux 软键盘的 SSH
+按钮（`ssh-connect --workbench`），在 dotfiles Include **之前**为该别名添加以下
+设置。workbench 会自己启动 SSH，因此共享入口会验证这些设置；不安全时会停止并提示。
+普通 `ssh-connect` 和 `--tmux` 则直接在命令行强制同样的认证策略。
+
+```sshconfig
+Host devbox
+  HostName dev.your-domain.example
+  User your-linux-user
+  Port 22
+  GSSAPIAuthentication yes
+  GSSAPIDelegateCredentials no
+  PreferredAuthentications gssapi-with-mic
+  PubkeyAuthentication no
+  PasswordAuthentication no
+  KbdInteractiveAuthentication no
+  HostbasedAuthentication no
+  ControlMaster no
+  ControlPath none
+  StrictHostKeyChecking ask
+```
+
+```sh
+ssh-connect hosts edit --discover  # 把 devbox 加入选择列表（已有清单时需要）
+ssh-connect                        # 选择主机并连接
+ssh-connect --tmux                 # 选择主机，进入/恢复远端 tmux
+ssh-connect --workbench            # Termux 的原有工作台入口，现包含票据检查
+ssh-connect connect devbox --tmux  # 直接连接指定别名
+ssh-connect connect devbox --check # 不取票、不提示指纹，认证后执行 whoami
+```
+
+有有效且 Principal 匹配的 TGT 时直接连接；无票据、过期或身份不匹配时，交互执行
+`kinit` 并再次校验。密码只输入给 kinit，不写入参数、配置或环境变量。非交互环境
+直接报错；`hosts` 和 `--print` 不会取票。使用 Termux 现有 `krb5.conf` 和凭证缓存，
+不会改成 iSH 的路径。首次连接仍须通过可信渠道核对主机指纹。
+
+这是连接时按需取票，不是后台续票服务。票据过期后仍需输入密码；已建立的 SSH
+不会因为本地 TGT 到期而由本脚本主动重连。Termux 实机验收仍需在设备上完成。
+
 ## Follow Android light/dark mode
 
 `util/termux/termux-system-theme` checks Android's resolved `am get-config`

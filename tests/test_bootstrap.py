@@ -100,6 +100,8 @@ class BootstrapTests(unittest.TestCase):
         ssh = c.home / '.ssh/config'
         ssh.parent.mkdir()
         ssh.write_text('Host local-alias\n  HostName server.example\n')
+        c.bin.mkdir(parents=True)
+        (c.bin / 'ish-connect').symlink_to(ROOT / 'util/ish/ish-connect')
         c.task('ish_client_setup')
         first = ssh.read_text()
         c.task('ish_client_setup')
@@ -108,7 +110,8 @@ class BootstrapTests(unittest.TestCase):
         self.assertIn('config/ish/ssh_config', first)
         self.assertEqual((conf / 'krb5.conf').read_text(), '# administrator profile\n')
         self.assertEqual((conf / 'user.conf').read_text(), 'KRB5_REALM=LOCAL.TEST\n')
-        self.assertTrue((c.bin / 'ish-connect').is_symlink())
+        self.assertTrue((c.bin / 'ssh-connect').is_symlink())
+        self.assertFalse((c.bin / 'ish-connect').is_symlink())
 
     def test_ish_kerberos_decline_keeps_existing_profile(self):
         c = self.context('ish', dry=False)

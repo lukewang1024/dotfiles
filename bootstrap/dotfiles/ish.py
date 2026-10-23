@@ -72,8 +72,15 @@ def ish_client_setup(c):
             if source is None or not source.is_file():
                 source = c.repo / 'config/ish' / (name + '.example')
             c.write(dest, source.read_text())
-    for name in ('ish-connect', 'ish-doctor', 'fd'):
+    for name in ('ish-doctor', 'fd'):
         c.link(c.repo / 'util/ish' / name, c.bin / name)
+    c.link(c.repo / 'util/shell/ssh-connect', c.bin / 'ssh-connect')
+    # Retire only our former link; never delete a user's same-named command.
+    old = c.bin / 'ish-connect'
+    if old.is_symlink() and old.resolve() == (c.repo / 'util/ish/ish-connect').resolve():
+        c.record('unlink', path=str(old))
+        if not c.dry_run:
+            old.unlink()
     c.mkdir(c.home / '.ssh')
     if not c.dry_run:
         (c.home / '.ssh').chmod(0o700)
@@ -94,7 +101,7 @@ def ish_basic_setup(c):
     for name in ('.profile', '.zshenv'):
         append_block(c, c.home / name, block)
     c.task('ish_client_setup')
-    c.note('Open a new shell (or source ~/.profile). Configure with ./init kerberos; connect with ish-connect.')
+    c.note('Open a new shell (or source ~/.profile). Configure with ./init kerberos; connect with ssh-connect --tmux.')
 
 
 @task()
@@ -146,4 +153,4 @@ def ish_kerberos(c):
     for name, text in (('user.conf', values), ('krb5.conf', profile)):
         c.backup(conf / name)
         c.write(conf / name, text)
-    c.note('Configured. In a new shell: kinit YOUR_PRINCIPAL, klist, ish-connect. No password was requested or saved.')
+    c.note('Configured. In a new shell: ssh-connect --tmux will request kinit when needed. No password was requested or saved.')
