@@ -14,7 +14,8 @@ git -c http.version=HTTP/1.1 clone \
 # 上一条成功后再继续；目标目录非空时先保留并检查已有内容。
 cd ~/.config/dotfiles
 git config http.version HTTP/1.1
-git sparse-checkout set --cone bootstrap util docs \
+git sparse-checkout init --cone
+git sparse-checkout set bootstrap util docs \
   config/ish config/sh config/zsh config/git config/ssh config/tmux \
   config/vim config/tig config/python config/sesh config/starship
 # sparse-checkout 成功后再初始化。
