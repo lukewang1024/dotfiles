@@ -1,0 +1,57 @@
+#!/bin/sh
+set -u
+SCRIPT_PATH=$(readlink -f "$0")
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)
+# shellcheck source=util/ish/common.sh
+. "$SCRIPT_DIR/common.sh"
+mode=${1:-local}
+case "$mode" in local|--ssh) ;; *) die 'Usage: ish-doctor [--ssh]' ;; esac
+failures=0
+pass() { printf 'PASS %s\n' "$*"; }
+fail() { printf 'FAIL %s\n' "$*"; failures=$((failures + 1)); }
+skip() { printf 'SKIP %s\n' "$*"; }
+if [ -r /etc/alpine-release ]; then pass "Alpine $(cat /etc/alpine-release)"; else fail 'Not Alpine'; fi
+if command -v apk >/dev/null && [ "$(apk --print-arch)" = x86 ]; then pass 'Architecture x86'; else fail 'Expected x86'; fi
+missing=0
+for cmd in kinit klist ssh timeout; do
+    if command -v "$cmd" >/dev/null; then pass "Command $cmd"; else fail "Missing $cmd"; missing=1; fi
+done
+[ "$missing" = 0 ] || exit 1
+if ssh -G -F /dev/null -o GSSAPIAuthentication=yes localhost >/dev/null 2>&1; then pass 'SSH accepts GSSAPIAuthentication'; else fail 'SSH lacks GSSAPI support; install openssh-client-krb5'; fi
+load_config
+if [ -r "$KRB5_CONFIG" ]; then
+    probe=$(timeout 10 kinit -k -t /dev/null "$KRB5_PRINCIPAL" 2>&1)
+    if printf '%s\n' "$probe" | grep -Ei 'Improper format|error.*configuration|configuration.*error' >/dev/null; then
+        fail 'Kerberos profile syntax rejected by MIT krb5'
+    elif printf '%s\n' "$probe" | grep -Ei 'Key table|keytab|no suitable keys' >/dev/null; then
+        pass 'Kerberos profile parses (realm correctness requires authentication)'
+    else skip 'Profile semantic validation inconclusive; verify with kinit'; fi
+    unset probe
+else fail 'Kerberos profile unreadable'; fi
+if cache_probe=$(mktemp "$(dirname "$CC_FILE")/cache-check.XXXXXX" 2>/dev/null); then
+    if printf test > "$cache_probe" && [ "$(cat "$cache_probe")" = test ]; then pass 'Cache directory read/write'; else fail 'Cache directory read/write'; fi
+    rm -f "$cache_probe"
+else fail 'Cache directory not writable'; fi
+if [ -e "$CC_FILE" ] && { [ ! -r "$CC_FILE" ] || [ ! -w "$CC_FILE" ]; }; then fail 'Existing credential cache is not readable/writable'; fi
+tgt_valid; ticket_status=$?
+case "$ticket_status" in 0) pass 'Valid TGT and matching principal' ;; 2) fail 'Principal mismatch; refusing another identity' ;; *) fail 'TGT absent, expired or invalid; run interactive kinit' ;; esac
+check_host() {
+    label=$1 target=$2 target_port=$3
+    if [ -z "$target" ]; then skip "$label hostname unspecified (DNS SRV discovery not probed)"; return; fi
+    if command -v getent >/dev/null; then
+        if timeout 10 getent hosts "$target" >/dev/null 2>&1; then pass "$label DNS/hosts resolution"; else fail "$label DNS/hosts resolution; check VPN/DNS"; fi
+    else skip "$label DNS probe: getent unavailable"; fi
+    if command -v nc >/dev/null; then
+        if timeout 7 nc -z -w 5 "$target" "$target_port" >/dev/null 2>&1; then pass "$label TCP connectivity"; else fail "$label TCP connectivity; check routing, VPN and firewall"; fi
+    else skip "$label TCP probe: nc unavailable"; fi
+}
+check_host KDC "$KDC_HOST" "$KDC_PORT"
+skip 'KDC UDP 88: a UDP send or nc exit code cannot prove a Kerberos response; use a real kinit with udp_preference_limit=65535 to test'
+check_host SSH "$SSH_HOST" "$SSH_PORT"
+if [ "$mode" = --ssh ]; then
+    if [ "$ticket_status" = 0 ]; then
+        export REMOTE_COMMAND=whoami
+        if ssh_gssapi -o BatchMode=yes >/dev/null 2>&1; then pass 'SSH authenticated with only gssapi-with-mic enabled'; else fail 'GSSAPI SSH (check trusted known_hosts, service principal, mapping and server logs)'; fi
+    else skip 'SSH authentication: matching valid TGT required'; fi
+else skip 'SSH authentication: opt in with --ssh'; fi
+[ "$failures" = 0 ]

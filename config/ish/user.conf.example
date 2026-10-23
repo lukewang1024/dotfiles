@@ -1,0 +1,9 @@
+# Data only: KEY=value, no shell expressions or quotes.
+KRB5_REALM=EXAMPLE.COM
+KRB5_PRINCIPAL=yourname@EXAMPLE.COM
+KDC_HOST=kdc.example.com
+KDC_PORT=88
+SSH_HOST=dev.example.com
+SSH_USER=yourname
+SSH_PORT=22
+TMUX_SESSION=dev

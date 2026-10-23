@@ -9,9 +9,9 @@ import sys
 
 from .engine import Context, Failure, Reporter, detect_platform
 from .tasks import TASKS
-from . import platforms, maintenance  # register platform/maintenance tasks
+from . import platforms, maintenance, ish  # register platform/maintenance tasks
 
-PLATFORMS = ('macos', 'debian', 'arch', 'chromeos', 'termux', 'cygwin', 'windows')
+PLATFORMS = ('macos', 'debian', 'arch', 'chromeos', 'termux', 'ish', 'cygwin', 'windows')
 
 
 def select_tasks(platform, mode, arguments):
@@ -20,7 +20,7 @@ def select_tasks(platform, mode, arguments):
             raise Failure('Usage: init run <module> <task> [arguments]')
         module, expression, *extra = arguments
         if module not in ('env', 'shell', 'pkg', 'nix', 'linux', 'macos', 'macos-defaults', 'debian', 'arch', 'chromeos',
-                          'termux', 'cygwin', 'windows', 'machine-fabric', 'workbench', 'maintenance'):
+                          'termux', 'ish', 'cygwin', 'windows', 'machine-fabric', 'workbench', 'maintenance'):
             raise Failure('Unknown task module: ' + module)
         tokens = shlex.split(expression)
         if not tokens or tokens[0] not in TASKS:
@@ -32,6 +32,13 @@ def select_tasks(platform, mode, arguments):
         return [(tokens[0], tokens[1:] + extra)]
     if arguments:
         raise Failure(f'{mode} does not accept positional arguments')
+    if platform == 'ish':
+        tasks = {'basic': 'ish_basic_setup', 'sync': 'ish_basic_setup',
+                 'core': 'prepare_ish_env', 'all': 'prepare_ish_env',
+                 'kerberos': 'ish_kerberos', 'zinit': 'zinit_setup'}
+        if mode not in tasks:
+            raise Failure('iSH supports basic, core, all, sync, kerberos and zinit; desktop/agent runtimes run on the remote host')
+        return [(tasks[mode], [mode] if mode in ('core', 'all') else [])]
     if mode in ('basic', 'sync'):
         return [('sync_setup', [])] if mode == 'sync' or platform == 'windows' else [('termux_basic_setup' if platform == 'termux' else 'basic_env_setup', [])]
     names = {'npmg': 'install_npm_packages', 'zinit': 'zinit_setup', 'kerberos': 'kerberos',

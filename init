@@ -43,6 +43,21 @@ if [ -n "${TERMUX_VERSION:-}" ] || [ "${PREFIX:-}" = /data/data/com.termux/files
   fi
   exec python "$main_script" "$@"
 fi
+# iSH uses Alpine's native x86 Python; uv has no suitable managed runtime here.
+case "$(uname -r)" in
+  *-ish*)
+    branch=$(cut -d. -f1,2 /etc/alpine-release)
+    if [ "$(apk --print-arch)" != x86 ] ||
+       { grep -E '^[^#].*/(edge|v[0-9]+\.[0-9]+)(/|$)' /etc/apk/repositories | grep -Ev "/v$branch(/|$)" >/dev/null; }; then
+      printf '%s\n' 'Expected Alpine x86 with matching repositories; import a fresh rootfs instead of a cross-version upgrade.' >&2
+      exit 1
+    fi
+    if ! apk add --no-progress python3 >>"$bootstrap_log" 2>&1; then
+      printf 'Runtime setup failed. Check matching Alpine repositories. Details: %s\n' "$bootstrap_log" >&2; exit 1
+    fi
+    exec python3 "$main_script" "$@"
+    ;;
+esac
 if command -v uv >/dev/null 2>&1; then
   bootstrap_uv=$(command -v uv)
 elif [ -x "$UV_INSTALL_DIR/uv" ]; then

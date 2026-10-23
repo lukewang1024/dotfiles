@@ -1,0 +1,14 @@
+# iSH defaults, included after explicit local host settings. ish-connect also enforces these.
+Host *
+    GSSAPIAuthentication yes
+    GSSAPIDelegateCredentials no
+    PreferredAuthentications gssapi-with-mic
+    PubkeyAuthentication no
+    PasswordAuthentication no
+    KbdInteractiveAuthentication no
+    HostbasedAuthentication no
+    StrictHostKeyChecking ask
+    ControlMaster no
+    ControlPath none
+    ServerAliveInterval 30
+    ServerAliveCountMax 3

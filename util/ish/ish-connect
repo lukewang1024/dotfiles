@@ -1,0 +1,28 @@
+#!/bin/sh
+set -eu
+SCRIPT_PATH=$(readlink -f "$0")
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)
+# shellcheck source=util/ish/common.sh
+. "$SCRIPT_DIR/common.sh"
+load_config
+mode=${1:-connect}
+case "$mode" in connect|--check) ;; *) die 'Usage: ish-connect [--check]' ;; esac
+for cmd in kinit klist ssh; do command -v "$cmd" >/dev/null || die "Missing $cmd; run ./init core."; done
+[ -r "$KRB5_CONFIG" ] || die 'Kerberos config is unreadable.'
+if ! tgt_valid; then
+    if [ "$mode" = --check ] || [ ! -t 0 ]; then
+        die 'TGT missing, expired, invalid or principal mismatch; run ish-connect interactively (or kinit with this configuration/cache).'
+    fi
+    printf 'A matching TGT is required. kinit will prompt directly; no password is saved.\n'
+    kinit "$KRB5_PRINCIPAL" || die 'kinit failed. Check realm, KDC, clock and VPN with ish-doctor.'
+    tgt_valid || die 'kinit did not produce the expected TGT.'
+fi
+if [ "$mode" = --check ]; then
+    export REMOTE_COMMAND=whoami
+    ssh_gssapi -o BatchMode=yes
+else
+    printf 'For a first connection, verify the displayed host fingerprint through a trusted channel before accepting.\n'
+    export HOST_KEY_POLICY=ask
+    export REMOTE_COMMAND="exec tmux new-session -A -s $TMUX_SESSION"
+    ssh_gssapi -t
+fi

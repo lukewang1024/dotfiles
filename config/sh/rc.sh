@@ -26,7 +26,11 @@ is_linux && ! is_termux && export ANDROID_HOME=$HOME/android-sdk
 is_linux && ! is_termux && export I3FYRA_WS=1
 
 # Use ripgrep with fzf
-export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
+if [ "${DOTFILES_PLATFORM:-}" = ish ]; then
+  export FZF_DEFAULT_COMMAND='find . -type d -name .git -prune -o -type f -print'
+else
+  export FZF_DEFAULT_COMMAND='rg --files --follow --hidden'
+fi
 
 # PATH
 export PATH="/usr/bin/core_perl:$PATH"

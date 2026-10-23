@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'bootstrap'))
 sys.dont_write_bytecode = True
 from dotfiles.cli import PLATFORMS, select_tasks, main
-from dotfiles.engine import Context, Failure, Reporter
+from dotfiles.engine import Context, Failure, Reporter, detect_platform
 from dotfiles.tasks import TASKS, PACKAGES, LINKS, install, language_packages, platform_packages
 
 
@@ -58,6 +58,101 @@ class BootstrapTests(unittest.TestCase):
         legacy = json.loads((ROOT / 'tests/fixtures/bootstrap-inventory.json').read_text(encoding='utf-8'))
         self.assertEqual(PACKAGES, {k: v['arrays'] for k, v in legacy.items() if v['arrays']})
         self.assertEqual(LINKS, {k: v['links'] for k, v in legacy.items() if v['links']})
+
+    def test_ish_core_uses_shared_config_and_gssapi_client_without_servers(self):
+        c = self.context('ish')
+        for name, arguments in select_tasks('ish', 'core', []):
+            c.task(name, *arguments)
+        commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+        packages = next(a for a in commands if a[:2] == ['apk', 'add'])
+        self.assertIn('openssh-client-krb5', packages)
+        self.assertNotIn('ripgrep', packages)
+        self.assertNotIn('starship', packages)
+        for name in ('krb5', 'zsh', 'git', 'vim', 'tmux', 'python3'):
+            self.assertIn(name, packages)
+        for a in commands:
+            self.assertNotIn(a[0], ('sudo', 'sv-enable', 'uv', 'machine-fabric', 'codex'))
+            self.assertNotIn('openssh-server', a)
+            self.assertNotIn('openssh-client-default', a)
+        task_names = [e['name'] for e in c.events if e['kind'] == 'task']
+        for name in ('zinit_install', 'git_setup', 'tmux_plugins_setup', 'vim_plugins_setup', 'ssh_setup'):
+            self.assertIn(name, task_names)
+        for name in ('termux_ssh_setup', 'agent_team_setup', 'setup_machine_fabric'):
+            self.assertNotIn(name, task_names)
+
+    def test_ish_detection_requires_emulator_and_alpine(self):
+        with patch.dict(os.environ, {'TERMUX_VERSION': '', 'PREFIX': ''}), \
+             patch('dotfiles.engine.os.uname', create=True) as uname, \
+             patch('dotfiles.engine.Path.exists', lambda p: str(p) == '/etc/alpine-release'), \
+             patch('dotfiles.engine.sys.platform', 'linux'):
+            uname.return_value.release = '4.20.69-ish'
+            self.assertEqual(detect_platform(), 'ish')
+            uname.return_value.release = '6.1.0'
+            with self.assertRaises(Failure):
+                detect_platform()
+
+    def test_ish_sync_preserves_kerberos_and_ssh_local_overrides(self):
+        c = self.context('ish', dry=False)
+        conf = c.config / 'ish-kerberos'
+        conf.mkdir(parents=True)
+        (conf / 'user.conf').write_text('KRB5_REALM=LOCAL.TEST\n')
+        (conf / 'krb5.conf').write_text('# administrator profile\n')
+        ssh = c.home / '.ssh/config'
+        ssh.parent.mkdir()
+        ssh.write_text('Host local-alias\n  HostName server.example\n')
+        c.task('ish_client_setup')
+        first = ssh.read_text()
+        c.task('ish_client_setup')
+        self.assertEqual(ssh.read_text(), first)
+        self.assertTrue(first.startswith('Host local-alias\n'))
+        self.assertIn('config/ish/ssh_config', first)
+        self.assertEqual((conf / 'krb5.conf').read_text(), '# administrator profile\n')
+        self.assertEqual((conf / 'user.conf').read_text(), 'KRB5_REALM=LOCAL.TEST\n')
+        self.assertTrue((c.bin / 'ish-connect').is_symlink())
+
+    def test_ish_kerberos_decline_keeps_existing_profile(self):
+        c = self.context('ish', dry=False)
+        c.task('ish_client_setup')
+        profile = c.config / 'ish-kerberos/krb5.conf'
+        profile.write_text('# preserve this\n')
+        answers = iter(['ISH.TEST', 'testuser@ISH.TEST', 'dns', 'ssh.ish.test', 'testuser', '22', 'dev', 'no'])
+        c.prompt = lambda *a: next(answers)
+        c.task('ish_kerberos')
+        self.assertEqual(profile.read_text(), '# preserve this\n')
+
+    def test_ish_git_and_login_setup_preserve_content_on_repeat(self):
+        from dotfiles.ish import append_block
+        c = self.context('ish', dry=False)
+        git = c.config / 'git/config'
+        git.parent.mkdir(parents=True)
+        content = '[user]\n  name = Example User\n  email = user@example.test\n[alias]\n  custom = status\n'
+        git.write_text(content)
+        c.task('git_setup', 'configure-only')
+        first = git.read_text()
+        c.task('git_setup', 'configure-only')
+        self.assertEqual(git.read_text(), first)
+        self.assertTrue(first.startswith(content))
+        profile = c.home / '.profile'
+        profile.write_text('export CUSTOM=keep\n')
+        append_block(c, profile, 'export DOTFILES_PLATFORM=ish\n')
+        first = profile.read_text()
+        append_block(c, profile, 'export DOTFILES_PLATFORM=ish\n')
+        self.assertEqual(profile.read_text(), first)
+        self.assertTrue(first.startswith('export CUSTOM=keep\n'))
+
+    @unittest.skipIf(os.name == 'nt', 'POSIX shell startup')
+    def test_ish_login_keeps_custom_xdg_and_manual_ticket_cache_aligned(self):
+        script = ('is_macos() { return 1; }; is_termux() { return 1; }; is_linux() { return 1; }; '
+                  '. "$1/config/ish/env.sh"; . "$1/config/sh/xdg-paths.sh"; '
+                  'printf "%s\\n" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$KRB5_CONFIG" "$KRB5CCNAME"')
+        env = dict(self.env)
+        env.pop('KRB5_CONFIG', None)
+        env.pop('KRB5CCNAME', None)
+        result = subprocess.run(['/bin/sh', '-c', script, 'sh', str(ROOT)], env=env,
+                                capture_output=True, text=True, check=True)
+        self.assertEqual(result.stdout.splitlines(), [str(self.home / 'config'), str(self.home / 'data'),
+                         str(self.home / 'cache'), str(self.home / 'config/ish-kerberos/krb5.conf'),
+                         'FILE:' + str(self.home / 'cache/ish-kerberos/krb5cc')])
 
     def test_conda_is_not_installed_or_initialized_by_dotfiles(self):
         groups = [('macos/prepare_macos_env_cli_extra', 'casks'),

@@ -19,9 +19,13 @@ Plug 'lambdalisue/glyph-palette.vim'
 Plug 'lambdalisue/nerdfont.vim'
 Plug 'LumaKernel/fern-mapping-fzf.vim'
 Plug 'mg979/vim-visual-multi'
-Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+if $DOTFILES_PLATFORM !=# 'ish'
+  Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+endif
 Plug 'ojroques/vim-oscyank'
-Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
+if $DOTFILES_PLATFORM !=# 'ish'
+  Plug 'rrethy/vim-hexokinase', { 'do': 'make hexokinase' }
+endif
 Plug 'sheerun/vim-polyglot'
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'tpope/vim-commentary'
@@ -263,6 +267,7 @@ nmap <F6> <Plug>(ale_fix)
 " COC "
 """""""
 
+if $DOTFILES_PLATFORM !=# 'ish'
 let g:coc_global_extensions = [
 \  'coc-eslint',
 \  'coc-json',
@@ -442,6 +447,7 @@ nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 " Other commands
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 command! -nargs=0 ESLint   :CocCommand eslint.executeAutofix
+endif
 
 """"""""""""""""
 " EditorConfig "

@@ -41,6 +41,8 @@ def detect_platform():
     if sys.platform.startswith(('cygwin', 'msys')):
         return 'cygwin'
     if sys.platform.startswith('linux'):
+        if '-ish' in os.uname().release and Path('/etc/alpine-release').exists():
+            return 'ish'
         if Path('/etc/arch-release').exists():
             return 'arch'
         if Path('/etc/lsb-release').exists() and 'CHROMEOS_RELEASE_' in Path('/etc/lsb-release').read_text(encoding='utf-8'):
@@ -182,6 +184,8 @@ class Context:
         self.dry_run = dry_run
         self.home = Path(home) if home is not None else Path.home()
         self.env = dict(os.environ if env is None else env)
+        if platform == 'ish':
+            self.env.update(DOTFILES_PLATFORM='ish', DOTFILES_HOME=str(self.repo))
         self.env['PYTHONUTF8'] = '1'
         # brew install may upgrade this very interpreter and delete its old
         # standard library before a later import. Protect its keg for this run,

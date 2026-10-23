@@ -19,7 +19,12 @@ alias ssh-agent-connect="source $config_dir/zsh/ssh-agent-connect.zsh"
 source "$config_dir/zsh/agent-resume-history.zsh"
 
 exists zoxide && eval "$(zoxide init zsh)"
-exists starship && eval "$(starship init zsh)"
+if [ "${DOTFILES_PLATFORM:-}" = ish ]; then
+  # The tested Alpine starship binary faults while rendering under iSH.
+  PROMPT='%n@%m:%~%# '
+else
+  exists starship && eval "$(starship init zsh)"
+fi
 
 # aliases to overwrite the ones defined in plugins
 exists lsd && alias ls='lsd'

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Alpine's fd needs jemalloc's thread cache disabled under iSH. Its parallel
+# search also reaches an unsupported Rust sleep syscall; keep one worker.
+export MALLOC_CONF=tcache:false,background_thread:false,narenas:1
+exec /usr/bin/fd --threads 1 "$@"

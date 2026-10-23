@@ -231,6 +231,17 @@ for _name, _group in [('tig_setup', 'shell/tig_setup'), ('vim_config_setup', 'sh
 
 @task()
 def git_setup(c, mode='interactive'):
+    if c.platform == 'ish':
+        # Keep all local identities/overrides while composing the shared aliases.
+        from .ish import append_block
+        dest = c.config / 'git/config'
+        for name in ('alias', 'common'):
+            c.link(c.repo / 'config/git' / name, c.config / 'git' / name)
+        append_block(c, dest, '[include]\n  path = alias\n  path = common\n'
+                     '[core]\n  pager = less -R\n[interactive]\n  diffFilter = cat\n')
+        for name in ('git-branch-cleanup', 'git-clone-bare', 'git-new-branch', 'git-set-identity'):
+            c.link(c.repo / 'util/shell' / name, c.bin / name)
+        return
     dest = c.config / 'git/config'
     identities = ''
     if dest.exists() and not c.dry_run:
@@ -306,8 +317,11 @@ def ssh_setup(c):
     end = '# -- dotfiles SSH config end --'
     def quoted(path):
         return '"' + path.as_posix().replace('"', '\\"') + '"'
+    includes = ['  Include ' + quoted(shared)]
+    if c.platform == 'ish':
+        includes.insert(0, '  Include ' + quoted(c.repo / 'config/ish/ssh_config'))
     block = '\n'.join((begin, '# Local overrides precede shared defaults (SSH uses the first value).',
-                       'Host *', '  Include ' + quoted(shared), end)) + '\n'
+                       'Host *', *includes, end)) + '\n'
     content = dest.read_text(encoding='utf-8') if dest.exists() else ''
     if dest.is_symlink() and dest.resolve() == shared.resolve():
         # Replace the legacy link itself, never write through it into the repo.
@@ -361,7 +375,7 @@ def tmux_plugins_setup(c):
         c.sync_repo(tpm, 'https://github.com/tmux-plugins/tpm')
     c.command(tpm / 'bin/install_plugins')
     wb = root / 'tmux-agent-workbench'
-    if c.dry_run or (wb / 'install').exists():
+    if c.platform != 'ish' and (c.dry_run or (wb / 'install').exists()):
         c.command('git', '-C', wb, 'pull', '--ff-only')
         c.command(wb / 'install', c.bin)
 
@@ -389,6 +403,10 @@ def zsh_config_setup(c):
 
 @task()
 def zsh_common_setup(c):
+    if c.platform == 'ish':
+        # iSH's ~/.zshenv already sets ZDOTDIR without sudo or system changes.
+        c.task('ish_basic_setup')
+        return
     choices = ['/etc/zshenv', '/etc/zsh/zshenv', '/usr/local/etc/zshenv']
     dest = next((Path(p) for p in choices if Path(p).exists()), Path('/etc/zshenv'))
     export = 'export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"'
