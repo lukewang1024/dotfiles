@@ -17,7 +17,13 @@ import tty
 # These are frontend-only overrides. Ctrl+D remains the normal empty-composer
 # quit shortcut, but cannot delete draft text when the composer refuses to quit.
 UI_OPTIONS = [
-    "-c", 'tui.terminal_title=["app-name","run-state","activity","thread-id"]',
+    # Termux mirrors background session titles into Android notifications.
+    # Omit the animation, keeping state and identity for safe theme restarts.
+    "-c", (
+        'tui.terminal_title=["app-name","run-state","thread-id"]'
+        if Path("/system/bin/am").is_file()
+        else 'tui.terminal_title=["app-name","run-state","activity","thread-id"]'
+    ),
     "-c", 'tui.keymap.editor.delete_forward=["delete","shift-delete"]',
 ]
 RECONNECT_OPTIONS = [
