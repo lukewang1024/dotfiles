@@ -9,7 +9,10 @@ agents. `./init sync` installs the entrypoints and applies the managed settings.
   machine-local state are preserved.
 - `codex-tui.toml` owns the marked UI block inside `[tui]` in
   `~/.codex/config.toml`. Alternate screen uses Codex's default; syncing removes
-  the previously managed override. Raw output mode remains a manual toggle.
+  the previously managed override. The terminal title uses the readable thread
+  title and task progress. The theme-refresh wrapper verifies an exit's exact
+  session ID against thread-name metadata rather than displaying that ID.
+  Raw output mode remains a manual toggle.
   `codex-settings-apply` also removes two known ignored
   settings from existing configs: `profiles.<name>.review_model` and
   `projects.<path>.sandbox_mode`. Other local settings and comments are preserved.

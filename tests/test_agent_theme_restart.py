@@ -24,6 +24,26 @@ def title(value):
     return f"\x1b]0;codex | {value} | 01a12a2b-3287-7bf2-8fc1-661e52ea78b1\x07".encode()
 
 
+class TitleOptionsTest(unittest.TestCase):
+    def test_launch_keeps_platform_title_items_and_agent_identity(self):
+        for termux in (False, True):
+            module = importlib.util.module_from_spec(SPEC)
+            with mock.patch.object(Path, "is_file", return_value=termux):
+                SPEC.loader.exec_module(module)
+            for agent in ("codex", "traex"):
+                with self.subTest(termux=termux, agent=agent), \
+                     mock.patch.object(module, "palette_path", return_value=None), \
+                     mock.patch.object(module, "theme_signature", return_value=None), \
+                     mock.patch.object(module, "spawn_once", return_value=(0, b"", False, None, None)) as spawn:
+                    module.run([agent], lambda output: None, agent)
+                    launch = spawn.call_args.args[0]
+                    settings = launch[launch.index("-c") + 1]
+                    self.assertEqual('"activity"' in settings, not termux)
+                    self.assertEqual('"thread-title"' in settings, agent == "codex")
+                    self.assertEqual('"task-progress"' in settings, agent == "codex")
+                    self.assertEqual('"thread-id"' in settings, agent != "codex")
+
+
 @unittest.skipUnless(sys.platform.startswith("linux"), "Linux inotify")
 class ThemeNotificationsTest(unittest.TestCase):
     def test_unavailable_watch_reports_reason_without_reporting_unsupported_hosts(self):
@@ -230,6 +250,22 @@ class RestartGateTest(unittest.TestCase):
         gate.output(b"\x1b]0;codex | Ready | 01a12a2b-3287-7bf2-8fc1-661e5...\x07", 1)
         self.assertTrue(gate.can_quit(3))
         self.assertEqual(gate.thread_prefix, "01a12a2b-3287-7bf2-8fc1-661e5")
+
+    def test_readable_thread_title_with_progress_authorizes_only_that_named_thread(self):
+        gate = theme.RestartGate(0)
+        gate.seen_work = True
+        gate.output("\x1b]2;Codex | Ready | 修复公式布局 | 2/5\x07".encode(), 1)
+        self.assertTrue(gate.can_quit(3))
+        self.assertEqual(gate.thread_prefix, "name:修复公式布局")
+        with tempfile.TemporaryDirectory() as directory, mock.patch.dict(os.environ, {"CODEX_HOME": directory}):
+            Path(directory, 'session_index.jsonl').write_text(
+                '{"id":"correct","thread_name":"修复公式布局"}\n'
+                '{"id":"other","thread_name":"其他任务"}\n', encoding='utf-8')
+            self.assertTrue(theme.exit_matches_thread('correct', gate.thread_prefix))
+            self.assertFalse(theme.exit_matches_thread('other', gate.thread_prefix))
+            self.assertFalse(theme.exit_matches_thread('missing', gate.thread_prefix))
+        gate.output(b"\x1b]2;Codex | Ready | 2/5\x07", 4)
+        self.assertFalse(gate.can_quit(100))
 
     def test_action_required_and_unrecognized_titles_block_exit(self):
         gate = theme.RestartGate(0)

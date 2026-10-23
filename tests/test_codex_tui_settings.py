@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 class CodexTuiSettingsTests(unittest.TestCase):
     def test_apply_removes_alternate_screen_override_idempotently(self):
         for existing in ('', '[tui]\nalternate_screen = "never"\nraw_output_mode = false\n',
-                         '[tui]\nalternate_screen = "always"\nraw_output_mode = false\n'):
+                         '[tui]\nalternate_screen = "always"\nraw_output_mode = false\n',
+                         '[tui]\nterminal_title = ["thread-id"]\nraw_output_mode = false\n'):
             with self.subTest(existing=existing), tempfile.TemporaryDirectory() as directory:
                 home = Path(directory)
                 config = home / 'config.toml'
@@ -36,6 +37,9 @@ class CodexTuiSettingsTests(unittest.TestCase):
                     self.assertEqual(values['model'], 'daily-model')
                     self.assertEqual(values['service_tier'], 'fast')
                     self.assertNotIn('alternate_screen', values['tui'])
+                    self.assertIn('thread-title', values['tui']['terminal_title'])
+                    self.assertIn('task-progress', values['tui']['terminal_title'])
+                    self.assertNotIn('thread-id', values['tui']['terminal_title'])
                     if existing:
                         self.assertIs(values['tui']['raw_output_mode'], False)
                     else:

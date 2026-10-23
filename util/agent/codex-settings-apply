@@ -88,7 +88,7 @@ awk -v shared_file="$shared_file" '
     print
     next
   }
-  in_tui && /^[[:space:]]*(theme|status_line|status_line_use_colors|alternate_screen)[[:space:]]*=/ {
+  in_tui && /^[[:space:]]*(theme|status_line|status_line_use_colors|alternate_screen|terminal_title)[[:space:]]*=/ {
     if ($0 ~ /=.*\[/ && $0 !~ /\]/) skipping_tui_array = 1
     next
   }

@@ -1,6 +1,7 @@
 """Refresh supported agent TUIs after a terminal palette change on POSIX."""
 
 import errno
+import json
 import os
 from pathlib import Path
 import pty
@@ -20,9 +21,9 @@ UI_OPTIONS = [
     # Termux mirrors background session titles into Android notifications.
     # Omit the animation, keeping state and identity for safe theme restarts.
     "-c", (
-        'tui.terminal_title=["app-name","run-state","thread-id"]'
+        'tui.terminal_title=["app-name","run-state","thread-title","task-progress"]'
         if Path("/system/bin/am").is_file()
-        else 'tui.terminal_title=["app-name","run-state","activity","thread-id"]'
+        else 'tui.terminal_title=["app-name","run-state","activity","thread-title","task-progress"]'
     ),
     "-c", 'tui.keymap.editor.delete_forward=["delete","shift-delete"]',
 ]
@@ -223,23 +224,30 @@ class RestartGate:
                 return
             title = match[1].decode("utf-8", errors="replace")
             del self.title_bytes[:match.end()]
-            title = title.lower()
-            # Ready can be rendered before a resumed thread has attached. Require
-            # its ID as well; Codex truncates full UUIDs in terminal titles.
+            # Ready can precede thread attachment. Require an identity item;
+            # current Codex uses a readable thread title, older CLIs use an ID.
             names = r"codex" if self.agent == "codex" else r"(?:traex|traecli|trae|traecode)"
             ready = re.fullmatch(
                 names + r" \| ready \| ([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{5,12})(?:…|\.\.\.)?",
-                title,
+                title.lower(),
             )
-            if ready:
-                if self.thread_prefix != ready[1]:
+            identity = ready[1] if ready else None
+            if identity is None and self.agent == "codex":
+                named = re.fullmatch(
+                    r"codex \| ready \| (.+?)(?: \| (?:tasks? )?\d+\s*/\s*\d+(?: tasks?| steps?)?)?",
+                    title, re.IGNORECASE,
+                )
+                if named and not re.fullmatch(r"(?:tasks? )?\d+\s*/\s*\d+(?: tasks?| steps?)?", named[1], re.IGNORECASE):
+                    identity = "name:" + named[1]
+            if identity:
+                if self.thread_prefix != identity:
                     self.ready_since = None
-                self.thread_prefix = ready[1]
+                self.thread_prefix = identity
                 if self.ready_since is None:
                     self.ready_since = now
             else:
                 self.ready_since = None
-                if re.match(names + r" \| (?:working|thinking)\b", title):
+                if re.match(names + r" \| (?:working|thinking)\b", title.lower()):
                     self.seen_work = True
                     if self.submitted:
                         self.dirty = False
@@ -539,11 +547,39 @@ def palette_path():
     return None
 
 
+def exit_matches_thread(exact_id, requested):
+    """Verify exit identity using metadata, without putting a UUID in the title."""
+    if not requested:
+        return False
+    if not requested.startswith("name:"):
+        return exact_id.lower().startswith(requested)
+    name = requested[len("name:"):]
+    truncated = name.endswith(("…", "..."))
+    prefix = name[:-1] if name.endswith("…") else name[:-3] if name.endswith("...") else name
+    index = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "session_index.jsonl"
+    try:
+        lines = index.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    for line in reversed(lines):
+        try:
+            record = json.loads(line)
+        except (ValueError, TypeError):
+            continue
+        if record.get("id") == exact_id:
+            actual = record.get("thread_name")
+            return isinstance(actual, str) and (actual.startswith(prefix) if truncated else actual == name)
+    return False
+
+
 def run(command, get_session_id, agent="codex"):
     options = resume_options(command, agent)
     palette = palette_path()
     baseline = theme_signature(palette)
-    launch = [*command, *UI_OPTIONS]
+    ui_options = list(UI_OPTIONS)
+    if agent != "codex":
+        ui_options[1] = ui_options[1].replace('"thread-title","task-progress"', '"thread-id"')
+    launch = [*command, *ui_options]
     while True:
         status, output, requested, requested_theme, requested_thread = spawn_once(launch, palette, baseline, agent)
         exact_id = get_session_id(output)
@@ -553,9 +589,9 @@ def run(command, get_session_id, agent="codex"):
             not requested
             or os.waitstatus_to_exitcode(status) != 0
             or not exact_id
-            or not exact_id.lower().startswith(requested_thread)
+            or not exit_matches_thread(exact_id, requested_thread)
         ):
             return status, output
         write_all(1, f"\r\n[{agent}: refreshing terminal theme; resuming this conversation]\r\n".encode())
         baseline = requested_theme
-        launch = [command[0], *options, *UI_OPTIONS, *RECONNECT_OPTIONS, "resume", exact_id]
+        launch = [command[0], *options, *ui_options, *RECONNECT_OPTIONS, "resume", exact_id]
