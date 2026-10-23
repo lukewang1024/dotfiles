@@ -5,24 +5,26 @@ set -eu
 
 # Local skills install independently of network-installed public skills.
 agent_dotfiles=${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles
-agent_skill_source=$agent_dotfiles/config/agent/skills/code-ship
-for agent_skill_dir in "$HOME/.agents/skills" "$HOME/.codex/skills" "$HOME/.claude/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills" "$HOME/.openclaw/skills"; do
-  mkdir -p "$agent_skill_dir"
-  agent_skill_target=$agent_skill_dir/code-ship
-  if [ -L "$agent_skill_target" ]; then
-    agent_skill_current=$(readlink "$agent_skill_target")
-    if [ "$agent_skill_current" = "$agent_skill_source" ]; then
+for agent_skill_name in code-ship codex-reset-card; do
+  agent_skill_source=$agent_dotfiles/config/agent/skills/$agent_skill_name
+  for agent_skill_dir in "$HOME/.agents/skills" "$HOME/.codex/skills" "$HOME/.claude/skills" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills" "$HOME/.openclaw/skills"; do
+    mkdir -p "$agent_skill_dir"
+    agent_skill_target=$agent_skill_dir/$agent_skill_name
+    if [ -L "$agent_skill_target" ]; then
+      agent_skill_current=$(readlink "$agent_skill_target")
+      if [ "$agent_skill_current" = "$agent_skill_source" ]; then
+        continue
+      fi
+      case "$agent_skill_name:$agent_skill_current" in
+        code-ship:*/harness/skills/code-ship) rm "$agent_skill_target" ;;
+        *) echo "agent-skills-install: preserving $agent_skill_target" >&2; continue ;;
+      esac
+    elif [ -e "$agent_skill_target" ]; then
+      echo "agent-skills-install: preserving $agent_skill_target" >&2
       continue
     fi
-    case "$agent_skill_current" in
-      */harness/skills/code-ship) rm "$agent_skill_target" ;;
-      *) echo "agent-skills-install: preserving $agent_skill_target" >&2; continue ;;
-    esac
-  elif [ -e "$agent_skill_target" ]; then
-    echo "agent-skills-install: preserving $agent_skill_target" >&2
-    continue
-  fi
-  ln -s "$agent_skill_source" "$agent_skill_target"
+    ln -s "$agent_skill_source" "$agent_skill_target"
+  done
 done
 mkdir -p "$HOME/.local/bin"
 agent_command_target=$HOME/.local/bin/code-ship

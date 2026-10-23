@@ -59,6 +59,15 @@ The shared AGENTS.md references the standalone collaboration rules.
   and auto-merges require authenticated `gh`. Organization-specific providers
   are installed separately and selected in the machine-local policy.
 
+- [`codex-reset-card`](skills/codex-reset-card/SKILL.md) queries Codex quota reset
+  credits and schedules one selected credit with a Linux user systemd timer.
+  It also documents status, cancellation and outcome verification. Scripts and
+  instructions live here; account login, proxy settings, task configurations and
+  receipts stay in machine-local XDG directories. Run
+  `agent-skills-install --local-only` to install this skill alongside `code-ship`
+  without network access.
+  Installing skills does not enable timers or redeem credits.
+
 - `agent-skills-install` also installs the public interview skills from
   `mattpocock/skills` for Claude Code, Codex, and OpenCode. Install the complete
   bundle: `grill-me` delegates to `grilling`; `grill-with-docs` delegates to

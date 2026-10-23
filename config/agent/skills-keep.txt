@@ -43,6 +43,7 @@ visualize
 
 # Public standalone skills.
 code-ship
+codex-reset-card
 grill-me
 grill-with-docs
 grilling
