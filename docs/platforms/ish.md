@@ -217,13 +217,15 @@ Git LFS 历史迁移后的普通 clone、一键迁移和真实 iSH sync/pull 验
 
 ## 从局域网电脑连接 iSH（可选）
 
-这两个工具不依赖 Python，可在初始化之前直接运行。默认初始化仍不启动 SSH 服务。
+`./init sshd` 和 `./init pair` 直接转发到原生交互工具，不依赖 Python，
+可在初始化之前运行。使用 `./init sshd --help`、`./init pair --help` 查看选项。
+默认初始化仍不启动 SSH 服务。
 在 iPad 的 iSH 中，进入仓库执行：
 
 ```sh
 cd ~/.config/dotfiles
 git -c core.hooksPath=/dev/null pull --ff-only
-sh util/shell/ssh-setup
+./init sshd
 ```
 
 默认端口 2222，复用 iSH root 的已有密码；账号未设置可用密码时交互运行
@@ -238,7 +240,7 @@ sh util/shell/ssh-setup
 
 ```sh
 git -c core.hooksPath=/dev/null pull --ff-only
-sh util/shell/ssh-pair ipad-ish 192.168.1.50
+./init pair ipad-ish 192.168.1.50
 ssh ipad-ish
 ```
 
@@ -259,13 +261,15 @@ ssh-add ~/.ssh/id_ed25519_pair
 报告配对成功。主机密钥变化时应独立核验，脚本不会删除 known_hosts 或自动信任。
 完成 `./init sync` 后可以直接运行 `ssh-setup`、`ssh-pair`。
 
-确认电脑登录成功后，在 iPad 按 Ctrl-C，改为只允许密钥：
+配对不会自动关闭密码登录，方便其他电脑继续配对。按需关闭时，确认已有电脑能登录，
+然后在 iPad 按 Ctrl-C，改为只允许密钥：
 
 ```sh
-sh util/shell/ssh-setup --key-only
+./init sshd --key-only
 ```
 
 保留 iSH 在前台且 iPad 不锁屏。后台挂起、锁屏及 Wi-Fi 地址变化都可能使连接中断；
-重新打开 iSH、重启服务器即可，配对密钥仍然保留。Wi-Fi 开启客户端隔离时，同一
-网络的设备也可能无法互访。云开发机无法直接访问此内网地址，需另行建立反向隧道。
+重新打开 iSH、重启服务器即可，配对密钥仍然保留。需要添加新的电脑时，可按需
+用 `./init sshd` 恢复密码登录，完成新增配对后再选择是否改回 `--key-only`。
+Wi-Fi 开启客户端隔离时，同一网络的设备也可能无法互访。云开发机无法直接访问此内网地址，需另行建立反向隧道。
 当前实现面向 Alpine/iSH 设备端及 POSIX 连接端；不包含 Docker 或 Windows 原生配对。

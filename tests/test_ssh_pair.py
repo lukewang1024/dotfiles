@@ -86,3 +86,30 @@ esac
         for args, code in [(['--help'], 0), (['--port', '22'], 2)]:
             result = subprocess.run(['sh', str(script), *args], env=self.env, capture_output=True)
             self.assertEqual(result.returncode, code)
+
+    def test_init_routes_before_runtime_discovery_and_preserves_exit_status(self):
+        checkout = self.home / 'checkout'
+        checkout.mkdir()
+        launcher = checkout / 'init'
+        launcher.write_text((ROOT / 'init').read_text())
+        helpers = checkout / 'util/shell'
+        helpers.mkdir(parents=True)
+        # Deliberately no bootstrap/main.py or Python runtime in this checkout.
+        # Both recovery commands must route before checking for them.
+        for name in ('ssh-setup', 'ssh-pair'):
+            (helpers / name).write_text('#!/bin/sh\nprintf "<%s>\\n" "$@"\nexit 73\n')
+        for mode, args in [('sshd', ['--key-only', '--port', '2223']),
+                           ('pair', ['ipad-ish', '192.0.2.1', '--user', 'root'])]:
+            result = subprocess.run(['sh', str(launcher), mode, *args],
+                                    env=self.env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 73, result.stderr)
+            self.assertEqual(result.stdout.splitlines(), ['<' + arg + '>' for arg in args])
+            self.assertNotIn('Preparing Python', result.stderr)
+
+    def test_init_native_command_help(self):
+        for mode in ('sshd', 'pair'):
+            result = subprocess.run(['sh', str(ROOT / 'init'), mode, '--help'],
+                                    env=self.env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('./init ' + mode, result.stdout)
+            self.assertFalse((self.home / 'calls').exists())

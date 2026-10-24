@@ -29,3 +29,17 @@ Reproducer and logs remain outside Git at the existing
 `$XDG_DATA_HOME/repro-environments/ish-kerberos/` laboratory. No Docker images,
 server credentials, test keys or filesystem archives are included in this change.
 The Python-runtime initialization stall is a separate, still-open investigation.
+
+## Init subcommand follow-up
+
+- **PASS**: full suite after routing changes: 167 tests, 159 passed, 8 platform skips.
+
+- **PASS**: `./init sshd --key-only --port 2233`, `./init pair`, repeated
+  pairing and SSH login through the saved alias in the real iSH CLI guest.
+  Guest exit 0; the test key was preauthorized as above.
+- **PASS**: launcher regression verifies routing without `bootstrap/main.py`
+  or a Python runtime, exact argument forwarding and nonzero exit propagation.
+- **PASS**: `./init sshd --help`, `./init pair --help`, shell syntax/ShellCheck.
+- Pairing leaves password access unchanged. `./init sshd --key-only` remains
+  an explicit, optional device-side restart; additional computers can be paired
+  while password login is enabled.

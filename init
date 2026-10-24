@@ -1,7 +1,13 @@
 #!/bin/sh
-# Bootstrap the interpreter only; all provisioning lives in bootstrap/main.py.
+# Route native interactive commands, otherwise bootstrap the shared Python entrypoint.
 set -eu
 repo_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+# These interactive recovery tools must also work before Python is available.
+# Delegate all provisioning/authentication to the helpers; keep this a router.
+case ${1:-} in
+  sshd) shift; exec sh "$repo_dir/util/shell/ssh-setup" "$@" ;;
+  pair) shift; exec sh "$repo_dir/util/shell/ssh-pair" "$@" ;;
+esac
 main_script=$repo_dir/bootstrap/main.py
 [ -f "$main_script" ] || { printf '%s\n' "Missing $main_script; run init from a complete dotfiles checkout." >&2; exit 1; }
 export PYTHONDONTWRITEBYTECODE=1

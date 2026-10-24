@@ -2,7 +2,7 @@
 # Opt-in Alpine/iSH SSH server; independent of the Python bootstrap.
 set -eu
 usage() {
-    echo 'usage: ssh-setup [--port PORT] [--random-password | --set-password | --key-only]'
+    echo 'usage: ./init sshd [--port PORT] [--random-password | --set-password | --key-only]'
     echo 'Runs sshd in the foreground. Ctrl-C stops it. Default: reuse root password.'
 }
 port=2222
@@ -75,6 +75,6 @@ CONFIG
 echo 'Verify this host fingerprint on the pairing computer:' >&2
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 echo "Listening on TCP $port. Use the iPad Wi-Fi address, not localhost." >&2
-echo "On the computer: ssh-pair ipad-ish IP_ADDRESS --port $port --user root" >&2
+echo "On the computer: ./init pair ipad-ish IP_ADDRESS --port $port --user root" >&2
 echo 'Keep iSH foreground/unlocked. Ctrl-C stops this server.' >&2
 exec /usr/sbin/sshd -D -e -f "$config"

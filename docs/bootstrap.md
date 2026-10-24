@@ -9,7 +9,7 @@ retain their native interpreters.
 
 | Source | Responsibility |
 | --- | --- |
-| `init`, `init.ps1` | Locate source/Python, prepare a runtime if needed, forward argv and exit status |
+| `init`, `init.ps1` | Locate source/Python, prepare a runtime if needed, forward argv and exit status; POSIX `init` also routes native SSH commands |
 | `bootstrap/main.py` | Shared executable entry |
 | `bootstrap/dotfiles/cli.py` | Modes, platform detection/override, category selection |
 | `bootstrap/dotfiles/engine.py` | Task progress, log capture, process exit codes, filesystem operations, dry runs |
@@ -145,3 +145,18 @@ installation completion, not that every preference took effect. The system's
 `cfprefsd` log identified the universal-access rejection as missing sandbox
 write access. Granting terminal privacy permissions or applying settings
 manually remains necessary for those protected preferences.
+
+## Interactive SSH device commands
+
+```sh
+./init sshd                     # Alpine/iSH server, foreground, default port 2222
+./init pair ipad-ish 192.168.1.50  # POSIX client: copy key, verify, save alias
+./init sshd --key-only          # Optional; restart server without password access
+```
+
+The POSIX launcher delegates these commands before Python discovery. Their
+interactive password/key prompts and foreground SSHD logs stay on the terminal.
+They do not provision Python or use the task reporter. Pairing never changes
+server password policy automatically, so more computers can be paired later.
+The existing helper commands remain available. These are not native PowerShell
+commands; Windows users need a POSIX environment with OpenSSH client tools.

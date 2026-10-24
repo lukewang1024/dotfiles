@@ -75,7 +75,12 @@ def select_tasks(platform, mode, arguments):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Cross-platform dotfiles setup. Detailed output is written to XDG state logs.')
+    parser = argparse.ArgumentParser(
+        description='Cross-platform dotfiles setup. Detailed output is written to XDG state logs.',
+        epilog='POSIX launcher commands (no Python required): init sshd [--port PORT] '
+               '[--random-password | --set-password | --key-only]; '
+               'init pair ALIAS HOST [--port PORT] [--user USER]. '
+               'Pairing leaves server password access unchanged; key-only mode is optional.')
     parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'machine-fabric', 'workbench', 'run'])
     parser.add_argument('arguments', nargs='*')
     parser.add_argument('--dry-run', action='store_true', help='Describe actions without changing files or executing commands')
