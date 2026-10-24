@@ -32,10 +32,10 @@ Windows 包装器尚未实机验证；POSIX/Linux 和 iSH 的执行结果见测�
 
 脚本依次执行：
 
-1. 检查 main 分支、未提交/未跟踪文件，以及是否存在 linked worktree。
+1. 检查 main 分支、未提交/未跟踪文件、stash/标签，以及是否存在 linked worktree。
 2. 在同一父目录暂存新 checkout，保持 LFS 资源为指针。
 3. 根据公开提交映射检查所有本地分支，拒绝丢弃未发布提交；保留可映射的本地分支。
-4. 保留 Git 忽略的本机文件（含权限、文件符号链接），出现路径冲突时停止。
+4. 保留本机 Git 身份/签名/凭据/别名/remote 设置、忽略规则和被忽略的本机文件（含权限、文件符号链接）；出现路径冲突时停止。
 5. 再检查一次并发修改，把原目录整体重命名为 `dotfiles.before-lfs.<timestamp>.<suffix>`。
 6. 将新 checkout 放回原路径，执行 `./init sync`。已有 Rime 配置指向本仓库时，再获取并验证资源。
 7. 同步失败时恢复原 checkout。初始化产生的独立配置备份和日志仍按公共初始化器规则保留。
@@ -80,7 +80,7 @@ exclude 选项，然后按 `config/Rime/lfs-manifest.json` 验证内容。资源
 公开的 `main` 和 `wip` 历史均已转换。旧到新提交的映射在
 `config/git/lfs-commit-map.csv`，迁移标记在 `config/git/lfs-migration.json`。
 改写前已备份远端完整镜像/bundle、本机所有分支和 worktree 的本地修改；这些备份
-留在实施机器的 XDG 数据目录中，具体位置和验证结果见实施报告。
+留在实施机器的 XDG 数据目录中，具体位置和验证结果见 [测试报告](LFS_TEST_REPORT.md)。
 
 旧历史的普通 `git pull --ff-only` 无法跨越这次改写；请使用上面的一键迁移。
 旧 checkout 的完整备份保留原提交和 `.git/config`，可以作为回滚和找回本地设置的依据。

@@ -212,3 +212,5 @@ iPad 实机仍为 NOT TESTED。完整证据见外部环境的 `docs/DOTFILES_REP
 - **NOT TESTED**：Termux 与 iPad 实机、workbench 完整远端交互；需按设备指南验收。
 
 复现环境继续留在仓库外，没有提交 Docker、KDC、keytab、rootfs 或测试日志。
+
+Git LFS 历史迁移后的普通 clone、一键迁移和真实 iSH sync/pull 验证见 [LFS 测试报告](../LFS_TEST_REPORT.md)。
