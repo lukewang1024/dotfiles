@@ -38,8 +38,15 @@ def install_ish_core_packages(c):
             c.note(f'Enabled same-version v{branch}/community; existing repositories were backed up')
         if branch == '3.18':
             c.note('Alpine 3.18 is a historical test baseline, not a maintained daily system')
-    c.command('apk', 'update')
-    c.command('apk', 'add', '--no-progress', *ISH_PACKAGES)
+    apk_env = {}
+    compat = c.data / 'dotfiles/ish-compat/libapk-compat.so'
+    if compat.is_file():
+        apk_env['LD_PRELOAD'] = str(compat) + (':' + c.env['LD_PRELOAD'] if c.env.get('LD_PRELOAD') else '')
+    if c.dry_run or c.command('apk', 'info', '-e', *ISH_PACKAGES, check=False) != 0:
+        c.command('apk', 'update', env=apk_env)
+        c.command('apk', 'add', '--no-progress', *ISH_PACKAGES, env=apk_env)
+    else:
+        c.note('All iSH core packages are installed; skipped APK update/install')
     c.command('apk', 'info', '-e', 'openssh-client-krb5')
     c.command('ssh', '-G', '-F', '/dev/null', '-o', 'GSSAPIAuthentication=yes', 'localhost', capture=True)
 
@@ -74,6 +81,8 @@ def ish_client_setup(c):
             c.write(dest, source.read_text())
     for name in ('ish-doctor', 'fd'):
         c.link(c.repo / 'util/ish' / name, c.bin / name)
+    if (c.data / 'dotfiles/ish-python/usr/bin/python3.12').is_file():
+        c.link(c.repo / 'util/ish/python3', c.bin / 'python3')
     for name in ('ssh-connect', 'ssh-setup', 'ssh-pair'):
         c.link(c.repo / 'util/shell' / name, c.bin / name)
     # Retire only our former link; never delete a user's same-named command.

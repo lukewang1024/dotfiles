@@ -42,6 +42,56 @@ exec zsh -l
 重复初始化保留 Kerberos 配置、SSH 本地内容和主机指纹。更新已有启动文件时保留原内容并备份。
 `kerberos` 明确确认后才备份并替换配置；管理员配置可以直接导入。
 
+### 系统 Python 能显示版本但无法执行代码
+
+iPad mini 4、App Store iSH 1.3.2 (494)、Alpine 3.24.3 上实测：系统 Python 3.14.8
+可以执行 `--version`，但初始化解释器时停在原子指令重试循环，简单 `-c` 也不能完成。
+这与此前 Linux 主机上 iSH CLI 的测试环境不同。不要根据版本输出判断解释器可用。
+`init` 在 iSH 上为运行时探测设置超时；已安装的 Python 仍不可执行时会明确报错。
+
+可将 Alpine 3.22 的 Python 3.12 包单独解压到 XDG 数据目录，保留系统 Python 及
+系统的 3.24 软件源。以下命令只下载、验证和解压，不安装跨分支系统包：
+
+```sh
+runtime=${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-python
+cache=${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles/ish-python
+mkdir -p "$runtime" "$cache"
+apk fetch --repositories-file /dev/null \
+  --repository https://dl-cdn.alpinelinux.org/alpine/v3.22/main \
+  --output "$cache" python3
+apk verify "$cache"/python3-*.apk
+tar -xzf "$cache"/python3-*.apk -C "$runtime"
+sh util/ish/python3 -c 'import sys; print(sys.version)'
+./init core
+```
+
+使用新的缓存目录，确保其中只有一个 Python APK。仍依赖当前系统提供兼容的
+共享库；缺库时应从当前系统分支补齐依赖，不要混装旧分支软件包。
+`init` 仅在 iSH 且检测到该独立运行时后优先使用它；其他平台的发现顺序不变。
+初始化也会把 Python 包装命令链接到 `~/.local/bin/python3`，供之后的登录环境使用。
+首次导入标准库在老 iPad 上可能很慢，需要结合日志判断进度。
+
+### APK 在安装权限时触发 Bad system call
+
+同一 App Store iSH 上，apk-tools 3.0.8 安装 Kerberos 时实测被 SIGSYS 终止，
+`dmesg` 显示 `apk missing syscall 452`，即缺少 `fchmodat2`。
+`util/ish/apk-compat.c` 为 APK 解压出的普通文件和目录提供兼容实现：
+使用 `openat` 打开目标并通过 `fchmod` 修改权限，要求不跟随链接时使用 `O_NOFOLLOW`，
+不把失败当作成功，也不静默忽略权限设置。
+
+在支持交叉编译的机器上可生成 Linux i386 动态库：
+
+```sh
+clang --target=i386-linux-musl -DISH_STANDALONE_BUILD -nostdlib \
+  -shared -fPIC -fuse-ld=lld -O2 util/ish/apk-compat.c -o libapk-compat.so
+```
+
+将库放入 iSH 的 `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-compat/libapk-compat.so`。
+初始化只在 APK 安装/更新命令的子进程环境中加载它，不设置全局 `LD_PRELOAD`。
+系统包安装完成后，重跑会先检查包是否齐全；齐全则跳过索引刷新与安装，
+但仍检查 Kerberos SSH 客户端是否可用。此兼容库仅针对上述已复现的平台问题，
+不作为通用 libc 替代品。
+
 ## 能力范围
 
 - 复用公共 zsh / zinit、Git 别名、Vim 配置、tmux 配置和键位。
@@ -173,7 +223,8 @@ SSH 卡住时可在行首输入 `~.` 断开；过期票据会重新请求交互 
 | 手工验收 | 当前状态 |
 | --- | --- |
 | iPad mini 4 / iPadOS 15 安装、导入、回滚 | NOT TESTED |
-| `./init core` 完成、重复运行、zsh 首启性能 | NOT TESTED |
+| `./init core` 完成、重复运行 | PASS（见下方 iPad 实机记录） |
+| zsh 首次交互启动性能、终端操作体验 | NOT TESTED |
 | `./init sync` 保留企业配置与主机指纹 | NOT TESTED |
 | 企业 VPN、交互 kinit、TGT Principal/有效期 | NOT TESTED |
 | 主机指纹核对、GSSAPI SSH、远端用户名正确 | NOT TESTED |
@@ -199,7 +250,7 @@ python3 -B -m unittest discover -s tests -v
 iSH 各 15 项 Kerberos/GSSAPI 用例通过；fd 搜索、fzf、zoxide、Vim、tmux 和 zsh
 启动检查通过。完整初始化/插件运行使用了官方包及公开插件缓存；全新在线获取插件
 曾超时或停滞，尚未获得一次完整通过记录。此处为此前公共初始化的验证记录；共享连接入口的新增验证见下方。
-iPad 实机仍为 NOT TESTED。完整证据见外部环境的 `docs/DOTFILES_REPORT.md`。
+以上为 Linux 主机上的 CLI 验证，iPad 实机的新记录见下方。此前证据见外部环境的 `docs/DOTFILES_REPORT.md`。
 
 共享 `ssh-connect` 验证（2026-10-24）：
 
@@ -209,9 +260,27 @@ iPad 实机仍为 NOT TESTED。完整证据见外部环境的 `docs/DOTFILES_REP
   新共享别名映射和旧 iSH 配置均通过；故意开启密码/公钥/委派的配置无法覆盖连接策略。
 - **PASS**：14 项共享入口回归包含 PTY 交互取票、重新校验身份、普通 SSH 与 workbench 交接。
   这些是命令替身测试；不代表 Android 上实际运行过 workbench。
-- **NOT TESTED**：Termux 与 iPad 实机、workbench 完整远端交互；需按设备指南验收。
+- **NOT TESTED**：企业 KDC 的 iPad 实机认证、workbench 完整远端交互；需按设备指南验收。
 
 复现环境继续留在仓库外，没有提交 Docker、KDC、keytab、rootfs 或测试日志。
+
+### iPad mini 4 实机初始化验收（2026-10-24）
+
+- App Store iSH 1.3.2 (494)，Alpine 3.24.3 x86；使用上述独立 Python 3.12.15
+  和仅供 APK 使用的权限兼容库，保留系统 Python 3.14.8 和系统软件源。
+- `./init core` 完整通过，任务阶段 818.4 秒；基础软件、zinit、tmux 和 Vim 插件安装完成。
+- 完整重跑通过，任务阶段 243.2 秒，包含解释器启动的总耗时 311 秒；已安装的
+  系统包跳过索引更新和安装。插件检查及老设备模拟执行仍需时间，重跑并非瞬时完成。
+- 重跑前后 `.profile`、`.zshenv`、SSH 配置、Kerberos 两份配置、Git 配置的 SHA-256
+  相同，SSH 服务 PID 保持不变。
+- Python、Git、zsh、tmux、Vim、fzf、zoxide、Kerberos 命令执行通过；fd 单线程实际
+  找到 `bootstrap/main.py`，SSH 接受 `GSSAPIAuthentication=yes`；27 个 Vim 插件无缺失。
+- 隔离 tmux 服务器加载公共配置，并确认排除 iSH 不适用的 workbench/fastcopy 插件。
+  测试服务器已退出；关闭后的 socket 状态查询客户端在 iSH 内出现不可中断等待，
+  SIGKILL 也未立即清除该进程。它不是仍在运行的测试会话，不据此宣称进程清理全部通过。
+- 仓库回归 184 项通过（15 项平台条件跳过），POSIX shell 语法和 ShellCheck 通过。
+  C 兼容层的真实文件权限、目录 FD、符号链接拒绝及无效标志检查通过。
+- 企业账号配置、真实 TGT 和企业 SSH 登录仍需用户的环境，未在这次本机初始化验收中测试。
 
 Git LFS 历史迁移后的普通 clone、一键迁移和真实 iSH sync/pull 验证见 [LFS 测试报告](../LFS_TEST_REPORT.md)。
 

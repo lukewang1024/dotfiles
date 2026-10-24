@@ -87,6 +87,61 @@ class BootstrapTests(unittest.TestCase):
         for name in ('termux_ssh_setup', 'agent_team_setup', 'setup_machine_fabric'):
             self.assertNotIn(name, task_names)
 
+    def test_ish_installed_packages_skip_network_and_install(self):
+        c = self.context('ish', dry=False)
+        read_text = Path.read_text
+        calls = []
+        def text(path, *args, **kwargs):
+            if str(path) == '/etc/alpine-release':
+                return '3.24.3\n'
+            if str(path) == '/etc/apk/repositories':
+                return ('https://dl-cdn.alpinelinux.org/alpine/v3.24/main\n'
+                        'https://dl-cdn.alpinelinux.org/alpine/v3.24/community\n')
+            return read_text(path, *args, **kwargs)
+        def command(*args, **kwargs):
+            calls.append((args, kwargs))
+            return 'x86' if args == ('apk', '--print-arch') else 0
+        with patch('dotfiles.ish.os.geteuid', return_value=0), \
+             patch.object(Path, 'read_text', autospec=True, side_effect=text), \
+             patch.object(c, 'command', side_effect=command):
+            c.task('install_ish_core_packages')
+        self.assertFalse(any(args[:2] in (('apk', 'update'), ('apk', 'add')) for args, _ in calls))
+        self.assertTrue(any(args[0] == 'ssh' for args, _ in calls))
+
+    def test_ish_apk_compat_is_scoped_to_install_commands(self):
+        c = self.context('ish', dry=False)
+        inherited_preload = c.env.get('LD_PRELOAD')
+        compat = c.data / 'dotfiles/ish-compat/libapk-compat.so'
+        compat.parent.mkdir(parents=True)
+        compat.touch()
+        read_text = Path.read_text
+        calls = []
+        def text(path, *args, **kwargs):
+            if str(path) == '/etc/alpine-release':
+                return '3.24.3\n'
+            if str(path) == '/etc/apk/repositories':
+                return ('https://dl-cdn.alpinelinux.org/alpine/v3.24/main\n'
+                        'https://dl-cdn.alpinelinux.org/alpine/v3.24/community\n')
+            return read_text(path, *args, **kwargs)
+        def command(*args, **kwargs):
+            calls.append((args, kwargs))
+            if args == ('apk', '--print-arch'):
+                return 'x86'
+            if args[:3] == ('apk', 'info', '-e') and len(args) > 4:
+                return 1
+            return 0
+        with patch('dotfiles.ish.os.geteuid', return_value=0), \
+             patch.object(Path, 'read_text', autospec=True, side_effect=text), \
+             patch.object(c, 'command', side_effect=command):
+            c.task('install_ish_core_packages')
+        installs = [(args, options) for args, options in calls if args[:2] in (('apk', 'update'), ('apk', 'add'))]
+        self.assertEqual(len(installs), 2)
+        for args, options in installs:
+            expected = str(compat) + (':' + inherited_preload if inherited_preload else '')
+            self.assertEqual(options['env']['LD_PRELOAD'], expected)
+        self.assertEqual(c.env.get('LD_PRELOAD'), inherited_preload)
+        self.assertTrue(all('env' not in options for args, options in calls if args[0] == 'ssh'))
+
     def test_ish_detection_requires_emulator_and_alpine(self):
         with patch.dict(os.environ, {'TERMUX_VERSION': '', 'PREFIX': ''}), \
              patch('dotfiles.engine.os.uname', create=True) as uname, \

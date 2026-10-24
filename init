@@ -12,9 +12,27 @@ main_script=$repo_dir/bootstrap/main.py
 [ -f "$main_script" ] || { printf '%s\n' "Missing $main_script; run init from a complete dotfiles checkout." >&2; exit 1; }
 export PYTHONDONTWRITEBYTECODE=1
 bootstrap_system=$(uname -s)
+bootstrap_ish=no
+case "$(uname -r)" in
+  *-ish*)
+    bootstrap_ish=yes
+    # An isolated, verified runtime can recover iSH builds whose system Python
+    # prints its version but hangs during interpreter initialization.
+    if [ -x "${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-python/usr/bin/python3.12" ]; then
+      exec sh "$repo_dir/util/ish/python3" "$main_script" "$@"
+    fi
+    ;;
+esac
+runtime_supported() {
+  if [ "$bootstrap_ish" = yes ] && command -v timeout >/dev/null 2>&1; then
+    timeout 10 "$1" -c 'import sys; sys.exit(sys.version_info < (3, 10))'
+  else
+    "$1" -c 'import sys; sys.exit(sys.version_info < (3, 10))'
+  fi
+}
 for runtime in python3 python "$HOME/.local/bin/python3" "$HOME/.local/bin/python3.12" /opt/homebrew/bin/python3 /usr/local/bin/python3; do
   if command -v "$runtime" >/dev/null 2>&1 &&
-     "$runtime" -c 'import sys; sys.exit(sys.version_info < (3, 10))' >/dev/null 2>&1; then
+     runtime_supported "$runtime" >/dev/null 2>&1; then
     case $bootstrap_system in
       CYGWIN*) "$runtime" -c 'import sys; sys.exit(not sys.platform.startswith("cygwin"))' >/dev/null 2>&1 || continue ;;
     esac
@@ -60,6 +78,10 @@ case "$(uname -r)" in
     fi
     if ! apk add --no-progress python3 >>"$bootstrap_log" 2>&1; then
       printf 'Runtime setup failed. Check matching Alpine repositories. Details: %s\n' "$bootstrap_log" >&2; exit 1
+    fi
+    if ! runtime_supported python3 >>"$bootstrap_log" 2>&1; then
+      printf '%s\n' 'Installed Python cannot execute on this iSH build. See docs/platforms/ish.md for isolated runtime recovery.' >&2
+      exit 1
     fi
     exec python3 "$main_script" "$@"
     ;;

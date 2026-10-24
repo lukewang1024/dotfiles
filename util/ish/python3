@@ -1,0 +1,10 @@
+#!/bin/sh
+# Optional isolated Alpine x86 interpreter; never replace system packages.
+set -eu
+runtime=${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-python/usr
+if [ -x "$runtime/bin/python3.12" ]; then
+    export PYTHONHOME="$runtime"
+    export LD_LIBRARY_PATH="$runtime/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    exec "$runtime/bin/python3.12" "$@"
+fi
+exec /usr/bin/python3 "$@"
