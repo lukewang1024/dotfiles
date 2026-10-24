@@ -1,0 +1,92 @@
+[
+  {
+    "path": "config/Rime/easy_en.dict.yaml",
+    "sha256": "a7a2637dde1e117362ebdc7643c24bad1bd1dd6fbd3454e31b1469ccbb29b30f",
+    "size": 14566556
+  },
+  {
+    "path": "config/Rime/essay.dict.yaml",
+    "sha256": "9c6adb1c71d55fe2e12090d64109aa94c37681d4ccd9bb6b767cf5b9887c649f",
+    "size": 2212665
+  },
+  {
+    "path": "config/Rime/font/HanaMinA.ttf",
+    "sha256": "7ca87559414474848fc513a8d8eb42d5b0f8194c30c2abdfbfedff5398ec88d7",
+    "size": 22761228
+  },
+  {
+    "path": "config/Rime/font/HanaMinB.ttf",
+    "sha256": "829543436cdf7b4c6730e2af5806fa406f8ddf0d4b656e0cd49c58d4db1c8d3c",
+    "size": 30739236
+  },
+  {
+    "path": "config/Rime/jyutping.dict.yaml",
+    "sha256": "2e237f3953637c0e5bd2a08a802a0e8a6a45be22468e83da937329bbb7951d32",
+    "size": 3705278
+  },
+  {
+    "path": "config/Rime/jyutping.phrase.dict.yaml",
+    "sha256": "565dc2826934f2011e87d85da0c98b2f246c0b7b7977148363df7878d3889a83",
+    "size": 5790710
+  },
+  {
+    "path": "config/Rime/liangfen.dict.yaml",
+    "sha256": "b74679069560770e995588dcb20c33f5e8f5bfb90f3255d3e94882c76610b8bd",
+    "size": 1106955
+  },
+  {
+    "path": "config/Rime/luna_pinyin.chengyusuyu.dict.yaml",
+    "sha256": "1e3d2db6ee166dc7f51ec983f0cb7d37c73a57f78430fb984df77b2e86e342c0",
+    "size": 1454829
+  },
+  {
+    "path": "config/Rime/luna_pinyin.dict.yaml",
+    "sha256": "90bc32eba4ed0ccafc780a3e12cd020e500d76d80f2c639f4ebfe295ed63956c",
+    "size": 889389
+  },
+  {
+    "path": "config/Rime/luna_pinyin.net.dict.yaml",
+    "sha256": "d0de9cdb5046b1e81a28e7d8492cc233b526203ee03f0722245be76b092561a4",
+    "size": 774119
+  },
+  {
+    "path": "config/Rime/luna_pinyin.place.dict.yaml",
+    "sha256": "27c9aeb8f6f0491c0ed09d09f21c18719c8b86a48d32f4c319535744bb8dc62c",
+    "size": 1042773
+  },
+  {
+    "path": "config/Rime/luna_pinyin.popular.dict.yaml",
+    "sha256": "b63a83cc1d146b984bf096442a5e3d62fb9136b45d72fcee62d0faa1234a5274",
+    "size": 1145177
+  },
+  {
+    "path": "config/Rime/luna_pinyin.sgmain.dict.yaml",
+    "sha256": "74caa29834400c5794de0c9be9680b15293c8749dc3ced3fdd508c2ac1d122ec",
+    "size": 11774144
+  },
+  {
+    "path": "config/Rime/luna_pinyin.shopping.dict.yaml",
+    "sha256": "bb75a395c9e6d6448912e8c88c64a62e85feb9b43d38d17806636898a188d9e6",
+    "size": 699510
+  },
+  {
+    "path": "config/Rime/luna_pinyin.xiandaihanyu.dict.yaml",
+    "sha256": "dfeebbd501cbecec8d7c1af9455c3f035ee3476c3632028f0d87a5527b2db27b",
+    "size": 1027846
+  },
+  {
+    "path": "config/Rime/zh-hant-t-essay-bgc.gram",
+    "sha256": "3cc18e6c8d1ff9650f4b0be9681f414a0915eaa85a593df9e49ca7dc08dbe7fe",
+    "size": 4075520
+  },
+  {
+    "path": "config/Rime/zh-hant-t-essay-bgw.gram",
+    "sha256": "574c99d100f422766c433c601ed6efd642e881d69a30df9fffb6f1695be550e3",
+    "size": 10513408
+  },
+  {
+    "path": "config/Rime/zhwiki.dict.yaml",
+    "sha256": "716796eee55477813f5337fc25898632ad48a6137186da5024a3ac78de0ade05",
+    "size": 38964220
+  }
+]

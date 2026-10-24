@@ -425,7 +425,11 @@ class BootstrapTests(unittest.TestCase):
         for source, _ in LINKS['windows/set_windows_configs']:
             path = c.path(source)
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text('sample configuration', encoding='utf-8')
+            if source == '$config_dir/Rime':
+                path.mkdir()
+                (path / 'lfs-manifest.json').write_text('[]\n')
+            else:
+                path.write_text('sample configuration', encoding='utf-8')
         with patch('subprocess.Popen', side_effect=AssertionError('sync spawned a command')):
             try:
                 c.task('sync_setup')
@@ -711,6 +715,7 @@ class BootstrapTests(unittest.TestCase):
                 path = c.path(source)
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.mkdir(exist_ok=True)
+        (c.repo / 'config/Rime/lfs-manifest.json').write_text('[]\n')
         for _ in range(2):
             for group in groups:
                 links(c, group)

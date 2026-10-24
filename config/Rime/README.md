@@ -1,3 +1,10 @@
+> 本目录的大型字体、词库和语言模型使用 Git LFS。普通 clone 默认仅检出指针。
+> 使用 `./init core` 的桌面 Rime 配置会自动获取资源；单独获取可执行
+> `./init run maintenance rime_assets`。下载完成后按 `lfs-manifest.json` 校验 SHA256。
+> iSH/Termux 跳过这些桌面资源。编辑大资源后同时更新 manifest 中的大小和 SHA256；
+> Git 推送需要 git-lfs，仓库的 pre-push hook 会先上传资源。
+> 旧 checkout 参见 [历史迁移说明](../../docs/LFS_MIGRATION.md)。
+
 # Rime 鼠须管输入法傻瓜式配置指南
   OS: macOS 11.2.3, Windows 10 LSTC 2019
   

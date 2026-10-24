@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "date": "2026-10-24",
+  "commit_map": "config/git/lfs-commit-map.csv",
+  "old_heads": {
+    "main": "4f5f8a04d00a18d636d917e161b298221b49046c",
+    "wip": "fae616ac3bd4b3e002fa47426087ee18e8214988"
+  }
+}

@@ -127,6 +127,15 @@ Platform-specific prerequisites, side effects, and verification:
 - [iSH on iPad: shell setup, Kerberos and GSSAPI SSH](docs/platforms/ish.md)
 - [Windows setup](docs/platforms/windows.md)
 
+Large Rime fonts, dictionaries and language models use Git LFS. A normal clone
+keeps pointers by default; desktop Rime setup fetches and verifies the resources.
+iSH and Termux skip these resources and do not require git-lfs.
+
+Existing checkouts from before the 2026-10-24 history migration should use the
+[one-command migration](docs/LFS_MIGRATION.md) before pulling. It retains a full
+backup and preserves the checkout path, published local branches and ignored
+machine-local files.
+
 ## Day-to-day operations
 
 ### Update an existing machine

@@ -1,0 +1,3 @@
+# Large desktop resources are fetched explicitly by the Rime task.
+[lfs]
+	fetchexclude = *

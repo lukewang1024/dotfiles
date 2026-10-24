@@ -1,0 +1,232 @@
+#!/bin/sh
+# Standalone recovery entrypoint: usable before an old checkout can pull again.
+set -eu
+for runtime in python3 python; do
+    if command -v "$runtime" >/dev/null 2>&1 &&
+       "$runtime" -c 'import sys; sys.exit(sys.version_info < (3, 10))' >/dev/null 2>&1; then
+        exec "$runtime" - "$@" <<'PY'
+import argparse
+import csv
+import datetime
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+class MigrationError(Exception):
+    pass
+
+
+def git(repo, *args, check=True, capture=True):
+    result = subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-C', str(repo), *args],
+                            check=False, stdout=subprocess.PIPE if capture else None,
+                            stderr=subprocess.PIPE if capture else None)
+    if check and result.returncode:
+        detail = result.stderr.decode(errors='replace').strip() if capture else ''
+        raise MigrationError('Git command failed: ' + ' '.join(args[:2]) + ('; ' + detail if detail else ''))
+    return result
+
+
+def text(repo, *args):
+    return git(repo, *args).stdout.decode().strip()
+
+
+def run_init(repo, *args):
+    if os.name == 'nt':
+        powershell = shutil.which('pwsh.exe') or shutil.which('powershell.exe')
+        if not powershell:
+            raise MigrationError('PowerShell is required to synchronize this Windows checkout.')
+        command = [powershell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(repo / 'init.ps1'), *args]
+    else:
+        command = [str(repo / 'init'), *args]
+    subprocess.run(command, cwd=repo, check=True)
+
+
+def sync(repo):
+    run_init(repo, 'sync')
+
+
+def inside(path, root):
+    try:
+        return path.resolve().is_relative_to(root)
+    except (OSError, RuntimeError):
+        return False
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Back up an old dotfiles checkout and replace it with migrated Git LFS history.')
+    parser.add_argument('--repo', type=Path, help='Defaults to the current checkout, then $XDG_CONFIG_HOME/dotfiles')
+    parser.add_argument('--check', action='store_true', help='Validate without replacing the checkout or running init')
+    parser.add_argument('--skip-sync', action='store_true', help='Replace the checkout without running init sync')
+    args = parser.parse_args()
+    os.umask(0o077)
+    # Explicitly carry inherited proxy settings into every child process.
+    for key in ('HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY'):
+        value = os.environ.get(key) or os.environ.get(key.lower())
+        if value:
+            os.environ[key] = os.environ[key.lower()] = value
+    config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config')))
+    target = args.repo
+    if target is None:
+        current = git(Path.cwd(), 'rev-parse', '--show-toplevel', check=False)
+        candidate = Path(os.fsdecode(current.stdout).strip()) if current.returncode == 0 else config / 'dotfiles'
+        target = candidate if (candidate / 'init').is_file() else config / 'dotfiles'
+    target = target.expanduser().resolve()
+    if not (target / '.git').is_dir() or not (target / 'init').is_file():
+        raise MigrationError('Expected a standalone dotfiles checkout at ' + str(target) + '; use --repo PATH.')
+    if Path(text(target, 'rev-parse', '--show-toplevel')).resolve() != target:
+        raise MigrationError('The selected path must be the repository root.')
+    if text(target, 'status', '--porcelain=v1', '--untracked-files=all'):
+        raise MigrationError('Checkout has staged, modified or untracked files. Preserve/commit them before retrying; nothing was moved.')
+    trees = text(target, 'worktree', 'list', '--porcelain')
+    if sum(line.startswith('worktree ') for line in trees.splitlines()) != 1:
+        raise MigrationError('This checkout has linked worktrees. Preserve their branches and migrate them together; nothing was moved.')
+    branch = text(target, 'symbolic-ref', '--quiet', '--short', 'HEAD')
+    if branch != 'main':
+        raise MigrationError('Switch to main before migration. Local branches will be checked and preserved.')
+    marker_name = 'config/git/lfs-migration.json'
+    marker = git(target, 'show', 'HEAD:' + marker_name, check=False)
+    if marker.returncode == 0 and json.loads(marker.stdout).get('version') == 1:
+        print('PASS checkout already uses the migrated history; no replacement needed.')
+        if not args.check and not args.skip_sync:
+            sync(target)
+        return
+    remote = text(target, 'remote', 'get-url', 'origin')
+    if not remote:
+        raise MigrationError('The checkout has no origin remote.')
+    if text(target, 'for-each-ref', '--format=%(refname)', 'refs/stash', 'refs/tags', 'refs/notes', 'refs/replace'):
+        raise MigrationError('Local stash/tags/notes/replacements need manual preservation before migration; nothing was moved.')
+    local_config = git(target, 'config', '--local', '--null', '--list').stdout.split(b'\0')
+    local_branches = [line.split(' ', 1) for line in text(target, 'for-each-ref', '--format=%(objectname) %(refname:short)', 'refs/heads').splitlines()]
+    ignored = git(target, 'ls-files', '--others', '--ignored', '--exclude-standard', '-z').stdout.split(b'\0')
+    rime_paths = [Path.home() / 'Library/Rime', config / 'fcitx/rime']
+    if os.environ.get('APPDATA'):
+        rime_paths.append(Path(os.environ['APPDATA']) / 'Rime')
+    rime_in_use = any(p.exists() and inside(p, target / 'config/Rime') for p in rime_paths)
+    staging = Path(tempfile.mkdtemp(prefix='.dotfiles-lfs-stage-', dir=target.parent))
+    fresh = staging / 'checkout'
+    backup = target.with_name(target.name + '.before-lfs.' + datetime.datetime.now().strftime('%Y%m%dT%H%M%S') + '.' + staging.name.rsplit('-', 1)[-1])
+    swapped = False
+    try:
+        env = dict(os.environ, GIT_LFS_SKIP_SMUDGE='1')
+        subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'http.version=HTTP/1.1',
+                        'clone', '--no-tags', '--branch', 'main', remote, str(fresh)], env=env, check=True)
+        metadata = json.loads((fresh / marker_name).read_text())
+        if metadata.get('version') != 1:
+            raise MigrationError('Origin does not contain the expected completed LFS migration.')
+        map_path = fresh / metadata['commit_map']
+        if not map_path.resolve().is_relative_to(fresh):
+            raise MigrationError('Invalid migration map path.')
+        with map_path.open(newline='') as source:
+            mapping = dict(csv.reader(source))
+        remote_heads = text(fresh, 'for-each-ref', '--format=%(objectname)', 'refs/remotes/origin').splitlines()
+        for oid, name in local_branches:
+            migrated = mapping.get(oid)
+            if migrated is None:
+                known = git(fresh, 'cat-file', '-e', oid + '^{commit}', check=False).returncode == 0
+                if known and any(git(fresh, 'merge-base', '--is-ancestor', oid, head, check=False).returncode == 0 for head in remote_heads):
+                    migrated = oid
+            if migrated is None:
+                raise MigrationError('Local branch has commits absent from the published migration: ' + name + '. Nothing was moved.')
+            if name != 'main':
+                git(fresh, 'update-ref', 'refs/heads/' + name, migrated)
+        git(fresh, 'config', '--local', 'http.version', 'HTTP/1.1')
+        git(fresh, 'config', '--local', 'lfs.fetchexclude', '*')
+        exclude = target / '.git/info/exclude'
+        if exclude.is_symlink():
+            raise MigrationError('Local Git exclude is a symlink; preserve it manually before migration.')
+        if exclude.is_file():
+            shutil.copy2(exclude, fresh / '.git/info/exclude')
+        for entry in local_config:
+            if not entry:
+                continue
+            key, _, value = entry.partition(b'\n')
+            key, value = key.decode(), os.fsdecode(value)
+            if key.startswith(('user.', 'gpg.', 'commit.', 'tag.', 'credential.', 'alias.', 'diff.', 'merge.', 'remote.')) or key in ('core.sshcommand', 'core.editor', 'core.pager', 'core.autocrlf', 'core.eol'):
+                # Preserve multivalued machine-local settings, without logging values.
+                git(fresh, 'config', '--local', '--unset-all', key, check=False)
+        for entry in local_config:
+            if not entry:
+                continue
+            key, _, value = entry.partition(b'\n')
+            key, value = key.decode(), os.fsdecode(value)
+            if key.startswith(('user.', 'gpg.', 'commit.', 'tag.', 'credential.', 'alias.', 'diff.', 'merge.', 'remote.')) or key in ('core.sshcommand', 'core.editor', 'core.pager', 'core.autocrlf', 'core.eol'):
+                git(fresh, 'config', '--local', '--add', key, value)
+        tracked = set(git(fresh, 'ls-files', '-z').stdout.split(b'\0'))
+        ignored_stats = {}
+        for raw in ignored:
+            if not raw:
+                continue
+            relative = Path(os.fsdecode(raw))
+            if raw in tracked or relative.is_absolute() or '..' in relative.parts:
+                raise MigrationError('Ignored file conflicts with the new checkout: ' + os.fsdecode(raw))
+            source, dest = target / relative, fresh / relative
+            # Refuse parent symlinks, which could escape either checkout.
+            if any(p.is_symlink() for p in dest.parents if p != fresh and p.is_relative_to(fresh)):
+                raise MigrationError('Ignored destination has a symlink parent: ' + str(relative))
+            if any(p.is_symlink() for p in list(source.parents)[:-1] if p != target and p.is_relative_to(target)):
+                raise MigrationError('Ignored file has a symlink parent: ' + str(relative))
+            if dest.exists() or dest.is_symlink():
+                raise MigrationError('Ignored file destination already exists: ' + str(relative))
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            before = source.lstat()
+            ignored_stats[raw] = (before.st_mode, before.st_size, before.st_mtime_ns)
+            if source.is_symlink():
+                dest.symlink_to(source.readlink(), target_is_directory=source.is_dir())
+            elif source.is_file():
+                shutil.copy2(source, dest)
+            else:
+                raise MigrationError('Unsupported ignored entry; preserve it manually: ' + str(relative))
+        print('PASS clean checkout, published local branches, origin and ignored files checked.')
+        if args.check:
+            print('PASS check only; checkout unchanged.')
+            return
+        # Recheck after network I/O before moving any user-owned checkout.
+        if text(target, 'status', '--porcelain=v1', '--untracked-files=all') or local_branches != [line.split(' ', 1) for line in text(target, 'for-each-ref', '--format=%(objectname) %(refname:short)', 'refs/heads').splitlines()]:
+            raise MigrationError('Checkout changed while staging. Retry after ongoing work finishes.')
+        if git(target, 'config', '--local', '--null', '--list').stdout.split(b'\0') != local_config:
+            raise MigrationError('Local Git configuration changed while staging; nothing was moved.')
+        if git(target, 'ls-files', '--others', '--ignored', '--exclude-standard', '-z').stdout.split(b'\0') != ignored:
+            raise MigrationError('Ignored files changed while staging; nothing was moved.')
+        for raw, expected in ignored_stats.items():
+            current = (target / os.fsdecode(raw)).lstat()
+            if (current.st_mode, current.st_size, current.st_mtime_ns) != expected:
+                raise MigrationError('Ignored file changed while staging; nothing was moved.')
+        os.chdir(target.parent)
+        target.rename(backup)
+        try:
+            fresh.rename(target)
+        except BaseException:
+            backup.rename(target)
+            raise
+        swapped = True
+        print('Backup retained at: ' + str(backup), flush=True)
+        if not args.skip_sync:
+            sync(target)
+            if rime_in_use:
+                run_init(target, 'run', 'maintenance', 'rime_assets')
+        print('PASS migrated checkout is ready at the original path: ' + str(target))
+    except BaseException:
+        if swapped:
+            target.rename(staging / 'failed-checkout')
+            backup.rename(target)
+            print('Restored the original checkout after failure. Init logs/backups describe any configuration changes.', file=sys.stderr)
+        raise
+    finally:
+        shutil.rmtree(staging)
+
+
+try:
+    main()
+except (MigrationError, OSError, ValueError, subprocess.CalledProcessError) as error:
+    print('FAIL ' + str(error), file=sys.stderr)
+    sys.exit(1)
+PY
+    fi
+done
+printf '%s\n' 'Python 3.10+ is required; install Python and retry this migration.' >&2
+exit 1

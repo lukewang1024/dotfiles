@@ -83,6 +83,8 @@ def links(c, group):
             # The legacy inventory lists a symlink; SSH now has a local entrypoint.
             c.task('ssh_setup')
             continue
+        if source == '$config_dir/Rime':
+            c.task('rime_assets')
         target = target.replace('~/.config/', '$XDG_CONFIG_HOME/').replace('$HOME/.config/', '$XDG_CONFIG_HOME/')
         c.link(source, target, allow_missing=not c.path(source).is_relative_to(c.repo))
 
@@ -622,6 +624,7 @@ def install_other_packages(c):
 
 @task()
 def rime_setup(c):
+    c.task('rime_assets')
     c.installer('https://git.io/rime-install', 'bash', 'jyutping', 'emoji')
 
 

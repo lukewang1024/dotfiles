@@ -1,0 +1,8 @@
+#!/bin/sh
+# core.hooksPath points here; retain Git LFS's object upload gate.
+set -eu
+if ! git lfs version >/dev/null 2>&1; then
+    printf '%s\n' 'dotfiles: pushing this repository requires git-lfs; install it and retry.' >&2
+    exit 1
+fi
+exec git lfs pre-push "$@"

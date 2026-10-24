@@ -3,22 +3,14 @@
 iSH 和 Termux 使用同一个 dotfiles 初始化入口、任务执行器、日志格式和公共配置。
 完整初始化目前以 Alpine 3.24 x86 为实测基线。iSH 自带的 3.14.3 不满足公共
 初始化器的 Python 3.10+ 要求；先按下方步骤导入新的独立文件系统，保留旧系统。
-已启动合适的 Alpine x86 后，使用部分克隆和稀疏检出，只下载 iSH 需要的目录：
+已启动合适的 Alpine x86 后，直接 clone：
 
 ```sh
 apk add --no-cache ca-certificates git
 mkdir -p ~/.config
-git -c http.version=HTTP/1.1 clone \
-  --depth 1 --filter=blob:none --sparse --single-branch --branch main --no-tags \
+git -c http.version=HTTP/1.1 clone --depth 1 \
   https://github.com/lukewang1024/dotfiles.git ~/.config/dotfiles
-# 上一条成功后再继续；目标目录非空时先保留并检查已有内容。
 cd ~/.config/dotfiles
-git config http.version HTTP/1.1
-git sparse-checkout init --cone
-git sparse-checkout set bootstrap util docs \
-  config/ish config/sh config/zsh config/git config/ssh config/tmux \
-  config/vim config/tig config/python config/sesh config/starship
-# sparse-checkout 成功后再初始化。
 ./init core
 . ~/.profile
 ./init kerberos
@@ -28,22 +20,14 @@ exec zsh -l
 `init` 自动识别 iSH，缺少 Python 时用 Alpine 的 `apk` 安装 Python 3，随后进入公共
 初始化器。无需另找安装脚本，也不需要安装 Docker 或编译模拟器。
 
-仓库当前有约 148 MiB 的 Rime 词库/字体，iSH 不需要它们。`--depth 1` 仅减少历史，
-仍会下载最新提交里的全部文件；`--filter=blob:none` 配合稀疏目录才会避免下载这些大文件。
-上述方式仍可正常 `git pull --ff-only`。不要在 iSH 中执行 `git sparse-checkout disable`，
-那会补齐其余目录。原理见 [Git 部分克隆](https://git-scm.com/docs/git-clone#Documentation/git-clone.txt---filterltfilter-specgt)。
+大型 Rime 资源已迁入 Git LFS，仓库默认跳过资源下载。iSH 不需要安装 git-lfs，
+不需要稀疏检出，也不会在初始化时获取桌面词库、字体或语言模型。
+旧 checkout 请先执行 [一键历史迁移](../LFS_MIGRATION.md)，再恢复正常 pull；
+脚本会检查本地工作、保留完整备份并在原路径建立新 checkout。
 
-如果 clone 报 `curl 56`、`bytes of body are still expected`、`early EOF` 或
-`invalid index-pack output`，说明这次接收未完整结束；仅凭这些日志无法确定是服务器、
-代理还是网络中断。先改用上面的少量下载方式；若 `sparse-checkout set` 失败，可在同一
-checkout 重试这一条，无需重新 clone。若仍失败，再换网络或检查 VPN/代理链路。
-不要把不完整的 checkout 当作安装成功。此前失败留下的目录需先改名保留，不要删除已有配置。
-
-**PASS（2026-10-24）**：上述 HTTPS clone、稀疏检出、全部 core 仓库链接源文件检查、
-core dry-run 及后续 pull 已在云端 Linux 和真实 iSH CLI / Alpine 3.24 中执行通过。
-本次 Git pack 共 259,665 字节，工作文件 671,475 字节；这不是所有 HTTP 开销的统计，
-后续提交和包/插件安装也会继续产生下载。测试网络使用云端已配置的代理；
-iPad 自身的网络仍需实测。
+`curl 56`、`early EOF`、`invalid index-pack output` 表示这次接收未完整结束，
+仅凭这些日志无法确定服务器、代理或网络中的具体原因。迁移减少了普通 Git 下载量；
+如果仍中断，检查网络/VPN。失败留下的目录先改名保留，不要删除已有配置。
 
 | 命令 | 与 Termux 一致的用途 |
 | --- | --- |

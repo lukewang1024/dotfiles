@@ -9,7 +9,7 @@ import sys
 
 from .engine import Context, Failure, Reporter, detect_platform
 from .tasks import TASKS
-from . import platforms, maintenance, ish  # register platform/maintenance tasks
+from . import platforms, maintenance, ish, assets  # register platform/maintenance tasks
 
 PLATFORMS = ('macos', 'debian', 'arch', 'chromeos', 'termux', 'ish', 'cygwin', 'windows')
 
