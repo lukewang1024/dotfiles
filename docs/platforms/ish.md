@@ -232,8 +232,46 @@ git -c core.hooksPath=/dev/null pull --ff-only
 `passwd root`。它与 iPad 解锁密码无关。`--set-password` 主动重设密码；
 `--random-password` 确认后替换为随机密码，只允许在终端显示，不保存到日志或文件。
 修改密码会影响该 iSH 用户的其他密码登录，不能通过恢复 SSH 配置撤销。
-服务使用独立配置，不修改 `/etc/ssh/sshd_config`，不启用开机自启。
-前台显示服务器日志，Ctrl-C 停止。不要将密码、私钥或完整认证日志发到公开渠道。
+服务使用独立配置，不修改 `/etc/ssh/sshd_config`。默认一次完成 OpenRC 安装、
+自启动注册和当次后台启动，完成后返回终端。首次安装会初始化 OpenRC 的 default
+运行级别。不要将密码、私钥或完整认证日志发到公开渠道。
+
+从旧版前台服务迁移时，先在原窗口按 Ctrl-C，避免两个服务争用 2222：
+
+```sh
+# 默认：安装、启用并启动 OpenRC 服务。
+./init sshd
+
+# 可选：前台排错（先停止已有服务）。
+./init sshd --foreground
+
+# 可选：只启动后台进程，不注册自启动。
+./init sshd --background
+```
+
+自启动模式将配置保存到 `/etc/ssh/sshd_config.dotfiles`，使用独立服务
+`dotfiles-sshd`，不接管系统原有的 `sshd` 服务。重复执行会备份旧服务配置，
+并重启该服务；会中断它已有的连接，应从 iSH 本地终端操作。
+不要同时启用系统的 `sshd` 服务占用同一端口。
+如果首次安装 OpenRC 后立即启动失败，完全关闭并重新打开 iSH，再检查：
+
+```sh
+rc-service dotfiles-sshd status
+rc-service dotfiles-sshd start
+```
+
+停止或取消自启动分别使用：
+
+```sh
+rc-service dotfiles-sshd stop
+rc-update del dotfiles-sshd default
+```
+
+已配对且不再需要密码登录时，可用 `./init sshd --key-only` 更新并重启服务。
+`--foreground` 和 `--background` 不更新已安装的 OpenRC 服务；后台进程日志位于
+`${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/sshd/sshd.log`。
+这里的自启动指 iSH 虚拟环境启动，不是 iPad 开机后自动运行应用；
+后台 sshd 不会绕过 iPadOS 的应用挂起限制。
 
 在 iPad「设置 → Wi-Fi → 当前网络」找到 IP（下例替换为实际地址）。
 同一局域网电脑进入自己的 dotfiles 仓库后执行：
@@ -262,7 +300,7 @@ ssh-add ~/.ssh/id_ed25519_pair
 完成 `./init sync` 后可以直接运行 `ssh-setup`、`ssh-pair`。
 
 配对不会自动关闭密码登录，方便其他电脑继续配对。按需关闭时，确认已有电脑能登录，
-然后在 iPad 按 Ctrl-C，改为只允许密钥：
+然后在 iPad 本地终端改为只允许密钥：
 
 ```sh
 ./init sshd --key-only

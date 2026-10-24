@@ -75,5 +75,5 @@ fi
 cat "$scratch" > "$config"
 chmod 600 "$config"
 printf 'Paired. Connect with: ssh %s\n' "$alias_name"
-echo 'Optional: on the device, stop the server and run ./init sshd --key-only.'
+echo 'Optional: in the device local terminal, run ./init sshd --key-only to restart with password access disabled.'
 echo 'Password access stays unchanged so you can pair other computers when needed.'
