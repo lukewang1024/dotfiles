@@ -235,6 +235,14 @@ git -c core.hooksPath=/dev/null pull --ff-only
 服务使用独立配置，不修改 `/etc/ssh/sshd_config`。默认一次完成 OpenRC 安装、
 自启动注册和当次后台启动，完成后返回终端。首次安装会初始化 OpenRC 的 default
 运行级别。不要将密码、私钥或完整认证日志发到公开渠道。
+重跑时会跳过已安装的软件及已有的自启动注册；服务配置和脚本未变化且进程健康时，
+不会重启服务或创建新备份。配置变化才备份并重启，服务停止时则重新启动。
+普通重跑会保留已有的仅密钥登录设置；需要重新开启密码登录时显式使用
+`./init sshd --set-password`。
+配对提示尽量显示实际 IPv4：通过 SSH 运行时使用本次连接的服务端地址，
+本地运行时尝试用 Python 查询 UDP 路由选用的地址（不发送数据，不依赖 DNS，
+最多等待 3 秒）。iSH 上 `ip`/`ifconfig` 可能不可用，Python 不可用或检测失败时
+明确提示手动查询；VPN 也可能影响路由检测所得的地址。
 
 从旧版前台服务迁移时，先在原窗口按 Ctrl-C，避免两个服务争用 2222：
 
@@ -250,8 +258,8 @@ git -c core.hooksPath=/dev/null pull --ff-only
 ```
 
 自启动模式将配置保存到 `/etc/ssh/sshd_config.dotfiles`，使用独立服务
-`dotfiles-sshd`，不接管系统原有的 `sshd` 服务。重复执行会备份旧服务配置，
-并重启该服务；会中断它已有的连接，应从 iSH 本地终端操作。
+`dotfiles-sshd`，不接管系统原有的 `sshd` 服务。配置或服务脚本变化时会重启服务，
+应从 iSH 本地终端执行这些变更。
 服务直接启动 sshd，通过 PID 文件管理进程，避免 iSH 上 OpenRC 默认
 `start-stop-daemon` 启动失败；启动时会等待 PID 文件就绪。服务日志默认位于
 `/root/.local/state/dotfiles/sshd/service.log`（OpenRC 环境设置了 `XDG_STATE_HOME`
@@ -312,6 +320,6 @@ ssh-add ~/.ssh/id_ed25519_pair
 
 保留 iSH 在前台且 iPad 不锁屏。后台挂起、锁屏及 Wi-Fi 地址变化都可能使连接中断；
 重新打开 iSH、重启服务器即可，配对密钥仍然保留。需要添加新的电脑时，可按需
-用 `./init sshd` 恢复密码登录，完成新增配对后再选择是否改回 `--key-only`。
+用 `./init sshd --set-password` 恢复密码登录，完成新增配对后再选择是否改回 `--key-only`。
 Wi-Fi 开启客户端隔离时，同一网络的设备也可能无法互访。云开发机无法直接访问此内网地址，需另行建立反向隧道。
 当前实现面向 Alpine/iSH 设备端及 POSIX 连接端；不包含 Docker 或 Windows 原生配对。

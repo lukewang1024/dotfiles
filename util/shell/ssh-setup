@@ -30,6 +30,44 @@ command -v apk >/dev/null 2>&1 || { echo 'ssh-setup currently supports Alpine/iS
 umask 077
 state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/sshd
 mkdir -p "$state"
+work=$(mktemp -d "$state/setup.XXXXXX")
+trap 'rm -rf "$work"' EXIT
+trap 'exit 1' HUP INT TERM
+service_config=/etc/ssh/sshd_config.dotfiles
+# Repeating setup must not silently reopen password access after --key-only.
+if [ "$mode" = reuse ] && [ "$launch" = autostart ] &&
+    [ -f "$service_config" ] && grep -qx 'PasswordAuthentication no' "$service_config"; then
+    mode=key
+fi
+connection_hint() {
+    # UDP connect only selects a route; it sends no packet and needs no DNS.
+    # iSH does not implement the netlink/proc interfaces used by ip/ifconfig.
+    address=$(printf '%s\n' "${SSH_CONNECTION:-}" |
+        awk 'NF == 4 && $3 ~ /^[0-9.]+$/ && $3 !~ /^127\./ {print $3}')
+    if [ -z "$address" ] && command -v python3 >/dev/null 2>&1 &&
+        command -v timeout >/dev/null 2>&1; then
+        address=$(PYTHONHASHSEED=0 timeout 3 python3 -S - <<'PY' 2>/dev/null || :
+import socket
+try:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.settimeout(1)
+        sock.connect(('1.1.1.1', 9))
+        address = sock.getsockname()[0]
+        if not address.startswith('127.') and address != '0.0.0.0':
+            print(address)
+except OSError:
+    pass
+PY
+)
+    fi
+    if [ -n "$address" ]; then
+        echo "Detected local IPv4: $address (VPN routing may affect this address)." >&2
+        echo "On the computer: ./init pair ipad-ish $address --port $port --user root" >&2
+    else
+        echo 'Could not detect a local IPv4 address. Find it in iPad Wi-Fi settings.' >&2
+        echo "Then run on the computer: ./init pair ipad-ish <iPad-WiFi-IP> --port $port --user root" >&2
+    fi
+}
 if [ "$mode" != key ]; then
     hash=$(awk -F: '$1 == "root" {print $2}' /etc/shadow)
     case $hash in ''|'!'*|'*'*) [ "$mode" != reuse ] || mode='set' ;; esac
@@ -48,8 +86,10 @@ if [ "$mode" != key ]; then
             unset password ;;
     esac
 fi
-echo 'Installing SSH server (keeps the existing SSH client selection)...' >&2
-apk add openssh-server
+if ! apk info -e openssh-server >/dev/null 2>&1; then
+    echo 'Installing SSH server (keeps the existing SSH client selection)...' >&2
+    apk add openssh-server
+fi
 if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
     echo 'Generating the ED25519 host key...' >&2
     ssh-keygen -t ed25519 -N '' -f /etc/ssh/ssh_host_ed25519_key
@@ -62,7 +102,7 @@ if [ "$mode" = key ]; then
     root_login=prohibit-password
 fi
 config=$state/sshd_config
-cat > "$config" <<CONFIG
+cat > "$work/config" <<CONFIG
 Port $port
 ListenAddress 0.0.0.0
 HostKey /etc/ssh/ssh_host_ed25519_key
@@ -76,25 +116,34 @@ PermitEmptyPasswords no
 AllowUsers root
 Subsystem sftp internal-sftp
 CONFIG
-/usr/sbin/sshd -t -f "$config"
+/usr/sbin/sshd -t -f "$work/config"
+if ! cmp -s "$work/config" "$config"; then
+    cat "$work/config" > "$config"
+fi
 if [ "$launch" = autostart ]; then
     # OpenRC runs without the interactive shell's HOME/XDG environment. Keep a
     # self-contained service configuration rather than rerunning provisioning.
-    apk add openrc
+    if ! apk info -e openrc >/dev/null 2>&1; then
+        apk add openrc
+    fi
+    changed=no
     service=/etc/init.d/dotfiles-sshd
     if [ -e "$service" ] && ! grep -q '^# Managed by dotfiles ssh-setup$' "$service"; then
         echo "Refusing to replace unmanaged service: $service" >&2
         exit 1
     fi
-    service_config=/etc/ssh/sshd_config.dotfiles
-    if [ -e "$service_config" ]; then
-        backup=$(mktemp /etc/ssh/sshd_config.dotfiles.before.XXXXXX)
-        cp -p "$service_config" "$backup"
+    sed 's|^PidFile .*|PidFile /run/dotfiles-sshd.pid|' "$config" > "$work/service-config"
+    /usr/sbin/sshd -t -f "$work/service-config"
+    if ! cmp -s "$work/service-config" "$service_config"; then
+        if [ -e "$service_config" ]; then
+            backup=$(mktemp /etc/ssh/sshd_config.dotfiles.before.XXXXXX)
+            cp -p "$service_config" "$backup"
+        fi
+        cat "$work/service-config" > "$service_config"
+        changed=yes
     fi
-    sed 's|^PidFile .*|PidFile /run/dotfiles-sshd.pid|' "$config" > "$service_config"
     chmod 600 "$service_config"
-    /usr/sbin/sshd -t -f "$service_config"
-    cat > "$service" <<'SERVICE'
+    cat > "$work/service" <<'SERVICE'
 #!/sbin/openrc-run
 # Managed by dotfiles ssh-setup
 description="Dotfiles iSH SSH server"
@@ -156,6 +205,10 @@ status() {
     return 3
 }
 SERVICE
+    if ! cmp -s "$work/service" "$service"; then
+        cat "$work/service" > "$service"
+        changed=yes
+    fi
     chmod 755 "$service"
     # A newly installed OpenRC has not yet entered a runlevel in this session.
     # Initialize it now so the current invocation works without an app restart.
@@ -169,21 +222,31 @@ SERVICE
             }
         fi
     fi
-    rc-update add dotfiles-sshd default
+    if [ ! -e /etc/runlevels/default/dotfiles-sshd ]; then
+        rc-update add dotfiles-sshd default
+    fi
     echo 'Autostart enabled for iSH startup. iPadOS may still suspend iSH in the background.' >&2
     echo 'Manage with: rc-service dotfiles-sshd {start|stop|restart|status}' >&2
     echo 'Disable autostart with: rc-update del dotfiles-sshd default' >&2
-    rc-service dotfiles-sshd restart
+    if rc-service dotfiles-sshd status >/dev/null 2>&1; then
+        if [ "$changed" = yes ]; then
+            rc-service dotfiles-sshd restart
+        else
+            echo 'SSH configuration unchanged and service healthy; skipping restart.' >&2
+        fi
+    else
+        rc-service dotfiles-sshd start
+    fi
     rc-service dotfiles-sshd status
     echo "SSH is running in background on TCP $port. Verify this host fingerprint:" >&2
     ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
-    echo "On the computer: ./init pair ipad-ish IP_ADDRESS --port $port --user root" >&2
+    connection_hint
     exit 0
 fi
 echo 'Verify this host fingerprint on the pairing computer:' >&2
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 echo "Listening on TCP $port. Use the iPad Wi-Fi address, not localhost." >&2
-echo "On the computer: ./init pair ipad-ish IP_ADDRESS --port $port --user root" >&2
+connection_hint
 if [ "$launch" = background ]; then
     /usr/sbin/sshd -E "$state/sshd.log" -f "$config"
     echo "SSH server started in background. Log: $state/sshd.log" >&2
@@ -192,4 +255,6 @@ if [ "$launch" = background ]; then
     exit 0
 fi
 echo 'Keep iSH foreground/unlocked. Ctrl-C stops this server.' >&2
+rm -rf "$work"
+trap - EXIT HUP INT TERM
 exec /usr/sbin/sshd -D -e -f "$config"
