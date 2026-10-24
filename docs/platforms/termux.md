@@ -27,7 +27,9 @@ distributed-workbench peer bootstrap is no longer part of dotfiles.
 ## Kerberos SSH
 
 Termux 和 iSH 共用 `ssh-connect`。在已有 Kerberos/KDC 配置基础上，为需要
-Kerberos 的 **SSH 别名**配置 Principal。没有映射的主机继续使用原来的 SSH 认证方式。
+Kerberos 的 **SSH 别名**配置 Principal。也会通过 `ssh -G` 识别开启 GSSAPI 的主机；
+未显式映射时，从设备的 `kinit-auto-login/kinit.env` 或现有缓存读取 Principal。
+没有 GSSAPI、也没有映射的主机继续使用原来的 SSH 认证方式。
 以下均为占位值，请只在自己的设备上替换：
 
 ```sh
@@ -73,11 +75,14 @@ ssh-connect connect devbox --check # 不取票、不提示指纹，认证后执�
 ```
 
 有有效且 Principal 匹配的 TGT 时直接连接；无票据、过期或身份不匹配时，交互执行
-`kinit` 并再次校验。密码只输入给 kinit，不写入参数、配置或环境变量。非交互环境
+刷新：先调用已有的 `kinit-auto-login renew --principal ...`（复用 keytab/keychain），
+再尝试同一身份的 `kinit -R`；仍失败才提示输入密码执行 `kinit`。每一步都再次校验
+身份和 TGT，成功后继续原来的 SSH/tmux/workbench 连接。密码只输入给 kinit，
+不写入参数、配置或环境变量。非交互环境
 直接报错；`hosts` 和 `--print` 不会取票。使用 Termux 现有 `krb5.conf` 和凭证缓存，
 不会改成 iSH 的路径。首次连接仍须通过可信渠道核对主机指纹。
 
-这是连接时按需取票，不是后台续票服务。票据过期后仍需输入密码；已建立的 SSH
+这是连接时按需取票，不是后台续票服务。自动刷新失败时才需要输入密码；已建立的 SSH
 不会因为本地 TGT 到期而由本脚本主动重连。Termux 实机验收仍需在设备上完成。
 
 ## Follow Android light/dark mode

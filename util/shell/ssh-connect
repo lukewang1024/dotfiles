@@ -25,7 +25,7 @@ client-aware tmux-agent-workbench SSH transport so mobile completion and input
 notifications return to this device. `hosts edit --discover` merges concrete
 Host aliases found in SSH config files before opening $EDITOR.
 Kerberos mappings: $XDG_CONFIG_HOME/ssh/kerberos, lines HOST PRINCIPAL [SESSION].
-Existing iSH user.conf is also supported. Only mapped hosts require a matching
+Existing iSH user.conf is also supported. GSSAPI hosts require a matching
 TGT; an interactive kinit is requested when needed. --check never prompts and
 runs whoami with trusted host keys. Passwords are never stored.
 EOF
@@ -253,7 +253,7 @@ done
 script_dir=$(CDPATH='' cd -- "$(dirname "$script_path")" && pwd)
 # shellcheck source=util/shell/ssh-kerberos.sh
 . "$script_dir/ssh-kerberos.sh"
-load_ssh_kerberos
+load_ssh_kerberos "$@"
 
 if [ "$attach_workbench" -eq 1 ]; then
   [ "$#" -eq 0 ] || die 'SSH_OPTIONS are not supported with --workbench; put them in SSH config.'

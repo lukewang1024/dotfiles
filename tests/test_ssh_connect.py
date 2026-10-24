@@ -62,10 +62,14 @@ if name == 'klist':
         print('Default principal: '+principal)
         print('01/01/26 00:00:00 01/02/26 00:00:00 krbtgt/ISH.TEST@ISH.TEST')
 elif name == 'kinit':
+    if args == ['-R']:
+        if not os.environ.get('TEST_RENEW_OK'): sys.exit(1)
+        (h/'ticket').write_text('testuser@ISH.TEST')
+        sys.exit(0)
     if os.environ.get('TEST_KINIT_FAIL'): sys.exit(1)
     (h/'ticket').write_text(os.environ.get('TEST_KINIT_PRINCIPAL', args[0]))
 elif name == 'ssh':
-    if '-G' in args: print(os.environ['TEST_POLICY'])
+    if '-G' in args: print(os.environ['TEST_POLICY'] if args[-1] != 'ordinary' else 'gssapiauthentication no')
     else:
         print('testuser')
         sys.exit(int(os.environ.get('TEST_SSH_RC', '0')))
@@ -102,7 +106,7 @@ elif name == 'fzf':
 
     def test_ordinary_ssh_unchanged_and_no_kerberos_commands(self):
         self.run_connect('connect', 'ordinary')
-        self.assertEqual(self.calls('ssh')[0][1], ['ordinary'])
+        self.assertEqual(self.calls('ssh')[-1][1], ['ordinary'])
         self.assertFalse(self.calls('klist') or self.calls('kinit'))
 
     def test_valid_ticket_uses_configured_cache_and_enforces_policy(self):
@@ -187,6 +191,61 @@ elif name == 'fzf':
             self.env['TEST_POLICY'] = policy
             self.run_connect('connect', 'devbox', '--workbench', success=False)
             self.assertFalse(self.calls('tmux-agent-workbench') or self.calls('kinit'))
+
+    def test_gssapi_config_without_mapping_checks_ticket(self):
+        self.mapping.unlink()
+        self.run_connect('connect', 'devbox', '--tmux')
+        self.assertFalse(self.calls('kinit'))
+        self.assertIn('PreferredAuthentications=gssapi-with-mic', self.calls('ssh')[-1][1])
+
+    def test_refresh_helper_recovers_before_password_prompt(self):
+        helper = self.bin / 'kinit-auto-login'
+        helper.write_text('#!/bin/sh\nprintf %s testuser@ISH.TEST > "$TEST_HOME/ticket"\n')
+        helper.chmod(0o755)
+        self.state.write_text('expired')
+        self.run_connect('connect', 'devbox', '--tmux', tty=True)
+        self.assertFalse(self.calls('kinit'))
+        self.assertTrue(self.calls('ssh'))
+
+    def test_renewable_ticket_recovers_without_password(self):
+        self.env['TEST_RENEW_OK'] = '1'
+        self.env['TEST_POLICY'] = SAFE_POLICY
+        # klist can show an expired cache even when its silent check fails.
+        stub = self.bin / 'stub'
+        stub.write_text(stub.read_text().replace(
+            "if principal in ('expired', 'corrupt'): sys.exit(1)",
+            "if principal == 'expired' and args == ['-s']: sys.exit(1)\n    if principal == 'expired': principal = 'testuser@ISH.TEST'\n    if principal == 'corrupt': sys.exit(1)"))
+        self.state.write_text('expired')
+        self.run_connect('connect', 'devbox', tty=True)
+        self.assertEqual([c[1] for c in self.calls('kinit')], [['-R']])
+        self.assertTrue(self.calls('ssh'))
+
+    def test_auto_detect_uses_configured_identity_with_no_cache(self):
+        self.mapping.unlink()
+        self.state.unlink()
+        directory = self.conf / 'kinit-auto-login'
+        directory.mkdir()
+        (directory / 'kinit.env').write_text('KRB_PRINCIPAL=testuser@ISH.TEST\n')
+        self.run_connect('connect', 'devbox', tty=True)
+        self.assertEqual(self.calls('kinit')[0][1], ['testuser@ISH.TEST'])
+
+    def test_failed_refresh_falls_back_to_kinit(self):
+        helper = self.bin / 'kinit-auto-login'
+        helper.write_text('#!/bin/sh\nexit 1\n')
+        helper.chmod(0o755)
+        self.state.unlink()
+        self.run_connect('connect', 'devbox', tty=True)
+        self.assertEqual(self.calls('kinit')[0][1], ['testuser@ISH.TEST'])
+        self.assertTrue(self.calls('ssh'))
+
+    def test_refresh_success_with_wrong_identity_does_not_bypass_check(self):
+        helper = self.bin / 'kinit-auto-login'
+        helper.write_text('#!/bin/sh\nprintf %s wrong@ISH.TEST > "$TEST_HOME/ticket"\n')
+        helper.chmod(0o755)
+        self.state.unlink()
+        self.env['TEST_KINIT_FAIL'] = '1'
+        self.run_connect('connect', 'devbox', tty=True, success=False)
+        self.assertFalse(self.calls('ssh'))
 
     def test_legacy_ish_profile_is_used_without_reconfiguration(self):
         self.hosts.unlink()

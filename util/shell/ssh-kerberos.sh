@@ -58,7 +58,7 @@ load_config() {
 tgt_valid() {
     klist -s >/dev/null 2>&1 || return 1
     ticket_listing=$(klist 2>/dev/null) || return 1
-    ticket_principal=$(printf '%s\n' "$ticket_listing" | sed -n 's/^Default principal: //p')
+    ticket_principal=$(printf '%s\n' "$ticket_listing" | sed -n 's/^.*[Pp]rincipal:[[:space:]]*//p' | head -1)
     [ "$ticket_principal" = "$KRB5_PRINCIPAL" ] || return 2
     printf '%s\n' "$ticket_listing" | grep -F "krbtgt/$KRB5_REALM@$KRB5_REALM" >/dev/null || return 1
 }
@@ -87,6 +87,16 @@ require_tgt() {
     if tgt_valid; then return; fi
     if [ "$check_only" = 1 ] || [ ! -t 0 ]; then
         die 'TGT missing, expired, invalid or principal mismatch; run ssh-connect interactively to obtain the configured ticket.'
+    fi
+    # Reuse the device's configured keytab/keychain repair before prompting.
+    if command -v kinit-auto-login >/dev/null 2>&1; then
+        printf '%s\n' 'Refreshing Kerberos credentials...' >&2
+        if kinit-auto-login renew --principal "$KRB5_PRINCIPAL" && tgt_valid; then return; fi
+    fi
+    # Never renew another identity's cache on behalf of this host.
+    cached_principal=$(klist 2>/dev/null | sed -n 's/^.*[Pp]rincipal:[[:space:]]*//p' | head -1)
+    if [ "$cached_principal" = "$KRB5_PRINCIPAL" ]; then
+        if kinit -R && tgt_valid; then return; fi
     fi
     printf '%s\n' 'A matching TGT is required. kinit will prompt directly; no password is saved.' >&2
     kinit "$KRB5_PRINCIPAL" || die 'kinit failed; check realm, KDC, clock and VPN.'
@@ -123,6 +133,25 @@ load_ssh_kerberos() {
         load_config
         kerberos_enabled=1
         ish_connection=1
+    fi
+    # SSH config is also an opt-in: a separate alias mapping is optional.
+    if [ "$kerberos_enabled" = 0 ]; then
+        effective=$(ssh -G "$@" "$host") || die 'Cannot inspect SSH settings.'
+        if printf '%s\n' "$effective" | grep -Fxq 'gssapiauthentication yes'; then
+            KRB5_PRINCIPAL=$(awk -F= '$1 == "KRB_PRINCIPAL" {print $2; exit}' \
+                "$xdg_config_home/kinit-auto-login/kinit.env" 2>/dev/null || true)
+            case "$KRB5_PRINCIPAL" in ''|your.name@*)
+                KRB5_PRINCIPAL=$(klist 2>/dev/null | sed -n 's/^.*[Pp]rincipal:[[:space:]]*//p' | head -1) ;;
+            esac
+            case "$KRB5_PRINCIPAL" in
+                ''|-*|*[!a-zA-Z0-9_@./:+-]*|*@*@*)
+                    die 'Cannot determine Kerberos principal; configure HOST PRINCIPAL in ~/.config/ssh/kerberos.' ;;
+                *@?*) ;; *) die 'Kerberos principal must include a realm; configure ~/.config/ssh/kerberos.' ;;
+            esac
+            KRB5_REALM=${KRB5_PRINCIPAL##*@}
+            TMUX_SESSION=dev
+            kerberos_enabled=1
+        fi
     fi
 }
 
