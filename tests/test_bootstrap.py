@@ -57,7 +57,14 @@ class BootstrapTests(unittest.TestCase):
     def test_package_and_link_data_preserve_legacy_inventory(self):
         legacy = json.loads((ROOT / 'tests/fixtures/bootstrap-inventory.json').read_text(encoding='utf-8'))
         self.assertEqual(PACKAGES, {k: v['arrays'] for k, v in legacy.items() if v['arrays']})
-        self.assertEqual(LINKS, {k: v['links'] for k, v in legacy.items() if v['links']})
+        # Keep the legacy inventory assertion while allowing new optional helpers.
+        links = {k: [entry for entry in entries
+                     if entry[0] not in ('$util_dir/shell/ssh-setup', '$util_dir/shell/ssh-pair')]
+                 for k, entries in LINKS.items()}
+        self.assertEqual(links, {k: v['links'] for k, v in legacy.items() if v['links']})
+        for helper in ('ssh-setup', 'ssh-pair'):
+            self.assertTrue(any([f'$util_dir/shell/{helper}', f'$bin_dir/{helper}'] in entries
+                                for entries in LINKS.values()))
 
     def test_ish_core_uses_shared_config_and_gssapi_client_without_servers(self):
         c = self.context('ish')

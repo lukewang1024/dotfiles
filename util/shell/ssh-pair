@@ -1,0 +1,77 @@
+#!/bin/sh
+# Pair with an already reachable SSH server; never bypass host verification.
+set -eu
+usage() { echo 'usage: ssh-pair ALIAS HOST [--port PORT] [--user USER]'; }
+[ "$#" -ge 2 ] || { usage >&2; exit 2; }
+alias_name=$1
+host=$2
+shift 2
+port=2222
+user=root
+while [ "$#" -gt 0 ]; do
+    [ "$#" -ge 2 ] || { usage >&2; exit 2; }
+    case $1 in --port) port=$2 ;; --user) user=$2 ;; *) usage >&2; exit 2 ;; esac
+    shift 2
+done
+case $alias_name in ''|[!A-Za-z0-9]*|*[!A-Za-z0-9_.-]*) echo 'Invalid alias' >&2; exit 2 ;; esac
+case $host in ''|[!A-Za-z0-9]*|*[!A-Za-z0-9_.-]*) echo 'Use an IPv4 address or DNS hostname.' >&2; exit 2 ;; esac
+case $user in ''|[!A-Za-z0-9_]*|*[!A-Za-z0-9_.-]*) echo 'Invalid user' >&2; exit 2 ;; esac
+case $port in ''|*[!0-9]*) echo 'Invalid port' >&2; exit 2 ;; esac
+[ "$port" -gt 0 ] && [ "$port" -le 65535 ] || { echo 'Invalid port' >&2; exit 2; }
+for cmd in ssh ssh-keygen ssh-copy-id; do
+    command -v "$cmd" >/dev/null 2>&1 || { echo "Install OpenSSH client tools: missing $cmd" >&2; exit 1; }
+done
+umask 077
+mkdir -p "$HOME/.ssh"
+chmod 700 "$HOME/.ssh"
+key=$HOME/.ssh/id_ed25519_pair
+if [ ! -e "$key" ]; then
+    [ ! -e "$key.pub" ] || { echo "Private key missing for $key.pub; resolve this before retrying." >&2; exit 1; }
+    echo 'Creating a dedicated pairing key. Choose a passphrase; use ssh-agent to avoid repeated prompts.' >&2
+    ssh-keygen -t ed25519 -f "$key" -C 'dotfiles-device-pair'
+fi
+[ -f "$key.pub" ] || { echo "Missing public key: $key.pub" >&2; exit 1; }
+echo 'Compare the host fingerprint with ssh-setup on the device before accepting.' >&2
+ssh-copy-id -i "$key.pub" -p "$port" -o StrictHostKeyChecking=ask \
+    -o "IdentityFile=$key" -o IdentitiesOnly=yes -o PubkeyAuthentication=yes \
+    -o PreferredAuthentications=publickey,password -o GSSAPIAuthentication=no \
+    -o ControlMaster=no -o ControlPath=none "$user@$host"
+echo 'Checking public-key-only authentication (load a passphrase-protected key into ssh-agent first)...' >&2
+ssh -p "$port" -i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
+    -o PreferredAuthentications=publickey -o PubkeyAuthentication=yes -o PasswordAuthentication=no \
+    -o KbdInteractiveAuthentication=no -o StrictHostKeyChecking=yes \
+    -o ControlMaster=no -o ControlPath=none "$user@$host" 'exit 0'
+config=$HOME/.ssh/config
+# Refuse overwriting a previously managed alias; repeat pairing is safe.
+marker="# dotfiles ssh-pair $alias_name $user@$host:$port"
+if [ -f "$config" ] && grep -Fx "$marker" "$config" >/dev/null; then
+    echo "Already paired. Connect with: ssh $alias_name"
+    exit 0
+fi
+if [ -f "$config" ] && grep -E '^[[:space:]]*Host[[:space:]]' "$config" | awk -v name="$alias_name" '{for(i=2;i<=NF;i++) if($i==name) found=1} END{exit !found}'; then
+    echo "Alias $alias_name already exists. Choose a different alias; config was not changed." >&2
+    exit 1
+fi
+scratch=$(mktemp "$HOME/.ssh/pair.XXXXXX")
+trap 'rm -f "$scratch"' EXIT HUP INT TERM
+# Escape paths for OpenSSH double-quoted strings.
+quoted_key=$(printf '%s' "$key" | sed 's/\\/\\\\/g; s/"/\\"/g')
+{
+    printf '%s\nHost %s\n' "$marker" "$alias_name"
+    printf '    HostName %s\n    User %s\n    Port %s\n' "$host" "$user" "$port"
+    printf '    IdentityFile "%s"\n' "$quoted_key"
+    printf '    IdentitiesOnly yes\n    PubkeyAuthentication yes\n    GSSAPIAuthentication no\n    PreferredAuthentications publickey\n'
+    printf '    PasswordAuthentication no\n    KbdInteractiveAuthentication no\n'
+    printf '    StrictHostKeyChecking yes\n    ServerAliveInterval 30\n    ServerAliveCountMax 3\nHost *\n'
+    [ ! -f "$config" ] || cat "$config"
+} > "$scratch"
+if [ -e "$config" ]; then
+    backup=$(mktemp "$HOME/.ssh/config.before-pair.XXXXXX")
+    cp -p "$config" "$backup"
+    echo "Config backup: $backup" >&2
+fi
+# Preserve existing symlinks (dotfiles config may be linked).
+cat "$scratch" > "$config"
+chmod 600 "$config"
+printf 'Paired. Connect with: ssh %s\n' "$alias_name"
+echo 'After verifying login, stop ssh-setup on the device and restart it with --key-only.'

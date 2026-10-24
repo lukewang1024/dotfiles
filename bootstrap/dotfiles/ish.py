@@ -74,7 +74,8 @@ def ish_client_setup(c):
             c.write(dest, source.read_text())
     for name in ('ish-doctor', 'fd'):
         c.link(c.repo / 'util/ish' / name, c.bin / name)
-    c.link(c.repo / 'util/shell/ssh-connect', c.bin / 'ssh-connect')
+    for name in ('ssh-connect', 'ssh-setup', 'ssh-pair'):
+        c.link(c.repo / 'util/shell' / name, c.bin / name)
     # Retire only our former link; never delete a user's same-named command.
     old = c.bin / 'ish-connect'
     if old.is_symlink() and old.resolve() == (c.repo / 'util/ish/ish-connect').resolve():

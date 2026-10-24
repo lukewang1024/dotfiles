@@ -1,0 +1,80 @@
+#!/bin/sh
+# Opt-in Alpine/iSH SSH server; independent of the Python bootstrap.
+set -eu
+usage() {
+    echo 'usage: ssh-setup [--port PORT] [--random-password | --set-password | --key-only]'
+    echo 'Runs sshd in the foreground. Ctrl-C stops it. Default: reuse root password.'
+}
+port=2222
+mode=reuse
+while [ "$#" -gt 0 ]; do
+    case $1 in
+        --port) [ "$#" -ge 2 ] || { usage >&2; exit 2; }; port=$2; shift ;;
+        --random-password) mode=random ;;
+        --set-password) mode='set' ;;
+        --key-only) mode=key ;;
+        -h|--help) usage; exit 0 ;;
+        *) usage >&2; exit 2 ;;
+    esac
+    shift
+done
+case $port in ''|*[!0-9]*) echo 'Invalid port' >&2; exit 2 ;; esac
+[ "$port" -ge 1024 ] && [ "$port" -le 65535 ] || { echo 'Use port 1024..65535' >&2; exit 2; }
+[ "$(id -u)" = 0 ] || { echo 'Run this command as root inside Alpine/iSH.' >&2; exit 1; }
+command -v apk >/dev/null 2>&1 || { echo 'ssh-setup currently supports Alpine/iSH only.' >&2; exit 1; }
+umask 077
+state=${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/sshd
+mkdir -p "$state"
+if [ "$mode" != key ]; then
+    hash=$(awk -F: '$1 == "root" {print $2}' /etc/shadow)
+    case $hash in ''|'!'*|'*'*) [ "$mode" != reuse ] || mode='set' ;; esac
+    case $mode in
+        set)
+            echo 'Set the iSH root password (not the iPad unlock password):' >&2
+            passwd root ;;
+        random)
+            [ -t 0 ] && [ -t 1 ] || { echo 'Random password must be displayed on a terminal, not redirected into a log.' >&2; exit 1; }
+            echo 'This replaces the iSH root password. Continue? [y/N]' >&2
+            IFS= read -r answer
+            [ "$answer" = y ] || exit 1
+            password=$(od -An -N18 -tx1 /dev/urandom | tr -d ' \n')
+            printf 'root:%s\n' "$password" | chpasswd
+            printf '\nTemporary iSH root password: %s\nDo not share or log this password.\n\n' "$password"
+            unset password ;;
+    esac
+fi
+echo 'Installing SSH server (keeps the existing SSH client selection)...' >&2
+apk add openssh-server
+if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+    echo 'Generating the ED25519 host key...' >&2
+    ssh-keygen -t ed25519 -N '' -f /etc/ssh/ssh_host_ed25519_key
+fi
+password_auth=yes
+root_login=yes
+if [ "$mode" = key ]; then
+    [ -s "$HOME/.ssh/authorized_keys" ] || { echo 'No authorized_keys; pair with a client before using --key-only.' >&2; exit 1; }
+    password_auth=no
+    root_login=prohibit-password
+fi
+config=$state/sshd_config
+cat > "$config" <<CONFIG
+Port $port
+ListenAddress 0.0.0.0
+HostKey /etc/ssh/ssh_host_ed25519_key
+PidFile $state/sshd.pid
+AuthorizedKeysFile .ssh/authorized_keys
+PermitRootLogin $root_login
+PasswordAuthentication $password_auth
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+AllowUsers root
+Subsystem sftp internal-sftp
+CONFIG
+/usr/sbin/sshd -t -f "$config"
+echo 'Verify this host fingerprint on the pairing computer:' >&2
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+echo "Listening on TCP $port. Use the iPad Wi-Fi address, not localhost." >&2
+echo "On the computer: ssh-pair ipad-ish IP_ADDRESS --port $port --user root" >&2
+echo 'Keep iSH foreground/unlocked. Ctrl-C stops this server.' >&2
+exec /usr/sbin/sshd -D -e -f "$config"

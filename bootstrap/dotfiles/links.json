@@ -583,6 +583,14 @@
       "$bin_dir/ssh-first-reachable"
     ],
     [
+      "$util_dir/shell/ssh-setup",
+      "$bin_dir/ssh-setup"
+    ],
+    [
+      "$util_dir/shell/ssh-pair",
+      "$bin_dir/ssh-pair"
+    ],
+    [
       "$util_dir/shell/ssh-connect",
       "$bin_dir/ssh-connect"
     ],

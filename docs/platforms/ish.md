@@ -214,3 +214,58 @@ iPad 实机仍为 NOT TESTED。完整证据见外部环境的 `docs/DOTFILES_REP
 复现环境继续留在仓库外，没有提交 Docker、KDC、keytab、rootfs 或测试日志。
 
 Git LFS 历史迁移后的普通 clone、一键迁移和真实 iSH sync/pull 验证见 [LFS 测试报告](../LFS_TEST_REPORT.md)。
+
+## 从局域网电脑连接 iSH（可选）
+
+这两个工具不依赖 Python，可在初始化之前直接运行。默认初始化仍不启动 SSH 服务。
+在 iPad 的 iSH 中，进入仓库执行：
+
+```sh
+cd ~/.config/dotfiles
+git -c core.hooksPath=/dev/null pull --ff-only
+sh util/shell/ssh-setup
+```
+
+默认端口 2222，复用 iSH root 的已有密码；账号未设置可用密码时交互运行
+`passwd root`。它与 iPad 解锁密码无关。`--set-password` 主动重设密码；
+`--random-password` 确认后替换为随机密码，只允许在终端显示，不保存到日志或文件。
+修改密码会影响该 iSH 用户的其他密码登录，不能通过恢复 SSH 配置撤销。
+服务使用独立配置，不修改 `/etc/ssh/sshd_config`，不启用开机自启。
+前台显示服务器日志，Ctrl-C 停止。不要将密码、私钥或完整认证日志发到公开渠道。
+
+在 iPad「设置 → Wi-Fi → 当前网络」找到 IP（下例替换为实际地址）。
+同一局域网电脑进入自己的 dotfiles 仓库后执行：
+
+```sh
+git -c core.hooksPath=/dev/null pull --ff-only
+sh util/shell/ssh-pair ipad-ish 192.168.1.50
+ssh ipad-ish
+```
+
+电脑需安装 `ssh`、`ssh-keygen`、`ssh-copy-id`。配对使用专用密钥
+`~/.ssh/id_ed25519_pair`，不存在时交互创建。首次连接必须对照 iSH 上显示的
+ED25519 指纹，核对后接受，再输入 iSH 的 root 密码。
+若给私钥设置了口令，先在电脑的 ssh-agent 中加载它：
+
+```sh
+ssh-add ~/.ssh/id_ed25519_pair
+# 然后重新执行 ssh-pair；它不会重新生成已有密钥。
+```
+
+公钥复制后，必须通过真实、非交互、公钥认证才能保存别名。该验证禁止密码回退和
+连接复用。电脑的 `~/.ssh/config` 在修改前备份到同目录的
+`config.before-pair.*`；新别名放在已有默认项之前，原内容保留。重复执行同一配对
+不会重复写配置，同名别名指向不同目标时拒绝覆盖。失败后可能已复制公钥，但不会
+报告配对成功。主机密钥变化时应独立核验，脚本不会删除 known_hosts 或自动信任。
+完成 `./init sync` 后可以直接运行 `ssh-setup`、`ssh-pair`。
+
+确认电脑登录成功后，在 iPad 按 Ctrl-C，改为只允许密钥：
+
+```sh
+sh util/shell/ssh-setup --key-only
+```
+
+保留 iSH 在前台且 iPad 不锁屏。后台挂起、锁屏及 Wi-Fi 地址变化都可能使连接中断；
+重新打开 iSH、重启服务器即可，配对密钥仍然保留。Wi-Fi 开启客户端隔离时，同一
+网络的设备也可能无法互访。云开发机无法直接访问此内网地址，需另行建立反向隧道。
+当前实现面向 Alpine/iSH 设备端及 POSIX 连接端；不包含 Docker 或 Windows 原生配对。
