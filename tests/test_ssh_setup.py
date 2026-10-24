@@ -150,3 +150,23 @@ esac
                 self.assertIn('sshd' + expected, calls)
                 self.assertNotIn('rc-update', calls)
                 self.assertFalse((self.root / 'etc/init.d/dotfiles-sshd').exists())
+
+    def test_generated_service_checks_pid_contents_without_regular_file_read(self):
+        self.assertEqual(self.run_setup().returncode, 0)
+        service = (self.root / 'etc/init.d/dotfiles-sshd').read_text()
+        function = service[service.index('running() {'):service.index('\nstart() {')]
+        harness = self.root / 'check-pid'
+        harness.write_text(function + '\npidfile=$1\nrunning\n')
+        pidfile = self.root / 'test.pid'
+        for contents, expected in [(str(os.getpid()) + '\n', 0), ('', 1),
+                                   ('0\n', 1), ('1\n', 1), ('-2\n', 1),
+                                   ('123\n456\n', 1), ('abc\n', 1)]:
+            with self.subTest(contents=contents):
+                pidfile.write_text(contents)
+                result = subprocess.run(['sh', str(harness), str(pidfile)],
+                                        capture_output=True, text=True, timeout=3)
+                self.assertEqual(result.returncode, expected, result.stderr)
+        pidfile.unlink()
+        result = subprocess.run(['sh', str(harness), str(pidfile)],
+                                capture_output=True, timeout=3)
+        self.assertEqual(result.returncode, 1)

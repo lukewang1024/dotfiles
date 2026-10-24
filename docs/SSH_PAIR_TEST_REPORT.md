@@ -43,3 +43,16 @@ The Python-runtime initialization stall is a separate, still-open investigation.
 - Pairing leaves password access unchanged. `./init sshd --key-only` remains
   an explicit, optional device-side restart; additional computers can be paired
   while password login is enabled.
+
+## iSH service PID reading fix — 2026-10-25
+
+- **FAIL (before fix)**: Linux iSH CLI's BusyBox `read` from a regular PID file
+  did not finish; a three-second timeout terminated it (exit 143).
+- **PASS (after fix)**: the actual service `running()` function, extracted from
+  the updated generator, uses `cat` and completes the live-PID check. Empty,
+  zero, PID 1, negative, nonnumeric and multiline PID contents are rejected.
+  The iSH guest test exited 0.
+- **PASS**: all 10 SSH service regression tests; POSIX shell syntax and ShellCheck.
+- This change retains existing PID validation and `kill -0` process checks.
+  Rerun `./init sshd` in the device's local terminal to update the generated
+  OpenRC service. iPad hardware was not accessed for this follow-up.
