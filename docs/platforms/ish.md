@@ -252,6 +252,10 @@ git -c core.hooksPath=/dev/null pull --ff-only
 自启动模式将配置保存到 `/etc/ssh/sshd_config.dotfiles`，使用独立服务
 `dotfiles-sshd`，不接管系统原有的 `sshd` 服务。重复执行会备份旧服务配置，
 并重启该服务；会中断它已有的连接，应从 iSH 本地终端操作。
+服务直接启动 sshd，通过 PID 文件管理进程，避免 iSH 上 OpenRC 默认
+`start-stop-daemon` 启动失败；启动时会等待 PID 文件就绪。服务日志默认位于
+`/root/.local/state/dotfiles/sshd/service.log`（OpenRC 环境设置了 `XDG_STATE_HOME`
+时使用该目录）。启动失败会显示最近的服务日志。
 不要同时启用系统的 `sshd` 服务占用同一端口。
 如果首次安装 OpenRC 后立即启动失败，完全关闭并重新打开 iSH，再检查：
 

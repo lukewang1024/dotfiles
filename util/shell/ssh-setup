@@ -101,8 +101,59 @@ description="Dotfiles iSH SSH server"
 command=/usr/sbin/sshd
 command_args="-f /etc/ssh/sshd_config.dotfiles"
 pidfile=/run/dotfiles-sshd.pid
+logfile=${XDG_STATE_HOME:-/root/.local/state}/dotfiles/sshd/service.log
 start_pre() {
+    mkdir -p "${logfile%/*}"
     /usr/sbin/sshd -t -f /etc/ssh/sshd_config.dotfiles
+}
+# iSH can run sshd directly but OpenRC's executable matching in
+# start-stop-daemon fails there. Manage only this service's recorded PID.
+running() {
+    [ -r "$pidfile" ] || return 1
+    IFS= read -r service_pid < "$pidfile" || return 1
+    case $service_pid in ''|*[!0-9]*|0|1) return 1 ;; esac
+    kill -0 "$service_pid" 2>/dev/null
+}
+start() {
+    ebegin "Starting $RC_SVCNAME"
+    /usr/sbin/sshd -E "$logfile" -f /etc/ssh/sshd_config.dotfiles
+    result=$?
+    if [ "$result" -eq 0 ]; then
+        # The daemonizing parent exits before the child writes its PID file.
+        remaining=5
+        while ! running && [ "$remaining" -gt 0 ]; do
+            sleep 1
+            remaining=$((remaining - 1))
+        done
+        running || result=1
+    fi
+    eend "$result"
+    if [ "$result" -ne 0 ]; then
+        tail -n 15 "$logfile" >&2
+    fi
+    return "$result"
+}
+stop() {
+    ebegin "Stopping $RC_SVCNAME"
+    if running; then
+        kill "$service_pid" || { eend 1; return 1; }
+        remaining=5
+        while kill -0 "$service_pid" 2>/dev/null; do
+            [ "$remaining" -gt 0 ] || { eend 1; return 1; }
+            sleep 1
+            remaining=$((remaining - 1))
+        done
+    fi
+    rm -f "$pidfile"
+    eend 0
+}
+status() {
+    if running; then
+        einfo "$RC_SVCNAME is running (PID $service_pid)"
+        return 0
+    fi
+    eerror "$RC_SVCNAME is stopped"
+    return 3
 }
 SERVICE
     chmod 755 "$service"
