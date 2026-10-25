@@ -93,6 +93,11 @@ inspection of the current environment, not a promise of successful provisioning.
   scope of preceding Host/Match blocks; no trailing reset is needed at EOF.
   The legacy link inventory is retained, but SSH entries dispatch to this setup.
   To migrate or refresh just SSH, run `./init run shell ssh_setup`.
+- SSH client key generation is a separate `./init ssh-keys` task on every
+  platform. It preserves existing pairs and creates missing Ed25519 and RSA
+  3072-bit pairs through interactive `ssh-keygen` prompts. Passphrases stay out
+  of command arguments and logs. This replaces Termux core's previous automatic
+  unencrypted Ed25519 generation; SSH services still start during core setup.
 - Linux inotify settings use a dedicated sysctl drop-in with 524288 watched
   paths and 1024 instances per user, covering concurrent agents and dev servers.
   The task loads only that drop-in. macOS Launchpad reset

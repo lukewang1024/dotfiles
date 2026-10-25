@@ -421,8 +421,6 @@ def termux_ssh_setup(c):
     c.mkdir(c.home / '.ssh')
     if not c.dry_run:
         (c.home / '.ssh').chmod(0o700)
-    if not (c.home / '.ssh/id_ed25519').exists():
-        c.command('ssh-keygen', '-q', '-t', 'ed25519', '-N', '', '-f', c.home / '.ssh/id_ed25519')
     c.command('sv-enable', 'sshd')
     c.command('sv-enable', 'ssh-agent')
 
@@ -440,7 +438,6 @@ def prepare_termux_env(c, mode='core'):
     else:
         c.note('tmux-agent-workbench unavailable; mobile notifications are not configured')
     sequence(c, 'vim_plugins_setup', 'termux_ssh_setup', 'setup_machine_fabric')
-    c.note('Public SSH key: ' + str(c.home / '.ssh/id_ed25519.pub'))
 
 
 @task()

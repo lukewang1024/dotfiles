@@ -35,14 +35,14 @@ def select_tasks(platform, mode, arguments):
     if platform == 'ish':
         tasks = {'basic': 'ish_basic_setup', 'sync': 'ish_basic_setup',
                  'core': 'prepare_ish_env', 'all': 'prepare_ish_env',
-                 'kerberos': 'ish_kerberos', 'zinit': 'zinit_setup'}
+                 'kerberos': 'ish_kerberos', 'zinit': 'zinit_setup', 'ssh-keys': 'ssh_keys_setup'}
         if mode not in tasks:
-            raise Failure('iSH supports basic, core, all, sync, kerberos and zinit; desktop/agent runtimes run on the remote host')
+            raise Failure('iSH supports basic, core, all, sync, kerberos, zinit and ssh-keys; desktop/agent runtimes run on the remote host')
         return [(tasks[mode], [mode] if mode in ('core', 'all') else [])]
     if mode in ('basic', 'sync'):
         return [('sync_setup', [])] if mode == 'sync' or platform == 'windows' else [('termux_basic_setup' if platform == 'termux' else 'basic_env_setup', [])]
     names = {'npmg': 'install_npm_packages', 'zinit': 'zinit_setup', 'kerberos': 'kerberos',
-             'migrate-xdg': 'migrate_xdg', 'machine-fabric': 'setup_machine_fabric',
+             'migrate-xdg': 'migrate_xdg', 'ssh-keys': 'ssh_keys_setup', 'machine-fabric': 'setup_machine_fabric',
              'workbench': 'setup_machine_fabric'}
     if mode in names:
         if platform == 'windows' and mode in ('kerberos', 'zinit'):
@@ -81,7 +81,7 @@ def main(argv=None):
                '[--random-password | --set-password | --key-only]; '
                'init pair ALIAS HOST [--port PORT] [--user USER]. '
                'Pairing leaves server password access unchanged; key-only mode is optional.')
-    parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'machine-fabric', 'workbench', 'run'])
+    parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'ssh-keys', 'machine-fabric', 'workbench', 'run'])
     parser.add_argument('arguments', nargs='*')
     parser.add_argument('--dry-run', action='store_true', help='Describe actions without changing files or executing commands')
     parser.add_argument('--json', action='store_true', help='Print a machine-readable dry-run plan')

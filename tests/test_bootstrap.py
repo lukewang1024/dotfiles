@@ -51,6 +51,8 @@ class BootstrapTests(unittest.TestCase):
                             c.task(name, *arguments)
                         self.assertTrue(c.events)
                         self.assertTrue(any(e['kind'] == 'link' for e in c.events))
+                        self.assertFalse(any(e['kind'] == 'command' and Path(e['argv'][0]).name == 'ssh-keygen'
+                                             for e in c.events))
         after = sorted(str(p.relative_to(self.home)) for p in self.home.rglob('*'))
         self.assertEqual(before, after)
 
