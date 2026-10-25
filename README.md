@@ -114,7 +114,7 @@ python3 -B -m unittest discover -s tests -v
 python -B -m unittest discover -s tests -v
 ```
 
-The suite checks all seven platform plans, the previous package/link inventory,
+The suite checks all eight platform plans, the previous package/link inventory,
 stream routing, failure propagation, arguments, backups, migration, and terminal
 rendering. On Windows it also exercises native scripts and both installed
 PowerShell launchers.
@@ -195,6 +195,7 @@ Other entrypoint tasks:
 | --- | --- |
 | `./init sync` | Reconcile an already-provisioned checkout. |
 | `./init migrate-xdg [--dry-run]` | Move a legacy checkout to the XDG config root without breaking old links. |
+| `./init ssh-keys` | Interactively create missing Ed25519 and RSA client key pairs. |
 | `./init machine-fabric` | Install or verify the local Machine Fabric runtime. |
 | `./init npmg` | Reinstall common global npm packages. |
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |
@@ -229,6 +230,27 @@ For example:
 ```sh
 "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/init" run macos-defaults better_macos_defaults
 ```
+
+### Create SSH client keys
+
+After installing OpenSSH (included in `core`), run this separately in a terminal:
+
+```sh
+./init ssh-keys
+```
+
+On Windows, use `.\init.ps1 ssh-keys`. The command creates `~/.ssh/id_ed25519`
+for everyday connections and `~/.ssh/id_rsa` (3072 bits) for compatibility, plus
+their `.pub` public keys. Each missing key uses `ssh-keygen`'s own passphrase
+and confirmation prompts; passphrases are never passed in arguments or recorded
+in bootstrap logs. Existing pairs are preserved, so rerunning only generates
+missing pairs. An incomplete pair stops the command before creating any keys.
+
+`core`, `basic`, and `sync` configure SSH without generating client keys,
+including on Termux. Key generation requires an interactive terminal; use
+`./init ssh-keys --dry-run` to inspect it without prompts or effects. Add the
+public keys to the target devices separately. Prefer generating each client's
+own pairs so its access can be revoked independently.
 
 ### Add or change configuration
 

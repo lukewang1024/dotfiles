@@ -10,6 +10,17 @@ This installs/configures the Termux packages, zsh, tmux plugins, Vim plugins,
 SSH, and the shared agent configuration. It also installs `agent-team` through
 the common core flow.
 
+Generate this phone's SSH client keys separately in a Termux terminal:
+
+```sh
+./init ssh-keys
+```
+
+This creates missing Ed25519 and RSA 3072-bit pairs with interactive passphrase
+prompts and keeps existing keys. Core enables the SSH services but no longer
+generates an unencrypted client key automatically. Copy the `.pub` keys to the
+devices you want to access.
+
 Machine Fabric v0.1.33 publishes an Android aarch64 runtime. To install it from
 the pinned release, provide the release CDN root explicitly:
 

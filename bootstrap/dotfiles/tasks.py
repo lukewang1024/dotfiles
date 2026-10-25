@@ -345,6 +345,42 @@ def ssh_setup(c):
     # Retire only after successfully writing the merged entrypoint.
     if local.exists():
         c.backup(local)
+    if any(not (c.home / '.ssh' / name).exists() for name in ('id_ed25519', 'id_rsa')):
+        c.note('Create missing SSH client keys separately with ./init ssh-keys (interactive passphrase prompts).')
+
+
+@task()
+def ssh_keys_setup(c):
+    """Create missing client key pairs without handling or logging passphrases."""
+    directory = c.home / '.ssh'
+    missing = []
+    for kind, name, options in (('ed25519', 'id_ed25519', ()), ('rsa', 'id_rsa', ('-b', '3072'))):
+        private = directory / name
+        public = directory / (name + '.pub')
+        if private.exists() or private.is_symlink():
+            if not private.is_file() or not public.is_file():
+                raise Failure(f'Incomplete SSH key pair at {private}; preserve the private key and restore its .pub file before retrying.')
+            c.note('Keeping existing SSH key pair: ' + str(private))
+        elif public.exists() or public.is_symlink():
+            raise Failure(f'Public key exists without its private key: {public}; restore or move it before retrying.')
+        else:
+            missing.append((kind, private, public, options))
+    if not missing:
+        raise Skip('Ed25519 and RSA client key pairs already exist.')
+    if not c.dry_run:
+        if not c.exists('ssh-keygen'):
+            raise Failure('ssh-keygen is required; install OpenSSH before running ./init ssh-keys.')
+        if not sys.stdin.isatty():
+            raise Failure('Run ./init ssh-keys in an interactive terminal to enter SSH key passphrases.')
+    c.mkdir(directory)
+    if c.platform != 'windows':
+        c.record('chmod', path=str(directory), mode='0700')
+        if not c.dry_run:
+            directory.chmod(0o700)
+    c.note('ssh-keygen asks for each new key passphrase and its confirmation; this interaction is not logged.')
+    for kind, private, public, options in missing:
+        c.command('ssh-keygen', '-q', '-t', kind, *options, '-f', private, interactive=True)
+        c.note('Public SSH key: ' + str(public))
 
 
 @task()
