@@ -92,9 +92,39 @@ clang --target=i386-linux-musl -DISH_STANDALONE_BUILD -nostdlib \
 但仍检查 Kerberos SSH 客户端是否可用。此兼容库仅针对上述已复现的平台问题，
 不作为通用 libc 替代品。
 
+### 登录后退出：ncurses 调用 setfsuid32
+
+App Store iSH 1.3.2 (494)、Alpine 3.24.3 上，交互式 Zsh 初始化终端时可触发
+`zsh missing syscall 215`，以 SIGSYS（退出码 159）退出。恢复模式把
+Launch Command 临时设为 `/bin/sh` 可进入系统；不要重置文件系统。
+
+`util/ish/ncurses-compat.c` 仅替代 ncurses 的两个安全文件访问入口，
+真实/有效用户及组相同时直接执行原文件访问，身份不同时拒绝访问。
+不伪造身份切换成功，不修改 libc、系统 Zsh 或 ncurses 包。
+
+```sh
+clang --target=i386-linux-musl -DISH_STANDALONE_BUILD -nostdlib \
+  -shared -fPIC -fuse-ld=lld -O2 util/ish/ncurses-compat.c -o libncurses-compat.so
+```
+
+将库安装到 iSH 的
+`${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-compat/libncurses-compat.so`。
+`ish_client_setup` 检测到库后链接 `~/.local/bin/zsh` 登录包装命令；
+`set_default_shell` 会将旧 `/bin/zsh` 登录入口更新为该包装命令。
+包装命令在 Zsh 初始化终端前加载库，并显式保留登录 Shell 语义；子进程继承它。
+不使用系统级 `/etc/ld.so.preload`，其他平台不受影响。
+
+iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基础提示符、
+持久历史、Ctrl+R、方向键、Home/End/Delete 和本地覆盖配置。
+不在启动时加载 Zinit、扫描 compinit 或下载插件，避免旧模拟器上的启动延迟和网络等待。
+已安装的插件不删除；其他平台继续使用完整 Zinit 配置。
+
+修复后应先验证带终端的 `/bin/login -f root`，再将 iSH 的 Launch Command
+恢复为 `/bin/login -f root`。当前设备已通过独立交互 Shell 和真实登录验证。
+
 ## 能力范围
 
-- 复用公共 zsh / zinit、Git 别名、Vim 配置、tmux 配置和键位。
+- 复用公共 zsh 环境和别名，使用轻量 iSH 交互配置；复用 Vim、tmux 配置和键位。
 - 安装 Alpine x86 原生 Git、curl、fzf、fd、jq、zoxide 等终端工具。
   Alpine 此分支没有 diff-so-fancy，Git 分页使用 less，保留公共别名和个人身份配置。
 - 实际搜索/提示符测试中，Alpine 3.24 的 ripgrep 和 starship 触发非法指令，因此 iSH

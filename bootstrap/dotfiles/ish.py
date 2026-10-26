@@ -83,6 +83,8 @@ def ish_client_setup(c):
         c.link(c.repo / 'util/ish' / name, c.bin / name)
     if (c.data / 'dotfiles/ish-python/usr/bin/python3.12').is_file():
         c.link(c.repo / 'util/ish/python3', c.bin / 'python3')
+    if (c.data / 'dotfiles/ish-compat/libncurses-compat.so').is_file():
+        c.link(c.repo / 'util/ish/zsh', c.bin / 'zsh')
     for name in ('ssh-connect', 'ssh-setup', 'ssh-pair'):
         c.link(c.repo / 'util/shell' / name, c.bin / name)
     # Retire only our former link; never delete a user's same-named command.

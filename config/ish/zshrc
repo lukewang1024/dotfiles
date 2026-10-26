@@ -1,0 +1,23 @@
+# Sourced by the shared zsh rc after its aliases and XDG environment are ready.
+# Keep the iSH client independent of plugin downloads and compinit file scans.
+HISTFILE="$XDG_STATE_HOME/zsh/history"
+mkdir -p "${HISTFILE:h}"
+HISTSIZE=10000
+SAVEHIST=10000
+setopt appendhistory histignoredups interactivecomments
+bindkey -e
+bindkey '^[[A' up-line-or-history
+bindkey '^[[B' down-line-or-history
+bindkey '^[OA' up-line-or-history
+bindkey '^[OB' down-line-or-history
+bindkey '^R' history-incremental-search-backward
+bindkey '^[[H' beginning-of-line
+bindkey '^[[F' end-of-line
+bindkey '^[[1~' beginning-of-line
+bindkey '^[[4~' end-of-line
+bindkey '^[[3~' delete-char
+PROMPT='%n@%m:%~%# '
+export SHELL="$HOME/.local/bin/zsh"
+[ -x "$SHELL" ] || export SHELL=/bin/zsh
+alias rrc='source "$ZDOTDIR/.zshrc" && rehash'
+[ ! -f "$XDG_CONFIG_HOME/.zshrc.local" ] || source "$XDG_CONFIG_HOME/.zshrc.local"

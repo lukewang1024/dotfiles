@@ -177,6 +177,30 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue((c.bin / 'ssh-connect').is_symlink())
         self.assertFalse((c.bin / 'ish-connect').is_symlink())
 
+    def test_ish_installs_login_wrapper_only_with_compat_library(self):
+        c = self.context('ish', dry=False)
+        c.task('ish_client_setup')
+        self.assertFalse((c.bin / 'zsh').exists())
+        library = c.data / 'dotfiles/ish-compat/libncurses-compat.so'
+        library.parent.mkdir(parents=True)
+        library.touch()
+        c.task('ish_client_setup')
+        self.assertEqual((c.bin / 'zsh').resolve(), ROOT / 'util/ish/zsh')
+
+    def test_ish_login_wrapper_is_not_skipped_for_system_zsh(self):
+        from dotfiles.tasks import set_default_shell
+        c = self.context('ish', dry=False)
+        c.bin.mkdir(parents=True)
+        (c.bin / 'zsh').symlink_to(ROOT / 'util/ish/zsh')
+        c.env['SHELL'] = '/bin/zsh'
+        c.env['USER'] = 'root'
+        with patch.object(c, 'exists', return_value=True), \
+             patch.object(c, 'command', return_value='root:x:0:0:root:/root:/bin/zsh') as command, \
+             patch.object(c, 'write'):
+            set_default_shell(c)
+        self.assertTrue(any(call.args[:3] == ('chsh', '-s', str(c.bin / 'zsh'))
+                            for call in command.call_args_list))
+
     def test_ish_kerberos_decline_keeps_existing_profile(self):
         c = self.context('ish', dry=False)
         c.task('ish_client_setup')

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Preload before zsh initializes terminfo (which happens before .zshenv).
+set -eu
+compat=${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-compat/libncurses-compat.so
+if [ -f "$compat" ]; then
+    case :${LD_PRELOAD:-}: in
+        *:"$compat":*) ;;
+        *) export LD_PRELOAD="$compat${LD_PRELOAD:+:$LD_PRELOAD}" ;;
+    esac
+fi
+# This is the passwd login-shell entrypoint; the script interpreter does not
+# preserve login's leading '-' argv[0], so explicitly request login semantics.
+exec /bin/zsh -l "$@"

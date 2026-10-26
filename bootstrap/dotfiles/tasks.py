@@ -467,13 +467,15 @@ def set_default_shell(c, name='zsh'):
         c.command('chsh', '-s', name, interactive=True)
         return
     shell = shutil.which(name, path=c.env['PATH']) or name
+    if c.platform == 'ish' and name == 'zsh' and (c.bin / 'zsh').is_file():
+        shell = str(c.bin / 'zsh')
     current = c.env.get('SHELL', '')
     if not c.dry_run:
         if c.exists('getent'):
             current = c.command('getent', 'passwd', c.env.get('USER', ''), capture=True).strip().split(':')[-1]
         elif c.platform == 'macos':
             current = c.command('dscl', '.', '-read', '/Users/' + c.env['USER'], 'UserShell', capture=True).split()[-1]
-    if Path(current).name == name:
+    if (current == shell if c.platform == 'ish' else Path(current).name == name):
         raise Skip('Login shell is already ' + name)
     dest = Path('/etc/shells')
     content = dest.read_text(encoding='utf-8') if dest.exists() else ''

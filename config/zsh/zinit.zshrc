@@ -10,6 +10,13 @@ source "$config_dir/zsh/xdg-ninja-patch.zsh"
 source "$config_dir/zsh/prepare.zsh"
 source "$config_dir/sh/rc.sh"
 
+# iSH is a terminal client. Initial completion scans and plugin downloads make
+# startup slow and network-dependent; keep it offline and deterministic.
+if [ "${DOTFILES_PLATFORM:-}" = ish ]; then
+  source "$config_dir/ish/zshrc"
+  return
+fi
+
 # - - - - - - - - - - - - - - - - - - - -
 # Zinit Configuration
 # - - - - - - - - - - - - - - - - - - - -
