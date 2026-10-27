@@ -372,6 +372,8 @@ print('Hyper remote role: toggles group instead of launching default app passed'
 
 local remoteSpec=require('private/modules/hyper-generated').apps['windows-app']
 instance.apps.apps={{title=remoteSpec.title,bundle=remoteSpec.mac,path='/Applications/Windows App.app'},
+  {title='NoMachine',bundle='com.nomachine.nxdock',path='/Applications/NoMachine.app'},
+  {title='Screen Sharing',bundle='com.apple.ScreenSharing',path='/System/Applications/Utilities/Screen Sharing.app'},
   {title='Unrelated app',bundle='test.unrelated',path='/Applications/Unrelated.app'}}
 local emptyChoices,emptyOptions,emptyAlert
 instance.palette.show=function(_,rows,options)emptyChoices=rows;emptyOptions=options end
@@ -383,7 +385,9 @@ for _,language in ipairs({'en','zh'}) do
   i18n.language=function()return language end
   instance.apps.apps=installed
   instance:run('app.remote')
-  assert(emptyChoices and #emptyChoices==1 and emptyChoices[1].action=='installed./Applications/Windows App.app')
+  assert(emptyChoices and #emptyChoices==3 and emptyChoices[1].action=='installed./Applications/Windows App.app')
+  assert(emptyChoices[2].action=='installed./Applications/NoMachine.app')
+  assert(emptyChoices[3].action=='installed./System/Applications/Utilities/Screen Sharing.app')
   assert(emptyChoices[1].text==remoteSpec.title) -- App identities stay unchanged.
   assert(emptyChoices[1].subText==i18n.t('ui.remoteEmptyDetail'))
   assert(emptyOptions.title==i18n.t('ui.remoteEmptyTitle'))

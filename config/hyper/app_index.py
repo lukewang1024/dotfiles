@@ -36,7 +36,9 @@ def scan_mac(directories):
                         info = plistlib.load(file)
                 except (OSError, ValueError, plistlib.InvalidFileException):
                     continue
-                if info.get('LSUIElement') or info.get('LSBackgroundOnly'):
+                # Dock visibility does not determine whether an app can be
+                # launched: remote clients can also declare LSUIElement.
+                if info.get('LSBackgroundOnly'):
                     continue
                 identity = str(path.resolve())
                 if identity in seen:
