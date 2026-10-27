@@ -228,7 +228,9 @@ role preference does not change the QWEASDZXC direct shortcuts.
 The picker includes platform-supported configured apps plus the cached installed
 app index; it is not restricted to a role's suggested list. Configured entries
 can be selected before installation. Discovered macOS bundles retain show/hide
-behavior. Discovered Linux desktop entries use `StartupWMClass` when declared;
+behavior. macOS discovery includes apps with hidden Dock icons (`LSUIElement`),
+such as NoMachine and Windows App; background-only apps and nested helpers are
+excluded. Discovered Linux desktop entries use `StartupWMClass` when declared;
 without it they launch only. Discovered Windows AppsFolder entries launch only
 because that index does not provide a reliable window identity. These limitations
 are labelled in the picker. Use a configured app entry for its existing toggle

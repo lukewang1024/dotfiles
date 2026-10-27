@@ -16,10 +16,28 @@ class AppIndexTests(unittest.TestCase):
                 (path/'Info.plist').write_bytes(plistlib.dumps(info))
             bundle(root/'Trae Real Name.app/Contents',{'CFBundleName':'Trae Real Name','CFBundleIdentifier':'actual.vendor.id'})
             bundle(root/'Trae Real Name.app/Contents/Helper.app/Contents',{'CFBundleName':'Nested helper'})
-            bundle(root/'Agent.app/Contents',{'CFBundleName':'Background','LSUIElement':True})
+            bundle(root/'Agent.app/Contents',{'CFBundleName':'Background','LSBackgroundOnly':True})
             rows=app_index.scan_mac([root])
             self.assertEqual([row['title'] for row in rows],['Trae Real Name'])
             self.assertEqual(rows[0]['bundle'],'actual.vendor.id')
+
+    def test_mac_discovers_remote_clients_with_hidden_dock_icons(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            clients={'NoMachine':'com.nomachine.nxdock','Windows App':'com.microsoft.rdc.macos',
+                     'Screen Sharing':'com.apple.ScreenSharing'}
+            for name,identity in clients.items():
+                contents=root/(name+'.app')/'Contents'
+                contents.mkdir(parents=True)
+                info={'CFBundleName':name,'CFBundleIdentifier':identity}
+                if name!='Screen Sharing':info['LSUIElement']=True
+                (contents/'Info.plist').write_bytes(plistlib.dumps(info))
+                helper=contents/'Helper.app/Contents'
+                helper.mkdir(parents=True)
+                (helper/'Info.plist').write_bytes(plistlib.dumps({'CFBundleName':'Nested helper'}))
+            rows=app_index.scan_mac([root])
+            self.assertEqual({row['title']:row['bundle'] for row in rows},clients)
+            self.assertEqual(len(rows),3)
 
     def test_linux_xdg_overrides_hidden_entries_and_localized_name(self):
         with tempfile.TemporaryDirectory() as temp:
