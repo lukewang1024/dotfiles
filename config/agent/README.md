@@ -27,14 +27,19 @@ machine-specific paths to these shared files.
 
 ### Codex scenes and teams
 
-`agent-team/config/teams.json` is the shared source for daily, hard and batch
-scenes. Single and Team select the same scene, and Fast is scene-wide. Use:
+`agent-team/config/teams.json` is the shared source for daily, hard, batch and
+computer (电脑自动化) Codex scenes. Single and Team select the same scene, and
+Fast is scene-wide. Use:
 
 ```sh
 agent start codex --scene daily
 agent start codex --scene hard --team
 agent start codex --scene batch --team --tmux
+agent start codex --scene computer
 ```
+
+The computer scene selects GPT-6.1 Terra max for Single, Team lead and workers,
+with Fast off. It uses the existing computer-use skills and desktop tools.
 
 The `agent` entrypoint is supplied by tmux-agent-workbench and delegates scene
 resolution to `agent-team start codex`. `codex` defaults to daily Single after
