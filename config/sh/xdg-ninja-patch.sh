@@ -76,3 +76,6 @@ alias xonsh='xonsh --rc "$XDG_CONFIG_HOME/xonsh/xonshrc"'
 
 # xorg-xauth
 export XAUTHORITY="$XDG_RUNTIME_DIR/Xauthority"
+
+# CCM Copilot Agent
+export CCM_AGENT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/ccm-copilot-agent"
