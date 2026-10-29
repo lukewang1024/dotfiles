@@ -87,6 +87,7 @@ def ish_client_setup(c):
         c.link(c.repo / 'util/ish/zsh', c.bin / 'zsh')
     for name in ('ssh-connect', 'ssh-setup', 'ssh-pair'):
         c.link(c.repo / 'util/shell' / name, c.bin / name)
+    c.link(c.repo / 'util/kerberos/kinit-auto-login', c.bin / 'kinit-auto-login')
     # Retire only our former link; never delete a user's same-named command.
     old = c.bin / 'ish-connect'
     if old.is_symlink() and old.resolve() == (c.repo / 'util/ish/ish-connect').resolve():

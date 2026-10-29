@@ -175,6 +175,7 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual((conf / 'krb5.conf').read_text(), '# administrator profile\n')
         self.assertEqual((conf / 'user.conf').read_text(), 'KRB5_REALM=LOCAL.TEST\n')
         self.assertTrue((c.bin / 'ssh-connect').is_symlink())
+        self.assertEqual((c.bin / 'kinit-auto-login').resolve(), ROOT / 'util/kerberos/kinit-auto-login')
         self.assertFalse((c.bin / 'ish-connect').is_symlink())
 
     def test_ish_installs_login_wrapper_only_with_compat_library(self):

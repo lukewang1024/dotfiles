@@ -139,7 +139,7 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
   不安装本地 Codex、agent-team 或 Machine Fabric；开发工具和完整工作台运行在远端。
 - 公共 zsh 插件首启可能继续下载；云端通过不代表 iPad mini 4 的启动速度可接受。
 
-`ssh-connect`、`ish-doctor` 安装到 `~/.local/bin`。默认配置为
+`ssh-connect`、`ish-doctor`、`kinit-auto-login` 安装到 `~/.local/bin`。默认配置为
 `~/.config/ish-kerberos/{user.conf,krb5.conf}`，票据缓存为
 `FILE:~/.cache/ish-kerberos/krb5cc`（环境变量中是展开后的绝对路径）。
 初始化后的 ash/zsh 登录环境会自动设置相同的 `KRB5_CONFIG` 和 `KRB5CCNAME`，
@@ -157,7 +157,32 @@ ish-doctor --ssh               # 包含真实 SSH 认证的诊断
 普通 `ssh-connect` 打开远端 shell，`--tmux` 恢复 tmux，`--check` 非交互验证。
 已有 `user.conf` 无需迁移；`./init sync` 会移除旧的 dotfiles `ish-connect` 链接。
 Termux 和其他平台也使用同一命令，按 [Termux 配置说明](termux.md#kerberos-ssh) 绑定主机和 Principal。
-只在连接时检查票据；过期后仍需在 kinit 提示中输入密码，没有后台续票或密码保存。
+默认只在连接时检查票据；没有配置自动登录时，过期后仍需在 kinit 提示中输入密码。
+
+### 可选：自动获取 Kerberos 票据
+
+已完成 `./init kerberos` 后，可以启用同一套 `kinit-auto-login`：
+
+```sh
+./init sync
+kinit-auto-login install
+kinit-auto-login status
+# 需要立即刷新时：
+kinit-auto-login renew
+```
+
+iSH 会从现有 `ish-kerberos/user.conf` 读取 Principal，使用相同的 `KRB5_CONFIG`
+和 `KRB5CCNAME`；显式设置的环境变量优先。首次缺少 keytab 时会交互生成并验证，
+密码只在终端输入，保存的是权限为 600 的 keytab。已有有效 keytab 时直接复用。
+生成的 keytab 默认位于 `$XDG_DATA_HOME/kinit-auto-login/`，日志和 PID 位于
+`$XDG_STATE_HOME/kinit-auto-login/`，工具配置位于 `$XDG_CONFIG_HOME/kinit-auto-login/kinit.env`。
+
+iSH 使用后台进程，每六小时获取一次票据，并在私有的
+`$XDG_CONFIG_HOME/.zshrc.local` 写入幂等启动块；不修改仓库中的共享 `.zshrc`。
+iPadOS 挂起 iSH 时后台工作也会暂停，重新进入登录 Shell 后会检查并恢复进程。
+`ssh-connect --tmux` 在票据过期时也会先尝试 keytab 刷新。密码更改后运行
+`kinit-auto-login gen-keytab` 重新生成；停用时运行 `kinit-auto-login uninstall`，
+该命令保留 keytab。
 
 SSH 默认只尝试 `gssapi-with-mic`，不委派 TGT、不回退到密码/公钥，不自动接受新主机公钥。
 `ssh-connect --tmux` 还禁用连接复用，防止旧的已认证连接绕过检查。首次连接必须通过可信渠道

@@ -37,6 +37,27 @@ ENV_FILE="$CONFIG_DIR/kinit.env"
 STATE_DIR="$CONFIG_DIR/krb5"
 LOG_FILE="$STATE_DIR/kinit.log"
 PID_FILE="$STATE_DIR/kinit-daemon.pid"
+
+KAL_IS_ISH=no
+case "$(uname -r)" in
+  *-ish*)
+    KAL_IS_ISH=yes
+    umask 077
+    STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/kinit-auto-login"
+    LOG_FILE="$STATE_DIR/kinit.log"
+    PID_FILE="$STATE_DIR/kinit-daemon.pid"
+    ISH_CONFIG_DIR="${ISH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/ish-kerberos}"
+    # Background processes must share the same profile/cache as manual kinit,
+    # even when started without a login shell's environment.
+    KRB5_CONFIG="${KRB5_CONFIG:-$ISH_CONFIG_DIR/krb5.conf}"
+    KRB5CCNAME="${KRB5CCNAME:-FILE:${XDG_CACHE_HOME:-$HOME/.cache}/ish-kerberos/krb5cc}"
+    export KRB5_CONFIG KRB5CCNAME
+    # The iSH Python wrapper selects the verified isolated interpreter. A login
+    # shell can otherwise leave the broken system interpreter first on PATH.
+    PATH="$HOME/.local/bin:${PATH:-/usr/bin:/bin:/usr/sbin:/sbin}"
+    export PATH
+    ;;
+esac
 # Older versions forced a FILE cache through launchd. Keep its exact value only
 # so install/uninstall can remove that owned override without clobbering a cache
 # selection the user configured independently.
@@ -65,6 +86,11 @@ case "$(basename "${SHELL:-/bin/bash}")" in
   bash) RC_FILE="$HOME/.bashrc" ;;
   *)    RC_FILE="$HOME/.profile" ;;
 esac
+if [ "$KAL_IS_ISH" = yes ]; then
+  # The shared .zshrc is a repository symlink. iSH already loads this private
+  # override; do not append a device-specific hook through that symlink.
+  RC_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/.zshrc.local"
+fi
 HOOK_BEGIN="# >>> dotfiles kinit-auto-login (managed) >>>"
 HOOK_END="# <<< dotfiles kinit-auto-login (managed) <<<"
 
@@ -117,7 +143,7 @@ persist_principal() {
 }
 
 # Resolve the principal: --principal on the command line > KRB_PRINCIPAL in the env
-# file > default ticket from klist > error out.
+# file > iSH user.conf > default ticket from klist > error out.
 resolve_principal() {
   p="${CLI_PRINCIPAL:-}"
   if [ -z "$p" ] && [ -f "$ENV_FILE" ]; then
@@ -127,6 +153,10 @@ resolve_principal() {
       ""|your.name@*) : ;;
       *) p="$KRB_PRINCIPAL" ;;
     esac
+  fi
+  if [ -z "$p" ] && [ "$KAL_IS_ISH" = yes ] && [ -f "$ISH_CONFIG_DIR/user.conf" ]; then
+    # user.conf is data, not executable shell configuration.
+    p="$(awk -F= '$1 == "KRB5_PRINCIPAL" && $2 ~ /^[A-Za-z0-9_][A-Za-z0-9_@.\/+:-]*$/ {print $2; exit}' "$ISH_CONFIG_DIR/user.conf")"
   fi
   if [ -z "$p" ]; then
     # If a ticket already exists, reuse its default principal so the user need not retype it.
@@ -293,6 +323,8 @@ linux_keytab_path() {
   fi
   if [ -n "${KEYTAB_PATH:-}" ] && [ "${KEYTAB_PATH:-}" != "" ]; then
     printf '%s\n' "$KEYTAB_PATH"
+  elif [ "$KAL_IS_ISH" = yes ]; then
+    printf '%s\n' "${XDG_DATA_HOME:-$HOME/.local/share}/kinit-auto-login/$(echo "$principal" | cut -d@ -f1).keytab"
   else
     printf '%s\n' "$STATE_DIR/$(echo "$principal" | cut -d@ -f1).keytab"
   fi
@@ -456,6 +488,14 @@ linux_renew() {
     echo "keytab does not exist: $keytab — run '$(basename "$SELF") gen-keytab' first" >&2
     return 1
   fi
+  if [ "$KAL_IS_ISH" = yes ]; then
+    case "$KRB5CCNAME" in
+      FILE:/*)
+        kal_cache_path=${KRB5CCNAME#FILE:}
+        mkdir -p "${kal_cache_path%/*}"
+        ;;
+    esac
+  fi
   if kinit -kt "$keytab" "$principal" >>"$LOG_FILE" 2>&1; then
     log_line "kinit ok ($principal)"
     return 0
@@ -490,9 +530,14 @@ _proc_is_our_daemon() {
 # starttime matches) to avoid killing the wrong process after PID reuse post-OOM.
 linux_daemon_pid() {
   [ -f "$PID_FILE" ] || return 1
-  read -r pid saved_start < "$PID_FILE" 2>/dev/null || return 1
-  [ -n "${pid:-}" ] || return 1
-  case "$pid" in *[!0-9]*) return 1 ;; esac  # digits only, else not a real pid
+  # BusyBox read can hang polling regular files under iSH. Read with cat,
+  # then parse the owned PID record without shell evaluation or glob expansion.
+  pid_record="$(cat "$PID_FILE" 2>/dev/null)" || return 1
+  pid=${pid_record%% *}
+  saved_start=''
+  case "$pid_record" in *' '*) saved_start=${pid_record#* } ;; esac
+  case "$pid" in ''|*[!0-9]*|0|1) return 1 ;; esac
+  case "$saved_start" in *[!0-9]*) return 1 ;; esac
   kill -0 "$pid" 2>/dev/null || return 1
   _proc_is_our_daemon "$pid" || return 1
   if [ -n "${saved_start:-}" ]; then         # if we have a fingerprint, verify it to rule out PID reuse
@@ -514,11 +559,7 @@ linux_daemon_run() {
   trap 'log_line "daemon stopping (pid $$)"; rm -f "$PID_FILE"; exit 0' INT TERM
   log_line "daemon started (pid $$, $principal, interval ${interval}s)"
   while :; do
-    if kinit -kt "$keytab" "$principal" >/dev/null 2>&1; then
-      log_line "kinit ok ($principal)"
-    else
-      log_line "kinit FAILED ($principal) — keytab stale? rerun gen-keytab"
-    fi
+    linux_renew || true
     sleep "$interval"
   done
 }
@@ -530,13 +571,18 @@ linux_daemon_start() {
   fi
   rm -f "$PID_FILE"  # clean up a stale pid left by OOM / reuse (already confirmed not our process)
   nohup "$SELF" _run >/dev/null 2>&1 &
-  sleep 1
-  if pid="$(linux_daemon_pid)"; then
-    echo "daemon started (pid $pid); log: $LOG_FILE"
-  else
-    echo "daemon failed to start, see $LOG_FILE" >&2
-    return 1
-  fi
+  attempts=1
+  [ "$KAL_IS_ISH" != yes ] || attempts=10
+  while [ "$attempts" -gt 0 ]; do
+    sleep 1
+    if pid="$(linux_daemon_pid)"; then
+      echo "daemon started (pid $pid); log: $LOG_FILE"
+      return 0
+    fi
+    attempts=$((attempts - 1))
+  done
+  echo "daemon failed to start, see $LOG_FILE" >&2
+  return 1
 }
 
 # ---- systemd --user path (preferred): service(oneshot renew) + timer(boot + periodic) ----
@@ -617,6 +663,7 @@ linux_systemd_uninstall() {
 # ---- nohup fallback path: resident loop + login-shell rc hook (only when systemd --user is unavailable) ----
 
 linux_nohup_install() {
+  mkdir -p "$(dirname "$RC_FILE")"
   # Login-shell rc autostart hook (so the daemon recovers after a headless SSH
   # reconnect; not firing in a non-interactive shell is expected).
   if [ -f "$RC_FILE" ] && grep -qF "$HOOK_BEGIN" "$RC_FILE"; then
@@ -670,6 +717,8 @@ linux_install() {
     echo "• no keytab found, generating one first"
     linux_gen_keytab || return 1
   fi
+  # Validate an existing keytab before installing an iSH login hook/daemon.
+  if [ "$KAL_IS_ISH" = yes ]; then linux_renew || return 1; fi
   persist_principal "$principal"  # persist so background renew can still resolve it after the cache is cleared
   sup="$(linux_supervisor)"
   echo "• supervisor: $sup"
