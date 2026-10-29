@@ -35,6 +35,7 @@ exec zsh -l
 | `./init all` | iSH 和 Termux 都没有额外桌面软件组，等同 core |
 | `./init basic` / `./init sync` | 仅更新配置与工具链接，不安装软件、不联网下载插件 |
 | `./init kerberos` | 交互配置 Kerberos 和远程主机；不询问或保存密码 |
+| `./init workbench` | 安装或修复 tmux-agent-workbench 的本机核心和命令 |
 | `./init --list-tasks` | 查看公共任务 |
 | `./init --dry-run --json --platform ish core` | 在其他机器预览，无安装和文件修改 |
 
@@ -124,20 +125,29 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 
 ## 能力范围
 
-- 复用公共 zsh 环境和别名，使用轻量 iSH 交互配置；复用 Vim、tmux 配置和键位。
+- 复用 Termux 的公共 basic 配置任务：zsh、Git、Vim、tmux、npm/pnpm 配置、
+  所有公共工具链接和 agent 指令文件。交互 Shell 保留实测可用的轻量配置。
 - 安装 Alpine x86 原生 Git、curl、fzf、fd、jq、zoxide 等终端工具。
-  Alpine 此分支没有 diff-so-fancy，Git 分页使用 less，保留公共别名和个人身份配置。
+  Alpine 此分支没有 diff-so-fancy 包，core 从上游安装该 Perl 工具到 XDG 数据目录，
+  使用同名命令和 Git 分页器；保留公共别名和个人身份配置。
 - 实际搜索/提示符测试中，Alpine 3.24 的 ripgrep 和 starship 触发非法指令，因此 iSH
   默认不安装它们；fzf 文件列表使用 find，提示符使用原生 zsh。fd 通过 `~/.local/bin/fd`
   使用单线程并关闭 jemalloc thread cache；仍可能打印 MADV_DONTNEED 提示，但文件搜索已验证。
   不要给 fd 显式增加工作线程。Termux 的这些工具与提示符保持原行为。
 - Kerberos 使用 `krb5`，SSH 明确安装 `openssh-client-krb5`，不允许被普通客户端替代。
-- iSH 本地 tmux 保留公共插件，排除本地 agent workbench 和需要额外原生二进制的 fastcopy；
-  本地 Vim 不安装需要 Node 的 coc 或需要 Go 编译的 hexokinase。
-  剪贴板、打开链接及终端主题自动同步还取决于 iSH 的终端能力，需实机验收。
-- iSH 没有 Android API、Termux:API/服务管理。本客户端不启动本地 sshd/ssh-agent，
-  不安装本地 Codex、agent-team 或 Machine Fabric；开发工具和完整工作台运行在远端。
-- 公共 zsh 插件首启可能继续下载；云端通过不代表 iPad mini 4 的启动速度可接受。
+- 本地 tmux 使用与 Termux 相同的插件列表，包含 tmux-agent-workbench 和 fastcopy。
+  Workbench 安装器下载 `i586-unknown-linux-musl` 静态发布包（避开此模拟器不支持的 SSE 指令），无需在模拟器里编译 Rust；
+  安装后检查实际命令版本。`./init workbench` 可单独安装或修复。
+- `agent-team` 通过公共安装任务安装到 `$XDG_DATA_HOME/agent-team`，
+  `agent-team-install` 和更新器使用相同默认目录；`AGENT_TEAM_REPO` 可显式覆盖。
+  需要启动具体 agent 时，该 agent 的 CLI 仍须在目标机器上可用。
+- iSH 没有 Android API 或 Termux 服务管理。SSH 服务通过 `./init sshd` 配置，
+  不调用 Android 的 `sv-enable`。剪贴板、打开链接及主题同步取决于终端能力。
+- Machine Fabric 是独立服务，不是 tmux-agent-workbench。目前上游没有 i686 发布包，
+  Linux 安装器要求 systemd，因此 iSH core 不安装该服务。
+- 本地 Vim 保留需要 Node 的 coc 和需要 Go 的 hexokinase 的现有兼容排除。
+  Alpine 3.24 的 ripgrep/starship、Python 和 ncurses 的已知问题见上文；
+  不因这些问题排除可运行的公共工具或整个 workbench。
 
 `ssh-connect`、`ish-doctor`、`kinit-auto-login` 安装到 `~/.local/bin`。默认配置为
 `~/.config/ish-kerberos/{user.conf,krb5.conf}`，票据缓存为

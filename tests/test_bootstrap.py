@@ -68,7 +68,7 @@ class BootstrapTests(unittest.TestCase):
             self.assertTrue(any([f'$util_dir/shell/{helper}', f'$bin_dir/{helper}'] in entries
                                 for entries in LINKS.values()))
 
-    def test_ish_core_uses_shared_config_and_gssapi_client_without_servers(self):
+    def test_ish_core_installs_shared_tools_and_gssapi_client(self):
         c = self.context('ish')
         for name, arguments in select_tasks('ish', 'core', []):
             c.task(name, *arguments)
@@ -84,10 +84,42 @@ class BootstrapTests(unittest.TestCase):
             self.assertNotIn('openssh-server', a)
             self.assertNotIn('openssh-client-default', a)
         task_names = [e['name'] for e in c.events if e['kind'] == 'task']
-        for name in ('zinit_install', 'git_setup', 'tmux_plugins_setup', 'vim_plugins_setup', 'ssh_setup'):
+        for name in ('zinit_install', 'basic_env_setup', 'util_setup', 'git_setup', 'tmux_plugins_setup',
+                     'workbench_setup', 'agent_team_setup', 'vim_plugins_setup', 'ssh_setup'):
             self.assertIn(name, task_names)
-        for name in ('termux_ssh_setup', 'agent_team_setup', 'setup_machine_fabric'):
+        for name in ('termux_ssh_setup', 'setup_machine_fabric'):
             self.assertNotIn(name, task_names)
+
+    def test_ish_and_termux_install_the_same_shared_helpers(self):
+        def shared_links(platform, task):
+            c = self.context(platform)
+            c.task(task)
+            return {e['target'] for e in c.events if e['kind'] == 'link'
+                    and ('/bin/' in e['target'] or 'AGENTS.md' in e['target'] or 'CLAUDE.md' in e['target'])}
+        termux = shared_links('termux', 'termux_basic_setup')
+        ish = shared_links('ish', 'ish_basic_setup')
+        self.assertTrue(termux)
+        self.assertEqual(termux - ish, set())
+
+    def test_workbench_fresh_install_and_repair_are_available_on_mobile(self):
+        for platform in ('ish', 'termux'):
+            with self.subTest(platform=platform):
+                c = self.context(platform)
+                for name, arguments in select_tasks(platform, 'workbench', []):
+                    c.task(name, *arguments)
+                commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+                root = c.data / 'tmux/plugins/tmux-agent-workbench'
+                self.assertIn(['git', 'clone', '--depth', '1',
+                               'https://github.com/lukewang1024/tmux-agent-workbench.git', str(root)], commands)
+                self.assertIn([str(root / 'install'), str(c.bin)], commands)
+                self.assertIn([str(c.bin / 'tmux-agent-workbench'), '--version'], commands)
+
+    def test_agent_team_default_checkout_uses_xdg(self):
+        c = self.context('ish')
+        c.env.pop('AGENT_TEAM_REPO', None)
+        c.task('agent_team_setup')
+        commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+        self.assertIn([sys.executable, str(c.data / 'agent-team/install.py'), '--bin-dir', str(c.bin)], commands)
 
     def test_ish_installed_packages_skip_network_and_install(self):
         c = self.context('ish', dry=False)

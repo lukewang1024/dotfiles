@@ -212,7 +212,8 @@ tmux-workbench-update
 This fast-forwards `dotfiles`, `agent-team`, `tmux-agent-workbench`, and
 `tmux-adaptive-theme`, runs the dotfiles sync and both command installers,
 then restarts the Workbench daemon and existing sidebar panes before reloading
-a running tmux server. Set `AGENT_TEAM_REPO` if its checkout is elsewhere.
+a running tmux server. The agent-team checkout defaults to
+`$XDG_DATA_HOME/agent-team`; set `AGENT_TEAM_REPO` if it is elsewhere.
 The workbench checkout is left untouched when it has local or unreleased
 commits, or no upstream branch; the installer still installs the latest GitHub release.
 The updater selects the most recently published release, including prereleases.

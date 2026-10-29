@@ -7,9 +7,9 @@ import shlex
 from .engine import Failure
 from .tasks import sequence, task
 
-# Native clients only. Codex and development toolchains run on the SSH host.
+# Use native Alpine packages plus the shared tool and agent installers.
 ISH_PACKAGES = ('ca-certificates bash curl fd file fzf git jq krb5 '
-                'less nano openssh-client-krb5 python3 rsync shadow '
+                'less nano openssh-client-krb5 perl python3 rsync shadow '
                 'tig tmux tree unzip vim which zip zoxide zsh').split()
 
 
@@ -103,11 +103,7 @@ def ish_client_setup(c):
 
 @task()
 def ish_basic_setup(c):
-    sequence(c, 'xdg_dir_create', 'zsh_config_setup', 'tmux_config_setup',
-             'vim_config_setup', 'tig_setup', 'python_setup')
-    c.task('git_setup', 'configure-only')
-    for name in ('theme-sync', 'tmux-appearance-fallback'):
-        c.link(c.repo / 'util/shell' / name, c.bin / name)
+    c.task('basic_env_setup')
     # This also makes manual kinit/klist/ssh and the helpers use the same cache.
     block = ('export DOTFILES_HOME=' + shlex.quote(str(c.repo)) + '\n'
              '. "$DOTFILES_HOME/config/ish/env.sh"\n')
@@ -118,15 +114,24 @@ def ish_basic_setup(c):
 
 
 @task()
+def ish_git_pager_setup(c):
+    # Alpine has no package for this portable Perl command.
+    repo = c.data / 'diff-so-fancy'
+    c.sync_repo(repo, 'https://github.com/so-fancy/diff-so-fancy.git')
+    c.link(repo / 'diff-so-fancy', c.bin / 'diff-so-fancy')
+
+
+@task()
 def prepare_ish_env(c, mode='core'):
     if mode not in ('core', 'all'):
         raise Failure('iSH supports core and all; use basic/sync for configuration only')
     if mode == 'all':
         c.note('iSH has no extra desktop package set; all uses core, as on Termux')
-    sequence(c, 'install_ish_core_packages', 'zinit_install', 'ish_basic_setup',
-             'set_default_shell', 'tmux_plugins_setup', 'vim_plugins_setup')
+    sequence(c, 'install_ish_core_packages', 'zinit_install', 'ish_git_pager_setup', 'ish_basic_setup',
+             'set_default_shell', 'tmux_plugins_setup', 'agent_team_setup', 'vim_plugins_setup')
     c.note('SKIP ripgrep/starship: they hit unsupported instructions in the tested Alpine build; use grep/find and the native zsh prompt. fd uses a single-worker compatibility wrapper.')
-    c.note('iSH client ready. Android services, local sshd/agents and local Codex are not part of this client profile.')
+    c.note('Shared helpers, tmux-agent-workbench and agent-team are installed. Use ./init sshd for the iSH SSH service; Android APIs and Termux services do not apply.')
+    c.note('Machine Fabric currently publishes only 64-bit runtimes; its Linux installer requires systemd. iSH has neither, so its service is not installed.')
 
 
 @task()

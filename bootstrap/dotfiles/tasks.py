@@ -239,8 +239,9 @@ def git_setup(c, mode='interactive'):
         dest = c.config / 'git/config'
         for name in ('alias', 'common'):
             c.link(c.repo / 'config/git' / name, c.config / 'git' / name)
+        pager = 'diff-so-fancy | less --tabs=4 -RFX' if c.exists('diff-so-fancy') else 'less -R'
         append_block(c, dest, '[include]\n  path = alias\n  path = common\n'
-                     '[core]\n  pager = less -R\n[interactive]\n  diffFilter = cat\n')
+                     '[core]\n  pager = ' + pager + '\n[interactive]\n  diffFilter = cat\n')
         for name in ('git-branch-cleanup', 'git-clone-bare', 'git-new-branch', 'git-set-identity'):
             c.link(c.repo / 'util/shell' / name, c.bin / name)
         return
@@ -413,10 +414,16 @@ def tmux_plugins_setup(c):
     if not tpm.exists():
         c.sync_repo(tpm, 'https://github.com/tmux-plugins/tpm')
     c.command(tpm / 'bin/install_plugins')
-    wb = root / 'tmux-agent-workbench'
-    if c.platform != 'ish' and (c.dry_run or (wb / 'install').exists()):
-        c.command('git', '-C', wb, 'pull', '--ff-only')
-        c.command(wb / 'install', c.bin)
+    c.task('workbench_setup')
+
+
+@task()
+def workbench_setup(c):
+    wb = c.data / 'tmux/plugins/tmux-agent-workbench'
+    c.sync_repo(wb, 'https://github.com/lukewang1024/tmux-agent-workbench.git')
+    c.command(wb / 'install', c.bin)
+    # A missing core must fail initialization, rather than leave broken bindings.
+    c.command(c.bin / 'tmux-agent-workbench', '--version')
 
 
 @task()
@@ -519,7 +526,7 @@ def util_setup(c, mode='all'):
 @task()
 def agent_team_setup(c):
     """Keep the standalone agent-team checkout and entrypoints usable."""
-    repo = Path(c.env.get('AGENT_TEAM_REPO', str(c.home / 'Code/github/agent-team'))).expanduser()
+    repo = Path(c.env.get('AGENT_TEAM_REPO', str(c.data / 'agent-team'))).expanduser()
     c.sync_repo(repo, 'https://github.com/lukewang1024/agent-team.git')
     c.command(sys.executable, repo / 'install.py', '--bin-dir', c.bin)
 
