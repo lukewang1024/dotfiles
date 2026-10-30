@@ -353,7 +353,7 @@ def enhance(upstream, client=None):
     return EnhancedPlugin
 
 
-def launch(upstream, pane, urls_only=False, client=None):
+def launch(upstream, pane, urls_only=False, client=None, filter_key=None):
     def option(name, default):
         return upstream.get_option_only("@extrakto_" + name) or default
 
@@ -364,6 +364,8 @@ def launch(upstream, pane, urls_only=False, client=None):
         child_args += ["--client", client]
     if urls_only:
         child_args.append("--urls")
+    elif filter_key:
+        child_args += ["--filter", filter_key]
     child = shlex.join([*child_args, pane, mode])
     if mode == "popup":
         size = option("popup_size", "90%").split(",")
@@ -387,7 +389,9 @@ def launch(upstream, pane, urls_only=False, client=None):
 
 def main():
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument("--urls", action="store_true", help="select URLs; Enter opens, Ctrl-y copies")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--urls", action="store_true", help="select URLs; Enter opens, Ctrl-y copies")
+    selection.add_argument("--filter", dest="filter_key", help="start with an ExTrakto filter; Enter copies")
     parser.add_argument("--client", help="tmux client that invoked the picker")
     parser.add_argument("pane")
     parser.add_argument("mode", nargs="?", choices=("popup", "split"))
@@ -396,9 +400,17 @@ def main():
         ["tmux", "display-message", "-p", "-t", args.pane, "#{client_name}"], text=True,
     ).strip() or None
     upstream = load_upstream()
+    if args.filter_key and args.filter_key not in {"all", "line", "paragraph", *upstream.Extrakto().keys()}:
+        raise RuntimeError(f"Unknown or disabled ExTrakto filter: {args.filter_key}")
     if args.mode is None:
-        return launch(upstream, args.pane, args.urls, client)
+        return launch(upstream, args.pane, args.urls, client, args.filter_key)
     picker = enhance(upstream, client)(args.pane, args.mode)
+    if args.filter_key:
+        order = list(dict.fromkeys([args.filter_key, *(
+            key for key in picker.next_filter if key != "initial"
+        )]))
+        picker.next_filter = picker.prep_cycle(order)
+        picker.next_filter["initial"] = args.filter_key
     if args.urls:
         picker.next_filter = {"initial": "url", "url": "url"}
         picker.copy_key, picker.open_key = "ctrl-y", "enter"

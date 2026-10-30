@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import select
+import shlex
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -173,6 +174,48 @@ class TerminalTransportTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "no interactive terminal"):
                     module.write_terminal("client-a", b"do not write this")
             self.assertEqual(Path(target.name).read_bytes(), b"")
+
+
+class PickerLaunchTests(unittest.TestCase):
+    def test_explicit_type_reaches_capture_and_can_cycle_to_general_text(self):
+        selected = []
+
+        class Picker:
+            fzf_tool = "fzf"
+
+            def __init__(self, pane, mode):
+                self.next_filter = {"all": "word", "word": "all", "initial": "all"}
+
+            def prep_cycle(self, keys):
+                # Upstream supplies only the cycle, without an initial entry.
+                return dict(zip(keys, keys[1:] + keys[:1]))
+
+            def capture(self):
+                current = self.next_filter["initial"]
+                selected.extend([current, self.next_filter[current]])
+                return 0
+
+        upstream = SimpleNamespace(Extrakto=lambda: SimpleNamespace(keys=lambda: ["path", "word"]))
+        argv = ["tmux-extrakto", "--client", "client-a", "--filter", "path", "%42", "popup"]
+        with patch.object(module.sys, "argv", argv), \
+             patch.object(module, "load_upstream", return_value=upstream), \
+             patch.object(module, "enhance", return_value=Picker), \
+             patch.object(module.subprocess, "run", return_value=SimpleNamespace(stdout="")):
+            self.assertEqual(module.main(), 0)
+        self.assertEqual(selected, ["path", "all"])
+
+    def test_menu_filter_and_invoking_client_survive_the_popup_launch(self):
+        upstream = SimpleNamespace(get_option_only=lambda name: None)
+        with patch.object(module.subprocess, "check_output", return_value="/tmp/source directory\n"), \
+             patch.object(module.subprocess, "run", return_value=SimpleNamespace(returncode=0)) as run:
+            self.assertEqual(module.launch(upstream, "%42", client="/dev/pts/7", filter_key="path"), 0)
+        command = run.call_args.args[0]
+        child = shlex.split(command[-1])
+        self.assertEqual(command[command.index("-t") + 1], "/dev/pts/7")
+        self.assertEqual(command[command.index("-d") + 1], "/tmp/source directory")
+        self.assertEqual(child[child.index("--client") + 1], "/dev/pts/7")
+        self.assertEqual(child[child.index("--filter") + 1], "path")
+        self.assertEqual(child[-2:], ["%42", "popup"])
 
 
 class HostOpenTests(unittest.TestCase):
