@@ -76,8 +76,7 @@ def open_host_urls(client, urls):
             endpoint = next((e for e in endpoints if e.get("attachment") == info["tty"]), None)
             if endpoint:
                 if "open-url" not in endpoint.get("capabilities", []):
-                    if not info["type"].startswith("iTerm2 "):
-                        raise RuntimeError("Update Workbench on this client device and reconnect to enable local URL opening")
+                    raise RuntimeError("Update Workbench on this client device and reconnect to enable local URL opening")
                 else:
                     for url in urls:
                         result = subprocess.run(
@@ -87,10 +86,6 @@ def open_host_urls(client, urls):
                         if result.returncode:
                             raise RuntimeError(result.stderr.strip() or "The client could not open the URL")
                     return True
-    if info["type"].startswith("iTerm2 "):
-        for url in urls:
-            write_terminal(client, open_url_sequence(url))
-        return True
     # A local Termux session can use its native tool without a remote bridge.
     if os.environ.get("TERMUX_VERSION") and not os.environ.get("SSH_CONNECTION"):
         opener = shutil.which("termux-open-url")

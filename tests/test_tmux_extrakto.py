@@ -219,6 +219,26 @@ class PickerLaunchTests(unittest.TestCase):
 
 
 class HostOpenTests(unittest.TestCase):
+    def test_remote_iterm_without_a_bridge_does_not_claim_osc_success(self):
+        with patch.object(module, "terminal_info", return_value={"tty": "mac-tty", "type": "iTerm2 3.7.6"}), \
+             patch.object(module.shutil, "which", return_value="/bin/workbench"), \
+             patch.object(module.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout='{"clients": []}')), \
+             patch.dict(module.os.environ, {"SSH_CONNECTION": "fixture"}), \
+             patch.object(module, "write_terminal") as write:
+            with self.assertRaisesRegex(RuntimeError, "no local URL opener"):
+                module.open_host_urls("mac-client", ["https://example.com/"])
+            write.assert_not_called()
+
+    def test_old_iterm_client_requires_an_update_even_when_osc_can_be_written(self):
+        endpoints = [{"attachment": "mac-tty", "capabilities": ["clipboard"]}]
+        with patch.object(module, "terminal_info", return_value={"tty": "mac-tty", "type": "iTerm2 3.7.6"}), \
+             patch.object(module.shutil, "which", return_value="/bin/workbench"), \
+             patch.object(module.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=json.dumps({"clients": endpoints}))), \
+             patch.object(module, "write_terminal") as write:
+            with self.assertRaisesRegex(RuntimeError, "Update Workbench"):
+                module.open_host_urls("mac-client", ["https://example.com/"])
+            write.assert_not_called()
+
     def test_termux_bridge_is_selected_by_exact_attachment(self):
         endpoints = [{"attachment": "mac-tty", "capabilities": ["open-url"]},
                      {"attachment": "phone-tty", "capabilities": ["open-url"]}]
