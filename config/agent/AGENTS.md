@@ -24,6 +24,27 @@ Before operating tmux windows, agents, workspaces, or persistent dev servers, ru
 `tmux-agent-workbench conventions` and follow its instructions. Workbench owns
 these rules; keep this file as a reference rather than duplicating them here.
 
+## Task completion and remaining work
+
+Before ending an action task, independently check whether the agreed outcome
+has any remaining work. Check the applicable delivery steps: implementation,
+verification, commit/integration, release/publication, the actual installed or
+deployed behavior, and cleanup of task-owned resources. Use current evidence;
+state when a relevant step has not been verified. A merged PR, a published
+release, and a working installation are separate outcomes.
+
+Complete already-authorized work and routine cleanup without asking again.
+Do not expand the agreed scope or infer authorization to publish from this
+check. If something remains outside that scope, requires a user decision, or
+is waiting on an external result, say exactly what remains and why. Distinguish
+required follow-up from optional improvements.
+
+In the final reply, proactively state the closeout result in one short sentence
+in the user's language, such as “收尾：已完成。” or “收尾：还需发布新版本；本机已生效。”
+Do not claim full completion while required work remains, or leave the user to
+ask whether anything is left. Keep the check internal and the report concise;
+ordinary informational answers do not need a closeout checklist.
+
 ## Computer-use window cleanup
 
 Application windows, documents, dialogs, and browser tabs opened or created by
