@@ -13,17 +13,23 @@ hosts_file=${SSH_CONNECT_HOSTS_FILE:-"$xdg_config_home/ssh/hosts"}
 usage()
 {
   cat <<'EOF'
-usage: ssh-connect [--print | --check | --tmux | --workbench] [-- SSH_OPTIONS...]
+usage: ssh-connect [--print | --check | --tmux | --workbench] [--no-reconnect] [-- SSH_OPTIONS...]
        ssh-connect hosts path
        ssh-connect hosts list
        ssh-connect hosts discover
        ssh-connect hosts edit [--discover]
-       ssh-connect connect HOST [--check | --tmux | --workbench] [-- SSH_OPTIONS...]
+       ssh-connect connect HOST [--check | --tmux | --workbench] [--no-reconnect] [-- SSH_OPTIONS...]
 
 Pick an alias from the SSH host inventory and connect. `--workbench` uses the
 client-aware tmux-agent-workbench SSH transport so mobile completion and input
 notifications return to this device. `hosts edit --discover` merges concrete
 Host aliases found in SSH config files before opening $EDITOR.
+Interactive --tmux and --workbench connections retry up to 5 times, waiting
+1/2/4/8/16 seconds after failures. Connection and ticket-refresh time do not
+consume retries or shorten the waits. Then wait for manual retries. Press Enter
+while waiting to retry immediately; Ctrl-C exits. Manual retries do not reset
+the automatic budget. Normal detach/exit stops.
+Use --no-reconnect for a single attempt. Plain SSH and --check never retry.
 Kerberos mappings: $XDG_CONFIG_HOME/ssh/kerberos, lines HOST PRINCIPAL [SESSION].
 Existing iSH user.conf is also supported. GSSAPI hosts require a matching
 TGT; an interactive kinit is requested when needed. --check never prompts and
@@ -158,6 +164,153 @@ choose_host()
   sed -n "${choice}p" "$choices_file"
 }
 
+restore_retry_terminal()
+{
+  stty "$retry_tty_state" 2>/dev/null || :
+}
+
+reset_connection_terminal_modes()
+{
+  [ -t 0 ] && [ -t 2 ] || return 0
+  # A disconnected remote tmux may leave mouse tracking enabled in our pane.
+  printf '\033[?1000l\033[?1002l\033[?1003l\033[?1006l\033[?1015l' >&2
+}
+
+cleanup_retry_session()
+{
+  restore_retry_terminal
+  [ -z "$retry_error_log" ] || rm -f "$retry_error_log"
+}
+
+run_connection_attempt()
+{
+  if [ -n "$retry_error_log" ]; then
+    : >"$retry_error_log"
+    if "$@" 2>"$retry_error_log"; then
+      connection_status=0
+    else
+      connection_status=$?
+    fi
+    reset_connection_terminal_modes
+    if [ -s "$retry_error_log" ]; then
+      printf 'ssh-connect: workbench diagnostics:\n' >&2
+      sed 's/^/  /' "$retry_error_log" >&2
+    fi
+    return "$connection_status"
+  fi
+
+  if "$@"; then
+    reset_connection_terminal_modes
+    return 0
+  else
+    connection_status=$?
+  fi
+  reset_connection_terminal_modes
+  return "$connection_status"
+}
+
+wait_for_retry_input()
+{
+  if [ "$1" -eq 0 ]; then
+    # No timer in manual mode: leave an ordinary line prompt, with Ctrl-C.
+    stty icanon echo isig icrnl -igncr -inlcr intr '^C' || return 1
+    if IFS= read -r _retry_line; then
+      restore_retry_terminal
+      return 0
+    fi
+    restore_retry_terminal
+    return 1
+  fi
+
+  # POSIX read has no timeout option. VMIN=0/VTIME=10 makes dd's one-byte
+  # read wake on a key or after one second, without a background timer.
+  stty -icanon -echo isig icrnl -igncr -inlcr intr '^C' min 0 time 10 || return 1
+  while [ "$(date +%s)" -lt "$1" ]; do
+    # The trailing dot preserves a newline through command substitution.
+    retry_key=$(dd bs=1 count=1 2>/dev/null && printf '.') || {
+      restore_retry_terminal
+      return 1
+    }
+    case $retry_key in
+      '
+.') break ;;
+    esac
+  done
+  restore_retry_terminal
+}
+
+wait_to_reconnect()
+{
+  if [ "$retry_count" -lt 5 ]; then
+    retry_wait=$retry_delay
+    printf 'ssh-connect: %s disconnected (exit %s); retry %s/5 in %ss. Press Enter to retry now; Ctrl-C to exit.\n' \
+      "$host" "$connection_status" "$((retry_count + 1))" "$retry_wait" >&2
+    wait_for_retry_input "$(($(date +%s) + retry_wait))"
+    return $?
+  fi
+  printf 'ssh-connect: %s disconnected (exit %s); automatic reconnect limit reached (5/5 retries). Press Enter to retry; Ctrl-C to exit.\n' \
+    "$host" "$connection_status" >&2
+  wait_for_retry_input 0
+}
+
+connect_session()
+{
+  retry_error_log=''
+  if [ "$reconnect" -eq 0 ] || [ ! -t 0 ]; then
+    if run_connection_attempt "$@"; then
+      return 0
+    else
+      connection_status=$?
+    fi
+    return "$connection_status"
+  fi
+
+  retry_tty_state=$(stty -g) || return 1
+  if [ "$attach_workbench" -eq 1 ]; then
+    retry_error_log=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.XXXXXX" 2>/dev/null) || retry_error_log=''
+  fi
+  trap 'cleanup_retry_session' EXIT
+  trap 'exit 129' HUP
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+  retry_delay=1
+  retry_count=0
+  while :; do
+    if run_connection_attempt "$@"; then
+      return 0
+    else
+      connection_status=$?
+    fi
+    # Workbench collapses errors to 1; OpenSSH reports SSH failures as 255.
+    # Other exit codes, including interrupted commands, stop the retry loop.
+    case "$attach_workbench:$connection_status" in
+      1:1|*:255) ;;
+      *) return "$connection_status" ;;
+    esac
+    while :; do
+      wait_to_reconnect || return "$connection_status"
+      # A long outage can outlive the TGT. Recheck it after waiting, with the
+      # normal terminal settings restored before a possible kinit prompt.
+      if [ "$kerberos_enabled" = 1 ]; then
+        require_tgt
+      fi
+      retry_manual=1
+      if [ "$retry_count" -lt 5 ]; then
+        retry_count=$((retry_count + 1))
+        retry_delay=$((retry_delay * 2))
+        retry_manual=0
+      fi
+      printf '\033[2J\033[H' >&2
+      if [ "$retry_manual" -eq 1 ]; then
+        printf '%s\n' 'ssh-connect: reconnecting (manual)...' >&2
+      else
+        printf 'ssh-connect: reconnecting (%s/5)...\n' "$retry_count" >&2
+      fi
+      break
+    done
+  done
+}
+
 if [ "${1:-}" = hosts ]; then
   shift
   case ${1:-} in
@@ -202,12 +355,14 @@ print_only=0
 check_only=0
 attach_tmux=0
 attach_workbench=0
+reconnect=1
 while [ "$#" -gt 0 ]; do
   case $1 in
     --check) check_only=1; shift ;;
     --print) print_only=1; shift ;;
     --tmux) attach_tmux=1; shift ;;
     --workbench) attach_workbench=1; shift ;;
+    --no-reconnect) reconnect=0; shift ;;
     -h|--help) usage; exit 0 ;;
     --) shift; break ;;
     *) break ;;
@@ -262,7 +417,8 @@ if [ "$attach_workbench" -eq 1 ]; then
     check_workbench_policy
     require_tgt
   fi
-  exec tmux-agent-workbench client attach "$host"
+  connect_session tmux-agent-workbench client attach "$host"
+  exit 0
 fi
 
 if [ "$kerberos_enabled" = 1 ]; then
@@ -289,10 +445,16 @@ connect_ssh() {
 if [ "$check_only" = 1 ]; then
   connect_ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$@" "$host" whoami
 elif [ "$attach_tmux" -eq 1 ]; then
+  if [ "$reconnect" -eq 1 ] && [ -t 0 ]; then
+    # Detect a dead transport promptly instead of waiting on the OS TCP timer.
+    ssh_alive_interval=5
+    set -- "$@" -o ConnectTimeout=10 -o TCPKeepAlive=no \
+      -o ServerAliveInterval=5 -o ServerAliveCountMax=3
+  fi
   if [ "$kerberos_enabled" = 1 ]; then
-    connect_ssh "$@" -t "$host" "exec tmux new-session -A -s $TMUX_SESSION"
+    connect_session connect_ssh "$@" -t "$host" "exec tmux new-session -A -s $TMUX_SESSION"
   else
-    connect_ssh "$@" -t "$host" 'if command -v tmux-agent-workbench >/dev/null 2>&1; then exec tmux-agent-workbench client attach; else tmux attach-session || exec tmux new-session; fi'
+    connect_session connect_ssh "$@" -t "$host" 'if command -v tmux-agent-workbench >/dev/null 2>&1; then exec tmux-agent-workbench client attach; else tmux attach-session || exec tmux new-session; fi'
   fi
 else
   connect_ssh "$@" "$host"

@@ -74,6 +74,10 @@ Host devbox
   ControlMaster no
   ControlPath none
   StrictHostKeyChecking ask
+  ConnectTimeout 10
+  TCPKeepAlive no
+  ServerAliveInterval 5
+  ServerAliveCountMax 3
 ```
 
 ```sh
@@ -83,6 +87,7 @@ ssh-connect --tmux                 # 选择主机，进入/恢复远端 tmux
 ssh-connect --workbench            # Termux 的原有工作台入口，现包含票据检查
 ssh-connect connect devbox --tmux  # 直接连接指定别名
 ssh-connect connect devbox --check # 不取票、不提示指纹，认证后执行 whoami
+ssh-connect --workbench --no-reconnect # 只连接一次，不自动重连
 ```
 
 有有效且 Principal 匹配的 TGT 时直接连接；无票据、过期或身份不匹配时，交互执行
@@ -93,8 +98,30 @@ ssh-connect connect devbox --check # 不取票、不提示指纹，认证后执�
 直接报错；`hosts` 和 `--print` 不会取票。使用 Termux 现有 `krb5.conf` 和凭证缓存，
 不会改成 iSH 的路径。首次连接仍须通过可信渠道核对主机指纹。
 
-这是连接时按需取票，不是后台续票服务。自动刷新失败时才需要输入密码；已建立的 SSH
-不会因为本地 TGT 到期而由本脚本主动重连。Termux 实机验收仍需在设备上完成。
+交互式 `--tmux` 和 `--workbench` 遇到连接错误会重连同一主机。首次断线后，
+本次调用最多自动重试 5 次，每次连接失败后分别等待 1、2、4、8、16 秒；
+连接尝试和票据检查耗时不会扣减重试次数，也不会截短退避等待，因此网络超时较长时
+总重连时间会相应延长。
+达到次数上限后，保留终端，只等待手动重连，不再循环自动尝试。
+
+退避等待期间按回车会提前执行下一次重连，并计入这轮 5 次预算；达到上限后，
+每按一次回车只尝试一次，失败后继续等回车。回车不会重置自动重试次数预算。
+等待时按 Ctrl-C 退出；终端输入设置会恢复。已经建立的连接不会被重试次数上限
+中断。远端 tmux 中的进程继续运行；workbench 会沿用当前终端身份恢复
+工作位置，并重建通知通道。正常退出或 detach 结束连接，`--no-reconnect` 可禁用。
+普通 SSH、`--check` 和非交互调用不会自动重连。workbench 将各种连接/协议错误
+统一返回为 1，因此配置或远端程序错误也可能进入重试；检查错误信息，按 Ctrl-C
+后修复配置。
+
+`--tmux` 自动重连模式使用 5 秒心跳、3 次未响应判定和 10 秒连接超时。
+workbench 自己启动 SSH，需要在上面的 Host 配置中设置这些参数；黑洞连接通常
+约 15 秒被发现，显式断开可能更快。Wi-Fi/蜂窝切换改变 IP 或 NAT 映射时，原 TCP
+连接可能无法继续，自动重连期间会短暂停顿。Mosh 支持跨 IP 漫游，但需要客户端
+和服务端安装并允许 UDP；当前 workbench 的 SSH 控制/通知通道仍需单独处理。
+
+这是连接和重连时按需取票，不是后台续票服务。自动刷新失败时才需要输入密码；
+已建立的 SSH 不会因为本地 TGT 到期而由本脚本主动重连。Termux 切网实机验收
+仍需在设备上完成。
 
 ## Follow Android light/dark mode
 
