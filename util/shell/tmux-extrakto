@@ -1,0 +1,424 @@
+#!/usr/bin/env python3
+"""Extend extrakto with wrapped URLs and paragraphs from terminal output."""
+
+from argparse import ArgumentParser
+import base64
+import importlib.util
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import shutil
+import subprocess
+import sys
+import unicodedata
+from urllib.parse import urlsplit
+
+
+URL_START = re.compile(r"(?:https?|s?ftp|ssh|git|file)://|git@", re.I)
+URL_PART = re.compile(r"[A-Za-z0-9:/?#\[\]@!$&()*+,;=._~%+-]+")
+GAP = re.compile(r"[ \t\r\n]+")
+OSC8 = re.compile(r"\x1b\]8;[^;\x07\x1b]*;([^\x07\x1b]*)(?:\x07|\x1b\\)")
+CONTROLS = re.compile(
+    r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b\[[0-?]*[ -/]*[@-~]"
+)
+
+
+def terminal_info(client):
+    fields = ("name", "tty", "type")
+    output = subprocess.check_output(
+        ["tmux", "display-message", "-p", "-c", client,
+         "#{client_name}\t#{client_tty}\t#{client_termtype}"], text=True,
+    ).rstrip("\n")
+    values = output.split("\t")
+    if len(values) != len(fields) or not values[0] or not values[1]:
+        raise RuntimeError("the invoking terminal is no longer attached")
+    return dict(zip(fields, values))
+
+
+def write_terminal(client, data):
+    # This is the client's outer PTY, rather than the popup's inner PTY. Sending
+    # here bypasses tmux parsing and reaches exactly the terminal that invoked us.
+    info = terminal_info(client)
+    fd = os.open(info["tty"], os.O_WRONLY | os.O_NOCTTY)
+    try:
+        if not os.isatty(fd):
+            raise RuntimeError("the invoking client has no interactive terminal")
+        pending = memoryview(data)
+        while pending:
+            written = os.write(fd, pending)
+            if not written:
+                raise RuntimeError("unable to write to the invoking terminal")
+            pending = pending[written:]
+    finally:
+        os.close(fd)
+
+
+def clipboard_sequence(text):
+    return b"\x1b]52;c;" + base64.b64encode(text.encode("utf-8")) + b"\x07"
+
+
+def open_url_sequence(url):
+    return b"\x1b]1337;OpenURL=:" + base64.b64encode(url.encode("utf-8")) + b"\x07"
+
+
+def open_host_urls(client, urls):
+    """Use the exact attached device's native opener, independent of emulator."""
+    info = terminal_info(client)
+    workbench = shutil.which("tmux-agent-workbench")
+    if workbench:
+        snapshot = subprocess.run(
+            [workbench, "snapshot", "--json"], text=True, capture_output=True, timeout=3,
+        )
+        if snapshot.returncode == 0:
+            endpoints = json.loads(snapshot.stdout).get("clients", [])
+            endpoint = next((e for e in endpoints if e.get("attachment") == info["tty"]), None)
+            if endpoint:
+                if "open-url" not in endpoint.get("capabilities", []):
+                    if not info["type"].startswith("iTerm2 "):
+                        raise RuntimeError("Update Workbench on this client device and reconnect to enable local URL opening")
+                else:
+                    for url in urls:
+                        result = subprocess.run(
+                            [workbench, "client", "open-url", "--client", client, "--", url],
+                            text=True, capture_output=True, timeout=12,
+                        )
+                        if result.returncode:
+                            raise RuntimeError(result.stderr.strip() or "The client could not open the URL")
+                    return True
+    if info["type"].startswith("iTerm2 "):
+        for url in urls:
+            write_terminal(client, open_url_sequence(url))
+        return True
+    # A local Termux session can use its native tool without a remote bridge.
+    if os.environ.get("TERMUX_VERSION") and not os.environ.get("SSH_CONNECTION"):
+        opener = shutil.which("termux-open-url")
+        if opener:
+            for url in urls:
+                subprocess.run([opener, url], check=True)
+            return True
+    if os.environ.get("SSH_CONNECTION"):
+        raise RuntimeError("This SSH terminal has no local URL opener; connect with an updated Workbench client")
+    return False
+
+
+def decode_capture(raw):
+    targets = [m[1] for m in OSC8.finditer(raw) if URL_START.match(m[1])]
+    return CONTROLS.sub("", raw), targets
+
+
+def trim_url(value):
+    value = value.rstrip(".,;:!")
+    for left, right in (("(", ")"), ("[", "]")):
+        while value.endswith(right) and value.count(right) > value.count(left):
+            value = value[:-1]
+    return value
+
+
+def can_join(text, end, gap, part, width):
+    """Join URL-shaped continuations, never whitespace across paragraphs."""
+    whitespace = gap[0]
+    if re.search(r"\n[ \t\r]*\n", whitespace) or URL_START.match(part[0]):
+        return False
+    previous = text[:end]
+    line_start = previous.rfind("\n") + 1
+    column = len(previous[line_start:])
+    if width:
+        column = column % width or width
+    near_edge = width > 0 and column >= width - 6
+    tail = text[part.end():].split("\n", 1)[0].strip()
+    whole_line = not tail or not tail.strip(")]},.;")
+    url_shaped = any(c in part[0] for c in "/?&=#%")
+    boundary = previous[-1:] in "/?&=#%._-" or part[0][0] in "/?&#=%"
+    opaque_id = len(part[0]) >= 16 and any(c.isdigit() for c in part[0])
+    if "\n" in whitespace:
+        indented = whitespace.rsplit("\n", 1)[1] != ""
+        return (near_edge and whole_line and (indented or opaque_id or url_shaped)) or (
+            (indented or boundary) and (url_shaped or (boundary and opaque_id))
+        )
+    return boundary and (url_shaped or opaque_id) and (
+        len(whitespace) > 1 or previous[-1:] in "/?&=#%"
+    )
+
+
+def extract_urls(text, width=0):
+    result = []
+    consumed = 0
+    for start in URL_START.finditer(text):
+        if start.start() < consumed:
+            continue
+        part = URL_PART.match(text, start.start())
+        if part is None:
+            continue
+        value, end = part[0], part.end()
+        while trim_url(value) == value:
+            gap = GAP.match(text, end)
+            if gap is None:
+                break
+            next_part = URL_PART.match(text, gap.end())
+            if next_part is None or not can_join(text, end, gap, next_part, width):
+                break
+            value += next_part[0]
+            end = next_part.end()
+        consumed = end
+        value = trim_url(value)
+        # An ellipsis means characters were lost; do not offer its prefix as a URL.
+        if text[end:end + 1] == "…" or "..." in value:
+            continue
+        if value and value != start[0]:
+            result.append(value)
+    return list(dict.fromkeys(result))
+
+
+def join_prose(left, right):
+    if not left:
+        return right
+    no_space = (
+        unicodedata.east_asian_width(left[-1]) in ("W", "F")
+        or unicodedata.east_asian_width(right[0]) in ("W", "F")
+        or left[-1] in "([{/-"
+        or right[0] in "),.;:!?]}"
+    )
+    return left + ("" if no_space else " ") + right
+
+
+def extract_paragraphs(text):
+    result, current = [], ""
+    fenced = False
+
+    def flush():
+        nonlocal current
+        if len(current) >= 5:
+            result.append(current)
+        current = ""
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        if line.startswith(("```", "~~~")):
+            flush()
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        message_start = raw.startswith(("• ", "› ", "❯ "))
+        if message_start:
+            flush()
+            line = line[2:].strip()
+        if (
+            not line
+            or line.startswith(("│", "└", "├", "╭", "╰", "|"))
+            or re.match(r"^[─━═_-]{3,}$", line)
+            or re.match(r"^(?:Working|Thinking)\s*\(.*(?:interrupt|esc)", line)
+            or line.startswith(("Ask Codex to do anything", "? for shortcuts"))
+            or re.match(r"^GPT-\S+ .*·", line)
+        ):
+            flush()
+            continue
+        # Keep each heading/list item separate, but join its wrapped body lines.
+        if re.match(r"^(?:[-*•] |\d+[.)] |#{1,6} )", line):
+            flush()
+        current = join_prose(current, line)
+    flush()
+    return list(dict.fromkeys(result))
+
+
+class ParagraphFilter:
+    def __init__(self, engine, captures):
+        self.engine = engine
+        self.captures = captures
+
+    def filter(self, text):
+        result = []
+        for plain, _ in self.captures["panes"] or [(text, 0)]:
+            for value in extract_paragraphs(plain):
+                if len(value) >= (self.engine.min_length or 5):
+                    result.append(f"paragraph: {value}" if self.engine.prefix_name else value)
+        return result
+
+
+class UrlFilter:
+    def __init__(self, original, captures):
+        self.original = original
+        self.captures = captures
+
+    def filter(self, text):
+        urls = []
+        for plain, width in self.captures["panes"] or [(text, 0)]:
+            urls.extend(extract_urls(plain, width))
+        # Upstream reverses results: append canonical targets so they appear first.
+        urls.extend(self.captures["targets"])
+        engine = self.original.extrakto
+        result = []
+        for value in dict.fromkeys(urls):
+            if len(value) < self.original.min_length:
+                continue
+            if engine.alt:
+                try:
+                    domain = urlsplit(value).netloc
+                except ValueError:
+                    domain = ""
+                if domain:
+                    result.append(f"url2: {domain}" if engine.prefix_name else domain)
+            result.append(f"url: {value}" if engine.prefix_name else value)
+        return result
+
+
+def load_upstream():
+    data = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+    plugins = Path(os.environ.get("TMUX_PLUGIN_MANAGER_PATH", data / "tmux/plugins")).expanduser()
+    directory = plugins / "extrakto"
+    if not (directory / "extrakto_plugin.py").is_file():
+        raise RuntimeError("extrakto is not installed; install the tmux plugins with prefix + I")
+    sys.path.insert(0, str(directory))
+    spec = importlib.util.spec_from_file_location("extrakto_upstream", directory / "extrakto_plugin.py")
+    upstream = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(upstream)
+    return upstream
+
+
+def enhance(upstream, client=None):
+    captures = {"panes": [], "targets": [], "filter": "url"}
+    original_engine = upstream.Extrakto
+    original_get_cap = upstream.get_cap
+
+    class EnhancedExtrakto(original_engine):
+        def __getitem__(self, key):
+            if key == "paragraph":
+                return ParagraphFilter(self, captures)
+            original = super().__getitem__(key)
+            return UrlFilter(original, captures) if key == "url" else original
+
+        def all(self):
+            return list(dict.fromkeys([*super().all(), "paragraph"]))
+
+    def get_cap(mode, data):
+        captures["filter"] = mode
+        return original_get_cap(mode, data)
+
+    class EnhancedPlugin(upstream.ExtraktoPlugin):
+        def copy(self, text):
+            if self.clip_mode == "tmux_osc52" and client:
+                subprocess.run(["tmux", "set-buffer", "--", text], check=True)
+                write_terminal(client, clipboard_sequence(text))
+            else:
+                super().copy(text)
+
+        def capture_panes(self):
+            captures["panes"].clear()
+            captures["targets"].clear()
+            return super().capture_panes()
+
+        def capture_pane(self, pane, capture_start):
+            info = subprocess.check_output(
+                ["tmux", "display-message", "-p", "-t", pane,
+                 "#{pane_in_mode}\t#{scroll_position}\t#{pane_height}\t#{pane_width}"],
+                text=True,
+            )
+            in_mode, scroll, height, width = [int(n or 0) for n in info.strip().split("\t")]
+            command = ["tmux", "capture-pane", "-peJ", "-S", capture_start, "-t", pane]
+            if self.grab_area in ("recent", "window recent") and in_mode:
+                command[command.index("-S") + 1] = str(int(capture_start) - scroll)
+                command += ["-E", str(height - 1 - scroll)]
+            raw = subprocess.check_output(command, encoding="utf-8")
+            plain, targets = decode_capture(raw)
+            captures["panes"].append((plain, width))
+            captures["targets"].extend(targets)
+            return plain
+
+        def open(self, text):
+            if self.open_tool:
+                values = text.split() if captures["filter"] == "url" else text.splitlines()
+                configured = upstream.get_option("@extrakto_open_tool")
+                web_urls = values and all(urlsplit(value).scheme.lower() in ("http", "https") for value in values)
+                if client and web_urls and configured in ("auto", "osc1337"):
+                    try:
+                        if configured == "osc1337":
+                            for value in values:
+                                write_terminal(client, open_url_sequence(value))
+                            return
+                        if open_host_urls(client, values):
+                            return
+                    except (RuntimeError, subprocess.SubprocessError, OSError) as error:
+                        subprocess.run(["tmux", "display-message", "-c", client, "-d", "8000", str(error)], check=False)
+                        # Close the picker normally so run-shell does not replace
+                        # this actionable error with a generic "returned 1".
+                        return
+                command = f"cd {shlex.quote(os.getcwd())} && {self.open_tool} "
+                command += " ".join(shlex.quote(value) for value in values)
+                subprocess.run(["tmux", "run-shell", "-b", command], check=True)
+
+    upstream.Extrakto = EnhancedExtrakto
+    upstream.get_cap = get_cap
+    return EnhancedPlugin
+
+
+def launch(upstream, pane, urls_only=False, client=None):
+    def option(name, default):
+        return upstream.get_option_only("@extrakto_" + name) or default
+
+    direction = option("split_direction", "a")
+    mode = "popup" if direction in ("a", "p") else "split"
+    child_args = [sys.executable, "-B", str(Path(__file__).resolve())]
+    if client:
+        child_args += ["--client", client]
+    if urls_only:
+        child_args.append("--urls")
+    child = shlex.join([*child_args, pane, mode])
+    if mode == "popup":
+        size = option("popup_size", "90%").split(",")
+        position = option("popup_position", "C").split(",")
+        cwd = subprocess.check_output(
+            ["tmux", "display-message", "-p", "-t", pane, "#{pane_current_path}"], text=True
+        ).strip()
+        command = ["tmux", "display-popup", "-E", "-d", cwd,
+                   "-w", size[0], "-h", size[-1], "-x", position[0], "-y", position[-1], child]
+        if client:
+            command[2:2] = ["-t", client]
+        status = 129
+        while status == 129:
+            status = subprocess.run(command).returncode
+        return status
+    return subprocess.run(
+        ["tmux", "split-window", "-t", pane, "-" + direction,
+         "-l", option("split_size", "7"), child]
+    ).returncode
+
+
+def main():
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument("--urls", action="store_true", help="select URLs; Enter opens, Ctrl-y copies")
+    parser.add_argument("--client", help="tmux client that invoked the picker")
+    parser.add_argument("pane")
+    parser.add_argument("mode", nargs="?", choices=("popup", "split"))
+    args = parser.parse_args()
+    client = args.client or subprocess.check_output(
+        ["tmux", "display-message", "-p", "-t", args.pane, "#{client_name}"], text=True,
+    ).strip() or None
+    upstream = load_upstream()
+    if args.mode is None:
+        return launch(upstream, args.pane, args.urls, client)
+    picker = enhance(upstream, client)(args.pane, args.mode)
+    if args.urls:
+        picker.next_filter = {"initial": "url", "url": "url"}
+        picker.copy_key, picker.open_key = "ctrl-y", "enter"
+        picker.insert_key = "alt-enter"
+        picker.fzf_header = "o c g h"
+        picker.grab_area = picker.original_grab_area = "full"
+    # Wrap long candidates visually; each paragraph/URL remains a single item.
+    help_text = subprocess.run(
+        [picker.fzf_tool, "--help"], input="", text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+    ).stdout
+    if re.search(r"^\s+--wrap\b", help_text, re.M):
+        original_fzf_sel = upstream.fzf_sel
+        upstream.fzf_sel = lambda command, data: original_fzf_sel([*command, "--wrap"], data)
+    return picker.capture() or 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+        print(f"tmux-extrakto: {error}", file=sys.stderr)
+        sys.exit(1)

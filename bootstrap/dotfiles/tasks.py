@@ -386,6 +386,7 @@ def ssh_keys_setup(c):
 @task()
 def tmux_config_setup(c):
     links(c, 'shell/tmux_config_setup')
+    c.link(c.repo / 'util/shell/tmux-extrakto', c.bin / 'tmux-extrakto')
     legacy = c.home / '.tmux.conf'
     if legacy.is_symlink() and str(legacy.readlink()).endswith('/.dotfiles/config/tmux/tmux.conf'):
         c.record('unlink', path=str(legacy))
