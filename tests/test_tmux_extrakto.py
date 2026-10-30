@@ -219,25 +219,41 @@ class PickerLaunchTests(unittest.TestCase):
 
 
 class HostOpenTests(unittest.TestCase):
-    def test_remote_iterm_without_a_bridge_does_not_claim_osc_success(self):
+    def test_remote_iterm_without_a_bridge_explains_the_permission_prompt(self):
         with patch.object(module, "terminal_info", return_value={"tty": "mac-tty", "type": "iTerm2 3.7.6"}), \
              patch.object(module.shutil, "which", return_value="/bin/workbench"), \
-             patch.object(module.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout='{"clients": []}')), \
+             patch.object(module.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout='{"clients": []}')) as run, \
              patch.dict(module.os.environ, {"SSH_CONNECTION": "fixture"}), \
              patch.object(module, "write_terminal") as write:
-            with self.assertRaisesRegex(RuntimeError, "no local URL opener"):
-                module.open_host_urls("mac-client", ["https://example.com/"])
-            write.assert_not_called()
+            self.assertTrue(module.open_host_urls("mac-client", ["https://example.com/"]))
+            write.assert_called_once_with("mac-client", module.open_url_sequence("https://example.com/"))
+            command = run.call_args.args[0]
+            self.assertEqual(command[:5], ["tmux", "display-message", "-c", "mac-client", "-d"])
+            self.assertIn('click Allow', command[-1])
+            self.assertNotIn('opened', command[-1])
 
-    def test_old_iterm_client_requires_an_update_even_when_osc_can_be_written(self):
+    def test_old_iterm_client_can_still_request_opening_through_osc(self):
         endpoints = [{"attachment": "mac-tty", "capabilities": ["clipboard"]}]
         with patch.object(module, "terminal_info", return_value={"tty": "mac-tty", "type": "iTerm2 3.7.6"}), \
              patch.object(module.shutil, "which", return_value="/bin/workbench"), \
              patch.object(module.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=json.dumps({"clients": endpoints}))), \
              patch.object(module, "write_terminal") as write:
-            with self.assertRaisesRegex(RuntimeError, "Update Workbench"):
-                module.open_host_urls("mac-client", ["https://example.com/"])
+            self.assertTrue(module.open_host_urls("mac-client", ["https://example.com/"]))
+            write.assert_called_once_with("mac-client", module.open_url_sequence("https://example.com/"))
+
+    def test_iterm_prefers_the_native_bridge_without_sending_osc(self):
+        endpoints = [{"attachment": "mac-tty", "capabilities": ["open-url"]}]
+        commands = []
+        def run(command, **kwargs):
+            commands.append(command)
+            return SimpleNamespace(returncode=0, stdout=json.dumps({"clients": endpoints}), stderr="")
+        with patch.object(module, "terminal_info", return_value={"tty": "mac-tty", "type": "iTerm2 3.7.6"}), \
+             patch.object(module.shutil, "which", return_value="/bin/workbench"), \
+             patch.object(module.subprocess, "run", side_effect=run), \
+             patch.object(module, "write_terminal") as write:
+            self.assertTrue(module.open_host_urls("mac-client", ["https://example.com/"]))
             write.assert_not_called()
+        self.assertEqual(commands[-1], ["/bin/workbench", "client", "open-url", "--client", "mac-client", "--", "https://example.com/"])
 
     def test_termux_bridge_is_selected_by_exact_attachment(self):
         endpoints = [{"attachment": "mac-tty", "capabilities": ["open-url"]},

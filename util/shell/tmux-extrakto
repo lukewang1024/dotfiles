@@ -63,8 +63,19 @@ def open_url_sequence(url):
     return b"\x1b]1337;OpenURL=:" + base64.b64encode(url.encode("utf-8")) + b"\x07"
 
 
+def open_iterm_urls(client, urls):
+    for url in urls:
+        write_terminal(client, open_url_sequence(url))
+    # iTerm can wait for permission after receiving OpenURL. Delivery alone
+    # cannot tell us whether the browser opened, so explain the pending prompt.
+    subprocess.run([
+        "tmux", "display-message", "-c", client, "-d", "10000",
+        'URL sent to iTerm; if "Open this URL?" appears at the top, click Allow.',
+    ], check=False)
+
+
 def open_host_urls(client, urls):
-    """Use the exact attached device's native opener, independent of emulator."""
+    """Dispatch to the invoking device, preferring its acknowledged opener."""
     info = terminal_info(client)
     workbench = shutil.which("tmux-agent-workbench")
     if workbench:
@@ -76,7 +87,8 @@ def open_host_urls(client, urls):
             endpoint = next((e for e in endpoints if e.get("attachment") == info["tty"]), None)
             if endpoint:
                 if "open-url" not in endpoint.get("capabilities", []):
-                    raise RuntimeError("Update Workbench on this client device and reconnect to enable local URL opening")
+                    if not info["type"].startswith("iTerm2 "):
+                        raise RuntimeError("Update Workbench on this client device and reconnect to enable local URL opening")
                 else:
                     for url in urls:
                         result = subprocess.run(
@@ -86,6 +98,9 @@ def open_host_urls(client, urls):
                         if result.returncode:
                             raise RuntimeError(result.stderr.strip() or "The client could not open the URL")
                     return True
+    if info["type"].startswith("iTerm2 "):
+        open_iterm_urls(client, urls)
+        return True
     # A local Termux session can use its native tool without a remote bridge.
     if os.environ.get("TERMUX_VERSION") and not os.environ.get("SSH_CONNECTION"):
         opener = shutil.which("termux-open-url")
@@ -329,8 +344,7 @@ def enhance(upstream, client=None):
                 if client and web_urls and configured in ("auto", "osc1337"):
                     try:
                         if configured == "osc1337":
-                            for value in values:
-                                write_terminal(client, open_url_sequence(value))
+                            open_iterm_urls(client, values)
                             return
                         if open_host_urls(client, values):
                             return
