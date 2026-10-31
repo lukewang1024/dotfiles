@@ -35,3 +35,24 @@
   "starship-battery",
   "strsim",
   "systemstat",
+--- a/src/modules/git_status.rs
++++ b/src/modules/git_status.rs
+@@ -373,7 +373,17 @@
+                 let abort_after =
+                     std::time::Duration::from_millis(context.root_config.command_timeout);
+                 move || {
+-                    std::thread::sleep(abort_after);
++                    // iSH lacks clock_nanosleep (267), used by Rust's sleep.
++                    // poll with no descriptors keeps the cancellation deadline
++                    // and tolerates signals using the elapsed monotonic time.
++                    let started = std::time::Instant::now();
++                    while let Some(remaining) = abort_after.checked_sub(started.elapsed()) {
++                        let millis = remaining.as_millis().saturating_add(1).min(i32::MAX as u128) as i32;
++                        let result = unsafe { nix::libc::poll(std::ptr::null_mut(), 0, millis) };
++                        if result < 0 && std::io::Error::last_os_error().kind() != std::io::ErrorKind::Interrupted {
++                            break;
++                        }
++                    }
+                     is_interrupted.store(true, std::sync::atomic::Ordering::SeqCst);
+                 }
+             })

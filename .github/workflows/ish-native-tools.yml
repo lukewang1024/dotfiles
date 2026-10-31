@@ -48,6 +48,7 @@ jobs:
         env:
           STARSHIP_CONFIG: ${{ github.workspace }}/config/starship/starship.toml
           RAYON_NUM_THREADS: 1
+          STARSHIP_NUM_THREADS: 1
           TERM: xterm-256color
           STARSHIP_SHELL: zsh
         run: |
@@ -57,10 +58,17 @@ jobs:
           cat prompt.log
           test ! -s prompt.log
           python3 -c 'from pathlib import Path; assert "❯" in Path("prompt.txt").read_text()'
+          git init -b ish-prompt-test "$RUNNER_TEMP/prompt-repo"
+          touch "$RUNNER_TEMP/prompt-repo/untracked.txt"
+          dist/package/starship prompt --path "$RUNNER_TEMP/prompt-repo" --terminal-width 100 > git-prompt.txt 2> git-prompt.log
+          cat git-prompt.txt
+          cat git-prompt.log
+          test ! -s git-prompt.log
+          python3 -c 'from pathlib import Path; text = Path("git-prompt.txt").read_text(); assert "ish-prompt-test" in text and "❯" in text'
           file dist/package/starship
       - name: Package the candidate
         run: |
-          printf '%s\n' 'Starship 1.27.0; Rust 1.95.0; i586-unknown-linux-musl; no default features; bounded main-stack patch (2 MiB), stacker 0.1.25.' > dist/package/BUILD.txt
+          printf '%s\n' 'Starship 1.27.0; Rust 1.95.0; i586-unknown-linux-musl; no default features; bounded main-stack patch (2 MiB), stacker 0.1.25, poll-based Git cancellation timer.' > dist/package/BUILD.txt
           tar -C dist/package -czf dist/starship-i586-unknown-linux-musl.tar.gz .
           cd dist
           sha256sum starship-i586-unknown-linux-musl.tar.gz > SHA256SUMS
