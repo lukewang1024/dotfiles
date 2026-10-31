@@ -10,6 +10,14 @@ This installs/configures the Termux packages, zsh, tmux plugins, Vim plugins,
 SSH, and the shared agent configuration. It also installs `agent-team` through
 the common core flow.
 
+The Termux shell setup downloads the pinned MesloLGS Nerd Font Regular file to
+`$XDG_CACHE_HOME/termux/fonts/`, verifies its SHA256, and links it to
+`~/.termux/font.ttf`. The font binary stays outside the repository. The upstream
+font has an [Apache-2.0 license](https://raw.githubusercontent.com/romkatv/powerlevel10k-media/145eb9fbc2f42ee408dacd9b22d8e6e0e553f83d/MesloLGS%20NF%20License.txt)
+and comes from [`romkatv/powerlevel10k-media`](https://github.com/romkatv/powerlevel10k-media).
+The core flow also installs the configured Tmux plugins through TPM, including
+`tmux-adaptive-theme`.
+
 Generate this phone's SSH client keys separately in a Termux terminal:
 
 ```sh
@@ -133,12 +141,13 @@ It retries the Termux reload every check, including when the palette link is
 already correct: Termux unregisters its reload receiver in the background, so a
 one-shot broadcast can be lost. A transient reload failure does not stop the
 service. It needs no root.
-Install it in `~/.local/bin/termux-system-theme`, link
-`config/termux/system-theme.run` to `$PREFIX/var/service/termux-system-theme/run`,
-then run `sv-enable termux-system-theme` with `termux-services` installed.
+`./init basic` applies the current palette once. `./init core` also installs and
+enables the background service through `termux-services`. Re-running
+initialization selects the current Android palette again without pushing theme
+changes to SSH hosts.
 Use `sv-disable termux-system-theme` to stop following the system. Running
-`./init core` restores the static color link; run
-`termux-system-theme --once` to restore the system-selected palette immediately.
+`termux-system-theme --once` applies the palette and synchronizes attached
+terminals; `termux-system-theme --local-once` applies only the local palette.
 Android may suspend the service in the background; it catches up after resuming.
 Applications drawing their own backgrounds may require a restart to adapt.
 The service also calls `theme-push-remotes` to synchronize attached SSH devboxes.

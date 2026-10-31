@@ -1,6 +1,7 @@
 """OS-specific operations under the shared Python task/command runner."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -391,6 +392,21 @@ for _platform in ('macos', 'debian', 'arch', 'windows'):
 TERMUX_PACKAGES = ('ca-certificates curl diff-so-fancy fd file fzf git jq krb5 less nano openssh python ripgrep rsync rust '
                    'starship termux-api termux-services tig tmux tree unzip vim which zip zoxide zsh').split()
 
+# Keep the font binary in XDG cache and pin the upstream file used on this device.
+TERMUX_FONT_URL = ('https://raw.githubusercontent.com/romkatv/powerlevel10k-media/'
+                   '145eb9fbc2f42ee408dacd9b22d8e6e0e553f83d/MesloLGS%20NF%20Regular.ttf')
+TERMUX_FONT_SHA256 = 'd97946186e97f8d7c0139e8983abf40a1d2d086924f2c5dbf1c29bd8f2c6e57d'
+
+
+def _sha256_matches(path, expected):
+    if not path.is_file():
+        return False
+    digest = hashlib.sha256()
+    with path.open('rb') as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest() == expected
+
 
 @task()
 def install_termux_core_packages(c):
@@ -399,9 +415,49 @@ def install_termux_core_packages(c):
 
 
 @task()
+def termux_font_setup(c):
+    font = c.cache / 'termux/fonts/MesloLGS-NF-Regular.ttf'
+    if c.dry_run:
+        if not _sha256_matches(font, TERMUX_FONT_SHA256):
+            c.download(TERMUX_FONT_URL, font)
+        c.link(font, c.home / '.termux/font.ttf')
+        return
+
+    if not _sha256_matches(font, TERMUX_FONT_SHA256):
+        staged = font.with_name(font.name + '.download')
+        try:
+            c.download(TERMUX_FONT_URL, staged)
+            if not _sha256_matches(staged, TERMUX_FONT_SHA256):
+                raise Failure('MesloLGS Nerd Font download failed SHA256 verification')
+            staged.replace(font)
+        finally:
+            staged.unlink(missing_ok=True)
+    c.link(font, c.home / '.termux/font.ttf')
+    c.note('MesloLGS Nerd Font is cached and SHA256 verified')
+
+
+@task()
+def termux_theme_setup(c):
+    c.link(c.repo / 'util/termux/termux-system-theme', c.bin / 'termux-system-theme')
+    c.command('termux-system-theme', '--local-once')
+
+
+@task()
+def termux_theme_service_setup(c):
+    if c.dry_run or c.exists('sv-enable'):
+        service = Path(c.env.get('PREFIX', '/data/data/com.termux/files/usr')) / 'var/service/termux-system-theme/run'
+        c.link(c.repo / 'config/termux/system-theme.run', service)
+        c.command('sv-enable', 'termux-system-theme')
+    else:
+        c.note('termux-services is unavailable; Android theme following was not enabled')
+
+
+@task()
 def termux_shell_setup(c):
+    c.task('termux_font_setup')
     for source, target in [('.zshenv', '.zshenv'), ('termux.properties', '.termux/termux.properties'), ('colors.properties', '.termux/colors.properties')]:
         c.link(c.repo / 'config/termux' / source, c.home / target)
+    c.task('termux_theme_setup')
     if c.dry_run or c.exists('termux-reload-settings'):
         c.command('termux-reload-settings')
 
@@ -432,7 +488,7 @@ def prepare_termux_env(c, mode='core'):
     if mode == 'all':
         c.note('Termux has no extra package set; using core.')
     sequence(c, 'install_termux_core_packages', 'termux_default_shell_setup', 'zinit_install',
-             'termux_basic_setup', 'tmux_plugins_setup', 'agent_team_setup')
+             'termux_basic_setup', 'tmux_plugins_setup', 'termux_theme_service_setup', 'agent_team_setup')
     if c.dry_run or c.exists('tmux-agent-workbench'):
         c.command('tmux-agent-workbench', 'client', 'setup', 'termux')
     else:

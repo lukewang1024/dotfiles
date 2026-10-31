@@ -22,6 +22,9 @@ apply_theme() {
     # Retry even when the link is correct, so returning to the foreground
     # recovers a reload missed while Android settings were open.
     termux-reload-settings || :
+    # Bootstrap applies the local palette without triggering SSH theme pushes.
+    # The long-running service keeps the complete synchronization behavior.
+    [ "${1:-}" = local ] && return 0
     # Termux does not always report a native theme to tmux. Reconcile local
     # servers on every check, including servers started since the last switch.
     # Keep the native-client guard in the fallback for other attached terminals.
@@ -36,11 +39,12 @@ apply_theme() {
 }
 case "${1:-}" in
     --once) apply_theme ;;
+    --local-once) apply_theme local ;;
     '')
         while :; do
             apply_theme
             sleep 10
         done
         ;;
-    *) printf 'Usage: termux-system-theme [--once]\n' >&2; exit 2 ;;
+    *) printf 'Usage: termux-system-theme [--once|--local-once]\n' >&2; exit 2 ;;
 esac
