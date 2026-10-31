@@ -1,0 +1,37 @@
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -166,6 +166,12 @@
+ }
+ 
+ fn main() {
++    // musl can report only ~128 KiB for the main thread even when more is
++    // available. Keep Pest's native stack guard and parse on known bounds.
++    stacker::maybe_grow(256 * 1024, 2 * 1024 * 1024, starship_main);
++}
++
++fn starship_main() {
+     // Configure the current terminal on windows to support ANSI escape sequences.
+     #[cfg(windows)]
+     let _ = nu_ansi_term::enable_ansi_support();
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -197,6 +197,9 @@
+ [dependencies.shell-words]
+ version = "1.1.1"
+ 
++[dependencies.stacker]
++version = "=0.1.25"
++
+ [dependencies.starship-battery]
+ version = "0.11.1"
+ optional = true
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -3395,6 +3395,7 @@
+  "sha1",
+  "shadow-rs",
+  "shell-words",
++ "stacker",
+  "starship-battery",
+  "strsim",
+  "systemstat",

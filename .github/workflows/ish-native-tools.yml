@@ -3,7 +3,7 @@ name: iSH native tools
 on:
   push:
     branches: [main, fix/ish-core-parity]
-    paths: [.github/workflows/ish-native-tools.yml]
+    paths: [.github/workflows/ish-native-tools.yml, .github/patches/starship-musl-main-stack.patch]
   workflow_dispatch:
 
 permissions:
@@ -34,22 +34,33 @@ jobs:
           export CARGO_HOME="$RUNNER_TEMP/cargo"
           export CARGO_TARGET_DIR="$RUNNER_TEMP/starship-target"
           export CARGO_TARGET_I586_UNKNOWN_LINUX_MUSL_LINKER="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld"
-          cargo install starship --locked --version 1.27.0 --no-default-features \
+          curl -fsSL https://static.crates.io/crates/starship/starship-1.27.0.crate -o "$RUNNER_TEMP/starship.crate"
+          printf '%s  %s\n' 34cf67d88d9f637a5e235f11e2cd3678350e20fa840cf2559fc72c4e025cb8a9 "$RUNNER_TEMP/starship.crate" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/starship.crate" -C "$RUNNER_TEMP"
+          patch -d "$RUNNER_TEMP/starship-1.27.0" -p1 < .github/patches/starship-musl-main-stack.patch
+          cargo install --path "$RUNNER_TEMP/starship-1.27.0" --locked --no-default-features \
             --target i586-unknown-linux-musl --root "$RUNNER_TEMP/starship"
           mkdir -p dist/package
           cp "$RUNNER_TEMP/starship/bin/starship" dist/package/
-          cp "$CARGO_HOME"/registry/src/*/starship-1.27.0/LICENSE dist/package/LICENSE.starship
+          cp "$RUNNER_TEMP/starship-1.27.0/LICENSE" dist/package/LICENSE.starship
+          cp .github/patches/starship-musl-main-stack.patch dist/package/
       - name: Check the shared prompt configuration
         env:
           STARSHIP_CONFIG: ${{ github.workspace }}/config/starship/starship.toml
           RAYON_NUM_THREADS: 1
+          TERM: xterm-256color
+          STARSHIP_SHELL: zsh
         run: |
           dist/package/starship --version
-          dist/package/starship prompt --path "$RUNNER_TEMP" --terminal-width 100
+          dist/package/starship prompt --path "$RUNNER_TEMP" --terminal-width 100 > prompt.txt 2> prompt.log
+          cat prompt.txt
+          cat prompt.log
+          test ! -s prompt.log
+          python3 -c 'from pathlib import Path; assert "❯" in Path("prompt.txt").read_text()'
           file dist/package/starship
       - name: Package the candidate
         run: |
-          printf '%s\n' 'Starship 1.27.0; Rust 1.95.0; i586-unknown-linux-musl; no default features.' > dist/package/BUILD.txt
+          printf '%s\n' 'Starship 1.27.0; Rust 1.95.0; i586-unknown-linux-musl; no default features; bounded main-stack patch (2 MiB), stacker 0.1.25.' > dist/package/BUILD.txt
           tar -C dist/package -czf dist/starship-i586-unknown-linux-musl.tar.gz .
           cd dist
           sha256sum starship-i586-unknown-linux-musl.tar.gz > SHA256SUMS
