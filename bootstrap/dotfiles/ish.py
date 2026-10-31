@@ -98,7 +98,53 @@ def ish_client_setup(c):
     if not c.dry_run:
         (c.home / '.ssh').chmod(0o700)
     # First values win: explicit local host settings stay ahead of defaults.
+    c.task('ish_ssh_profile_setup')
     c.task('ssh_setup')
+
+
+@task()
+def ish_ssh_profile_setup(c):
+    """Expose the existing device profile to clients that invoke ssh directly."""
+    profile = c.config / 'ish-kerberos/user.conf'
+    if not profile.is_file():
+        return
+    values = {}
+    for line in profile.read_text().splitlines():
+        if line and not line.startswith('#') and '=' in line:
+            key, value = line.split('=', 1)
+            values[key] = value
+    required = ('SSH_HOST', 'SSH_USER', 'KRB5_PRINCIPAL', 'KRB5_REALM')
+    if not all(values.get(key) for key in required):
+        return
+    host, user, principal, realm = (values[key] for key in required)
+    port, session = values.get('SSH_PORT', '22'), values.get('TMUX_SESSION', 'dev')
+    if (not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.:-]*', host) or
+            not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*', user) or
+            not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_./+-]*@[A-Za-z0-9_.-]+', principal) or
+            not principal.endswith('@' + realm) or
+            not port.isdecimal() or not 1 <= int(port) <= 65535 or
+            not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_-]*', session)):
+        raise Failure('Invalid iSH SSH profile; use literal host, user, principal, port and session values')
+    target = c.config / 'ish-kerberos/ssh_config'
+    text = (f'# Managed from ish-kerberos/user.conf; local SSH overrides take precedence.\n'
+            f'Host {host}\n  HostName {host}\n  User {user}\n  Port {port}\n'
+            '  ConnectTimeout 10\n  TCPKeepAlive no\n  ServerAliveInterval 5\n'
+            '  ServerAliveCountMax 3\nHost *\n')
+    if not target.exists() or target.read_text() != text:
+        c.backup(target)
+        c.write(target, text)
+    mapping = c.config / 'ssh/kerberos'
+    content = mapping.read_text() if mapping.exists() else ''
+    manual = re.sub(r'^# -- dotfiles iSH begin --\n.*?^# -- dotfiles iSH end --(?:\n|$)',
+                    '', content, flags=re.M | re.S)
+    if any(line.split() and line.split()[0] == host for line in manual.splitlines()):
+        # An explicit shared mapping remains authoritative. Remove an obsolete
+        # generated block if the user has since supplied their own mapping.
+        if manual != content:
+            c.backup(mapping)
+            c.write(mapping, manual)
+    else:
+        append_block(c, mapping, f'{host} {principal} {session}\n')
 
 
 @task()
@@ -171,4 +217,6 @@ def ish_kerberos(c):
     for name, text in (('user.conf', values), ('krb5.conf', profile)):
         c.backup(conf / name)
         c.write(conf / name, text)
-    c.note('Configured. In a new shell: ssh-connect --tmux will request kinit when needed. No password was requested or saved.')
+    c.task('ish_ssh_profile_setup')
+    c.task('ssh_setup')
+    c.note('Configured. In a new shell: ssh-connect --workbench or --tmux will request kinit when needed. No password was requested or saved.')

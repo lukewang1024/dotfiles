@@ -159,13 +159,18 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 kinit yourname@YOUR.REALM
 klist
 ish-doctor
+ssh-connect --workbench         # Workbench 客户端连接远端工作台
 ssh-connect --tmux              # 需要时交互 kinit，然后进入/恢复远端 tmux
 ssh-connect --check             # 非交互 GSSAPI 认证并执行 whoami
 ish-doctor --ssh               # 包含真实 SSH 认证的诊断
 ```
 
 普通 `ssh-connect` 打开远端 shell，`--tmux` 恢复 tmux，`--check` 非交互验证。
-已有 `user.conf` 无需迁移；`./init sync` 会移除旧的 dotfiles `ish-connect` 链接。
+`./init sync` 和 `./init kerberos` 会把现有 `user.conf` 的主机、用户和端口同步为
+标准 SSH 别名，并在 `$XDG_CONFIG_HOME/ssh/kerberos` 增加受管理的 Principal 映射，
+因此可以使用 `ssh-connect --workbench`。已有显式 SSH 设置和手工映射优先；
+Kerberos 配置和 keytab 保持原样。首次连接仍需核对主机指纹。
+`./init sync` 也会移除旧的 dotfiles `ish-connect` 链接。
 Termux 和其他平台也使用同一命令，按 [Termux 配置说明](termux.md#kerberos-ssh) 绑定主机和 Principal。
 默认只在连接时检查票据；没有配置自动登录时，过期后仍需在 kinit 提示中输入密码。
 
@@ -418,6 +423,10 @@ rc-update del dotfiles-sshd default
 `${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/sshd/sshd.log`。
 这里的自启动指 iSH 虚拟环境启动，不是 iPad 开机后自动运行应用；
 后台 sshd 不会绕过 iPadOS 的应用挂起限制。
+连接断开时先区分服务与地址：在 iSH 前台运行 `rc-service dotfiles-sshd status`，
+再用 `./init sshd` 查看当前 IP。Wi-Fi 与 VPN 切换后旧地址可能不再可达。
+`ssh-first-reachable` 只给地址探测设置短超时，建立后的 SSH 通道不使用
+Netcat 空闲超时；连接建立期限由 OpenSSH 的 `ConnectTimeout` 管理。
 
 在 iPad「设置 → Wi-Fi → 当前网络」找到 IP（下例替换为实际地址）。
 同一局域网电脑进入自己的 dotfiles 仓库后执行：

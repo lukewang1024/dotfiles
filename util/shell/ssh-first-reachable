@@ -36,7 +36,8 @@ esac
 # Apple's nc separates its connection timeout (-G) from the generic timeout.
 # Do not also pass -w there: it remains active after connect and tears down an
 # otherwise healthy but briefly idle SSH stream. OpenBSD/Linux variants without
-# -G use -w as their available connection-timeout control.
+# -G use -w only for the short probe. OpenSSH bounds the actual connection
+# with ConnectTimeout; nc must not retain an idle timeout on the SSH stream.
 if nc -h 2>&1 | grep -q -- '-G conntimo'; then
   probe()
   {
@@ -53,7 +54,7 @@ else
   }
   connect()
   {
-    nc -w "$probe_timeout" "$1" "$port"
+    nc "$1" "$port"
   }
 fi
 

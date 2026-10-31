@@ -95,6 +95,7 @@ class BootstrapTests(unittest.TestCase):
             c = self.context(platform)
             c.task(task)
             return {e['target'] for e in c.events if e['kind'] == 'link'
+                    and ROOT / 'util/termux' not in Path(e['source']).parents
                     and ('/bin/' in e['target'] or 'AGENTS.md' in e['target'] or 'CLAUDE.md' in e['target'])}
         termux = shared_links('termux', 'termux_basic_setup')
         ish = shared_links('ish', 'ish_basic_setup')
@@ -209,6 +210,63 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue((c.bin / 'ssh-connect').is_symlink())
         self.assertEqual((c.bin / 'kinit-auto-login').resolve(), ROOT / 'util/kerberos/kinit-auto-login')
         self.assertFalse((c.bin / 'ish-connect').is_symlink())
+
+    def test_ish_profile_produces_workbench_ssh_alias_and_mapping(self):
+        c = self.context('ish', dry=False)
+        conf = c.config / 'ish-kerberos'
+        conf.mkdir(parents=True)
+        profile = ('KRB5_REALM=ISH.TEST\nKRB5_PRINCIPAL=testuser@ISH.TEST\n'
+                   'SSH_HOST=ssh.ish.test\nSSH_USER=testuser\nSSH_PORT=2222\nTMUX_SESSION=mobile\n')
+        (conf / 'user.conf').write_text(profile)
+        ssh = c.home / '.ssh/config'
+        ssh.parent.mkdir()
+        ssh.write_text('Host local-alias\n  HostName local.example\n  User custom\n')
+        c.task('ish_client_setup')
+        mapping = c.config / 'ssh/kerberos'
+        self.assertIn('ssh.ish.test testuser@ISH.TEST mobile', mapping.read_text())
+        self.assertEqual((conf / 'user.conf').read_text(), profile)
+        before = {p: p.read_bytes() for p in (ssh, mapping, conf / 'ssh_config')}
+        c.task('ish_client_setup')
+        self.assertEqual({p: p.read_bytes() for p in before}, before)
+        if shutil.which('ssh'):
+            settings = subprocess.check_output(['ssh', '-G', '-F', str(ssh), 'ssh.ish.test'], text=True)
+            for value in ('user testuser', 'hostname ssh.ish.test', 'port 2222',
+                          'gssapiauthentication yes', 'passwordauthentication no',
+                          'serveraliveinterval 5'):
+                self.assertIn(value + '\n', settings)
+            local = subprocess.check_output(['ssh', '-G', '-F', str(ssh), 'local-alias'], text=True)
+            self.assertIn('hostname local.example\n', local)
+            self.assertIn('user custom\n', local)
+            self.assertIn('port 22\n', local)
+
+    def test_ish_profile_preserves_explicit_shared_mapping_and_rejects_injection(self):
+        c = self.context('ish', dry=False)
+        conf = c.config / 'ish-kerberos'
+        conf.mkdir(parents=True)
+        profile = ('KRB5_REALM=ISH.TEST\nKRB5_PRINCIPAL=testuser@ISH.TEST\n'
+                   'SSH_HOST=ssh.ish.test\nSSH_USER=testuser\n')
+        (conf / 'user.conf').write_text(profile)
+        mapping = c.config / 'ssh/kerberos'
+        mapping.parent.mkdir()
+        original = '# local mapping\nssh.ish.test other@ISH.TEST custom\n'
+        mapping.write_text(original)
+        c.task('ish_ssh_profile_setup')
+        self.assertEqual(mapping.read_text(), original)
+        (conf / 'user.conf').write_text(profile.replace('SSH_HOST=ssh.ish.test', 'SSH_HOST=*.test'))
+        with self.assertRaises(Failure):
+            c.task('ish_ssh_profile_setup')
+        self.assertEqual(mapping.read_text(), original)
+
+    def test_ish_login_restores_tools_after_system_profile_resets_path(self):
+        c = self.context('ish', dry=False)
+        env = dict(c.env, DOTFILES_PLATFORM='ish', DOTFILES_HOME=str(ROOT),
+                   KRB5CCNAME='FILE:/private/existing-ticket', PATH=os.environ['PATH'])
+        result = subprocess.run(['sh', '-c',
+                                 'PATH=/usr/bin:/bin; . "$DOTFILES_HOME/config/zsh/.zprofile"; '
+                                 'printf "%s\\n%s\\n" "$PATH" "$KRB5CCNAME"'],
+                                env=env, capture_output=True, text=True, check=True)
+        self.assertIn(str(c.bin), result.stdout.splitlines()[0].split(':'))
+        self.assertEqual(result.stdout.splitlines()[1], 'FILE:/private/existing-ticket')
 
     def test_ish_installs_login_wrapper_only_with_compat_library(self):
         c = self.context('ish', dry=False)

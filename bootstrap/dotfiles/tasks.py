@@ -323,6 +323,7 @@ def ssh_setup(c):
     includes = ['  Include ' + quoted(shared)]
     if c.platform == 'ish':
         includes.insert(0, '  Include ' + quoted(c.repo / 'config/ish/ssh_config'))
+        includes.insert(0, '  Include ' + quoted(c.config / 'ish-kerberos/ssh_config'))
     block = '\n'.join((begin, '# Local overrides precede shared defaults (SSH uses the first value).',
                        'Host *', *includes, end)) + '\n'
     content = dest.read_text(encoding='utf-8') if dest.exists() else ''
