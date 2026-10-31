@@ -69,7 +69,7 @@ ssh_gssapi_command() {
         -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no \
         -o HostbasedAuthentication=no -o ControlMaster=no -o ControlPath=none \
         -o CanonicalizeHostname=no -o UpdateHostKeys=no \
-        -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+        -o ConnectTimeout=10 -o "ServerAliveInterval=${ssh_alive_interval:-30}" -o ServerAliveCountMax=3 \
         -o "StrictHostKeyChecking=${HOST_KEY_POLICY:-yes}" \
         "$@"
 }
