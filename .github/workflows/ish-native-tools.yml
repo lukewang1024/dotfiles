@@ -24,11 +24,11 @@ jobs:
       - name: Install the cross assembler
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang
+          sudo apt-get install -y clang binutils
       - name: Build the static iSH prompt
         env:
           CC_i586_unknown_linux_musl: clang
-          AR_i586_unknown_linux_musl: llvm-ar
+          AR_i586_unknown_linux_musl: ar
           CFLAGS_i586_unknown_linux_musl: --target=i586-unknown-linux-musl -march=i586
         run: |
           export CARGO_HOME="$RUNNER_TEMP/cargo"
