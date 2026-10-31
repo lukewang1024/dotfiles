@@ -1,0 +1,54 @@
+name: iSH native tools
+
+on:
+  push:
+    branches: [main, fix/ish-core-parity]
+    paths: [.github/workflows/ish-native-tools.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  starship:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95.0
+        with:
+          targets: i586-unknown-linux-musl
+      - name: Build the static iSH prompt
+        run: |
+          export CARGO_HOME="$RUNNER_TEMP/cargo"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/starship-target"
+          export CARGO_TARGET_I586_UNKNOWN_LINUX_MUSL_LINKER="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld"
+          cargo install starship --locked --version 1.27.0 --no-default-features \
+            --target i586-unknown-linux-musl --root "$RUNNER_TEMP/starship"
+          mkdir -p dist/package
+          cp "$RUNNER_TEMP/starship/bin/starship" dist/package/
+          cp "$CARGO_HOME"/registry/src/*/starship-1.27.0/LICENSE dist/package/LICENSE.starship
+      - name: Check the shared prompt configuration
+        env:
+          STARSHIP_CONFIG: ${{ github.workspace }}/config/starship/starship.toml
+          RAYON_NUM_THREADS: 1
+        run: |
+          dist/package/starship --version
+          dist/package/starship prompt --path "$RUNNER_TEMP" --terminal-width 100
+          file dist/package/starship
+      - name: Package the candidate
+        run: |
+          printf '%s\n' 'Starship 1.27.0; Rust 1.95.0; i586-unknown-linux-musl; no default features.' > dist/package/BUILD.txt
+          tar -C dist/package -czf dist/starship-i586-unknown-linux-musl.tar.gz .
+          cd dist
+          sha256sum starship-i586-unknown-linux-musl.tar.gz > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starship-i586-unknown-linux-musl
+          path: |
+            dist/starship-i586-unknown-linux-musl.tar.gz
+            dist/SHA256SUMS
+          if-no-files-found: error
