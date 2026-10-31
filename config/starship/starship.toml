@@ -1,3 +1,6 @@
+# Allow directory scans to finish on emulated CPUs and slower filesystems.
+scan_timeout = 1000
+
 add_newline = true
 palette = "default"
 

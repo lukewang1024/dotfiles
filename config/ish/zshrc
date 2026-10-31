@@ -16,7 +16,7 @@ bindkey '^[[F' end-of-line
 bindkey '^[[1~' beginning-of-line
 bindkey '^[[4~' end-of-line
 bindkey '^[[3~' delete-char
-PROMPT='%n@%m:%~%# '
+source "$config_dir/zsh/prompt.zsh"
 export SHELL="$HOME/.local/bin/zsh"
 [ -x "$SHELL" ] || export SHELL=/bin/zsh
 alias rrc='source "$ZDOTDIR/.zshrc" && rehash'

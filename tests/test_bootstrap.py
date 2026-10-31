@@ -85,7 +85,7 @@ class BootstrapTests(unittest.TestCase):
             self.assertNotIn('openssh-client-default', a)
         task_names = [e['name'] for e in c.events if e['kind'] == 'task']
         for name in ('zinit_install', 'basic_env_setup', 'util_setup', 'git_setup', 'tmux_plugins_setup',
-                     'workbench_setup', 'agent_team_setup', 'vim_plugins_setup', 'ssh_setup'):
+                     'workbench_setup', 'agent_team_setup', 'vim_plugins_setup', 'ssh_setup', 'ish_starship_setup'):
             self.assertIn(name, task_names)
         for name in ('termux_ssh_setup', 'setup_machine_fabric'):
             self.assertNotIn(name, task_names)

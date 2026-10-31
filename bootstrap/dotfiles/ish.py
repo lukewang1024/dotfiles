@@ -1,8 +1,12 @@
 """iSH's Alpine client, using the same task runner and shared dotfiles as Termux."""
 from pathlib import Path
+import hashlib
 import os
 import re
 import shlex
+import shutil
+import tarfile
+import tempfile
 
 from .engine import Failure
 from .tasks import sequence, task
@@ -167,15 +171,75 @@ def ish_git_pager_setup(c):
     c.link(repo / 'diff-so-fancy', c.bin / 'diff-so-fancy')
 
 
+# Immutable i586 build of the shared prompt; see the native-tools workflow.
+ISH_STARSHIP_TAG = 'ish-starship-v1.27.0-r1'
+ISH_STARSHIP_ARCHIVE_SHA256 = '9429c0f1409b4d7a969c9de430926d3040b86362233a1b6c5b25d8c5e1125ff8'
+ISH_STARSHIP_BINARY_SHA256 = '67aa5ee22a172ca14d5186f1fbd39768682b68e3ceed818bd7f7116d58078c66'
+
+
+def _ish_sha256(path):
+    if not path.is_file():
+        return ''
+    digest = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+@task()
+def ish_starship_setup(c):
+    root = c.data / 'dotfiles/ish-starship/v1.27.0-r1'
+    binary = root / 'starship'
+    archive = c.cache / 'dotfiles/ish-starship' / ISH_STARSHIP_TAG / 'starship-i586-unknown-linux-musl.tar.gz'
+    if _ish_sha256(binary) != ISH_STARSHIP_BINARY_SHA256:
+        if _ish_sha256(archive) != ISH_STARSHIP_ARCHIVE_SHA256:
+            url = ('https://github.com/lukewang1024/dotfiles/releases/download/' +
+                   ISH_STARSHIP_TAG + '/' + archive.name)
+            staged = archive.with_name(archive.name + '.download')
+            try:
+                c.download(url, staged)
+                if not c.dry_run:
+                    if _ish_sha256(staged) != ISH_STARSHIP_ARCHIVE_SHA256:
+                        raise Failure('iSH Starship archive failed SHA256 verification')
+                    staged.replace(archive)
+            finally:
+                if not c.dry_run:
+                    staged.unlink(missing_ok=True)
+        c.record('extract', source=str(archive), target=str(root))
+        if not c.dry_run:
+            c.mkdir(root)
+            with tempfile.TemporaryDirectory(dir=root.parent) as staging:
+                staging = Path(staging)
+                with tarfile.open(archive, 'r:gz') as package:
+                    for name in ('starship', 'LICENSE.starship', 'BUILD.txt', 'starship-musl-main-stack.patch'):
+                        member = package.getmember('./' + name)
+                        if not member.isfile() or member.size > 64 * 1024 * 1024:
+                            raise Failure('Invalid iSH Starship package member: ' + name)
+                        with package.extractfile(member) as source, (staging / name).open('wb') as out:
+                            shutil.copyfileobj(source, out)
+                candidate = staging / 'starship'
+                if _ish_sha256(candidate) != ISH_STARSHIP_BINARY_SHA256:
+                    raise Failure('iSH Starship binary failed SHA256 verification')
+                candidate.chmod(0o755)
+                for path in staging.iterdir():
+                    path.replace(root / path.name)
+    if not c.dry_run:
+        binary.chmod(0o755)
+    c.link(c.repo / 'util/ish/starship', c.bin / 'starship')
+    c.refresh_path()
+    c.note('Starship uses the shared prompt, an i586 static binary and one worker on iSH')
+
+
 @task()
 def prepare_ish_env(c, mode='core'):
     if mode not in ('core', 'all'):
         raise Failure('iSH supports core and all; use basic/sync for configuration only')
     if mode == 'all':
         c.note('iSH has no extra desktop package set; all uses core, as on Termux')
-    sequence(c, 'install_ish_core_packages', 'zinit_install', 'ish_git_pager_setup', 'ish_basic_setup',
+    sequence(c, 'install_ish_core_packages', 'ish_starship_setup', 'zinit_install', 'ish_git_pager_setup', 'ish_basic_setup',
              'set_default_shell', 'tmux_plugins_setup', 'agent_team_setup', 'vim_plugins_setup')
-    c.note('SKIP ripgrep/starship: they hit unsupported instructions in the tested Alpine build; use grep/find and the native zsh prompt. fd uses a single-worker compatibility wrapper.')
+    c.note('SKIP ripgrep: the tested Alpine build hits unsupported instructions; use grep/find. Starship uses the compatible i586 build; fd uses a single-worker wrapper.')
     c.note('Shared helpers, tmux-agent-workbench and agent-team are installed. Use ./init sshd for the iSH SSH service; Android APIs and Termux services do not apply.')
     c.note('Machine Fabric currently publishes only 64-bit runtimes; its Linux installer requires systemd. iSH has neither, so its service is not installed.')
 

@@ -130,8 +130,12 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 - 安装 Alpine x86 原生 Git、curl、fzf、fd、jq、zoxide 等终端工具。
   Alpine 此分支没有 diff-so-fancy 包，core 从上游安装该 Perl 工具到 XDG 数据目录，
   使用同名命令和 Git 分页器；保留公共别名和个人身份配置。
-- 实际搜索/提示符测试中，Alpine 3.24 的 ripgrep 和 starship 触发非法指令，因此 iSH
-  默认不安装它们；fzf 文件列表使用 find，提示符使用原生 zsh。fd 通过 `~/.local/bin/fd`
+- iSH 使用与 Termux 相同的 Starship 主题和公共 `starship.toml`。core 下载固定版本、
+  校验 SHA-256 的 `i586-unknown-linux-musl` 静态构建，避免 Alpine 包里的 SSE 指令；
+  保留解析器栈保护，并为 musl 主线程提供有明确边界的 2 MiB 栈。包装命令只启用一个
+  Rayon 工作线程，不在 iSH 上编译 Rust。`sync` 仅更新配置与链接，保留已安装提示符。
+- Alpine 3.24 的 ripgrep 在实测中触发非法指令，因此 iSH 默认不安装它；
+  fzf 文件列表使用 find。fd 通过 `~/.local/bin/fd`
   使用单线程并关闭 jemalloc thread cache；仍可能打印 MADV_DONTNEED 提示，但文件搜索已验证。
   不要给 fd 显式增加工作线程。Termux 的这些工具与提示符保持原行为。
 - Kerberos 使用 `krb5`，SSH 明确安装 `openssh-client-krb5`，不允许被普通客户端替代。
@@ -146,7 +150,7 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 - Machine Fabric 是独立服务，不是 tmux-agent-workbench。目前上游没有 i686 发布包，
   Linux 安装器要求 systemd，因此 iSH core 不安装该服务。
 - 本地 Vim 保留需要 Node 的 coc 和需要 Go 的 hexokinase 的现有兼容排除。
-  Alpine 3.24 的 ripgrep/starship、Python 和 ncurses 的已知问题见上文；
+  Alpine 3.24 的 ripgrep、Python 和 ncurses 的已知问题见上文；
   不因这些问题排除可运行的公共工具或整个 workbench。
 
 `ssh-connect`、`ish-doctor`、`kinit-auto-login` 安装到 `~/.local/bin`。默认配置为
