@@ -418,13 +418,15 @@ git -c core.hooksPath=/dev/null pull --ff-only
 ssh ipad-ish
 ```
 
-电脑需安装 `ssh`、`ssh-keygen`、`ssh-copy-id`。配对使用专用密钥
-`~/.ssh/id_ed25519_pair`，不存在时交互创建。首次连接必须对照 iSH 上显示的
+电脑需安装 `ssh`、`ssh-copy-id`。配对复用默认密钥
+`~/.ssh/id_ed25519` 及其 `.pub` 文件，不生成客户端密钥。缺少或不完整时立即停止；
+先通过 `./init ssh-keys` 设置密钥，再重新配对。已有私钥缺少公钥时应先恢复公钥，
+不要覆盖已有私钥。首次连接必须对照 iSH 上显示的
 ED25519 指纹，核对后接受，再输入 iSH 的 root 密码。
 若给私钥设置了口令，先在电脑的 ssh-agent 中加载它：
 
 ```sh
-ssh-add ~/.ssh/id_ed25519_pair
+ssh-add ~/.ssh/id_ed25519
 # 然后重新执行 ssh-pair；它不会重新生成已有密钥。
 ```
 

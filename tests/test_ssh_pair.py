@@ -18,7 +18,7 @@ class SSHPairTests(unittest.TestCase):
         tools.mkdir()
         self.ssh = self.home / '.ssh'
         self.ssh.mkdir()
-        for name in ('id_ed25519_pair', 'id_ed25519_pair.pub'):
+        for name in ('id_ed25519', 'id_ed25519.pub'):
             (self.ssh / name).write_text('test-only fixture\n')
         for name in ('ssh', 'ssh-keygen', 'ssh-copy-id'):
             tool = tools / name
@@ -50,11 +50,32 @@ esac
         self.assertTrue(list(self.ssh.glob('config.before-pair.*')))
         calls = (self.home / 'calls').read_text()
         self.assertIn('BatchMode=yes', calls)
+        self.assertIn('IdentityFile=' + str(self.ssh / 'id_ed25519'), calls)
+        self.assertIn('    IdentityFile "' + str(self.ssh / 'id_ed25519') + '"', text)
+        self.assertNotIn('ssh-keygen', calls)
+        self.assertFalse((self.ssh / 'id_ed25519_pair').exists())
         self.assertIn('StrictHostKeyChecking=yes', calls)
         self.assertIn('PreferredAuthentications=publickey', calls)
         self.assertIn('ControlPath=none', calls)
         self.assertIn('PubkeyAuthentication=yes', calls)
         self.assertIn('    PubkeyAuthentication yes\n', text)
+
+    def test_missing_or_partial_default_pair_stops_before_ssh(self):
+        for missing in [('id_ed25519',), ('id_ed25519.pub',),
+                        ('id_ed25519', 'id_ed25519.pub')]:
+            with self.subTest(missing=missing):
+                for name in ('id_ed25519', 'id_ed25519.pub'):
+                    (self.ssh / name).write_text('keep existing identity\n')
+                # A legacy pairing key must never be selected as a fallback.
+                (self.ssh / 'id_ed25519_pair').write_text('legacy key\n')
+                for name in missing:
+                    (self.ssh / name).unlink()
+                before = {p.name: p.read_bytes() for p in self.ssh.iterdir()}
+                result = self.run_pair('ipad', '192.0.2.1')
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('./init ssh-keys', result.stderr)
+                self.assertFalse((self.home / 'calls').exists())
+                self.assertEqual({p.name: p.read_bytes() for p in self.ssh.iterdir()}, before)
 
     def test_failed_key_verification_does_not_save_alias(self):
         self.env['SSH_STATUS'] = '255'

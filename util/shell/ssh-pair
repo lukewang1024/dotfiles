@@ -19,19 +19,19 @@ case $host in ''|[!A-Za-z0-9]*|*[!A-Za-z0-9_.-]*) echo 'Use an IPv4 address or D
 case $user in ''|[!A-Za-z0-9_]*|*[!A-Za-z0-9_.-]*) echo 'Invalid user' >&2; exit 2 ;; esac
 case $port in ''|*[!0-9]*) echo 'Invalid port' >&2; exit 2 ;; esac
 [ "$port" -gt 0 ] && [ "$port" -le 65535 ] || { echo 'Invalid port' >&2; exit 2; }
-for cmd in ssh ssh-keygen ssh-copy-id; do
+# Client identities are provisioned only by the explicit ssh-keys command.
+key=$HOME/.ssh/id_ed25519
+if [ ! -f "$key" ] || [ ! -f "$key.pub" ]; then
+    echo "Missing or incomplete default SSH key pair: $key and $key.pub." >&2
+    echo 'Run ./init ssh-keys in an interactive terminal, then retry pairing. Preserve existing key files; restore incomplete pairs first.' >&2
+    exit 1
+fi
+for cmd in ssh ssh-copy-id; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "Install OpenSSH client tools: missing $cmd" >&2; exit 1; }
 done
 umask 077
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
-key=$HOME/.ssh/id_ed25519_pair
-if [ ! -e "$key" ]; then
-    [ ! -e "$key.pub" ] || { echo "Private key missing for $key.pub; resolve this before retrying." >&2; exit 1; }
-    echo 'Creating a dedicated pairing key. Choose a passphrase; use ssh-agent to avoid repeated prompts.' >&2
-    ssh-keygen -t ed25519 -f "$key" -C 'dotfiles-device-pair'
-fi
-[ -f "$key.pub" ] || { echo "Missing public key: $key.pub" >&2; exit 1; }
 echo 'Compare the host fingerprint with ssh-setup on the device before accepting.' >&2
 ssh-copy-id -i "$key.pub" -p "$port" -o StrictHostKeyChecking=ask \
     -o "IdentityFile=$key" -o IdentitiesOnly=yes -o PubkeyAuthentication=yes \
