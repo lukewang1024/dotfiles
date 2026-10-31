@@ -142,7 +142,9 @@ already correct: Termux unregisters its reload receiver in the background, so a
 one-shot broadcast can be lost. A transient reload failure does not stop the
 service. It needs no root.
 `./init basic` applies the current palette once. `./init core` also installs and
-enables the background service through `termux-services`. Re-running
+enables the background service through `termux-services`. On first installation,
+the service daemon starts in a new Termux shell; bootstrap records the service
+as enabled and reports when it cannot start in the current shell. Re-running
 initialization selects the current Android palette again without pushing theme
 changes to SSH hosts.
 Use `sv-disable termux-system-theme` to stop following the system. Running

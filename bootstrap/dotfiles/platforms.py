@@ -442,12 +442,32 @@ def termux_theme_setup(c):
     c.command('termux-system-theme', '--local-once')
 
 
+def _termux_enable_service(c, name):
+    prefix = Path(c.env.get('PREFIX', '/data/data/com.termux/files/usr'))
+    service_root = prefix / 'var/service'
+    service_dir = service_root / name
+    if not c.dry_run and not (service_dir / 'run').is_file():
+        raise Failure(f'Termux service has no run script: {service_dir}')
+
+    # termux-services adds SVDIR to newly started shells. During first-time
+    # bootstrap this shell predates the package, so pass the service root.
+    status = c.command('sv-enable', name, env={'SVDIR': str(service_root)}, check=False)
+    if status and not c.dry_run:
+        down = service_dir / 'down'
+        if down.exists() or down.is_symlink():
+            raise Failure(f'sv-enable failed and left the service disabled: {name}')
+        c.note(
+            f'{name} is enabled for autostart but could not start in this shell. '
+            f'Open a new Termux shell; if it remains down, inspect sv status {name}.'
+        )
+
+
 @task()
 def termux_theme_service_setup(c):
     if c.dry_run or c.exists('sv-enable'):
         service = Path(c.env.get('PREFIX', '/data/data/com.termux/files/usr')) / 'var/service/termux-system-theme/run'
         c.link(c.repo / 'config/termux/system-theme.run', service)
-        c.command('sv-enable', 'termux-system-theme')
+        _termux_enable_service(c, 'termux-system-theme')
     else:
         c.note('termux-services is unavailable; Android theme following was not enabled')
 
@@ -477,8 +497,8 @@ def termux_ssh_setup(c):
     c.mkdir(c.home / '.ssh')
     if not c.dry_run:
         (c.home / '.ssh').chmod(0o700)
-    c.command('sv-enable', 'sshd')
-    c.command('sv-enable', 'ssh-agent')
+    _termux_enable_service(c, 'sshd')
+    _termux_enable_service(c, 'ssh-agent')
 
 
 @task()
