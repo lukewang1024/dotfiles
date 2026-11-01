@@ -90,6 +90,24 @@ class BootstrapTests(unittest.TestCase):
         for name in ('termux_ssh_setup', 'setup_machine_fabric'):
             self.assertNotIn(name, task_names)
 
+    def test_ish_installs_shared_tmux_plugins_without_starting_a_server(self):
+        c = self.context('ish')
+        c.task('tmux_plugins_setup')
+        commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+        self.assertFalse(any(Path(a[0]).name in ('tmux', 'install_plugins') for a in commands))
+        urls = {a[-2] for a in commands if a[:2] == ['git', 'clone']}
+        # These are the plugin entries used by the shared Termux tmux config.
+        plugins = {line.split()[0] for line in (ROOT / 'config/tmux/tmux.conf').read_text().splitlines()
+                   if line.startswith('  ') and '/' in line and line.rstrip().endswith('\\')}
+        self.assertGreater(len(plugins), 10)
+        self.assertTrue({'abhinav/tmux-fastcopy', 'lukewang1024/tmux-agent-workbench'} <= plugins)
+        self.assertTrue({'https://github.com/' + plugin for plugin in plugins} <= urls)
+        cached = self.context('ish', dry=False)
+        for plugin in plugins:
+            (cached.data / 'tmux/plugins' / plugin.split('/')[1] / '.git').mkdir(parents=True)
+        with patch.object(cached, 'command', side_effect=AssertionError('cached plugins spawned a command')):
+            cached.task('ish_tmux_plugins_setup')
+
     def test_ish_and_termux_install_the_same_shared_helpers(self):
         def shared_links(platform, task):
             c = self.context(platform)

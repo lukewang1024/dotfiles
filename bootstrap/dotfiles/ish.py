@@ -164,6 +164,25 @@ def ish_basic_setup(c):
 
 
 @task()
+def ish_tmux_plugins_setup(c):
+    # TPM's CLI starts tmux and loads every installed plugin even during
+    # provisioning. Read our shared inventory without creating a server.
+    config = (c.repo / 'config/tmux/tmux.conf').read_text()
+    match = re.search(r"^set(?:-option)?\s+-g\s+@tpm_plugins\s+(['\"])(.*?)\1",
+                      config, re.M | re.S)
+    if not match:
+        raise Failure('Missing shared tmux plugin inventory')
+    plugins = match[2].replace('\\\n', ' ').split()
+    for plugin in dict.fromkeys(plugins):
+        if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*/[A-Za-z0-9_][A-Za-z0-9_.-]*', plugin):
+            raise Failure('Expected a literal GitHub owner/repository in the shared plugin inventory')
+        path = c.data / 'tmux/plugins' / plugin.split('/')[1]
+        if not (path / '.git').exists():
+            c.sync_repo(path, 'https://github.com/' + plugin)
+    c.note('Shared tmux plugins installed; installation does not start a tmux server')
+
+
+@task()
 def ish_git_pager_setup(c):
     # Alpine has no package for this portable Perl command.
     repo = c.data / 'diff-so-fancy'

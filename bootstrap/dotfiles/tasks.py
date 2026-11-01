@@ -414,7 +414,10 @@ def tmux_plugins_setup(c):
     tpm = root / 'tpm'
     if not tpm.exists():
         c.sync_repo(tpm, 'https://github.com/tmux-plugins/tpm')
-    c.command(tpm / 'bin/install_plugins')
+    if c.platform == 'ish':
+        c.task('ish_tmux_plugins_setup')
+    else:
+        c.command(tpm / 'bin/install_plugins')
     c.task('workbench_setup')
 
 

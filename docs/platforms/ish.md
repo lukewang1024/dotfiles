@@ -140,6 +140,7 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
   不要给 fd 显式增加工作线程。Termux 的这些工具与提示符保持原行为。
 - Kerberos 使用 `krb5`，SSH 明确安装 `openssh-client-krb5`，不允许被普通客户端替代。
 - 本地 tmux 使用与 Termux 相同的插件列表，包含 tmux-agent-workbench 和 fastcopy。
+  iSH 初始化直接读取公共清单安装插件，不启动 tmux 或加载插件；正常打开 tmux 时再加载。
   Workbench 安装器下载 `i586-unknown-linux-musl` 静态发布包（避开此模拟器不支持的 SSE 指令），无需在模拟器里编译 Rust；
   安装后检查实际命令版本。`./init workbench` 可单独安装或修复。
 - `agent-team` 通过公共安装任务安装到 `$XDG_DATA_HOME/agent-team`，
