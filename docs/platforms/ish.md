@@ -120,6 +120,19 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 不在启动时加载 Zinit、扫描 compinit 或下载插件，避免旧模拟器上的启动延迟和网络等待。
 已安装的插件不删除；其他平台继续使用完整 Zinit 配置。
 
+### 在 iSH 中安装 Meslo Nerd Font
+
+iSH 使用 iPadOS 的字体资源。字体应安装到 iPad，而不是在 Alpine 或远端主机里安装。
+在 iPadOS 16 上可用 Fontcase 导入字体并安装配置描述文件；Fontcase 的 App Store 兼容范围包含 iPadOS 16。
+
+1. 从 [Nerd Fonts 官方 Releases](https://github.com/ryanoasis/nerd-fonts/releases/latest) 下载 Meslo 字体包，解压后找到 `MesloLGSNerdFontMono-Regular.ttf`。
+2. 将字体文件导入 [Fontcase](https://apps.apple.com/app/fontcase-manage-your-type/id1205074470)，在 Fontcase 中安装字体，并按 iPadOS 提示批准安装描述文件。
+3. 字体族选择 **MesloLGS Nerd Font Mono**。必须选带 **Mono** 的等宽 Nerd Font 版本；不要选普通的 `MesloLGS Nerd Font` 或 `Propo` 版本。[Nerd Fonts 的说明](https://github.com/ryanoasis/nerd-fonts/wiki/FAQ-and-Troubleshooting#which-font)建议终端使用 Mono。`Regular` 是这个 Mono 字体族的常规字重，文件名通常为 `MesloLGSNerdFontMono-Regular.ttf`。
+4. 打开 iSH 设置齿轮，在 **Appearance → Font** 中选择 `MesloLGS Nerd Font Mono`。
+5. 完全退出 iSH，再重新打开。只在设置里选择字体不够；重启后 iSH 才会重新加载已安装的字体资源。
+
+检查提示符和 tmux 状态栏图标是否正常显示，并确认输入光标与字符位置对齐。[iSH 曾报告 Nerd Font 字形宽度和光标错位的问题](https://github.com/ish-app/ish/issues/1483)；若出现错位，可在同一字体菜单切回原字体。较新的 iPadOS 可能支持其他字体安装方式，但上述 Fontcase 流程兼容 iPadOS 16。
+
 修复后应先验证带终端的 `/bin/login -f root`，再将 iSH 的 Launch Command
 恢复为 `/bin/login -f root`。当前设备已通过独立交互 Shell 和真实登录验证。
 
@@ -130,7 +143,8 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 - 安装 Alpine x86 原生 Git、curl、fzf、fd、jq、zoxide 等终端工具。
   Alpine 此分支没有 diff-so-fancy 包，core 从上游安装该 Perl 工具到 XDG 数据目录，
   使用同名命令和 Git 分页器；保留公共别名和个人身份配置。
-- iSH 使用与 Termux 相同的 Starship 主题和公共 `starship.toml`。core 下载固定版本、
+- iSH 使用与 Termux 相同的 Starship 主题和公共 `starship.toml`；需要 Nerd Font 图标时，
+  按上文在 iPadOS 安装 Meslo 的 Mono 字体。core 下载固定版本、
   校验 SHA-256 的 `i586-unknown-linux-musl` 静态构建，避免 Alpine 包里的 SSE 指令；
   保留解析器栈保护，并为 musl 主线程提供有明确边界的 2 MiB 栈。包装命令只启用一个
   Rayon 工作线程，不在 iSH 上编译 Rust。`sync` 仅更新配置与链接，保留已安装提示符。
