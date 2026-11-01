@@ -1,7 +1,7 @@
 #!/bin/sh
 # Keep the implementation in its own checkout, not in dotfiles.
 set -u
-repo=${AGENT_TEAM_REPO:-$HOME/Code/github/agent-team}
+repo=${AGENT_TEAM_REPO:-${XDG_DATA_HOME:-$HOME/.local/share}/agent-team}
 if [ ! -f "$repo/install.py" ]; then
     printf '%s\n' "agent-team checkout not found: $repo (set AGENT_TEAM_REPO to override)" >&2
     exit 1

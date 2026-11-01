@@ -35,15 +35,16 @@ def select_tasks(platform, mode, arguments):
     if platform == 'ish':
         tasks = {'basic': 'ish_basic_setup', 'sync': 'ish_basic_setup',
                  'core': 'prepare_ish_env', 'all': 'prepare_ish_env',
-                 'kerberos': 'ish_kerberos', 'zinit': 'zinit_setup', 'ssh-keys': 'ssh_keys_setup'}
+                 'kerberos': 'ish_kerberos', 'zinit': 'zinit_setup', 'ssh-keys': 'ssh_keys_setup',
+                 'workbench': 'workbench_setup'}
         if mode not in tasks:
-            raise Failure('iSH supports basic, core, all, sync, kerberos, zinit and ssh-keys; desktop/agent runtimes run on the remote host')
+            raise Failure('iSH supports basic, core, all, sync, kerberos, zinit, ssh-keys and workbench')
         return [(tasks[mode], [mode] if mode in ('core', 'all') else [])]
     if mode in ('basic', 'sync'):
         return [('sync_setup', [])] if mode == 'sync' or platform == 'windows' else [('termux_basic_setup' if platform == 'termux' else 'basic_env_setup', [])]
     names = {'npmg': 'install_npm_packages', 'zinit': 'zinit_setup', 'kerberos': 'kerberos',
              'migrate-xdg': 'migrate_xdg', 'ssh-keys': 'ssh_keys_setup', 'machine-fabric': 'setup_machine_fabric',
-             'workbench': 'setup_machine_fabric'}
+             'workbench': 'setup_machine_fabric' if platform == 'windows' else 'workbench_setup'}
     if mode in names:
         if platform == 'windows' and mode in ('kerberos', 'zinit'):
             raise Failure(f'{mode} is a Unix-only task')

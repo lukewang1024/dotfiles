@@ -30,7 +30,7 @@ expand_home()
 xdg_config_home=${XDG_CONFIG_HOME:-"$HOME/.config"}
 xdg_data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
 dotfiles_dir=${DOTFILES_DIR:-"$xdg_config_home/dotfiles"}
-agent_team_dir=${AGENT_TEAM_REPO:-"$HOME/Code/github/agent-team"}
+agent_team_dir=${AGENT_TEAM_REPO:-"${XDG_DATA_HOME:-$HOME/.local/share}/agent-team"}
 plugins_dir=${TMUX_PLUGIN_MANAGER_PATH:-"$xdg_data_home/tmux/plugins"}
 bin_dir=${XDG_BIN_HOME:-"$HOME/.local/bin"}
 xdg_config_home=$(expand_home "$xdg_config_home")
@@ -201,6 +201,7 @@ workbench_release_target()
       Darwin-x86_64) printf '%s\n' x86_64-apple-darwin ;;
       Linux-aarch64|Linux-arm64) printf '%s\n' aarch64-unknown-linux-gnu ;;
       Linux-x86_64) printf '%s\n' x86_64-unknown-linux-musl ;;
+      Linux-i686) printf '%s\n' i586-unknown-linux-musl ;;
       *) return 1 ;;
     esac
   fi
@@ -292,7 +293,7 @@ printf '%s\n' 'tmux-workbench-update: agent-team commands installed'
 
 if [ -x "$workbench_dir/install" ]; then
   printf '%s\n' 'tmux-workbench-update: installing workbench commands'
-  run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 "$workbench_dir/install" "$bin_dir" ||
+  run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir" ||
     die 'failed to install tmux-agent-workbench commands'
 fi
 install_workbench_release "$workbench_release_tag"

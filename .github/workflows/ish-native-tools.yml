@@ -1,0 +1,81 @@
+name: iSH native tools
+
+on:
+  push:
+    branches: [main, fix/ish-core-parity]
+    paths: [.github/workflows/ish-native-tools.yml, .github/patches/starship-musl-main-stack.patch]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  starship:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: 2
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95.0
+        with:
+          targets: i586-unknown-linux-musl
+      - name: Install the cross assembler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang binutils
+      - name: Build the static iSH prompt
+        env:
+          CC_i586_unknown_linux_musl: clang
+          AR_i586_unknown_linux_musl: ar
+          CFLAGS_i586_unknown_linux_musl: --target=i586-unknown-linux-musl -march=i586
+        run: |
+          export CARGO_HOME="$RUNNER_TEMP/cargo"
+          export CARGO_TARGET_DIR="$RUNNER_TEMP/starship-target"
+          export CARGO_TARGET_I586_UNKNOWN_LINUX_MUSL_LINKER="$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld"
+          curl -fsSL https://static.crates.io/crates/starship/starship-1.27.0.crate -o "$RUNNER_TEMP/starship.crate"
+          printf '%s  %s\n' 34cf67d88d9f637a5e235f11e2cd3678350e20fa840cf2559fc72c4e025cb8a9 "$RUNNER_TEMP/starship.crate" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/starship.crate" -C "$RUNNER_TEMP"
+          patch -d "$RUNNER_TEMP/starship-1.27.0" -p1 < .github/patches/starship-musl-main-stack.patch
+          cargo install --path "$RUNNER_TEMP/starship-1.27.0" --locked --no-default-features \
+            --target i586-unknown-linux-musl --root "$RUNNER_TEMP/starship"
+          mkdir -p dist/package
+          cp "$RUNNER_TEMP/starship/bin/starship" dist/package/
+          cp "$RUNNER_TEMP/starship-1.27.0/LICENSE" dist/package/LICENSE.starship
+          cp .github/patches/starship-musl-main-stack.patch dist/package/
+      - name: Check the shared prompt configuration
+        env:
+          STARSHIP_CONFIG: ${{ github.workspace }}/config/starship/starship.toml
+          RAYON_NUM_THREADS: 1
+          STARSHIP_NUM_THREADS: 1
+          TERM: xterm-256color
+          STARSHIP_SHELL: zsh
+        run: |
+          dist/package/starship --version
+          dist/package/starship prompt --path "$RUNNER_TEMP" --terminal-width 100 > prompt.txt 2> prompt.log
+          cat prompt.txt
+          cat prompt.log
+          test ! -s prompt.log
+          python3 -c 'from pathlib import Path; assert "❯" in Path("prompt.txt").read_text()'
+          git init -b ish-prompt-test "$RUNNER_TEMP/prompt-repo"
+          touch "$RUNNER_TEMP/prompt-repo/untracked.txt"
+          dist/package/starship prompt --path "$RUNNER_TEMP/prompt-repo" --terminal-width 100 > git-prompt.txt 2> git-prompt.log
+          cat git-prompt.txt
+          cat git-prompt.log
+          test ! -s git-prompt.log
+          python3 -c 'from pathlib import Path; text = Path("git-prompt.txt").read_text(); assert "ish-prompt-test" in text and "❯" in text'
+          file dist/package/starship
+      - name: Package the candidate
+        run: |
+          printf '%s\n' 'Starship 1.27.0; Rust 1.95.0; i586-unknown-linux-musl; no default features; bounded main-stack patch (2 MiB), stacker 0.1.25, poll-based Git cancellation timer.' > dist/package/BUILD.txt
+          tar -C dist/package -czf dist/starship-i586-unknown-linux-musl.tar.gz .
+          cd dist
+          sha256sum starship-i586-unknown-linux-musl.tar.gz > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starship-i586-unknown-linux-musl
+          path: |
+            dist/starship-i586-unknown-linux-musl.tar.gz
+            dist/SHA256SUMS
+          if-no-files-found: error

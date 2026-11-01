@@ -1,15 +1,19 @@
 """iSH's Alpine client, using the same task runner and shared dotfiles as Termux."""
 from pathlib import Path
+import hashlib
 import os
 import re
 import shlex
+import shutil
+import tarfile
+import tempfile
 
 from .engine import Failure
 from .tasks import sequence, task
 
-# Native clients only. Codex and development toolchains run on the SSH host.
+# Use native Alpine packages plus the shared tool and agent installers.
 ISH_PACKAGES = ('ca-certificates bash curl fd file fzf git jq krb5 '
-                'less nano openssh-client-krb5 python3 rsync shadow '
+                'less nano openssh-client-krb5 perl python3 rsync shadow '
                 'tig tmux tree unzip vim which zip zoxide zsh').split()
 
 
@@ -98,16 +102,58 @@ def ish_client_setup(c):
     if not c.dry_run:
         (c.home / '.ssh').chmod(0o700)
     # First values win: explicit local host settings stay ahead of defaults.
+    c.task('ish_ssh_profile_setup')
     c.task('ssh_setup')
 
 
 @task()
+def ish_ssh_profile_setup(c):
+    """Expose the existing device profile to clients that invoke ssh directly."""
+    profile = c.config / 'ish-kerberos/user.conf'
+    if not profile.is_file():
+        return
+    values = {}
+    for line in profile.read_text().splitlines():
+        if line and not line.startswith('#') and '=' in line:
+            key, value = line.split('=', 1)
+            values[key] = value
+    required = ('SSH_HOST', 'SSH_USER', 'KRB5_PRINCIPAL', 'KRB5_REALM')
+    if not all(values.get(key) for key in required):
+        return
+    host, user, principal, realm = (values[key] for key in required)
+    port, session = values.get('SSH_PORT', '22'), values.get('TMUX_SESSION', 'dev')
+    if (not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.:-]*', host) or
+            not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*', user) or
+            not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_./+-]*@[A-Za-z0-9_.-]+', principal) or
+            not principal.endswith('@' + realm) or
+            not port.isdecimal() or not 1 <= int(port) <= 65535 or
+            not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_-]*', session)):
+        raise Failure('Invalid iSH SSH profile; use literal host, user, principal, port and session values')
+    target = c.config / 'ish-kerberos/ssh_config'
+    text = (f'# Managed from ish-kerberos/user.conf; local SSH overrides take precedence.\n'
+            f'Host {host}\n  HostName {host}\n  User {user}\n  Port {port}\n'
+            '  ConnectTimeout 10\n  TCPKeepAlive no\n  ServerAliveInterval 5\n'
+            '  ServerAliveCountMax 3\nHost *\n')
+    if not target.exists() or target.read_text() != text:
+        c.backup(target)
+        c.write(target, text)
+    mapping = c.config / 'ssh/kerberos'
+    content = mapping.read_text() if mapping.exists() else ''
+    manual = re.sub(r'^# -- dotfiles iSH begin --\n.*?^# -- dotfiles iSH end --(?:\n|$)',
+                    '', content, flags=re.M | re.S)
+    if any(line.split() and line.split()[0] == host for line in manual.splitlines()):
+        # An explicit shared mapping remains authoritative. Remove an obsolete
+        # generated block if the user has since supplied their own mapping.
+        if manual != content:
+            c.backup(mapping)
+            c.write(mapping, manual)
+    else:
+        append_block(c, mapping, f'{host} {principal} {session}\n')
+
+
+@task()
 def ish_basic_setup(c):
-    sequence(c, 'xdg_dir_create', 'zsh_config_setup', 'tmux_config_setup',
-             'vim_config_setup', 'tig_setup', 'python_setup')
-    c.task('git_setup', 'configure-only')
-    for name in ('theme-sync', 'tmux-appearance-fallback'):
-        c.link(c.repo / 'util/shell' / name, c.bin / name)
+    c.task('basic_env_setup')
     # This also makes manual kinit/klist/ssh and the helpers use the same cache.
     block = ('export DOTFILES_HOME=' + shlex.quote(str(c.repo)) + '\n'
              '. "$DOTFILES_HOME/config/ish/env.sh"\n')
@@ -118,15 +164,103 @@ def ish_basic_setup(c):
 
 
 @task()
+def ish_tmux_plugins_setup(c):
+    # TPM's CLI starts tmux and loads every installed plugin even during
+    # provisioning. Read our shared inventory without creating a server.
+    config = (c.repo / 'config/tmux/tmux.conf').read_text()
+    match = re.search(r"^set(?:-option)?\s+-g\s+@tpm_plugins\s+(['\"])(.*?)\1",
+                      config, re.M | re.S)
+    if not match:
+        raise Failure('Missing shared tmux plugin inventory')
+    plugins = match[2].replace('\\\n', ' ').split()
+    for plugin in dict.fromkeys(plugins):
+        if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*/[A-Za-z0-9_][A-Za-z0-9_.-]*', plugin):
+            raise Failure('Expected a literal GitHub owner/repository in the shared plugin inventory')
+        path = c.data / 'tmux/plugins' / plugin.split('/')[1]
+        if not (path / '.git').exists():
+            c.sync_repo(path, 'https://github.com/' + plugin)
+    c.note('Shared tmux plugins installed; installation does not start a tmux server')
+
+
+@task()
+def ish_git_pager_setup(c):
+    # Alpine has no package for this portable Perl command.
+    repo = c.data / 'diff-so-fancy'
+    c.sync_repo(repo, 'https://github.com/so-fancy/diff-so-fancy.git')
+    c.link(repo / 'diff-so-fancy', c.bin / 'diff-so-fancy')
+
+
+# Immutable i586 build of the shared prompt; see the native-tools workflow.
+ISH_STARSHIP_TAG = 'ish-starship-v1.27.0-r1'
+ISH_STARSHIP_ARCHIVE_SHA256 = '9429c0f1409b4d7a969c9de430926d3040b86362233a1b6c5b25d8c5e1125ff8'
+ISH_STARSHIP_BINARY_SHA256 = '67aa5ee22a172ca14d5186f1fbd39768682b68e3ceed818bd7f7116d58078c66'
+
+
+def _ish_sha256(path):
+    if not path.is_file():
+        return ''
+    digest = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+@task()
+def ish_starship_setup(c):
+    root = c.data / 'dotfiles/ish-starship/v1.27.0-r1'
+    binary = root / 'starship'
+    archive = c.cache / 'dotfiles/ish-starship' / ISH_STARSHIP_TAG / 'starship-i586-unknown-linux-musl.tar.gz'
+    if _ish_sha256(binary) != ISH_STARSHIP_BINARY_SHA256:
+        if _ish_sha256(archive) != ISH_STARSHIP_ARCHIVE_SHA256:
+            url = ('https://github.com/lukewang1024/dotfiles/releases/download/' +
+                   ISH_STARSHIP_TAG + '/' + archive.name)
+            staged = archive.with_name(archive.name + '.download')
+            try:
+                c.download(url, staged)
+                if not c.dry_run:
+                    if _ish_sha256(staged) != ISH_STARSHIP_ARCHIVE_SHA256:
+                        raise Failure('iSH Starship archive failed SHA256 verification')
+                    staged.replace(archive)
+            finally:
+                if not c.dry_run:
+                    staged.unlink(missing_ok=True)
+        c.record('extract', source=str(archive), target=str(root))
+        if not c.dry_run:
+            c.mkdir(root)
+            with tempfile.TemporaryDirectory(dir=root.parent) as staging:
+                staging = Path(staging)
+                with tarfile.open(archive, 'r:gz') as package:
+                    for name in ('starship', 'LICENSE.starship', 'BUILD.txt', 'starship-musl-main-stack.patch'):
+                        member = package.getmember('./' + name)
+                        if not member.isfile() or member.size > 64 * 1024 * 1024:
+                            raise Failure('Invalid iSH Starship package member: ' + name)
+                        with package.extractfile(member) as source, (staging / name).open('wb') as out:
+                            shutil.copyfileobj(source, out)
+                candidate = staging / 'starship'
+                if _ish_sha256(candidate) != ISH_STARSHIP_BINARY_SHA256:
+                    raise Failure('iSH Starship binary failed SHA256 verification')
+                candidate.chmod(0o755)
+                for path in staging.iterdir():
+                    path.replace(root / path.name)
+    if not c.dry_run:
+        binary.chmod(0o755)
+    c.link(c.repo / 'util/ish/starship', c.bin / 'starship')
+    c.refresh_path()
+    c.note('Starship uses the shared prompt, an i586 static binary and one worker on iSH')
+
+
+@task()
 def prepare_ish_env(c, mode='core'):
     if mode not in ('core', 'all'):
         raise Failure('iSH supports core and all; use basic/sync for configuration only')
     if mode == 'all':
         c.note('iSH has no extra desktop package set; all uses core, as on Termux')
-    sequence(c, 'install_ish_core_packages', 'zinit_install', 'ish_basic_setup',
-             'set_default_shell', 'tmux_plugins_setup', 'vim_plugins_setup')
-    c.note('SKIP ripgrep/starship: they hit unsupported instructions in the tested Alpine build; use grep/find and the native zsh prompt. fd uses a single-worker compatibility wrapper.')
-    c.note('iSH client ready. Android services, local sshd/agents and local Codex are not part of this client profile.')
+    sequence(c, 'install_ish_core_packages', 'ish_starship_setup', 'zinit_install', 'ish_git_pager_setup', 'ish_basic_setup',
+             'set_default_shell', 'tmux_plugins_setup', 'agent_team_setup', 'vim_plugins_setup')
+    c.note('SKIP ripgrep: the tested Alpine build hits unsupported instructions; use grep/find. Starship uses the compatible i586 build; fd uses a single-worker wrapper.')
+    c.note('Shared helpers, tmux-agent-workbench and agent-team are installed. Use ./init sshd for the iSH SSH service; Android APIs and Termux services do not apply.')
+    c.note('Machine Fabric currently publishes only 64-bit runtimes; its Linux installer requires systemd. iSH has neither, so its service is not installed.')
 
 
 @task()
@@ -166,4 +300,6 @@ def ish_kerberos(c):
     for name, text in (('user.conf', values), ('krb5.conf', profile)):
         c.backup(conf / name)
         c.write(conf / name, text)
-    c.note('Configured. In a new shell: ssh-connect --tmux will request kinit when needed. No password was requested or saved.')
+    c.task('ish_ssh_profile_setup')
+    c.task('ssh_setup')
+    c.note('Configured. In a new shell: ssh-connect --workbench or --tmux will request kinit when needed. No password was requested or saved.')

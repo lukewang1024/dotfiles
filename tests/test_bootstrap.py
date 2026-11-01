@@ -68,7 +68,7 @@ class BootstrapTests(unittest.TestCase):
             self.assertTrue(any([f'$util_dir/shell/{helper}', f'$bin_dir/{helper}'] in entries
                                 for entries in LINKS.values()))
 
-    def test_ish_core_uses_shared_config_and_gssapi_client_without_servers(self):
+    def test_ish_core_installs_shared_tools_and_gssapi_client(self):
         c = self.context('ish')
         for name, arguments in select_tasks('ish', 'core', []):
             c.task(name, *arguments)
@@ -84,10 +84,61 @@ class BootstrapTests(unittest.TestCase):
             self.assertNotIn('openssh-server', a)
             self.assertNotIn('openssh-client-default', a)
         task_names = [e['name'] for e in c.events if e['kind'] == 'task']
-        for name in ('zinit_install', 'git_setup', 'tmux_plugins_setup', 'vim_plugins_setup', 'ssh_setup'):
+        for name in ('zinit_install', 'basic_env_setup', 'util_setup', 'git_setup', 'tmux_plugins_setup',
+                     'workbench_setup', 'agent_team_setup', 'vim_plugins_setup', 'ssh_setup', 'ish_starship_setup'):
             self.assertIn(name, task_names)
-        for name in ('termux_ssh_setup', 'agent_team_setup', 'setup_machine_fabric'):
+        for name in ('termux_ssh_setup', 'setup_machine_fabric'):
             self.assertNotIn(name, task_names)
+
+    def test_ish_installs_shared_tmux_plugins_without_starting_a_server(self):
+        c = self.context('ish')
+        c.task('tmux_plugins_setup')
+        commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+        self.assertFalse(any(Path(a[0]).name in ('tmux', 'install_plugins') for a in commands))
+        urls = {a[-2] for a in commands if a[:2] == ['git', 'clone']}
+        # These are the plugin entries used by the shared Termux tmux config.
+        plugins = {line.split()[0] for line in (ROOT / 'config/tmux/tmux.conf').read_text().splitlines()
+                   if line.startswith('  ') and '/' in line and line.rstrip().endswith('\\')}
+        self.assertGreater(len(plugins), 10)
+        self.assertTrue({'abhinav/tmux-fastcopy', 'lukewang1024/tmux-agent-workbench'} <= plugins)
+        self.assertTrue({'https://github.com/' + plugin for plugin in plugins} <= urls)
+        cached = self.context('ish', dry=False)
+        for plugin in plugins:
+            (cached.data / 'tmux/plugins' / plugin.split('/')[1] / '.git').mkdir(parents=True)
+        with patch.object(cached, 'command', side_effect=AssertionError('cached plugins spawned a command')):
+            cached.task('ish_tmux_plugins_setup')
+
+    def test_ish_and_termux_install_the_same_shared_helpers(self):
+        def shared_links(platform, task):
+            c = self.context(platform)
+            c.task(task)
+            return {e['target'] for e in c.events if e['kind'] == 'link'
+                    and ROOT / 'util/termux' not in Path(e['source']).parents
+                    and ('/bin/' in e['target'] or 'AGENTS.md' in e['target'] or 'CLAUDE.md' in e['target'])}
+        termux = shared_links('termux', 'termux_basic_setup')
+        ish = shared_links('ish', 'ish_basic_setup')
+        self.assertTrue(termux)
+        self.assertEqual(termux - ish, set())
+
+    def test_workbench_fresh_install_and_repair_are_available_on_mobile(self):
+        for platform in ('ish', 'termux'):
+            with self.subTest(platform=platform):
+                c = self.context(platform)
+                for name, arguments in select_tasks(platform, 'workbench', []):
+                    c.task(name, *arguments)
+                commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+                root = c.data / 'tmux/plugins/tmux-agent-workbench'
+                self.assertIn(['git', 'clone', '--depth', '1',
+                               'https://github.com/lukewang1024/tmux-agent-workbench.git', str(root)], commands)
+                self.assertIn([str(root / 'install'), str(c.bin)], commands)
+                self.assertIn([str(c.bin / 'tmux-agent-workbench'), '--version'], commands)
+
+    def test_agent_team_default_checkout_uses_xdg(self):
+        c = self.context('ish')
+        c.env.pop('AGENT_TEAM_REPO', None)
+        c.task('agent_team_setup')
+        commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+        self.assertIn([sys.executable, str(c.data / 'agent-team/install.py'), '--bin-dir', str(c.bin)], commands)
 
     def test_ish_installed_packages_skip_network_and_install(self):
         c = self.context('ish', dry=False)
@@ -177,6 +228,63 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue((c.bin / 'ssh-connect').is_symlink())
         self.assertEqual((c.bin / 'kinit-auto-login').resolve(), ROOT / 'util/kerberos/kinit-auto-login')
         self.assertFalse((c.bin / 'ish-connect').is_symlink())
+
+    def test_ish_profile_produces_workbench_ssh_alias_and_mapping(self):
+        c = self.context('ish', dry=False)
+        conf = c.config / 'ish-kerberos'
+        conf.mkdir(parents=True)
+        profile = ('KRB5_REALM=ISH.TEST\nKRB5_PRINCIPAL=testuser@ISH.TEST\n'
+                   'SSH_HOST=ssh.ish.test\nSSH_USER=testuser\nSSH_PORT=2222\nTMUX_SESSION=mobile\n')
+        (conf / 'user.conf').write_text(profile)
+        ssh = c.home / '.ssh/config'
+        ssh.parent.mkdir()
+        ssh.write_text('Host local-alias\n  HostName local.example\n  User custom\n')
+        c.task('ish_client_setup')
+        mapping = c.config / 'ssh/kerberos'
+        self.assertIn('ssh.ish.test testuser@ISH.TEST mobile', mapping.read_text())
+        self.assertEqual((conf / 'user.conf').read_text(), profile)
+        before = {p: p.read_bytes() for p in (ssh, mapping, conf / 'ssh_config')}
+        c.task('ish_client_setup')
+        self.assertEqual({p: p.read_bytes() for p in before}, before)
+        if shutil.which('ssh'):
+            settings = subprocess.check_output(['ssh', '-G', '-F', str(ssh), 'ssh.ish.test'], text=True)
+            for value in ('user testuser', 'hostname ssh.ish.test', 'port 2222',
+                          'gssapiauthentication yes', 'passwordauthentication no',
+                          'serveraliveinterval 5'):
+                self.assertIn(value + '\n', settings)
+            local = subprocess.check_output(['ssh', '-G', '-F', str(ssh), 'local-alias'], text=True)
+            self.assertIn('hostname local.example\n', local)
+            self.assertIn('user custom\n', local)
+            self.assertIn('port 22\n', local)
+
+    def test_ish_profile_preserves_explicit_shared_mapping_and_rejects_injection(self):
+        c = self.context('ish', dry=False)
+        conf = c.config / 'ish-kerberos'
+        conf.mkdir(parents=True)
+        profile = ('KRB5_REALM=ISH.TEST\nKRB5_PRINCIPAL=testuser@ISH.TEST\n'
+                   'SSH_HOST=ssh.ish.test\nSSH_USER=testuser\n')
+        (conf / 'user.conf').write_text(profile)
+        mapping = c.config / 'ssh/kerberos'
+        mapping.parent.mkdir()
+        original = '# local mapping\nssh.ish.test other@ISH.TEST custom\n'
+        mapping.write_text(original)
+        c.task('ish_ssh_profile_setup')
+        self.assertEqual(mapping.read_text(), original)
+        (conf / 'user.conf').write_text(profile.replace('SSH_HOST=ssh.ish.test', 'SSH_HOST=*.test'))
+        with self.assertRaises(Failure):
+            c.task('ish_ssh_profile_setup')
+        self.assertEqual(mapping.read_text(), original)
+
+    def test_ish_login_restores_tools_after_system_profile_resets_path(self):
+        c = self.context('ish', dry=False)
+        env = dict(c.env, DOTFILES_PLATFORM='ish', DOTFILES_HOME=str(ROOT),
+                   KRB5CCNAME='FILE:/private/existing-ticket', PATH=os.environ['PATH'])
+        result = subprocess.run(['sh', '-c',
+                                 'PATH=/usr/bin:/bin; . "$DOTFILES_HOME/config/zsh/.zprofile"; '
+                                 'printf "%s\\n%s\\n" "$PATH" "$KRB5CCNAME"'],
+                                env=env, capture_output=True, text=True, check=True)
+        self.assertIn(str(c.bin), result.stdout.splitlines()[0].split(':'))
+        self.assertEqual(result.stdout.splitlines()[1], 'FILE:/private/existing-ticket')
 
     def test_ish_installs_login_wrapper_only_with_compat_library(self):
         c = self.context('ish', dry=False)

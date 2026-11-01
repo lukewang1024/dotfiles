@@ -35,6 +35,7 @@ exec zsh -l
 | `./init all` | iSH 和 Termux 都没有额外桌面软件组，等同 core |
 | `./init basic` / `./init sync` | 仅更新配置与工具链接，不安装软件、不联网下载插件 |
 | `./init kerberos` | 交互配置 Kerberos 和远程主机；不询问或保存密码 |
+| `./init workbench` | 安装或修复 tmux-agent-workbench 的本机核心和命令 |
 | `./init --list-tasks` | 查看公共任务 |
 | `./init --dry-run --json --platform ish core` | 在其他机器预览，无安装和文件修改 |
 
@@ -124,20 +125,34 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 
 ## 能力范围
 
-- 复用公共 zsh 环境和别名，使用轻量 iSH 交互配置；复用 Vim、tmux 配置和键位。
+- 复用 Termux 的公共 basic 配置任务：zsh、Git、Vim、tmux、npm/pnpm 配置、
+  所有公共工具链接和 agent 指令文件。交互 Shell 保留实测可用的轻量配置。
 - 安装 Alpine x86 原生 Git、curl、fzf、fd、jq、zoxide 等终端工具。
-  Alpine 此分支没有 diff-so-fancy，Git 分页使用 less，保留公共别名和个人身份配置。
-- 实际搜索/提示符测试中，Alpine 3.24 的 ripgrep 和 starship 触发非法指令，因此 iSH
-  默认不安装它们；fzf 文件列表使用 find，提示符使用原生 zsh。fd 通过 `~/.local/bin/fd`
+  Alpine 此分支没有 diff-so-fancy 包，core 从上游安装该 Perl 工具到 XDG 数据目录，
+  使用同名命令和 Git 分页器；保留公共别名和个人身份配置。
+- iSH 使用与 Termux 相同的 Starship 主题和公共 `starship.toml`。core 下载固定版本、
+  校验 SHA-256 的 `i586-unknown-linux-musl` 静态构建，避免 Alpine 包里的 SSE 指令；
+  保留解析器栈保护，并为 musl 主线程提供有明确边界的 2 MiB 栈。包装命令只启用一个
+  Rayon 工作线程，不在 iSH 上编译 Rust。`sync` 仅更新配置与链接，保留已安装提示符。
+- Alpine 3.24 的 ripgrep 在实测中触发非法指令，因此 iSH 默认不安装它；
+  fzf 文件列表使用 find。fd 通过 `~/.local/bin/fd`
   使用单线程并关闭 jemalloc thread cache；仍可能打印 MADV_DONTNEED 提示，但文件搜索已验证。
   不要给 fd 显式增加工作线程。Termux 的这些工具与提示符保持原行为。
 - Kerberos 使用 `krb5`，SSH 明确安装 `openssh-client-krb5`，不允许被普通客户端替代。
-- iSH 本地 tmux 保留公共插件，排除本地 agent workbench 和需要额外原生二进制的 fastcopy；
-  本地 Vim 不安装需要 Node 的 coc 或需要 Go 编译的 hexokinase。
-  剪贴板、打开链接及终端主题自动同步还取决于 iSH 的终端能力，需实机验收。
-- iSH 没有 Android API、Termux:API/服务管理。本客户端不启动本地 sshd/ssh-agent，
-  不安装本地 Codex、agent-team 或 Machine Fabric；开发工具和完整工作台运行在远端。
-- 公共 zsh 插件首启可能继续下载；云端通过不代表 iPad mini 4 的启动速度可接受。
+- 本地 tmux 使用与 Termux 相同的插件列表，包含 tmux-agent-workbench 和 fastcopy。
+  iSH 初始化直接读取公共清单安装插件，不启动 tmux 或加载插件；正常打开 tmux 时再加载。
+  Workbench 安装器下载 `i586-unknown-linux-musl` 静态发布包（避开此模拟器不支持的 SSE 指令），无需在模拟器里编译 Rust；
+  安装后检查实际命令版本。`./init workbench` 可单独安装或修复。
+- `agent-team` 通过公共安装任务安装到 `$XDG_DATA_HOME/agent-team`，
+  `agent-team-install` 和更新器使用相同默认目录；`AGENT_TEAM_REPO` 可显式覆盖。
+  需要启动具体 agent 时，该 agent 的 CLI 仍须在目标机器上可用。
+- iSH 没有 Android API 或 Termux 服务管理。SSH 服务通过 `./init sshd` 配置，
+  不调用 Android 的 `sv-enable`。剪贴板、打开链接及主题同步取决于终端能力。
+- Machine Fabric 是独立服务，不是 tmux-agent-workbench。目前上游没有 i686 发布包，
+  Linux 安装器要求 systemd，因此 iSH core 不安装该服务。
+- 本地 Vim 保留需要 Node 的 coc 和需要 Go 的 hexokinase 的现有兼容排除。
+  Alpine 3.24 的 ripgrep、Python 和 ncurses 的已知问题见上文；
+  不因这些问题排除可运行的公共工具或整个 workbench。
 
 `ssh-connect`、`ish-doctor`、`kinit-auto-login` 安装到 `~/.local/bin`。默认配置为
 `~/.config/ish-kerberos/{user.conf,krb5.conf}`，票据缓存为
@@ -149,13 +164,18 @@ iSH 的交互配置使用 `config/ish/zshrc`，保留公共环境和别名、基
 kinit yourname@YOUR.REALM
 klist
 ish-doctor
+ssh-connect --workbench         # Workbench 客户端连接远端工作台
 ssh-connect --tmux              # 需要时交互 kinit，然后进入/恢复远端 tmux
 ssh-connect --check             # 非交互 GSSAPI 认证并执行 whoami
 ish-doctor --ssh               # 包含真实 SSH 认证的诊断
 ```
 
 普通 `ssh-connect` 打开远端 shell，`--tmux` 恢复 tmux，`--check` 非交互验证。
-已有 `user.conf` 无需迁移；`./init sync` 会移除旧的 dotfiles `ish-connect` 链接。
+`./init sync` 和 `./init kerberos` 会把现有 `user.conf` 的主机、用户和端口同步为
+标准 SSH 别名，并在 `$XDG_CONFIG_HOME/ssh/kerberos` 增加受管理的 Principal 映射，
+因此可以使用 `ssh-connect --workbench`。已有显式 SSH 设置和手工映射优先；
+Kerberos 配置和 keytab 保持原样。首次连接仍需核对主机指纹。
+`./init sync` 也会移除旧的 dotfiles `ish-connect` 链接。
 Termux 和其他平台也使用同一命令，按 [Termux 配置说明](termux.md#kerberos-ssh) 绑定主机和 Principal。
 默认只在连接时检查票据；没有配置自动登录时，过期后仍需在 kinit 提示中输入密码。
 
@@ -408,6 +428,10 @@ rc-update del dotfiles-sshd default
 `${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/sshd/sshd.log`。
 这里的自启动指 iSH 虚拟环境启动，不是 iPad 开机后自动运行应用；
 后台 sshd 不会绕过 iPadOS 的应用挂起限制。
+连接断开时先区分服务与地址：在 iSH 前台运行 `rc-service dotfiles-sshd status`，
+再用 `./init sshd` 查看当前 IP。Wi-Fi 与 VPN 切换后旧地址可能不再可达。
+`ssh-first-reachable` 只给地址探测设置短超时，建立后的 SSH 通道不使用
+Netcat 空闲超时；连接建立期限由 OpenSSH 的 `ConnectTimeout` 管理。
 
 在 iPad「设置 → Wi-Fi → 当前网络」找到 IP（下例替换为实际地址）。
 同一局域网电脑进入自己的 dotfiles 仓库后执行：

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Keep Starship to one worker on iSH's emulated CPU.
+set -eu
+export RAYON_NUM_THREADS=1 STARSHIP_NUM_THREADS=1
+exec "${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/ish-starship/v1.27.0-r1/starship" "$@"

@@ -67,6 +67,8 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
             'import os, shutil, sys\n'
             'url = next(arg for arg in sys.argv[1:] if arg.startswith("https://"))\n'
             'destination = sys.argv[sys.argv.index("-o") + 1]\n'
+            'if os.environ.get("TEST_REQUEST_LOG"):\n'
+            '    with open(os.environ["TEST_REQUEST_LOG"], "a") as log: log.write(url + "\\n")\n'
             'source = os.environ["TEST_RELEASE_JSON"] if "api.github.com" in url '
             'else os.environ["TEST_RELEASE_ARCHIVE"]\n'
             'shutil.copyfile(source, destination)\n')
@@ -114,6 +116,18 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.git('-C', writer, 'commit', '-m', 'update')
         self.git('-C', writer, 'push')
         return checkout
+
+    def test_ish_updates_use_the_compatible_32_bit_release(self):
+        self.env.pop('TERMUX_VERSION', None)
+        self.env.pop('PREFIX', None)
+        requests = self.root / 'requested-urls'
+        self.env['TEST_REQUEST_LOG'] = str(requests)
+        uname = self.bin_dir / 'uname'
+        uname.write_text('#!/bin/sh\ncase $1 in\n-m) echo i686;;\n-o) echo GNU/Linux;;\n*) echo Linux;;\nesac\n')
+        uname.chmod(0o755)
+        result = self.run_update()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('/v2.0.0-beta.28/tmux-agent-workbench-i586-unknown-linux-musl.tar.gz', requests.read_text())
 
     def run_update(self, *args):
         return subprocess.run(['/bin/sh', str(SCRIPT), *args], env=self.env,
