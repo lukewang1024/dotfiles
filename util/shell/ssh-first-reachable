@@ -34,9 +34,9 @@ esac
 [ "$parallel" -le 32 ] 2>/dev/null || parallel=32
 
 # Apple's nc separates its connection timeout (-G) from the generic timeout.
-# Do not also pass -w there: it remains active after connect and tears down an
-# otherwise healthy but briefly idle SSH stream. OpenBSD/Linux variants without
-# -G use -w as their available connection-timeout control.
+# Do not also pass -w there: it remains active after connect. Toybox's -w only
+# limits connection setup, while its -W handles idle connections. OpenBSD-style
+# -w also remains active after connect, so use it only for the short probe.
 if nc -h 2>&1 | grep -q -- '-G conntimo'; then
   probe()
   {
@@ -46,7 +46,7 @@ if nc -h 2>&1 | grep -q -- '-G conntimo'; then
   {
     nc -G "$probe_timeout" "$1" "$port"
   }
-else
+elif nc --help 2>&1 | grep -q 'Toybox'; then
   probe()
   {
     nc -z -w "$probe_timeout" "$1" "$port" </dev/null >/dev/null 2>&1
@@ -54,6 +54,15 @@ else
   connect()
   {
     nc -w "$probe_timeout" "$1" "$port"
+  }
+else
+  probe()
+  {
+    nc -z -w "$probe_timeout" "$1" "$port" </dev/null >/dev/null 2>&1
+  }
+  connect()
+  {
+    nc "$1" "$port"
   }
 fi
 
