@@ -86,6 +86,28 @@ require_main_checkout()
   esac
 }
 
+resolve_agent_team_checkout()
+{
+  # Older installations may still link the commands to a checkout outside XDG.
+  # Respect explicit overrides and existing default paths, including broken links.
+  if [ -n "${AGENT_TEAM_REPO:-}" ] || [ -e "$agent_team_dir" ] || [ -L "$agent_team_dir" ]; then
+    return 0
+  fi
+  agent_team_command=$(command -v agent-team) || return 0
+  installed_agent_team_dir=$(python3 -c '
+from pathlib import Path
+import sys
+entrypoint = Path(sys.argv[1]).resolve()
+repo = entrypoint.parent.parent
+if (entrypoint.name == "agent-team" and entrypoint.parent.name == "bin"
+        and (repo / ".git").exists() and (repo / "install.py").is_file()):
+    print(repo)
+' "$agent_team_command") || die 'failed to resolve installed agent-team checkout'
+  [ -n "$installed_agent_team_dir" ] || return 0
+  agent_team_dir=$installed_agent_team_dir
+  printf 'agent-team: using installed checkout: %s\n' "$agent_team_dir"
+}
+
 run_quiet()
 {
   if "$@" >"$log_file" 2>&1; then
@@ -139,7 +161,7 @@ report_repo()
   fi
 }
 
-workbench_has_unreleased_changes()
+repo_has_unreleased_changes()
 {
   repo=$1
   upstream=$(git -C "$repo" rev-parse --abbrev-ref '@{upstream}')
@@ -248,6 +270,7 @@ esac
 
 command -v git >/dev/null 2>&1 || die 'git is required'
 command -v python3 >/dev/null 2>&1 || die 'python3 is required'
+resolve_agent_team_checkout
 
 # Check every checkout before changing any of them. Feature work belongs in
 # separate worktrees; installation checkouts track remote main or master.
@@ -274,8 +297,12 @@ fi
 
 printf '%s\n' 'tmux-workbench-update: updating repositories'
 update_repo "$dotfiles_dir"
-update_repo "$agent_team_dir"
-if workbench_has_unreleased_changes "$workbench_dir"; then
+if repo_has_unreleased_changes "$agent_team_dir"; then
+  printf '%s\n' 'agent-team: warning: local/unreleased changes detected; keeping checkout and reinstalling existing commands' >&2
+else
+  update_repo "$agent_team_dir"
+fi
+if repo_has_unreleased_changes "$workbench_dir"; then
   warn_workbench_unreleased
 else
   update_repo "$workbench_dir"

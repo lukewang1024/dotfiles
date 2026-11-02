@@ -80,7 +80,10 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.repos = {}
         for name, files in {
             'dotfiles': {'init': '#!/bin/sh\nprintf "%s" "$1" > "$XDG_STATE_HOME/synced"\n'},
-            'agent-team': {'install.py': 'import pathlib, sys\npathlib.Path(sys.argv[-1], "agent-team-installed").write_text("ok")\n'},
+            'agent-team': {
+                'install.py': 'import pathlib, sys\npathlib.Path(sys.argv[-1], "agent-team-installed").write_text("ok")\n',
+                'bin/agent-team': '#!/bin/sh\nexit 0\n',
+            },
             'tmux-agent-workbench': {'install': '#!/bin/sh\nprintf "%s" "$TMUX_AGENT_WORKBENCH_RELEASE_ONLY" > "$1/workbench-installed"\n'},
             'tmux-adaptive-theme': {'theme.txt': 'v1\n'},
         }.items():
@@ -99,8 +102,9 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.git('-C', checkout, 'config', 'user.email', 'test@example.invalid')
         for filename, contents in files.items():
             path = checkout / filename
+            path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(contents)
-            if filename in ('init', 'install'):
+            if filename in ('init', 'install', 'bin/agent-team'):
                 path.chmod(0o755)
         (checkout / 'version.txt').write_text('v1\n')
         self.git('-C', checkout, 'add', '.')
@@ -163,6 +167,67 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertNotIn('fetching repositories', update.stdout)
         self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
         self.assertFalse((self.state / 'synced').exists())
+
+    def test_agent_team_local_changes_are_preserved_while_other_repositories_update(self):
+        agent_team = self.repos['agent-team']
+        original_head = self.git('-C', agent_team, 'rev-parse', 'HEAD').stdout.strip()
+        (agent_team / 'version.txt').write_text('local work\n')
+        (agent_team / 'untracked.txt').write_text('keep me\n')
+
+        update = self.run_update()
+
+        self.assertIn('agent-team: warning: local/unreleased changes detected', update.stderr)
+        self.assertEqual(original_head,
+                         self.git('-C', agent_team, 'rev-parse', 'HEAD').stdout.strip())
+        self.assertEqual('local work\n', (agent_team / 'version.txt').read_text())
+        self.assertEqual('keep me\n', (agent_team / 'untracked.txt').read_text())
+        self.assertEqual('ok', (self.bin_dir / 'agent-team-installed').read_text())
+        for name in ('dotfiles', 'tmux-agent-workbench', 'tmux-adaptive-theme'):
+            self.assertEqual('v2\n', (self.repos[name] / 'version.txt').read_text())
+
+    def test_missing_default_agent_team_checkout_uses_the_installed_entrypoint(self):
+        agent_team = self.repos['agent-team']
+        self.env.pop('AGENT_TEAM_REPO')
+        (self.bin_dir / 'agent-team').symlink_to(agent_team / 'bin/agent-team')
+
+        check = self.run_update('--check')
+        self.assertIn(f'agent-team: using installed checkout: {agent_team}', check.stdout)
+        self.assertEqual('v1\n', (agent_team / 'version.txt').read_text())
+
+        update = self.run_update()
+        self.assertIn('agent-team: updated', update.stdout)
+        self.assertEqual('v2\n', (agent_team / 'version.txt').read_text())
+        self.assertEqual('ok', (self.bin_dir / 'agent-team-installed').read_text())
+        self.assertFalse((self.data / 'agent-team').exists())
+
+    def test_missing_explicit_agent_team_checkout_does_not_fall_back(self):
+        missing = self.root / 'missing-agent-team'
+        self.env['AGENT_TEAM_REPO'] = str(missing)
+        (self.bin_dir / 'agent-team').symlink_to(self.repos['agent-team'] / 'bin/agent-team')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn(f'checkout is missing: {missing}', update.stderr)
+        self.assertNotIn('fetching repositories', update.stdout)
+
+    def test_agent_team_local_commits_are_preserved_when_upstream_diverges(self):
+        agent_team = self.repos['agent-team']
+        (agent_team / 'version.txt').write_text('local commit\n')
+        self.git('-C', agent_team, 'add', 'version.txt')
+        self.git('-C', agent_team, 'commit', '-m', 'local development')
+        original_head = self.git('-C', agent_team, 'rev-parse', 'HEAD').stdout.strip()
+
+        update = self.run_update()
+
+        self.assertIn('agent-team: warning: local/unreleased changes detected', update.stderr)
+        self.assertEqual(original_head,
+                         self.git('-C', agent_team, 'rev-parse', 'HEAD').stdout.strip())
+        self.assertEqual('local commit\n', (agent_team / 'version.txt').read_text())
+        self.assertEqual('ok', (self.bin_dir / 'agent-team-installed').read_text())
+        self.assertEqual('sync', (self.state / 'synced').read_text())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
     def test_authenticated_release_lookup_avoids_anonymous_api(self):
         self.env['TEST_GH_AUTHENTICATED'] = '1'
