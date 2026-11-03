@@ -10,6 +10,11 @@ source "$config_dir/zsh/xdg-ninja-patch.zsh"
 source "$config_dir/zsh/prepare.zsh"
 source "$config_dir/sh/rc.sh"
 
+# Set the terminal mouse pointer once when starting a local shell, before tmux.
+if [ -z "${TMUX-}" ]; then
+  printf '\033]22;left_ptr\007'
+fi
+
 # iSH is a terminal client. Initial completion scans and plugin downloads make
 # startup slow and network-dependent; keep it offline and deterministic.
 if [ "${DOTFILES_PLATFORM:-}" = ish ]; then
