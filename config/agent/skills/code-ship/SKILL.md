@@ -17,8 +17,8 @@ code-ship --repo-dir /path/to/worktree --show-policy
 
 If `needsChoice` is true, ask the user which strategy to remember for this
 repository. Recommend direct push for a known personal project, but never
-choose on the user's behalf. Offer direct push, PR/MR for review, or automatic
-merge where supported. An explicit strategy already given by the user counts
+choose on the user's behalf. Offer direct push, PR/MR for review, automatic
+merge, or review bypass with automatic merge where supported. An explicit strategy already given by the user counts
 as their choice; no repeated question is needed. If they said it is only for
 this invocation, do not save it. Otherwise save the first choice with:
 
@@ -49,6 +49,12 @@ rewriting policy or bypassing repository rules.
   support uses authenticated `gh` for PR creation, CI polling, and auto-merge.
   Merge directly when the PR has no CI checks. When checks exist, wait for all
   to pass; failed checks stop shipping. GitHub branch protection still applies.
+- `skip-review-auto-merge`: create or reuse the branch's PR/MR, waive its code
+  review requirement for the verified source commit, then enable server-side
+  automatic merge. The provider must read back the review waiver and auto-merge
+  state; errors or unknown results stop the operation for reconciliation. Other
+  required checks remain enforced by the platform. Requires a supporting external
+  provider; the built-in GitHub provider does not implement review bypass.
 
 Commit the intended changes and run appropriate project checks before shipping.
 Use `--description-file` for multiline PR descriptions. An invocation such as

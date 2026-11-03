@@ -306,6 +306,32 @@ class ShippingTest(unittest.TestCase):
         self.assertIn('manual-merge:main:ship/', result.stdout)
         self.assertEqual(self.git('rev-parse', 'main'), before)
 
+    def test_saved_skip_review_strategy_dispatches_to_provider_from_another_worktree(self):
+        self.setup_repo()
+        bindir = self.root / 'bin'
+        bindir.mkdir()
+        adapter = bindir / 'code-ship-provider-example'
+        adapter.write_text('#!/bin/sh\nset -eu\n[ "${1:-}" != --check ] || exit 0\nprintf \'%s\\n\' "$STRATEGY:$TARGET_BRANCH:$FEATURE_BRANCH"\n')
+        adapter.chmod(0o755)
+        self.env['PATH'] = str(bindir) + ':' + self.env['PATH']
+        before = self.remote_head()
+        self.configure('skip-review-auto-merge', '--provider', 'example')
+        worktree = self.root / 'worktree'
+        self.git('worktree', 'add', '-b', 'feature', str(worktree))
+        result = self.command(sys.executable, str(SCRIPT), '--repo-dir', str(worktree), check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), 'skip-review-auto-merge:main:feature')
+        self.assertEqual(self.remote_head(), before)
+        self.assertEqual(self.config.stat().st_mode & 0o777, 0o600)
+
+    def test_skip_review_is_not_silently_applied_as_builtin_github_auto_merge(self):
+        self.setup_repo()
+        self.git('remote', 'set-url', 'origin', 'git@github.com:Owner/Repo.git')
+        result = self.ship('--configure', '--strategy', 'skip-review-auto-merge')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('not supported by the built-in github provider', result.stderr)
+        self.assertFalse(self.config.exists())
+
     def test_repository_configs_ignored(self):
         self.setup_repo()
         (self.repo / '.skill-config.yml').write_text('code-ship:\n  strategy: direct-push\n')

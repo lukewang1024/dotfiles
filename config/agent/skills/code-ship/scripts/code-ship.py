@@ -13,6 +13,8 @@ import tempfile
 import time
 from urllib.parse import urlsplit
 
+STRATEGIES = ('direct-push', 'manual-merge', 'auto-merge', 'skip-review-auto-merge')
+
 
 def run(*args, capture=True):
     result = subprocess.run(args, text=True, capture_output=capture, check=True)
@@ -128,7 +130,7 @@ def save_policy(key, policy):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--repo-dir', default='.')
-    p.add_argument('--strategy', choices=['direct-push', 'manual-merge', 'auto-merge'])
+    p.add_argument('--strategy', choices=STRATEGIES)
     p.add_argument('--target-branch', help='target name, or auto to follow origin HEAD')
     p.add_argument('--provider', help='github or an installed provider name')
     p.add_argument('--remember', action='store_true', help='persist explicit overrides before shipping')
@@ -164,16 +166,16 @@ def main():
     if not policy.get('strategy'):
         if not sys.stdin.isatty():
             print(json.dumps({'status': 'needs-policy', 'repository': key,
-                              'choices': ['direct-push', 'manual-merge', 'auto-merge']}))
+                              'choices': list(STRATEGIES)}))
             return 20
-        print('首次使用，请选择并记住此仓库的策略：\n1) 直接推送\n2) 创建 PR/MR\n3) 检查通过后自动合并', file=sys.stderr)
-        answer = input('选择 [1/2/3]（无默认值）: ').strip()
-        if answer not in ('1', '2', '3'):
+        print('首次使用，请选择并记住此仓库的策略：\n1) 直接推送\n2) 创建 PR/MR\n3) 检查通过后自动合并\n4) 跳过 CR 并开启自动合并（需要支持该能力的 provider）', file=sys.stderr)
+        answer = input('选择 [1/2/3/4]（无默认值）: ').strip()
+        if answer not in ('1', '2', '3', '4'):
             raise ValueError('no strategy selected')
-        policy['strategy'] = ['direct-push', 'manual-merge', 'auto-merge'][int(answer)-1]
+        policy['strategy'] = STRATEGIES[int(answer)-1]
         a.remember = True
     strategy = policy['strategy']
-    if strategy not in ('direct-push', 'manual-merge', 'auto-merge'):
+    if strategy not in STRATEGIES:
         raise ValueError('invalid saved strategy')
     target = policy.get('target-branch', 'auto')
     if target != 'auto':
@@ -181,6 +183,8 @@ def main():
     provider = policy.get('provider', '')
     if provider and not re.fullmatch('[a-z][a-z0-9-]*', provider):
         raise ValueError('invalid provider name')
+    if strategy == 'skip-review-auto-merge' and provider == 'github':
+        raise ValueError('skip-review-auto-merge is not supported by the built-in github provider')
     if a.poll_interval <= 0 or a.poll_timeout <= 0:
         raise ValueError('poll durations must be positive')
     if a.draft and strategy != 'manual-merge':
