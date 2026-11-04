@@ -1,4 +1,4 @@
 interface:
-  display_name: "定时使用 Codex 重置卡"
-  short_description: "Schedule a single Codex quota-reset credit safely"
-  default_prompt: "使用 $codex-reset-card 查看可用重置卡，并按我指定的时间安排使用其中一张。"
+  display_name: "使用 Codex 重置卡"
+  short_description: "Use one Codex reset card at a time or when weekly quota runs out"
+  default_prompt: "使用 $codex-reset-card 查看可用重置卡，并按我指定的时间或额度耗尽条件使用其中一张。"
