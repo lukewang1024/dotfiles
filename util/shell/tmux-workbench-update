@@ -175,6 +175,35 @@ warn_workbench_unreleased()
   printf '%s\n' 'tmux-agent-workbench: warning: local/unreleased changes detected; keeping checkout and installing the latest GitHub release' >&2
 }
 
+inspect_workbench_checkout()
+{
+  repo=$1
+  workbench_branch=$(git -C "$repo" symbolic-ref --quiet --short HEAD 2>/dev/null || printf '%s' 'detached HEAD')
+  case $workbench_branch in
+    main|master|upstream-main)
+      require_main_checkout "$repo"
+      workbench_development_checkout=0
+      ;;
+    *)
+      # Plugin installations are often used as active feature checkouts. Keep
+      # those branches intact and install the published release below instead.
+      workbench_development_checkout=1
+      ;;
+  esac
+}
+
+report_workbench_repo()
+{
+  if [ "$workbench_development_checkout" -eq 1 ]; then
+    printf 'tmux-agent-workbench: development checkout (%s); checkout will be preserved\n' "$workbench_branch"
+    if [ -n "$(git -C "$workbench_dir" status --porcelain)" ]; then
+      printf '%s\n' 'tmux-agent-workbench: warning: local changes' >&2
+    fi
+  else
+    report_repo "$workbench_dir"
+  fi
+}
+
 latest_workbench_release_tag()
 {
   command -v curl >/dev/null 2>&1 || die 'curl is required'
@@ -272,12 +301,17 @@ command -v git >/dev/null 2>&1 || die 'git is required'
 command -v python3 >/dev/null 2>&1 || die 'python3 is required'
 resolve_agent_team_checkout
 
-# Check every checkout before changing any of them. Feature work belongs in
-# separate worktrees; installation checkouts track remote main or master.
+# Check every checkout before changing any of them. Dotfiles, agent-team and
+# the theme use their main installation branches. A Workbench plugin checkout
+# on another branch is preserved while the published core release is installed.
 # upstream-main is a maintenance alias that preserves a local development main.
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
   require_repo "$repo"
-  require_main_checkout "$repo"
+  if [ "$repo" = "$workbench_dir" ]; then
+    inspect_workbench_checkout "$repo"
+  else
+    require_main_checkout "$repo"
+  fi
 done
 
 printf '%s\n' 'tmux-workbench-update: fetching repositories'
@@ -288,9 +322,10 @@ latest_workbench_release_tag
 
 if [ "$mode" = check ]; then
   printf '%s\n' 'tmux-workbench-update: checking updates'
-  for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
-    report_repo "$repo"
-  done
+  report_repo "$dotfiles_dir"
+  report_repo "$agent_team_dir"
+  report_workbench_repo
+  report_repo "$theme_dir"
   printf 'tmux-agent-workbench release: %s published\n' "$workbench_release_tag"
   exit 0
 fi
@@ -302,7 +337,9 @@ if repo_has_unreleased_changes "$agent_team_dir"; then
 else
   update_repo "$agent_team_dir"
 fi
-if repo_has_unreleased_changes "$workbench_dir"; then
+if [ "$workbench_development_checkout" -eq 1 ]; then
+  printf 'tmux-agent-workbench: preserving development checkout (%s); installing the latest GitHub release\n' "$workbench_branch"
+elif repo_has_unreleased_changes "$workbench_dir"; then
   warn_workbench_unreleased
 else
   update_repo "$workbench_dir"

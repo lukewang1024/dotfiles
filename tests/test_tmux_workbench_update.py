@@ -264,18 +264,29 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertIn('track a remote main branch', update.stderr)
         self.assertNotIn('fetching repositories', update.stdout)
 
-    def test_workbench_feature_branch_is_rejected_before_updates(self):
+    def test_workbench_feature_branch_is_preserved_while_latest_release_is_installed(self):
         workbench = self.repos['tmux-agent-workbench']
         self.git('-C', workbench, 'switch', '-c', 'ship/local-change')
+        self.git('-C', workbench, 'config', 'user.name', 'Updater Test')
+        self.git('-C', workbench, 'config', 'user.email', 'test@example.invalid')
+        (workbench / 'local-change.txt').write_text('keep this branch\n')
+        self.git('-C', workbench, 'add', 'local-change.txt')
+        self.git('-C', workbench, 'commit', '-m', 'local feature work')
+        original_head = self.git('-C', workbench, 'rev-parse', 'HEAD').stdout.strip()
 
-        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
-                                capture_output=True, text=True)
-        self.assertNotEqual(0, update.returncode)
-        self.assertIn('tmux-agent-workbench checkout is on ship/local-change', update.stderr)
-        self.assertNotIn('fetching repositories', update.stdout)
+        check = self.run_update('--check')
+        self.assertIn('tmux-agent-workbench: development checkout (ship/local-change)', check.stdout)
+        self.assertIn('tmux-agent-workbench release: v2.0.0-beta.28 published', check.stdout)
+
+        update = self.run_update()
+        self.assertIn('preserving development checkout (ship/local-change)', update.stdout)
+        self.assertIn('installed tmux-agent-workbench v2.0.0-beta.28', update.stdout)
+        self.assertEqual(original_head,
+                         self.git('-C', workbench, 'rev-parse', 'HEAD').stdout.strip())
+        self.assertEqual('keep this branch\n', (workbench / 'local-change.txt').read_text())
         self.assertEqual('v1\n', (workbench / 'version.txt').read_text())
         self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
-        self.assertFalse((self.state / 'synced').exists())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
 
 if __name__ == '__main__':
