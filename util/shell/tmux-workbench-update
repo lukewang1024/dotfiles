@@ -121,8 +121,16 @@ run_quiet()
 fetch_repo()
 {
   repo=$1
-  run_quiet git -C "$repo" fetch --quiet --prune ||
-    die "failed to fetch $(repo_label "$repo")"
+  for fetch_attempt in 1 2 3; do
+    if git -C "$repo" fetch --quiet --prune >"$log_file" 2>&1; then
+      return 0
+    fi
+    if [ "$fetch_attempt" -lt 3 ]; then
+      sleep 1
+    fi
+  done
+  cat "$log_file" >&2
+  die "failed to fetch $(repo_label "$repo")"
 }
 
 update_repo()
