@@ -27,8 +27,8 @@ Host aliases found in SSH config files before opening $EDITOR.
 Interactive --tmux and --workbench connections retry up to 5 times, waiting
 1/2/4/8/16 seconds after failures. Connection and ticket-refresh time do not
 consume retries or shorten the waits. Then wait for manual retries. Press Enter
-while waiting to retry immediately; Ctrl-C exits. Manual retries do not reset
-the automatic budget. Normal detach/exit stops.
+while waiting to retry immediately; Ctrl-C exits. An authenticated session
+resets the automatic budget if it later disconnects. Normal detach/exit stops.
 Use --no-reconnect for a single attempt. Plain SSH and --check never retry.
 Kerberos mappings: $XDG_CONFIG_HOME/ssh/kerberos, lines HOST PRINCIPAL [SESSION].
 Existing iSH user.conf is also supported. GSSAPI hosts require a matching
@@ -180,13 +180,31 @@ cleanup_retry_session()
 {
   restore_retry_terminal
   [ -z "$retry_error_log" ] || rm -f "$retry_error_log"
+  [ -z "$retry_debug_log" ] || rm -f "$retry_debug_log"
+  if [ -n "$retry_ssh_wrapper_dir" ]; then
+    rm -f "$retry_ssh_wrapper_dir/ssh"
+    rmdir "$retry_ssh_wrapper_dir" 2>/dev/null || :
+  fi
+}
+
+invoke_connection_attempt()
+{
+  if [ -n "$retry_ssh_wrapper_dir" ]; then
+    PATH="$retry_ssh_wrapper_dir:$PATH" \
+      SSH_CONNECT_REAL_SSH="$retry_ssh_bin" \
+      SSH_CONNECT_DEBUG_LOG="$retry_debug_log" \
+      "$@"
+  else
+    "$@"
+  fi
 }
 
 run_connection_attempt()
 {
+  [ -z "$retry_debug_log" ] || : >"$retry_debug_log"
   if [ -n "$retry_error_log" ]; then
     : >"$retry_error_log"
-    if "$@" 2>"$retry_error_log"; then
+    if invoke_connection_attempt "$@" 2>"$retry_error_log"; then
       connection_status=0
     else
       connection_status=$?
@@ -196,16 +214,22 @@ run_connection_attempt()
       printf 'ssh-connect: workbench diagnostics:\n' >&2
       sed 's/^/  /' "$retry_error_log" >&2
     fi
-    return "$connection_status"
-  fi
-
-  if "$@"; then
+  elif invoke_connection_attempt "$@"; then
     reset_connection_terminal_modes
-    return 0
+    connection_status=0
   else
     connection_status=$?
+    reset_connection_terminal_modes
   fi
-  reset_connection_terminal_modes
+
+  # Authentication or a successful multiplexed session reached the connected
+  # state. If it later drops, the next outage starts with a fresh budget.
+  if [ -n "$retry_debug_log" ] &&
+     grep -E 'Authenticated to |mux_client_request_session: master session id:' \
+       "$retry_debug_log" >/dev/null 2>&1; then
+    retry_count=0
+    retry_delay=1
+  fi
   return "$connection_status"
 }
 
@@ -256,6 +280,9 @@ wait_to_reconnect()
 connect_session()
 {
   retry_error_log=''
+  retry_debug_log=''
+  retry_ssh_wrapper_dir=''
+  retry_ssh_bin=''
   if [ "$reconnect" -eq 0 ] || [ ! -t 0 ]; then
     if run_connection_attempt "$@"; then
       return 0
@@ -266,13 +293,28 @@ connect_session()
   fi
 
   retry_tty_state=$(stty -g) || return 1
-  if [ "$attach_workbench" -eq 1 ]; then
-    retry_error_log=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.XXXXXX" 2>/dev/null) || retry_error_log=''
-  fi
   trap 'cleanup_retry_session' EXIT
   trap 'exit 129' HUP
   trap 'exit 130' INT
   trap 'exit 143' TERM
+
+  retry_debug_log=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.debug.XXXXXX") || return 1
+  if [ "$attach_workbench" -eq 1 ]; then
+    retry_ssh_bin=$(command -v ssh) || return 127
+    case $retry_ssh_bin in
+      /*) ;;
+      *)
+        retry_ssh_bin=$(cd "$(dirname "$retry_ssh_bin")" && pwd)/$(basename "$retry_ssh_bin") || return 127
+        ;;
+    esac
+    retry_ssh_wrapper_dir=$(mktemp -d "${TMPDIR:-/tmp}/ssh-connect-bin.XXXXXX") || return 1
+    cat >"$retry_ssh_wrapper_dir/ssh" <<'EOF'
+#!/bin/sh
+exec "$SSH_CONNECT_REAL_SSH" -vvv -E "$SSH_CONNECT_DEBUG_LOG" "$@"
+EOF
+    chmod 700 "$retry_ssh_wrapper_dir/ssh"
+    retry_error_log=$(mktemp "${TMPDIR:-/tmp}/ssh-connect.XXXXXX" 2>/dev/null) || retry_error_log=''
+  fi
   retry_delay=1
   retry_count=0
   while :; do
@@ -435,7 +477,11 @@ if [ "$kerberos_enabled" = 1 ]; then
 fi
 
 connect_ssh() {
-  if [ "$kerberos_enabled" = 1 ]; then
+  if [ -n "${retry_debug_log:-}" ] && [ "$kerberos_enabled" = 1 ]; then
+    ssh_gssapi_command -vvv -E "$retry_debug_log" "$@"
+  elif [ -n "${retry_debug_log:-}" ]; then
+    ssh -vvv -E "$retry_debug_log" "$@"
+  elif [ "$kerberos_enabled" = 1 ]; then
     ssh_gssapi_command "$@"
   else
     ssh "$@"
