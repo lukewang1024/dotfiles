@@ -129,7 +129,10 @@ update_repo()
 {
   repo=$1
   before=$(git -C "$repo" rev-parse HEAD)
-  run_quiet git -C "$repo" pull --ff-only ||
+  upstream=$(git -C "$repo" rev-parse --symbolic-full-name '@{upstream}')
+  # Repositories were fetched together above; merge the fetched tracking ref
+  # instead of making a second network request through git pull.
+  run_quiet git -C "$repo" merge --ff-only "$upstream" ||
     die "failed to update $(repo_label "$repo")"
   after=$(git -C "$repo" rev-parse HEAD)
 
