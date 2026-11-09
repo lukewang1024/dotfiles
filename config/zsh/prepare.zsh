@@ -1,6 +1,8 @@
 # Reuse agent forwarding in SSH sessions; otherwise connect to the machine's
 # stable per-user agent socket (creating the underlying agent when necessary).
-if [ "${DOTFILES_PLATFORM:-}" != ish ]; then
+# A shell outside tmux loads keys once before starting the server. Pane shells
+# share that agent, so do not prompt again for each pane during restore/startup.
+if [ "${DOTFILES_PLATFORM:-}" != ish ] && [ -z "${TMUX:-}" ]; then
   source "$config_dir/zsh/ssh-agent-connect.zsh"
 fi
 
