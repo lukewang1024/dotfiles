@@ -7,11 +7,16 @@ global instructions path (`~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`);
 
 ## Opt-in agent teams
 
-When session instructions state "Team delegation mode is enabled", proactively
-use the selected team mode for useful independent subtasks. Follow the shared
-collaboration rules injected by the standalone `agent-team` CLI. Without this
-explicit opt-in, this section does not enable delegation. The standalone
-repository owns the full protocol; do not duplicate it here.
+When session instructions state "Team delegation mode is enabled", consider the
+selected team mode for useful independent subtasks and use it when parallel work
+materially improves the result. Delegation is optional, not a prerequisite for
+completing the underlying task. If the selected mode's entry is unavailable or
+cannot be started, continue with the main agent where possible; do not mark the
+task itself unavailable solely because delegation could not run. Do not silently
+switch to another team mode. Follow the shared collaboration rules injected by
+the standalone `agent-team` CLI. Without this explicit opt-in, this section does
+not enable delegation. The standalone repository owns the full protocol; do not
+duplicate it here.
 
 Native mode uses native subagents only. An explicit `agent-team --tmux` session
 uses interactive pane workers only in its dedicated team window. This is the
