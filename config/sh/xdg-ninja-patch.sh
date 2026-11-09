@@ -16,6 +16,9 @@ export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
 # easyocr
 export EASYOCR_MODULE_PATH="$XDG_CONFIG_HOME/EasyOCR"
 
+# gradle
+export GRADLE_USER_HOME="$XDG_DATA_HOME/gradle"
+
 # gem
 export GEM_HOME="$XDG_DATA_HOME/gem"
 export GEM_SPEC_CACHE="$XDG_CACHE_HOME/gem"
