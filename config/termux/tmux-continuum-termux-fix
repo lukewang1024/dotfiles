@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+script="${HOME:?}/.local/share/tmux/plugins/tmux-continuum/scripts/continuum_save.sh"
+[ -f "$script" ] || exit 0
+
+patched='local lockdir_prefix="${TMPDIR:-${PREFIX:-/data/data/com.termux/files/usr}/tmp}/tmux-continuum-'
+if grep -Fq "$patched" "$script"; then
+    exit 0
+fi
+if ! grep -Fq 'local lockdir_prefix="/tmp/tmux-continuum-' "$script"; then
+    printf '%s\n' 'tmux-continuum-termux-fix: unrecognized lock path; left plugin unchanged' >&2
+    exit 1
+fi
+
+tmp="${script}.termux-patch.$$"
+umask 077
+trap 'rm -f "$tmp"' 0 HUP INT TERM
+awk '
+    /local lockdir_prefix="\/tmp\/tmux-continuum-/ {
+        sub("local lockdir_prefix=\"/tmp/", "local lockdir_prefix=\"${TMPDIR:-${PREFIX:-/data/data/com.termux/files/usr}/tmp}/")
+    }
+    { print }
+' "$script" > "$tmp"
+chmod 700 "$tmp"
+mv "$tmp" "$script"

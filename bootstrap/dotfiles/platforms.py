@@ -473,6 +473,20 @@ def termux_theme_service_setup(c):
 
 
 @task()
+def termux_continuum_service_setup(c):
+    if c.dry_run or c.exists('sv-enable'):
+        patcher = c.bin / 'tmux-continuum-termux-fix'
+        c.link(c.repo / 'config/termux/tmux-continuum-termux-fix', patcher)
+        if c.command(str(patcher), check=False):
+            raise Failure('Could not adapt tmux-continuum lock storage for Termux')
+        service = Path(c.env.get('PREFIX', '/data/data/com.termux/files/usr')) / 'var/service/tmux-continuum-save/run'
+        c.link(c.repo / 'config/termux/tmux-continuum-save.run', service)
+        _termux_enable_service(c, 'tmux-continuum-save')
+    else:
+        c.note('termux-services is unavailable; Continuum periodic saves were not enabled')
+
+
+@task()
 def termux_shell_setup(c):
     c.task('termux_font_setup')
     for source, target in [('.zshenv', '.zshenv'), ('termux.properties', '.termux/termux.properties'), ('colors.properties', '.termux/colors.properties')]:
@@ -484,7 +498,7 @@ def termux_shell_setup(c):
 
 @task()
 def termux_basic_setup(c):
-    sequence(c, 'basic_env_setup', 'termux_shell_setup')
+    sequence(c, 'basic_env_setup', 'termux_shell_setup', 'termux_continuum_service_setup')
 
 
 @task()

@@ -1,0 +1,29 @@
+#!/bin/sh
+# Poll Continuum's own interval gate from Termux runit. This avoids relying on
+# tmux status-line redraws, which may stop while the terminal is backgrounded.
+PREFIX=${PREFIX:-/data/data/com.termux/files/usr}
+HOME=${HOME:-/data/data/com.termux/files/home}
+PATH="$PREFIX/bin:/system/bin"
+TMPDIR="$PREFIX/tmp"
+export PREFIX HOME PATH TMPDIR
+
+tmux_bin="$PREFIX/bin/tmux"
+bash_bin="$PREFIX/bin/bash"
+continuum_save="$HOME/.local/share/tmux/plugins/tmux-continuum/scripts/continuum_save.sh"
+patcher="$HOME/.local/bin/tmux-continuum-termux-fix"
+
+while :; do
+    if [ -x "$patcher" ]; then
+        "$patcher" >/dev/null 2>&1 || :
+    fi
+    if [ -x "$tmux_bin" ] && [ -x "$bash_bin" ] && [ -r "$continuum_save" ]; then
+        session_id=$("$tmux_bin" list-sessions -F '#{session_id}' 2>/dev/null | sed -n '1p')
+        if [ -n "$session_id" ]; then
+            tmux_connection=$("$tmux_bin" display-message -p -t "$session_id" -F '#{socket_path},#{pid},0' 2>/dev/null) || tmux_connection=
+            if [ -n "$tmux_connection" ]; then
+                TMUX="$tmux_connection" "$bash_bin" "$continuum_save" >/dev/null 2>&1 || :
+            fi
+        fi
+    fi
+    sleep 900
+done
