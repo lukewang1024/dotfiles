@@ -126,6 +126,133 @@ class ParagraphExtractionTests(unittest.TestCase):
         ])
 
 
+class ParagraphMultiSelectionTests(unittest.TestCase):
+    def test_paragraphs_are_sorted_by_candidate_order_and_mixed_rows_are_unchanged(self):
+        candidates = ["paragraph: newest", "paragraph: middle", "paragraph: oldest"]
+        self.assertEqual(
+            module.paragraph_selections(
+                ["paragraph: oldest", "paragraph: newest"], "all", "all", candidates,
+            ),
+            ["newest", "oldest"],
+        )
+        self.assertIsNone(module.paragraph_selections(
+            ["paragraph: newest", "path: /tmp/file"], "all", "all", candidates,
+        ))
+
+    def test_space_toggle_preserves_search_space_with_alt_space(self):
+        picker, observed = self.make_picker(
+            "all", "enter", ["paragraph: older", "paragraph: newer"],
+            ["paragraph: newer", "paragraph: older"],
+        )
+        picker.capture()
+        command = observed["command"]
+        self.assertIn("--marker=✓", command)
+        binding = next(arg for arg in command if arg.startswith("--bind="))
+        self.assertIn("space:toggle+up,", binding)
+        self.assertIn(
+            "alt-space:transform(printf 'change-query(%s )' \"$FZF_QUERY\")",
+            binding,
+        )
+        header = next(arg for arg in command if arg.startswith("--header="))
+        self.assertIn("Space=toggle, Alt-Space=query space", header)
+        self.assertEqual(observed["copied"], "newer\n\nolder")
+
+    def test_reverse_layout_advances_down_into_the_list(self):
+        picker, observed = self.make_picker(
+            "paragraph", "enter", ["one paragraph"], ["one paragraph"],
+        )
+        picker.fzf_layout = "reverse"
+        picker.capture()
+        binding = next(arg for arg in observed["command"] if arg.startswith("--bind="))
+        self.assertIn("space:toggle+down,", binding)
+
+    def test_insert_uses_the_same_order_and_blank_line_separator(self):
+        picker, observed = self.make_picker(
+            "paragraph", "alt-enter", ["oldest", "newest"],
+            ["newest", "middle", "oldest"],
+        )
+        with patch.object(module.subprocess, "run") as run:
+            picker.capture()
+        self.assertEqual(run.call_args_list[0].args[0], [
+            "tmux", "set-buffer", "--", "newest\n\noldest",
+        ])
+        self.assertEqual(run.call_args_list[1].args[0], [
+            "tmux", "paste-buffer", "-p", "-t", "%7",
+        ])
+        self.assertNotIn("copied", observed)
+
+    def test_single_paragraph_copy_keeps_the_existing_text(self):
+        picker, observed = self.make_picker(
+            "paragraph", "enter", ["one paragraph"], ["one paragraph"],
+        )
+        picker.capture()
+        self.assertEqual(observed["copied"], "one paragraph")
+
+    @staticmethod
+    def make_picker(filter_key, key, selection, candidates):
+        observed = {}
+
+        class Engine:
+            def __init__(self, **kwargs):
+                self.prefix_name = kwargs.get("prefix_name", False)
+
+            def __getitem__(self, name):
+                raise KeyError(name)
+
+            def all(self):
+                return []
+
+        class Plugin:
+            def __init__(self, pane, mode):
+                self.trigger_pane = pane
+                self.copy_key = "enter"
+                self.insert_key = "alt-enter"
+                self.edit_key = "ctrl-e"
+                self.prefix_name = "all"
+                self.clip_mode = "buffer"
+                self.fzf_header = "enter=copy, alt-enter=insert"
+                self.fzf_layout = "default"
+
+            def capture(self):
+                data = upstream.get_cap(filter_key, "captured pane")
+                query, selected_key, *items = upstream.fzf_sel(
+                    ["fzf", "--multi", "--header=enter=copy"], data,
+                )
+                if (self.prefix_name == "all" and filter_key == "all") or self.prefix_name == "any":
+                    items = [next(iter(item.split(": ", 1)[1:2]), item) for item in items]
+                text = "\n".join(items) if filter_key in ("all", "line") else " ".join(items)
+                if selected_key == self.copy_key:
+                    self.copy(text)
+                elif selected_key == self.insert_key:
+                    module.subprocess.run(["tmux", "set-buffer", "--", text], check=True)
+                    module.subprocess.run(
+                        ["tmux", "paste-buffer", "-p", "-t", self.trigger_pane], check=True,
+                    )
+                return 0
+
+            def copy(self, text):
+                observed["copied"] = text
+
+        def get_cap(mode, data):
+            return "\n".join(candidates)
+
+        def fzf_sel(command, data):
+            observed["command"] = command
+            observed["data"] = data
+            return ["", key, *selection]
+
+        upstream = SimpleNamespace(
+            Extrakto=Engine,
+            ExtraktoPlugin=Plugin,
+            get_cap=get_cap,
+            fzf_sel=fzf_sel,
+            get_option=lambda name: "",
+            get_option_only=lambda name: "",
+        )
+        enhanced = module.enhance(upstream)
+        return enhanced("%7", "popup"), observed
+
+
 class TerminalTransportTests(unittest.TestCase):
     def test_osc52_preserves_unicode_and_newlines(self):
         text = "完整段落。\nhttps://example.com/a?x=1&y=2#part"

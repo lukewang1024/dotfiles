@@ -233,6 +233,33 @@ def extract_paragraphs(text):
     return list(dict.fromkeys(result))
 
 
+def paragraph_selections(selection, filter_key, prefix_name, candidate_order, paragraph_values=()):
+    """Return selected paragraph bodies in candidate order, or None if mixed."""
+    if not selection or filter_key not in ("all", "paragraph"):
+        return None
+    positions = {item: index for index, item in enumerate(candidate_order)}
+    ordered = [
+        item for _, item in sorted(
+            enumerate(selection),
+            key=lambda pair: (positions.get(pair[1], len(positions)), pair[0]),
+        )
+    ]
+
+    if filter_key == "paragraph":
+        if prefix_name == "any":
+            if not all(item.startswith("paragraph: ") for item in ordered):
+                return None
+            return [item[len("paragraph: "):] for item in ordered]
+        return ordered
+
+    if prefix_name == "none":
+        known = set(paragraph_values)
+        return ordered if all(item in known for item in ordered) else None
+    if not all(item.startswith("paragraph: ") for item in ordered):
+        return None
+    return [item[len("paragraph: "):] for item in ordered]
+
+
 class ParagraphFilter:
     def __init__(self, engine, captures):
         self.engine = engine
@@ -288,9 +315,56 @@ def load_upstream():
 
 
 def enhance(upstream, client=None):
-    captures = {"panes": [], "targets": [], "filter": "url"}
+    captures = {
+        "panes": [], "targets": [], "filter": "url", "selection": [],
+        "action_key": "", "candidate_order": [], "paragraph_values": [],
+    }
     original_engine = upstream.Extrakto
     original_get_cap = upstream.get_cap
+    original_fzf_sel = upstream.fzf_sel
+
+    def selected_paragraphs(picker):
+        return paragraph_selections(
+            captures["selection"], captures["filter"], picker.prefix_name,
+            captures["candidate_order"], captures["paragraph_values"],
+        )
+
+    def fzf_sel(command, data):
+        picker = captures.get("picker")
+        if captures["filter"] in ("all", "paragraph"):
+            direction = "up" if not picker or picker.fzf_layout == "default" else "down"
+            command = [*command, "--marker=✓",
+                       f"--bind=space:toggle+{direction},"
+                       "alt-space:transform(printf 'change-query(%s )' \"$FZF_QUERY\")"]
+            for index, argument in enumerate(command):
+                if argument.startswith("--header="):
+                    command[index] = (
+                        "--header=Space=toggle, Alt-Space=query space | "
+                        + argument[len("--header="):]
+                    )
+                    break
+
+        captures["selection"] = []
+        captures["action_key"] = ""
+        result = original_fzf_sel(command, data)
+        if len(result) < 2:
+            return result
+
+        query, key, *selection = result
+        captures["selection"] = selection
+        captures["action_key"] = key
+        paragraphs = selected_paragraphs(picker) if picker else None
+        if paragraphs is not None and key == picker.insert_key:
+            # Route through copy(), which can preserve the paragraph separator.
+            key = picker.copy_key
+        elif paragraphs is not None and len(paragraphs) > 1 and key == picker.edit_key:
+            message = ["tmux", "display-message"]
+            if client:
+                message += ["-c", client]
+            message += ["-d", "4000", "Choose one item to edit"]
+            subprocess.run(message, check=False)
+            key = "__unsupported_multi_edit__"
+        return [query, key, *selection]
 
     class EnhancedExtrakto(original_engine):
         def __getitem__(self, key):
@@ -304,10 +378,39 @@ def enhance(upstream, client=None):
 
     def get_cap(mode, data):
         captures["filter"] = mode
-        return original_get_cap(mode, data)
+        result = original_get_cap(mode, data)
+        captures["candidate_order"] = (
+            result.splitlines() if mode in ("all", "paragraph") else []
+        )
+        if mode in ("all", "paragraph"):
+            panes = captures["panes"] or [(data, 0)]
+            captures["paragraph_values"] = [
+                value for plain, _ in panes for value in extract_paragraphs(plain)
+            ]
+        else:
+            captures["paragraph_values"] = []
+        return result
 
     class EnhancedPlugin(upstream.ExtraktoPlugin):
+        def capture(self):
+            captures["picker"] = self
+            try:
+                return super().capture()
+            finally:
+                captures.pop("picker", None)
+
         def copy(self, text):
+            paragraphs = selected_paragraphs(self)
+            if paragraphs is not None and captures["action_key"] in (
+                self.copy_key, self.insert_key,
+            ):
+                text = "\n\n".join(paragraphs)
+                if captures["action_key"] == self.insert_key:
+                    subprocess.run(["tmux", "set-buffer", "--", text], check=True)
+                    subprocess.run(
+                        ["tmux", "paste-buffer", "-p", "-t", self.trigger_pane], check=True
+                    )
+                    return
             if self.clip_mode == "tmux_osc52" and client:
                 subprocess.run(["tmux", "set-buffer", "--", text], check=True)
                 write_terminal(client, clipboard_sequence(text))
@@ -338,6 +441,9 @@ def enhance(upstream, client=None):
 
         def open(self, text):
             if self.open_tool:
+                paragraphs = selected_paragraphs(self)
+                if paragraphs is not None and captures["action_key"] == self.open_key:
+                    text = "\n".join(paragraphs)
                 values = text.split() if captures["filter"] == "url" else text.splitlines()
                 configured = upstream.get_option("@extrakto_open_tool")
                 web_urls = values and all(urlsplit(value).scheme.lower() in ("http", "https") for value in values)
@@ -359,6 +465,7 @@ def enhance(upstream, client=None):
 
     upstream.Extrakto = EnhancedExtrakto
     upstream.get_cap = get_cap
+    upstream.fzf_sel = fzf_sel
     return EnhancedPlugin
 
 
