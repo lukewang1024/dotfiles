@@ -27,8 +27,9 @@ Host aliases found in SSH config files before opening $EDITOR.
 Interactive --tmux and --workbench connections retry up to 5 times, waiting
 1/2/4/8/16 seconds after failures. Connection and ticket-refresh time do not
 consume retries or shorten the waits. Then wait for manual retries. Press Enter
-while waiting to retry immediately; Ctrl-C exits. An authenticated session
-resets the automatic budget if it later disconnects. Normal detach/exit stops.
+while waiting to retry immediately; Ctrl-C exits. SSH tmux sessions reset the
+automatic budget after authentication. Workbench connections reset it only
+after staying connected for at least 10 seconds. Normal detach/exit stops.
 Use --no-reconnect for a single attempt. Plain SSH and --check never retry.
 Kerberos mappings: $XDG_CONFIG_HOME/ssh/kerberos, lines HOST PRINCIPAL [SESSION].
 Existing iSH user.conf is also supported. GSSAPI hosts require a matching
@@ -202,6 +203,10 @@ invoke_connection_attempt()
 run_connection_attempt()
 {
   [ -z "$retry_debug_log" ] || : >"$retry_debug_log"
+  connection_attempt_started_at=''
+  if [ -n "$retry_debug_log" ] && [ "$attach_workbench" -eq 1 ]; then
+    connection_attempt_started_at=$(date +%s)
+  fi
   if [ -n "$retry_error_log" ]; then
     : >"$retry_error_log"
     if invoke_connection_attempt "$@" 2>"$retry_error_log"; then
@@ -222,13 +227,23 @@ run_connection_attempt()
     reset_connection_terminal_modes
   fi
 
-  # Authentication or a successful multiplexed session reached the connected
-  # state. If it later drops, the next outage starts with a fresh budget.
+  # For SSH tmux, authentication indicates a usable session. Workbench can
+  # authenticate SSH and then fail immediately inside the remote stream
+  # command, so only reset its retry budget after the attempt stayed alive for
+  # at least 10 seconds.
   if [ -n "$retry_debug_log" ] &&
      grep -E 'Authenticated to |mux_client_request_session: master session id:' \
        "$retry_debug_log" >/dev/null 2>&1; then
-    retry_count=0
-    retry_delay=1
+    if [ "$attach_workbench" -ne 1 ]; then
+      retry_count=0
+      retry_delay=1
+    else
+      connection_attempt_ended_at=$(date +%s)
+      if [ "$((connection_attempt_ended_at - connection_attempt_started_at))" -ge 10 ]; then
+        retry_count=0
+        retry_delay=1
+      fi
+    fi
   fi
   return "$connection_status"
 }
@@ -454,12 +469,18 @@ load_ssh_kerberos "$@"
 
 if [ "$attach_workbench" -eq 1 ]; then
   [ "$#" -eq 0 ] || die 'SSH_OPTIONS are not supported with --workbench; put them in SSH config.'
-  command -v tmux-agent-workbench >/dev/null 2>&1 || die 'tmux-agent-workbench is not installed; use --tmux.'
   if [ "$kerberos_enabled" = 1 ]; then
     check_workbench_policy
     require_tgt
   fi
-  connect_session tmux-agent-workbench client attach "$host"
+  if [ "$host" = Mac ]; then
+    workbench_core=${XDG_DATA_HOME:-$HOME/.local/share}/tmux-agent-workbench/bin/tmux-agent-workbench-core
+    [ -x "$workbench_core" ] || die 'Mac Workbench core is missing; rerun the Mac route installer.'
+    connect_session "$workbench_core" client attach "$host"
+  else
+    command -v tmux-agent-workbench >/dev/null 2>&1 || die 'tmux-agent-workbench is not installed; use --tmux.'
+    connect_session tmux-agent-workbench client attach "$host"
+  fi
   exit 0
 fi
 

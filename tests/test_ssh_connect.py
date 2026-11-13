@@ -101,6 +101,7 @@ class SSHConnectTests(unittest.TestCase):
         self.bin = self.home / 'bin'
         self.bin.mkdir()
         self.conf = self.home / 'config'
+        self.data = self.home / 'data'
         (self.conf / 'ssh').mkdir(parents=True)
         self.hosts = self.conf / 'ssh/hosts'
         self.hosts.write_text('devbox\nordinary\n')
@@ -110,6 +111,7 @@ class SSHConnectTests(unittest.TestCase):
         self.state = self.home / 'ticket'
         self.state.write_text('testuser@ISH.TEST')
         self.env = dict(os.environ, HOME=str(self.home), XDG_CONFIG_HOME=str(self.conf),
+                        XDG_DATA_HOME=str(self.data),
                         XDG_CACHE_HOME=str(self.home / 'cache'), PATH=str(self.bin) + os.pathsep + os.environ['PATH'],
                         TEST_HOME=str(self.home), TEST_POLICY=SAFE_POLICY)
         for name in ('ISH_CONFIG_DIR', 'SSH_CONNECT_HOSTS_FILE', 'SSH_CONNECT_SSH_DIR',
@@ -162,7 +164,10 @@ elif name == 'ssh':
     else:
         print('testuser')
         sys.exit(connection_status())
-elif name == 'tmux-agent-workbench':
+elif name in ('tmux-agent-workbench', 'tmux-agent-workbench-core'):
+    debug = os.environ.get('SSH_CONNECT_DEBUG_LOG')
+    if os.environ.get('TEST_SSH_AUTHENTICATED') and debug:
+        pathlib.Path(debug).write_text('Authenticated to devbox\\n')
     sys.exit(connection_status())
 elif name == 'date':
     print(clock())
@@ -175,6 +180,9 @@ elif name == 'fzf':
         helper.chmod(0o755)
         for name in ('kinit', 'klist', 'ssh', 'fzf', 'tmux-agent-workbench', 'date', 'dd'):
             (self.bin / name).symlink_to(helper)
+        managed_core = self.data / 'tmux-agent-workbench/bin/tmux-agent-workbench-core'
+        managed_core.parent.mkdir(parents=True)
+        managed_core.symlink_to(helper)
 
     def run_connect(self, *args, tty=False, success=True, entry=SCRIPT):
         slave = master = None
@@ -386,6 +394,37 @@ elif name == 'fzf':
         self.assertEqual(len(self.calls('fzf')), 1)
         self.assertIn('Press Enter to retry now; Ctrl-C to exit', result.stderr)
         self.assertFalse(self.calls('kinit'))
+
+    def test_mac_workbench_uses_managed_core_directly(self):
+        self.hosts.write_text('devbox\nordinary\nMac\n')
+        self.env['TMUX_AGENT_WORKBENCH_BIN'] = str(self.home / 'stale-core')
+        self.run_connect('connect', 'Mac', '--workbench')
+        self.assertEqual(len(self.calls('tmux-agent-workbench-core')), 1)
+        self.assertFalse(self.calls('tmux-agent-workbench'))
+
+    def test_fast_authenticated_workbench_failures_advance_retry_counter(self):
+        self.env.update(TEST_WORKBENCH_SEQUENCE='1,1,1,1,1,1',
+                        TEST_SSH_AUTHENTICATED='1',
+                        TEST_WORKBENCH_DURATIONS='0,0,0,0,0,0')
+        with self.console('connect', 'ordinary', '--workbench') as console:
+            for retry, delay in enumerate((1, 2, 4, 8, 16), start=1):
+                console.expect(f'retry {retry}/5 in {delay}s.')
+                console.send(b'\n')
+            console.expect('automatic reconnect limit reached (5/5 retries)')
+            console.send(b'\x03')
+            self.assertEqual(console.process.wait(timeout=5), 130)
+            self.assertEqual(len(self.calls('tmux-agent-workbench')), 6)
+
+    def test_stable_authenticated_workbench_session_resets_retry_budget(self):
+        self.env.update(TEST_WORKBENCH_SEQUENCE='1,1,0',
+                        TEST_SSH_AUTHENTICATED='1',
+                        TEST_WORKBENCH_DURATIONS='15,0,0')
+        with self.console('connect', 'ordinary', '--workbench') as console:
+            console.expect('retry 1/5 in 1s.')
+            console.send(b'\n')
+            console.expect('retry 2/5 in 2s.')
+            console.send(b'\n')
+            self.assertEqual(console.process.wait(timeout=5), 0)
 
     def test_tmux_reconnects_with_the_same_command_and_options(self):
         self.env['TEST_SSH_SEQUENCE'] = '255,255,0'
