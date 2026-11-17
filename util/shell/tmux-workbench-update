@@ -273,6 +273,15 @@ report_workbench_repo()
   fi
 }
 
+report_workbench_stashes()
+{
+  migration_stashes=$(git -C "$workbench_dir" stash list --format='%h %s' |
+    sed -n '/workbench migration to workbench-recovered\//p')
+  if [ -n "$migration_stashes" ]; then
+    printf 'tmux-agent-workbench: warning: retained migration stash(es):\n%s\n' "$migration_stashes" >&2
+  fi
+}
+
 latest_workbench_release_tag()
 {
   command -v curl >/dev/null 2>&1 || die 'curl is required'
@@ -395,6 +404,7 @@ for repo do
   fi
 done
 
+report_workbench_stashes
 [ "$preflight_failed" -eq 0 ] || exit 1
 
 printf '%s\n' 'tmux-workbench-update: fetching repositories'

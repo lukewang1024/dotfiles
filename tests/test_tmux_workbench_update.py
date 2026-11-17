@@ -361,6 +361,9 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
         self.assertEqual('new runtime\n', subprocess.check_output([self.bin_dir / 'workbench-example'], text=True))
         self.assertIn('Workbench was updated, but local changes could not be reapplied', update.stderr)
+        check = self.run_update('--workbench-only', '--check')
+        self.assertIn('retained migration stash(es)', check.stderr)
+        self.assertIn('workbench migration to workbench-recovered/', check.stderr)
 
     def test_detached_installation_changes_move_to_a_recovery_branch(self):
         workbench = self.repos['tmux-agent-workbench']
