@@ -56,12 +56,22 @@ if [ "$agent_public_complete" = true ]; then
   exit 0
 fi
 
-if ! command -v npx >/dev/null 2>&1; then
-  echo 'agent-skills-install: skipping; npx is not installed' >&2
+agent_installer=
+if [ -x "$HOME/.local/bin/pnpm" ] && "$HOME/.local/bin/pnpm" --version >/dev/null 2>&1; then
+  agent_installer=$HOME/.local/bin/pnpm
+elif command -v pnpm >/dev/null 2>&1 && pnpm --version >/dev/null 2>&1; then
+  agent_installer=pnpm
+fi
+if [ -n "$agent_installer" ]; then
+  set -- "$agent_installer" dlx skills@latest
+elif command -v npx >/dev/null 2>&1; then
+  set -- npx --yes skills@latest
+else
+  echo 'agent-skills-install: skipping; neither pnpm nor npx is available' >&2
   exit 0
 fi
 
-npx --yes skills@latest add mattpocock/skills \
+"$@" add mattpocock/skills \
   --global \
   --agent claude-code codex opencode \
   --skill grill-me grill-with-docs grilling domain-modeling \

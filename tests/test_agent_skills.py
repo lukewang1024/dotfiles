@@ -76,6 +76,23 @@ class AgentSkillInstallTests(unittest.TestCase):
         self.install()
         self.assertEqual(target.resolve(), (ROOT / "config/agent/skills/code-ship").resolve())
 
+    def test_public_installer_prefers_local_pnpm(self):
+        pnpm = self.home / ".local/bin/pnpm"
+        pnpm.parent.mkdir(parents=True)
+        pnpm.write_text('#!/bin/sh\nif [ "$1" = --version ]; then exit 0; fi\nprintf "%s\\n" "$@" > "$SKILL_INSTALL_NPX_MARKER"\n')
+        pnpm.chmod(0o700)
+        result = subprocess.run(["/bin/sh", str(ROOT / "util/agent/agent-skills-install")],
+                                env=self.environment, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.marker.read_text().splitlines()[:4],
+                         ["dlx", "skills@latest", "add", "mattpocock/skills"])
+
+    def test_public_installer_falls_back_to_npx(self):
+        result = subprocess.run(["/bin/sh", str(ROOT / "util/agent/agent-skills-install")],
+                                env=self.environment, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 97)
+        self.assertEqual(self.marker.read_text(), "invoked")
+
     def test_public_keep_list_preserves_installed_skills(self):
         self.install()
         result = subprocess.run(["/bin/sh", str(ROOT / "util/agent/agent-skills-prune"),
