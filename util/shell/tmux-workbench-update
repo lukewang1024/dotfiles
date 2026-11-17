@@ -331,18 +331,21 @@ resolve_agent_team_checkout
 # Check every checkout before changing any of them. Installation checkouts use
 # main branches; Workbench development branches belong in separate worktrees.
 # upstream-main is a maintenance alias that preserves a local development main.
+preflight_failed=0
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
   require_repo "$repo"
   if [ "$repo" = "$workbench_dir" ]; then
     inspect_workbench_checkout "$repo"
   else
-    require_main_checkout "$repo"
+    if ! (require_main_checkout "$repo"); then preflight_failed=1; fi
   fi
 done
 
 if [ "$mode" = update ] && [ "$workbench_development_checkout" -eq 1 ]; then
-  die "tmux-agent-workbench installation checkout is on $workbench_branch; keep development in a separate worktree and use a main checkout for installation"
+  printf 'tmux-workbench-update: tmux-agent-workbench installation checkout is on %s; keep development in a separate worktree and use a main checkout for installation\n' "$workbench_branch" >&2
+  preflight_failed=1
 fi
+[ "$preflight_failed" -eq 0 ] || exit 1
 
 printf '%s\n' 'tmux-workbench-update: fetching repositories'
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do

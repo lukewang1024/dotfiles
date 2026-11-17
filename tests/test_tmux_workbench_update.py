@@ -310,6 +310,21 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
         self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
 
+    def test_preflight_reports_each_development_checkout_before_updating(self):
+        workbench = self.repos['tmux-agent-workbench']
+        team = self.repos['agent-team']
+        self.git('-C', workbench, 'switch', '-c', 'feature-workbench')
+        self.git('-C', team, 'switch', '-c', 'feature-agent-team')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('agent-team checkout is on feature-agent-team', update.stderr)
+        self.assertIn('tmux-agent-workbench installation checkout is on feature-workbench', update.stderr)
+        self.assertNotIn('fetching repositories', update.stdout)
+        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+
     def test_legacy_branch_changes_can_be_preserved_without_switching_the_branch(self):
         workbench = self.repos['tmux-agent-workbench']
         self.git('-C', workbench, 'switch', '-c', 'legacy-work')
