@@ -207,6 +207,7 @@ single clean-stack operation:
 ```sh
 tmux-workbench-update --check
 tmux-workbench-update
+tmux-workbench-update --workbench-only
 ```
 
 This fast-forwards `dotfiles`, `agent-team`, `tmux-agent-workbench`, and
@@ -214,15 +215,20 @@ This fast-forwards `dotfiles`, `agent-team`, `tmux-agent-workbench`, and
 then restarts the Workbench daemon and existing sidebar panes before reloading
 a running tmux server. The agent-team checkout defaults to
 `$XDG_DATA_HOME/agent-team`; set `AGENT_TEAM_REPO` if it is elsewhere.
-Workbench's installation checkout must be on its main branch (or the existing
-`upstream-main` maintenance alias). The updater never switches its branch.
-Before updating, it moves staged, unstaged and untracked changes, together with
-any local commits, into a separate recovery worktree and prints its path. Files
-ignored by Git remain in place; an ignored file that would be overwritten stops
-the update. The latest published release, including prereleases, must match the
-upstream main commit so the installed binary and plugin files use the same version.
+Workbench's installation checkout ends on `main`. If it was on a development
+branch, the updater moves that branch and its local changes to a separate
+worktree and prints its path. Local changes are stashed during the update and
+reapplied to `main` afterward, regardless of the original branch. A trial apply
+checks for conflicts before touching the installation checkout; if it conflicts,
+the recovery worktree and stash are retained. Ignored files remain in place; an
+ignored file that would be overwritten stops the update. The latest published
+release, including prereleases, must match main's core inputs. A main commit
+that changes only the tmux entrypoint or shell/Python tests may follow the release.
+Reapplied local changes intentionally override the clean release where they differ.
 The matching core is downloaded and verified before the Workbench checkout changes;
 if its installer fails, the verified core is restored and the update reports failure.
+Use `--workbench-only` to update just the plugin and core when another checkout
+is in use; combine it with `--check` to inspect only Workbench updates.
 
 Machine Fabric is separate from the tmux workbench plugin. Use its own
 `bootstrap-fabric.sh` with an exact release version and selected SSH nodes to

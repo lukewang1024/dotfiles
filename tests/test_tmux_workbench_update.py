@@ -94,6 +94,10 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
                            'ln -sf "$plugin/bin/tmux-agent-workbench-cli" "$1/tmux-agent-workbench"\n',
                 'bin/workbench-example': '#!/bin/sh\nprintf "old runtime\\n"\n',
                 'bin/tmux-agent-workbench-cli': '#!/bin/sh\nexit 0\n',
+                'local-notes.txt': 'original local notes\n',
+                'workbench.tmux': '# original entrypoint\n',
+                'src/embedded.rs': 'const _TEST: &str = include_str!("../tests/embedded.py");\n',
+                'tests/embedded.py': '# original embedded input\n',
             },
             'tmux-adaptive-theme': {'theme.txt': 'v1\n'},
         }.items():
@@ -257,34 +261,35 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertTrue((self.state / 'gh-used').exists())
         self.assertFalse((self.state / 'synced').exists())
 
-    def test_workbench_upstream_main_alias_can_update_without_touching_main(self):
+    def test_workbench_upstream_main_alias_moves_to_a_worktree_and_main_updates(self):
         workbench = self.repos['tmux-agent-workbench']
         original_main = self.git('-C', workbench, 'rev-parse', 'main').stdout.strip()
         self.git('-C', workbench, 'switch', '-c', 'upstream-main', '--track', 'origin/main')
 
-        self.assertIn('tmux-agent-workbench: 1 update(s) available',
+        self.assertIn('development checkout (upstream-main)',
                       self.run_update('--check').stdout)
         self.run_update()
 
         self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
-        self.assertEqual(original_main,
-                         self.git('-C', workbench, 'rev-parse', 'main').stdout.strip())
-        self.assertEqual('upstream-main',
+        self.assertNotEqual(original_main,
+                            self.git('-C', workbench, 'rev-parse', 'main').stdout.strip())
+        self.assertEqual('main',
                          self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertEqual('upstream-main', self.git('-C', recovered, 'branch', '--show-current').stdout.strip())
 
-    def test_workbench_upstream_main_alias_rejects_wrong_remote_branch(self):
+    def test_workbench_can_create_missing_main_from_origin(self):
         workbench = self.repos['tmux-agent-workbench']
         self.git('-C', workbench, 'branch', '-m', 'upstream-main')
         self.git('-C', workbench, 'fetch', 'origin', 'main:refs/remotes/origin/feature')
         self.git('-C', workbench, 'branch', '--set-upstream-to=origin/feature')
 
-        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
-                                capture_output=True, text=True)
-        self.assertNotEqual(0, update.returncode)
-        self.assertIn('track a remote main branch', update.stderr)
-        self.assertNotIn('fetching repositories', update.stdout)
+        self.run_update()
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertEqual('upstream-main', self.git('-C', recovered, 'branch', '--show-current').stdout.strip())
 
-    def test_workbench_feature_branch_is_preserved_and_update_fails_before_changes(self):
+    def test_workbench_feature_branch_and_local_changes_move_to_a_worktree(self):
         workbench = self.repos['tmux-agent-workbench']
         self.git('-C', workbench, 'switch', '-c', 'ship/local-change')
         self.git('-C', workbench, 'config', 'user.name', 'Updater Test')
@@ -292,25 +297,88 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         (workbench / 'local-change.txt').write_text('keep this branch\n')
         self.git('-C', workbench, 'add', 'local-change.txt')
         self.git('-C', workbench, 'commit', '-m', 'local feature work')
+        (workbench / 'local-notes.txt').write_text('staged branch work\n')
+        self.git('-C', workbench, 'add', 'local-notes.txt')
+        (workbench / 'local-notes.txt').write_text('unfinished branch work\n')
+        (workbench / 'branch-untracked.txt').write_text('branch scratch\n')
         original_head = self.git('-C', workbench, 'rev-parse', 'HEAD').stdout.strip()
 
         check = self.run_update('--check')
         self.assertIn('tmux-agent-workbench: development checkout (ship/local-change)', check.stdout)
         self.assertIn('tmux-agent-workbench release: v2.0.0-beta.28 published', check.stdout)
 
+        update = self.run_update()
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertIn(str(recovered), update.stdout)
+        self.assertEqual('ship/local-change', self.git('-C', recovered, 'branch', '--show-current').stdout.strip())
+        self.assertEqual(original_head, self.git('-C', recovered, 'rev-parse', 'HEAD').stdout.strip())
+        self.assertEqual('staged branch work\n', self.git('-C', recovered, 'show', ':local-notes.txt').stdout)
+        self.assertEqual('unfinished branch work\n', (recovered / 'local-notes.txt').read_text())
+        self.assertEqual('branch scratch\n', (recovered / 'branch-untracked.txt').read_text())
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertEqual('staged branch work\n', self.git('-C', workbench, 'show', ':local-notes.txt').stdout)
+        self.assertEqual('unfinished branch work\n', (workbench / 'local-notes.txt').read_text())
+        self.assertEqual('branch scratch\n', (workbench / 'branch-untracked.txt').read_text())
+        self.assertFalse((workbench / 'local-change.txt').exists())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+
+    def test_feature_branch_migration_refuses_to_disturb_main_in_another_worktree(self):
+        workbench = self.repos['tmux-agent-workbench']
+        self.git('-C', workbench, 'switch', '-c', 'feature-work')
+        other = self.root / 'other-main'
+        self.git('-C', workbench, 'worktree', 'add', str(other), 'main')
+        (workbench / 'local-notes.txt').write_text('unfinished work\n')
+        before = self.git('-C', workbench, 'status', '--porcelain').stdout
+
         update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
                                 capture_output=True, text=True)
-        self.assertNotEqual(0, update.returncode)
-        self.assertIn('installation checkout is on ship/local-change', update.stderr)
-        self.assertNotIn('fetching repositories', update.stdout)
-        self.assertEqual(original_head,
-                         self.git('-C', workbench, 'rev-parse', 'HEAD').stdout.strip())
-        self.assertEqual('keep this branch\n', (workbench / 'local-change.txt').read_text())
-        self.assertEqual('v1\n', (workbench / 'version.txt').read_text())
-        self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
-        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
 
-    def test_preflight_reports_each_development_checkout_before_updating(self):
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('main is already checked out in another worktree', update.stderr)
+        self.assertEqual('feature-work', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual(before, self.git('-C', workbench, 'status', '--porcelain').stdout)
+        self.assertEqual('unfinished work\n', (workbench / 'local-notes.txt').read_text())
+        self.assertEqual('main', self.git('-C', other, 'branch', '--show-current').stdout.strip())
+
+    def test_conflicting_legacy_changes_remain_on_original_branch_and_main_stays_clean(self):
+        workbench = self.repos['tmux-agent-workbench']
+        self.git('-C', workbench, 'switch', '-c', 'legacy-conflict')
+        (workbench / 'version.txt').write_text('local legacy change\n')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('local changes conflict with the updated main', update.stderr)
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertEqual('legacy-conflict', self.git('-C', recovered, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('local legacy change\n', (recovered / 'version.txt').read_text())
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertEqual('', self.git('-C', workbench, 'status', '--porcelain').stdout)
+        self.assertIn('workbench migration', self.git('-C', workbench, 'stash', 'list').stdout)
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertEqual('new runtime\n', subprocess.check_output([self.bin_dir / 'workbench-example'], text=True))
+        self.assertIn('Workbench was updated, but local changes could not be reapplied', update.stderr)
+
+    def test_detached_installation_changes_move_to_a_recovery_branch(self):
+        workbench = self.repos['tmux-agent-workbench']
+        self.git('-C', workbench, 'checkout', '--detach')
+        (workbench / 'local-notes.txt').write_text('detached work\n')
+        old_head = self.git('-C', workbench, 'rev-parse', 'HEAD').stdout.strip()
+
+        self.run_update()
+
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertEqual(old_head, self.git('-C', recovered, 'rev-parse', 'HEAD').stdout.strip())
+        self.assertTrue(self.git('-C', recovered, 'branch', '--show-current').stdout.strip().startswith('workbench-recovered/'))
+        self.assertEqual('detached work\n', (recovered / 'local-notes.txt').read_text())
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertEqual('detached work\n', (workbench / 'local-notes.txt').read_text())
+
+    def test_agent_team_development_checkout_blocks_without_touching_workbench(self):
         workbench = self.repos['tmux-agent-workbench']
         team = self.repos['agent-team']
         self.git('-C', workbench, 'switch', '-c', 'feature-workbench')
@@ -321,9 +389,39 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
 
         self.assertNotEqual(0, update.returncode)
         self.assertIn('agent-team checkout is on feature-agent-team', update.stderr)
-        self.assertIn('tmux-agent-workbench installation checkout is on feature-workbench', update.stderr)
         self.assertNotIn('fetching repositories', update.stdout)
+        self.assertEqual('feature-workbench', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
         self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+
+    def test_workbench_only_updates_without_touching_other_development_checkouts(self):
+        workbench = self.repos['tmux-agent-workbench']
+        team = self.repos['agent-team']
+        self.git('-C', workbench, 'switch', '-c', 'feature-workbench')
+        self.git('-C', team, 'switch', '-c', 'feature-agent-team')
+        (workbench / 'local-notes.txt').write_text('workbench branch change\n')
+        (team / 'version.txt').write_text('agent-team work\n')
+        team_before = self.git('-C', team, 'status', '--porcelain').stdout
+
+        check = self.run_update('--workbench-only', '--check')
+        self.assertIn('development checkout (feature-workbench)', check.stdout)
+        self.assertEqual('v1\n', (workbench / 'version.txt').read_text())
+        self.assertFalse((self.data / 'tmux-agent-workbench/recovered-worktrees').exists())
+        update = self.run_update('--workbench-only')
+
+        self.assertIn('complete (Workbench only)', update.stdout)
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertEqual('feature-workbench', self.git('-C', recovered, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('workbench branch change\n', (recovered / 'local-notes.txt').read_text())
+        self.assertEqual('workbench branch change\n', (workbench / 'local-notes.txt').read_text())
+        self.assertEqual('feature-agent-team', self.git('-C', team, 'branch', '--show-current').stdout.strip())
+        self.assertEqual(team_before, self.git('-C', team, 'status', '--porcelain').stdout)
+        self.assertEqual('agent-team work\n', (team / 'version.txt').read_text())
+        self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
+        self.assertEqual('v1\n', (self.repos['tmux-adaptive-theme'] / 'version.txt').read_text())
+        self.assertFalse((self.state / 'synced').exists())
+        self.assertFalse((self.bin_dir / 'agent-team-installed').exists())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
     def test_legacy_branch_changes_can_be_preserved_without_switching_the_branch(self):
         workbench = self.repos['tmux-agent-workbench']
@@ -344,11 +442,11 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertEqual('legacy-work', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
         self.assertEqual('', self.git('-C', workbench, 'status', '--porcelain').stdout)
 
-    def test_dirty_main_is_moved_to_a_worktree_with_index_and_untracked_files(self):
+    def test_dirty_main_changes_are_reapplied_after_update_with_index_and_untracked_files(self):
         workbench = self.repos['tmux-agent-workbench']
-        (workbench / 'version.txt').write_text('staged change\n')
-        self.git('-C', workbench, 'add', 'version.txt')
-        (workbench / 'version.txt').write_text('unstaged change\n')
+        (workbench / 'local-notes.txt').write_text('staged change\n')
+        self.git('-C', workbench, 'add', 'local-notes.txt')
+        (workbench / 'local-notes.txt').write_text('unstaged change\n')
         (workbench / 'untracked file').write_bytes(b'untracked\0data')
         (workbench / 'untracked-link').symlink_to('untracked file')
         before = self.git('-C', workbench, 'status', '--porcelain=v1', '-z', '--untracked-files=all').stdout
@@ -359,38 +457,74 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
 
         update = self.run_update()
 
-        root = self.data / 'tmux-agent-workbench/recovered-worktrees'
-        recovered, = root.iterdir()
-        self.assertIn(str(recovered), update.stdout)
-        self.assertEqual(before, self.git('-C', recovered, 'status', '--porcelain=v1', '-z', '--untracked-files=all').stdout)
-        self.assertEqual('staged change\n', self.git('-C', recovered, 'show', ':version.txt').stdout)
-        self.assertEqual('unstaged change\n', (recovered / 'version.txt').read_text())
-        self.assertEqual(b'untracked\0data', (recovered / 'untracked file').read_bytes())
-        self.assertEqual('untracked file', os.readlink(recovered / 'untracked-link'))
-        self.assertEqual('', self.git('-C', workbench, 'status', '--porcelain').stdout)
+        self.assertIn('reapplied local changes on updated main', update.stdout)
+        self.assertEqual(before, self.git('-C', workbench, 'status', '--porcelain=v1', '-z', '--untracked-files=all').stdout)
+        self.assertEqual('staged change\n', self.git('-C', workbench, 'show', ':local-notes.txt').stdout)
+        self.assertEqual('unstaged change\n', (workbench / 'local-notes.txt').read_text())
+        self.assertEqual(b'untracked\0data', (workbench / 'untracked file').read_bytes())
+        self.assertEqual('untracked file', os.readlink(workbench / 'untracked-link'))
         self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
         self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
         self.assertEqual('new runtime\n', subprocess.check_output([self.bin_dir / 'workbench-example'], text=True))
 
+    def test_conflicting_stash_keeps_latest_main_clean_and_preserves_recovery(self):
+        workbench = self.repos['tmux-agent-workbench']
+        (workbench / 'version.txt').write_text('staged conflicting change\n')
+        self.git('-C', workbench, 'add', 'version.txt')
+        (workbench / 'version.txt').write_text('unstaged conflicting change\n')
+        (workbench / 'untracked.txt').write_text('untracked local file\n')
+        before = self.git('-C', workbench, 'status', '--porcelain=v1', '-z', '--untracked-files=all').stdout
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('local changes conflict with the updated main', update.stderr)
+        self.assertIn('recovery stash retained', update.stderr)
+        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
+        self.assertEqual(before, self.git('-C', recovered, 'status', '--porcelain=v1', '-z', '--untracked-files=all').stdout)
+        self.assertEqual('staged conflicting change\n', self.git('-C', recovered, 'show', ':version.txt').stdout)
+        self.assertEqual('unstaged conflicting change\n', (recovered / 'version.txt').read_text())
+        self.assertEqual('untracked local file\n', (recovered / 'untracked.txt').read_text())
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertEqual('', self.git('-C', workbench, 'status', '--porcelain').stdout)
+        self.assertIn('workbench migration', self.git('-C', workbench, 'stash', 'list').stdout)
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertEqual('new runtime\n', subprocess.check_output([self.bin_dir / 'workbench-example'], text=True))
+        self.assertIn('Workbench was updated, but local changes could not be reapplied', update.stderr)
+
+    def test_main_local_runtime_changes_remain_after_install(self):
+        workbench = self.repos['tmux-agent-workbench']
+        install = workbench / 'install'
+        install.write_text(install.read_text() + '# local installer comment\n')
+
+        update = self.run_update()
+
+        self.assertIn('reapplied local changes on updated main', update.stdout)
+        self.assertIn('local changes are present on updated main', update.stdout)
+        self.assertTrue(install.read_text().endswith('# local installer comment\n'))
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+
     def test_existing_stash_survives_migration(self):
         workbench = self.repos['tmux-agent-workbench']
-        (workbench / 'version.txt').write_text('older stash\n')
+        (workbench / 'local-notes.txt').write_text('older stash\n')
         self.git('-C', workbench, 'stash', 'push', '-m', 'user stash')
         before = self.git('-C', workbench, 'stash', 'list', '--format=%H %s').stdout
-        (workbench / 'version.txt').write_text('current work\n')
+        (workbench / 'local-notes.txt').write_text('current work\n')
 
         self.run_update()
 
-        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
-        self.assertEqual('current work\n', (recovered / 'version.txt').read_text())
+        self.assertEqual('current work\n', (workbench / 'local-notes.txt').read_text())
         self.assertEqual(before, self.git('-C', workbench, 'stash', 'list', '--format=%H %s').stdout)
 
     def test_concurrent_stash_from_another_worktree_is_not_mistaken_for_this_migration(self):
         workbench = self.repos['tmux-agent-workbench']
         other = self.root / 'other-worktree'
         self.git('-C', workbench, 'worktree', 'add', '-b', 'other-work', other, 'HEAD')
-        (other / 'version.txt').write_text('other agent work\n')
-        (workbench / 'version.txt').write_text('installation work\n')
+        (other / 'local-notes.txt').write_text('other agent work\n')
+        (workbench / 'local-notes.txt').write_text('installation work\n')
         real_git = shutil.which('git', path=os.environ['PATH'])
         wrapper = self.bin_dir / 'git'
         wrapper.write_text(
@@ -406,8 +540,7 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
 
         update = self.run_update()
 
-        recovered, = (self.data / 'tmux-agent-workbench/recovered-worktrees').iterdir()
-        self.assertEqual('installation work\n', (recovered / 'version.txt').read_text())
+        self.assertEqual('installation work\n', (workbench / 'local-notes.txt').read_text())
         self.assertIn('recovery stash retained', update.stdout)
         stashes = self.git('-C', workbench, 'stash', 'list').stdout
         self.assertIn('other agent', stashes)
@@ -475,6 +608,40 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertNotEqual(0, update.returncode)
         self.assertIn('and release v2.0.0-beta.28 differ', update.stderr)
         self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
+        self.assertEqual('v1\n', (self.repos['tmux-agent-workbench'] / 'version.txt').read_text())
+        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+
+    def test_post_release_tmux_entrypoint_and_test_changes_can_update_main(self):
+        writer = self.root / 'tmux-agent-workbench-writer'
+        (writer / 'workbench.tmux').write_text('# newer startup fix\n')
+        (writer / 'tests/new-test.sh').write_text('#!/bin/sh\nexit 0\n')
+        self.git('-C', writer, 'add', 'workbench.tmux', 'tests/new-test.sh')
+        self.git('-C', writer, 'commit', '-m', 'fix tmux startup')
+        self.git('-C', writer, 'push')
+
+        check = self.run_update('--check')
+        self.assertNotIn('do not match in core inputs', check.stderr)
+        update = self.run_update()
+
+        workbench = self.repos['tmux-agent-workbench']
+        self.assertIn('compiled core inputs match the release', update.stdout)
+        self.assertEqual('# newer startup fix\n', (workbench / 'workbench.tmux').read_text())
+        self.assertEqual(self.git('-C', writer, 'rev-parse', 'HEAD').stdout,
+                         self.git('-C', workbench, 'rev-parse', 'HEAD').stdout)
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+
+    def test_post_release_test_file_embedded_in_core_blocks_update(self):
+        writer = self.root / 'tmux-agent-workbench-writer'
+        (writer / 'tests/embedded.py').write_text('# changed embedded input\n')
+        self.git('-C', writer, 'add', 'tests/embedded.py')
+        self.git('-C', writer, 'commit', '-m', 'change embedded input')
+        self.git('-C', writer, 'push')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('differ in core inputs', update.stderr)
         self.assertEqual('v1\n', (self.repos['tmux-agent-workbench'] / 'version.txt').read_text())
         self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
 
