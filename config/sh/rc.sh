@@ -1,5 +1,6 @@
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
 export EDITOR='vim'
 
 # Reset PATH to the platform default to avoid duplication from inherited
@@ -124,12 +125,6 @@ alias px='proxychains4 -f ~/.config/proxychains.conf'
 alias gitc='git --no-pager'
 alias gmtlg='git mergetool --no-prompt --gui'
 alias tigall='TIGRC_USER=~/.config/tig/config_all tig'
-
-## Tools from npm
-alias create-react-app='npx create-react-app'
-alias react-native='npx react-native'
-alias sb='npx -p @storybook/cli sb'
-alias semantic-release-cli='npx semantic-release-cli'
 
 if is_linux && ! is_termux; then
   alias spath="PATH="$(echo ${PATH} | awk -v RS=: -v ORS=: '/home/ {next} {print}' | sed 's/:*$//')""
