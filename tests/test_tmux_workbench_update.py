@@ -496,6 +496,96 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertIn('command links do not match the installed checkout', update.stderr)
         self.assertNotIn('tmux-workbench-update: complete', update.stdout)
 
+    def test_invalid_release_archive_does_not_change_the_installed_checkout_or_core(self):
+        Path(self.env['TEST_RELEASE_ARCHIVE']).write_bytes(b'not a release archive')
+        workbench = self.repos['tmux-agent-workbench']
+        before = self.git('-C', workbench, 'rev-parse', 'HEAD').stdout
+        (workbench / 'version.txt').write_text('local changes\n')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('failed to unpack tmux-agent-workbench release', update.stderr)
+        self.assertEqual(before, self.git('-C', workbench, 'rev-parse', 'HEAD').stdout)
+        self.assertEqual('local changes\n', (workbench / 'version.txt').read_text())
+        self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
+        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertFalse((self.data / 'tmux-agent-workbench/recovered-worktrees').exists())
+
+    def test_failed_installer_restores_a_core_matching_the_updated_checkout(self):
+        workbench = self.repos['tmux-agent-workbench']
+        (self.bin_dir / 'workbench-example').symlink_to(workbench / 'bin/workbench-example')
+        writer = self.root / 'tmux-agent-workbench-writer'
+        install = writer / 'install'
+        install.write_text('#!/bin/sh\nprintf "#!/bin/sh\\necho bad-core\\n" > '
+                           '"$XDG_DATA_HOME/tmux-agent-workbench/bin/tmux-agent-workbench-core"\nexit 7\n')
+        self.git('-C', writer, 'add', 'install')
+        self.git('-C', writer, 'commit', '-m', 'simulate installer failure')
+        self.git('-C', writer, 'tag', '-f', 'v2.0.0-beta.28')
+        self.git('-C', writer, 'push')
+        self.git('-C', writer, 'push', '-f', 'origin', 'v2.0.0-beta.28')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('failed to install tmux-agent-workbench commands', update.stderr)
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertEqual('new runtime\n', subprocess.check_output([self.bin_dir / 'workbench-example'], text=True))
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertNotIn('tmux-workbench-update: complete', update.stdout)
+
+    def test_installer_that_succeeds_with_wrong_core_is_rejected_and_repaired(self):
+        workbench = self.repos['tmux-agent-workbench']
+        writer = self.root / 'tmux-agent-workbench-writer'
+        install = writer / 'install'
+        install.write_text('#!/bin/sh\nprintf "#!/bin/sh\\necho wrong-core\\n" > '
+                           '"$XDG_DATA_HOME/tmux-agent-workbench/bin/tmux-agent-workbench-core"\n')
+        self.git('-C', writer, 'add', 'install')
+        self.git('-C', writer, 'commit', '-m', 'simulate wrong core')
+        self.git('-C', writer, 'tag', '-f', 'v2.0.0-beta.28')
+        self.git('-C', writer, 'push')
+        self.git('-C', writer, 'push', '-f', 'origin', 'v2.0.0-beta.28')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('installer provided a mismatched core; restored the verified release', update.stderr)
+        self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
+
+    def test_other_repository_failure_happens_before_workbench_source_switch(self):
+        theme = self.repos['tmux-adaptive-theme']
+        (theme / 'version.txt').write_text('local conflicting theme change\n')
+        workbench = self.repos['tmux-agent-workbench']
+        before = self.git('-C', workbench, 'rev-parse', 'HEAD').stdout
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('failed to update tmux-adaptive-theme', update.stderr)
+        self.assertEqual(before, self.git('-C', workbench, 'rev-parse', 'HEAD').stdout)
+        self.assertEqual('v1\n', (workbench / 'version.txt').read_text())
+        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+
+    def test_failed_migration_on_current_commit_does_not_replace_core(self):
+        workbench = self.repos['tmux-agent-workbench']
+        self.git('-C', workbench, 'fetch', 'origin')
+        self.git('-C', workbench, 'merge', '--ff-only', 'origin/main')
+        self.git('-C', workbench, 'update-index', '--assume-unchanged', 'version.txt')
+        (workbench / 'version.txt').write_text('hidden local work\n')
+
+        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
+                                capture_output=True, text=True)
+
+        self.assertNotEqual(0, update.returncode)
+        self.assertIn('assume-unchanged files prevent a safe migration', update.stderr)
+        self.assertEqual('hidden local work\n', (workbench / 'version.txt').read_text())
+        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+
     def test_ignored_file_that_would_be_overwritten_blocks_update(self):
         workbench = self.repos['tmux-agent-workbench']
         (workbench / '.git/info/exclude').write_text('future.txt\n')

@@ -221,6 +221,8 @@ any local commits, into a separate recovery worktree and prints its path. Files
 ignored by Git remain in place; an ignored file that would be overwritten stops
 the update. The latest published release, including prereleases, must match the
 upstream main commit so the installed binary and plugin files use the same version.
+The matching core is downloaded and verified before the Workbench checkout changes;
+if its installer fails, the verified core is restored and the update reports failure.
 
 Machine Fabric is separate from the tmux workbench plugin. Use its own
 `bootstrap-fabric.sh` with an exact release version and selected SSH nodes to

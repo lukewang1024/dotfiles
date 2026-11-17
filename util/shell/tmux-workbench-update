@@ -285,15 +285,20 @@ workbench_release_target()
   fi
 }
 
-install_workbench_release()
+stage_workbench_core()
+{
+  mkdir -p "$(dirname "$workbench_core")"
+  workbench_core_stage=$workbench_core.new.$$
+  run_quiet cp "$release_binary" "$workbench_core_stage" || die 'failed to stage tmux-agent-workbench release'
+  chmod 755 "$workbench_core_stage"
+  if [ "$(uname -s)" = Darwin ]; then
+    run_quiet codesign --force --sign - "$workbench_core_stage" || die 'failed to sign tmux-agent-workbench release'
+  fi
+}
+
+prepare_workbench_release()
 {
   tag=$1
-  installed_version=
-  if [ -x "$workbench_core" ]; then
-    installed_version=$("$workbench_core" --version 2>/dev/null | awk '{print $2}')
-  fi
-  [ "$installed_version" != "${tag#v}" ] || return 0
-
   target=$(workbench_release_target) || die 'no tmux-agent-workbench release asset for this platform'
   archive=$workbench_release_tmp/archive.tar.gz
   url="https://github.com/lukewang1024/tmux-agent-workbench/releases/download/$tag/tmux-agent-workbench-$target.tar.gz"
@@ -304,16 +309,14 @@ install_workbench_release()
   [ -x "$release_binary" ] || die 'tmux-agent-workbench release binary is missing'
   release_version=$("$release_binary" --version | awk '{print $2}')
   [ "$release_version" = "${tag#v}" ] || die "tmux-agent-workbench release version mismatch: $release_version"
-  mkdir -p "$(dirname "$workbench_core")"
-  workbench_core_stage=$workbench_core.new.$$
-  run_quiet cp "$release_binary" "$workbench_core_stage" || die 'failed to stage tmux-agent-workbench release'
-  chmod 755 "$workbench_core_stage"
-  if [ "$(uname -s)" = Darwin ]; then
-    run_quiet codesign --force --sign - "$workbench_core_stage" || die 'failed to sign tmux-agent-workbench release'
-  fi
+  stage_workbench_core
+}
+
+activate_workbench_core()
+{
   mv -f "$workbench_core_stage" "$workbench_core"
   workbench_core_stage=
-  printf 'tmux-workbench-update: installed tmux-agent-workbench %s\n' "$tag"
+  printf 'tmux-workbench-update: installed tmux-agent-workbench %s\n' "$workbench_release_tag"
 }
 
 mode=update
@@ -371,6 +374,7 @@ if [ "$mode" = check ]; then
 fi
 
 validate_workbench_release
+prepare_workbench_release "$workbench_release_tag"
 
 printf '%s\n' 'tmux-workbench-update: updating repositories'
 update_repo "$dotfiles_dir"
@@ -379,10 +383,6 @@ if repo_has_unreleased_changes "$agent_team_dir"; then
 else
   update_repo "$agent_team_dir"
 fi
-python3 "$script_dir/tmux-workbench-migrate.py" \
-  --repo "$workbench_dir" --target "$workbench_target" \
-  --recovery-root "$xdg_data_home/tmux-agent-workbench/recovered-worktrees" ||
-  die 'failed to preserve and update the tmux-agent-workbench checkout'
 update_repo "$theme_dir"
 
 printf '%s\n' 'tmux-workbench-update: syncing dotfiles'
@@ -394,19 +394,42 @@ run_quiet python3 "$agent_team_dir/install.py" --bin-dir "$bin_dir" ||
   die 'failed to install agent-team commands'
 printf '%s\n' 'tmux-workbench-update: agent-team commands installed'
 
+workbench_before_migration=$(git -C "$workbench_dir" rev-parse HEAD)
+if ! python3 "$script_dir/tmux-workbench-migrate.py" \
+  --repo "$workbench_dir" --target "$workbench_target" \
+  --recovery-root "$xdg_data_home/tmux-agent-workbench/recovered-worktrees"; then
+  # If the checkout reached the new commit before a later error, install its
+  # already-verified core rather than leave a mixed version behind.
+  workbench_after_failure=$(git -C "$workbench_dir" rev-parse HEAD 2>/dev/null || true)
+  workbench_after_status=$(git -C "$workbench_dir" status --porcelain --untracked-files=all 2>/dev/null || printf unknown)
+  if [ "$workbench_before_migration" != "$workbench_target" ] &&
+     [ "$workbench_after_failure" = "$workbench_target" ] && [ -z "$workbench_after_status" ]; then
+    activate_workbench_core
+  fi
+  die 'failed to preserve and update the tmux-agent-workbench checkout'
+fi
+activate_workbench_core
+
 [ -x "$workbench_dir/install" ] || die 'tmux-agent-workbench installer is missing or not executable'
 printf '%s\n' 'tmux-workbench-update: installing workbench commands'
-run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir" ||
+if ! run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir"; then
+  # The installer may have replaced the core before failing. Restore the
+  # artifact verified before the checkout was advanced.
+  stage_workbench_core
+  activate_workbench_core
   die 'failed to install tmux-agent-workbench commands'
-install_workbench_release "$workbench_release_tag"
+fi
 
 workbench_actual=$(git -C "$workbench_dir" rev-parse HEAD)
 [ "$workbench_actual" = "$workbench_target" ] &&
   [ -z "$(git -C "$workbench_dir" status --porcelain --untracked-files=all)" ] ||
   die 'tmux-agent-workbench checkout changed during installation; installed components may be inconsistent'
 workbench_actual_version=$("$workbench_core" --version 2>/dev/null | awk '{print $2}')
-[ "$workbench_actual_version" = "${workbench_release_tag#v}" ] ||
-  die 'tmux-agent-workbench core version does not match the installed checkout'
+if [ "$workbench_actual_version" != "${workbench_release_tag#v}" ]; then
+  stage_workbench_core
+  activate_workbench_core
+  die 'tmux-agent-workbench installer provided a mismatched core; restored the verified release'
+fi
 python3 - "$workbench_dir" "$bin_dir" <<'PY' || die 'tmux-agent-workbench command links do not match the installed checkout'
 import os
 from pathlib import Path
