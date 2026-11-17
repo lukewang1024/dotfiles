@@ -5,6 +5,13 @@
 
 set -eu
 
+self=$0
+while [ -h "$self" ]; do
+  link_target=$(readlink "$self")
+  case $link_target in /*) self=$link_target ;; *) self=$(dirname "$self")/$link_target ;; esac
+done
+script_dir=$(CDPATH='' cd -- "$(dirname "$self")" && pwd -P)
+
 log_file=$(mktemp "${TMPDIR:-/tmp}/tmux-workbench-update.XXXXXX")
 workbench_release_tmp=
 workbench_core_stage=
@@ -122,7 +129,12 @@ fetch_repo()
 {
   repo=$1
   for fetch_attempt in 1 2 3; do
-    if git -C "$repo" fetch --quiet --prune >"$log_file" 2>&1; then
+    if [ "$repo" = "$workbench_dir" ]; then
+      set -- --tags
+    else
+      set --
+    fi
+    if git -C "$repo" fetch --quiet --prune "$@" >"$log_file" 2>&1; then
       return 0
     fi
     if [ "$fetch_attempt" -lt 3 ]; then
@@ -181,11 +193,6 @@ repo_has_unreleased_changes()
   [ -n "$(git -C "$repo" status --porcelain)" ] || [ "$ahead" -gt 0 ]
 }
 
-warn_workbench_unreleased()
-{
-  printf '%s\n' 'tmux-agent-workbench: warning: local/unreleased changes detected; keeping checkout and installing the latest GitHub release' >&2
-}
-
 inspect_workbench_checkout()
 {
   repo=$1
@@ -196,17 +203,26 @@ inspect_workbench_checkout()
       workbench_development_checkout=0
       ;;
     *)
-      # Plugin installations are often used as active feature checkouts. Keep
-      # those branches intact and install the published release below instead.
+      # Never switch a development branch in the installation checkout.
       workbench_development_checkout=1
       ;;
   esac
 }
 
+validate_workbench_release()
+{
+  workbench_upstream=$(git -C "$workbench_dir" rev-parse --symbolic-full-name '@{upstream}')
+  workbench_target=$(git -C "$workbench_dir" rev-parse "$workbench_upstream^{commit}")
+  workbench_tag_commit=$(git -C "$workbench_dir" rev-parse --verify "$workbench_release_tag^{commit}" 2>/dev/null) ||
+    die "tmux-agent-workbench release tag $workbench_release_tag is not available in the checkout"
+  [ "$workbench_target" = "$workbench_tag_commit" ] ||
+    die "tmux-agent-workbench $workbench_upstream and release $workbench_release_tag differ; wait for a release of the current main before updating"
+}
+
 report_workbench_repo()
 {
   if [ "$workbench_development_checkout" -eq 1 ]; then
-    printf 'tmux-agent-workbench: development checkout (%s); checkout will be preserved\n' "$workbench_branch"
+    printf 'tmux-agent-workbench: development checkout (%s); updates require a main checkout\n' "$workbench_branch"
     if [ -n "$(git -C "$workbench_dir" status --porcelain)" ]; then
       printf '%s\n' 'tmux-agent-workbench: warning: local changes' >&2
     fi
@@ -312,9 +328,8 @@ command -v git >/dev/null 2>&1 || die 'git is required'
 command -v python3 >/dev/null 2>&1 || die 'python3 is required'
 resolve_agent_team_checkout
 
-# Check every checkout before changing any of them. Dotfiles, agent-team and
-# the theme use their main installation branches. A Workbench plugin checkout
-# on another branch is preserved while the published core release is installed.
+# Check every checkout before changing any of them. Installation checkouts use
+# main branches; Workbench development branches belong in separate worktrees.
 # upstream-main is a maintenance alias that preserves a local development main.
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
   require_repo "$repo"
@@ -324,6 +339,10 @@ for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
     require_main_checkout "$repo"
   fi
 done
+
+if [ "$mode" = update ] && [ "$workbench_development_checkout" -eq 1 ]; then
+  die "tmux-agent-workbench installation checkout is on $workbench_branch; keep development in a separate worktree and use a main checkout for installation"
+fi
 
 printf '%s\n' 'tmux-workbench-update: fetching repositories'
 for repo in "$dotfiles_dir" "$agent_team_dir" "$workbench_dir" "$theme_dir"; do
@@ -338,8 +357,17 @@ if [ "$mode" = check ]; then
   report_workbench_repo
   report_repo "$theme_dir"
   printf 'tmux-agent-workbench release: %s published\n' "$workbench_release_tag"
+  if [ "$workbench_development_checkout" -eq 0 ]; then
+    check_upstream=$(git -C "$workbench_dir" rev-parse '@{upstream}^{commit}')
+    check_tag=$(git -C "$workbench_dir" rev-parse --verify "$workbench_release_tag^{commit}" 2>/dev/null || true)
+    if [ "$check_upstream" != "$check_tag" ]; then
+      printf '%s\n' 'tmux-agent-workbench: warning: latest main and published release do not match; update will wait for a matching release' >&2
+    fi
+  fi
   exit 0
 fi
+
+validate_workbench_release
 
 printf '%s\n' 'tmux-workbench-update: updating repositories'
 update_repo "$dotfiles_dir"
@@ -348,13 +376,10 @@ if repo_has_unreleased_changes "$agent_team_dir"; then
 else
   update_repo "$agent_team_dir"
 fi
-if [ "$workbench_development_checkout" -eq 1 ]; then
-  printf 'tmux-agent-workbench: preserving development checkout (%s); installing the latest GitHub release\n' "$workbench_branch"
-elif repo_has_unreleased_changes "$workbench_dir"; then
-  warn_workbench_unreleased
-else
-  update_repo "$workbench_dir"
-fi
+python3 "$script_dir/tmux-workbench-migrate.py" \
+  --repo "$workbench_dir" --target "$workbench_target" \
+  --recovery-root "$xdg_data_home/tmux-agent-workbench/recovered-worktrees" ||
+  die 'failed to preserve and update the tmux-agent-workbench checkout'
 update_repo "$theme_dir"
 
 printf '%s\n' 'tmux-workbench-update: syncing dotfiles'
@@ -366,12 +391,36 @@ run_quiet python3 "$agent_team_dir/install.py" --bin-dir "$bin_dir" ||
   die 'failed to install agent-team commands'
 printf '%s\n' 'tmux-workbench-update: agent-team commands installed'
 
-if [ -x "$workbench_dir/install" ]; then
-  printf '%s\n' 'tmux-workbench-update: installing workbench commands'
-  run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir" ||
-    die 'failed to install tmux-agent-workbench commands'
-fi
+[ -x "$workbench_dir/install" ] || die 'tmux-agent-workbench installer is missing or not executable'
+printf '%s\n' 'tmux-workbench-update: installing workbench commands'
+run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir" ||
+  die 'failed to install tmux-agent-workbench commands'
 install_workbench_release "$workbench_release_tag"
+
+workbench_actual=$(git -C "$workbench_dir" rev-parse HEAD)
+[ "$workbench_actual" = "$workbench_target" ] &&
+  [ -z "$(git -C "$workbench_dir" status --porcelain --untracked-files=all)" ] ||
+  die 'tmux-agent-workbench checkout changed during installation; installed components may be inconsistent'
+workbench_actual_version=$("$workbench_core" --version 2>/dev/null | awk '{print $2}')
+[ "$workbench_actual_version" = "${workbench_release_tag#v}" ] ||
+  die 'tmux-agent-workbench core version does not match the installed checkout'
+python3 - "$workbench_dir" "$bin_dir" <<'PY' || die 'tmux-agent-workbench command links do not match the installed checkout'
+import os
+from pathlib import Path
+import sys
+
+plugin, bin_dir = map(Path, sys.argv[1:])
+expected = {'tmux-agent-workbench': plugin / 'bin/tmux-agent-workbench-cli'}
+for directory in ('bin', 'providers', 'git/bin'):
+    for source in (plugin / directory).glob('*'):
+        if source.name != 'tmux-agent-workbench-cli' and source.is_file() and os.access(source, os.X_OK):
+            expected[source.name] = source
+for name, source in expected.items():
+    link = bin_dir / name
+    if not link.is_symlink() or link.resolve() != source.resolve():
+        print(f'Invalid Workbench command link: {link}', file=sys.stderr)
+        sys.exit(1)
+PY
 
 # Existing daemon and sidebar processes keep the old executable mapped after
 # it is replaced. Stop the daemon, reload the plugin, and respawn sidebar panes

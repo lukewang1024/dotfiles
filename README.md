@@ -214,9 +214,13 @@ This fast-forwards `dotfiles`, `agent-team`, `tmux-agent-workbench`, and
 then restarts the Workbench daemon and existing sidebar panes before reloading
 a running tmux server. The agent-team checkout defaults to
 `$XDG_DATA_HOME/agent-team`; set `AGENT_TEAM_REPO` if it is elsewhere.
-The workbench checkout is left untouched when it has local or unreleased
-commits, or no upstream branch; the installer still installs the latest GitHub release.
-The updater selects the most recently published release, including prereleases.
+Workbench's installation checkout must be on its main branch (or the existing
+`upstream-main` maintenance alias). The updater never switches its branch.
+Before updating, it moves staged, unstaged and untracked changes, together with
+any local commits, into a separate recovery worktree and prints its path. Files
+ignored by Git remain in place; an ignored file that would be overwritten stops
+the update. The latest published release, including prereleases, must match the
+upstream main commit so the installed binary and plugin files use the same version.
 
 Machine Fabric is separate from the tmux workbench plugin. Use its own
 `bootstrap-fabric.sh` with an exact release version and selected SSH nodes to
