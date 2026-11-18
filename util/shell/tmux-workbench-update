@@ -15,10 +15,17 @@ script_dir=$(CDPATH='' cd -- "$(dirname "$self")" && pwd -P)
 log_file=$(mktemp "${TMPDIR:-/tmp}/tmux-workbench-update.XXXXXX")
 workbench_release_tmp=
 workbench_core_stage=
+workbench_build_worktree=
 
 cleanup()
 {
   rm -f "$log_file"
+  if [ -n "$workbench_build_worktree" ]; then
+    if ! git -C "$workbench_dir" worktree remove --force "$workbench_build_worktree" >/dev/null 2>&1; then
+      printf 'tmux-workbench-update: temporary build worktree retained: %s\n' "$workbench_build_worktree" >&2
+      workbench_release_tmp=
+    fi
+  fi
   [ -z "$workbench_release_tmp" ] || rm -rf "$workbench_release_tmp"
   [ -z "$workbench_core_stage" ] || rm -f "$workbench_core_stage"
 }
@@ -222,8 +229,8 @@ workbench_release_compatible()
   main_commit=$2
   git -C "$workbench_dir" merge-base --is-ancestor "$release_commit" "$main_commit" || return 1
   # A post-release change to the tmux entrypoint or shell/Python test scripts
-  # does not change the compiled core. Any other difference requires a new
-  # release so the binary's inputs cannot silently diverge from main.
+  # does not change the compiled core. Other differences require a source
+  # build so the binary's inputs cannot silently diverge from main.
   python3 - "$workbench_dir" "$release_commit" "$main_commit" <<'PY'
 from pathlib import PurePosixPath
 import subprocess
@@ -252,11 +259,12 @@ validate_workbench_release()
 {
   workbench_upstream=$workbench_main_upstream
   workbench_target=$(git -C "$workbench_dir" rev-parse "$workbench_upstream^{commit}")
-  workbench_tag_commit=$(git -C "$workbench_dir" rev-parse --verify "$workbench_release_tag^{commit}" 2>/dev/null) ||
-    die "tmux-agent-workbench release tag $workbench_release_tag is not available in the checkout"
-  workbench_release_compatible "$workbench_tag_commit" "$workbench_target" ||
-    die "tmux-agent-workbench $workbench_upstream and release $workbench_release_tag differ in core inputs; wait for a release of the current main before updating"
-  if [ "$workbench_target" != "$workbench_tag_commit" ]; then
+  workbench_tag_commit=$(git -C "$workbench_dir" rev-parse --verify "$workbench_release_tag^{commit}" 2>/dev/null || true)
+  workbench_core_mode=release
+  if [ -z "$workbench_tag_commit" ] || ! workbench_release_compatible "$workbench_tag_commit" "$workbench_target"; then
+    workbench_core_mode=source
+    printf '%s\n' 'tmux-agent-workbench: main differs from the published core; building the current main from source'
+  elif [ "$workbench_target" != "$workbench_tag_commit" ]; then
     printf '%s\n' 'tmux-agent-workbench: main has post-release tmux/test changes; compiled core inputs match the release'
   fi
 }
@@ -363,11 +371,76 @@ prepare_workbench_release()
   stage_workbench_core
 }
 
+build_workbench_source()
+{
+  workbench_build_source=$1
+  command -v cargo >/dev/null 2>&1 || die 'cargo is required to build the current tmux-agent-workbench main'
+  workbench_expected_version=$(sed -n 's/^version *= *"\([^"]*\)"/\1/p' "$workbench_build_source/Cargo.toml" | head -1)
+  [ -n "$workbench_expected_version" ] || die 'could not read tmux-agent-workbench source version'
+  workbench_build_cache=$(expand_home "${XDG_CACHE_HOME:-$HOME/.cache}/tmux-agent-workbench/source-build")
+  run_quiet env CARGO_TARGET_DIR="$workbench_build_cache" cargo build --release --locked \
+    --manifest-path "$workbench_build_source/Cargo.toml" --bin tmux-agent-workbench ||
+    die 'failed to build tmux-agent-workbench from the selected source; any local changes remain preserved'
+  release_binary=$workbench_build_cache/release/tmux-agent-workbench
+  [ -x "$release_binary" ] || die 'tmux-agent-workbench source build did not produce an executable'
+  source_version=$("$release_binary" --version | awk '{print $2}')
+  [ "$source_version" = "$workbench_expected_version" ] || die "tmux-agent-workbench source version mismatch: $source_version"
+  # Copy the build output out of the shared cache before another build can replace it.
+  run_quiet cp "$release_binary" "$workbench_release_tmp/source-core" || die 'failed to preserve the source build'
+  release_binary=$workbench_release_tmp/source-core
+  stage_workbench_core
+  run_quiet cp "$workbench_core_stage" "$workbench_release_tmp/verified-core" || die 'failed to preserve the verified core'
+}
+
+prepare_workbench_source()
+{
+  command -v cargo >/dev/null 2>&1 || die 'cargo is required to build the current tmux-agent-workbench main'
+  workbench_build_worktree=$workbench_release_tmp/source
+  run_quiet git -C "$workbench_dir" -c core.hooksPath=/dev/null worktree add --detach "$workbench_build_worktree" "$workbench_target" ||
+    die 'failed to create the tmux-agent-workbench build worktree'
+  printf 'tmux-agent-workbench: building source commit %.12s (this can take a few minutes)\n' "$workbench_target"
+  build_workbench_source "$workbench_build_worktree"
+}
+
+workbench_local_core_compatible()
+{
+  python3 - "$workbench_dir" <<'PY'
+from pathlib import PurePosixPath
+import subprocess
+import sys
+
+repo = sys.argv[1]
+def names(*args):
+    return subprocess.run(['git', '-C', repo, *args, '-z'], stdout=subprocess.PIPE,
+                          check=True).stdout.split(b'\0')
+
+changed = names('diff', '--name-only', '--no-renames', 'HEAD')
+changed += names('ls-files', '--others', '--exclude-standard')
+for raw in changed:
+    if not raw:
+        continue
+    name = raw.decode('utf-8', 'surrogateescape')
+    path = PurePosixPath(name)
+    if name != 'workbench.tmux' and not (name.startswith('tests/') and path.suffix in ('.py', '.sh')):
+        sys.exit(1)
+    for revision in ([], ['HEAD']):
+        grep = subprocess.run(['git', '-C', repo, 'grep', '-F', '-q', '-e', path.name,
+                               *revision, '--', 'src', 'build.rs', 'Cargo.toml', '.cargo'],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if grep.returncode != 1:
+            sys.exit(1)
+PY
+}
+
 activate_workbench_core()
 {
   mv -f "$workbench_core_stage" "$workbench_core"
   workbench_core_stage=
-  printf 'tmux-workbench-update: installed tmux-agent-workbench %s\n' "$workbench_release_tag"
+  if [ "$workbench_core_mode" = source ]; then
+    printf 'tmux-workbench-update: installed tmux-agent-workbench source commit %.12s (%s)\n' "$workbench_target" "$workbench_expected_version"
+  else
+    printf 'tmux-workbench-update: installed tmux-agent-workbench %s\n' "$workbench_release_tag"
+  fi
 }
 
 mode=update
@@ -390,6 +463,7 @@ if [ "$workbench_only" -eq 0 ]; then resolve_agent_team_checkout; fi
 # main branches; Workbench development branches belong in separate worktrees.
 # upstream-main is a maintenance alias that preserves a local development main.
 preflight_failed=0
+agent_team_skipped=0
 if [ "$workbench_only" -eq 1 ]; then
   set -- "$workbench_dir"
 else
@@ -399,6 +473,15 @@ for repo do
   require_repo "$repo"
   if [ "$repo" = "$workbench_dir" ]; then
     inspect_workbench_checkout "$repo"
+  elif [ "$repo" = "$agent_team_dir" ]; then
+    agent_team_branch=$(git -C "$repo" symbolic-ref --quiet --short HEAD 2>/dev/null || printf '%s' 'detached HEAD')
+    case $agent_team_branch in
+      main|master|upstream-main)
+        if ! (require_main_checkout "$repo"); then preflight_failed=1; fi ;;
+      *)
+        agent_team_skipped=1
+        printf 'agent-team: warning: checkout is on %s; skipping its update and installer while continuing other updates\n' "$agent_team_branch" >&2 ;;
+    esac
   else
     if ! (require_main_checkout "$repo"); then preflight_failed=1; fi
   fi
@@ -409,6 +492,7 @@ report_workbench_stashes
 
 printf '%s\n' 'tmux-workbench-update: fetching repositories'
 for repo do
+  if [ "$repo" = "$agent_team_dir" ] && [ "$agent_team_skipped" -eq 1 ]; then continue; fi
   fetch_repo "$repo"
 done
 latest_workbench_release_tag
@@ -417,7 +501,7 @@ if [ "$mode" = check ]; then
   printf '%s\n' 'tmux-workbench-update: checking updates'
   if [ "$workbench_only" -eq 0 ]; then
     report_repo "$dotfiles_dir"
-    report_repo "$agent_team_dir"
+    if [ "$agent_team_skipped" -eq 0 ]; then report_repo "$agent_team_dir"; fi
   fi
   report_workbench_repo
   if [ "$workbench_only" -eq 0 ]; then report_repo "$theme_dir"; fi
@@ -425,23 +509,33 @@ if [ "$mode" = check ]; then
   check_upstream=$(git -C "$workbench_dir" rev-parse "$workbench_main_upstream^{commit}")
   check_tag=$(git -C "$workbench_dir" rev-parse --verify "$workbench_release_tag^{commit}" 2>/dev/null || true)
   if [ -z "$check_tag" ] || ! workbench_release_compatible "$check_tag" "$check_upstream"; then
-    printf '%s\n' 'tmux-agent-workbench: warning: latest main and published release do not match in core inputs; update will wait for a matching release' >&2
+    printf '%s\n' 'tmux-agent-workbench: latest main differs from the published core; update will build from source'
+    if ! command -v cargo >/dev/null 2>&1; then
+      printf '%s\n' 'tmux-agent-workbench: warning: cargo is required for the source build' >&2
+    fi
   fi
   exit 0
 fi
 
 validate_workbench_release
-prepare_workbench_release "$workbench_release_tag"
+workbench_expected_version=${workbench_release_tag#v}
+if [ "$workbench_core_mode" = source ]; then
+  prepare_workbench_source
+else
+  prepare_workbench_release "$workbench_release_tag"
+fi
 
 printf '%s\n' 'tmux-workbench-update: updating repositories'
 if [ "$workbench_only" -eq 1 ]; then
   printf '%s\n' 'tmux-workbench-update: updating Workbench only; other checkouts are unchanged'
 else
   update_repo "$dotfiles_dir"
-  if repo_has_unreleased_changes "$agent_team_dir"; then
-    printf '%s\n' 'agent-team: warning: local/unreleased changes detected; keeping checkout and reinstalling existing commands' >&2
-  else
-    update_repo "$agent_team_dir"
+  if [ "$agent_team_skipped" -eq 0 ]; then
+    if repo_has_unreleased_changes "$agent_team_dir"; then
+      printf '%s\n' 'agent-team: warning: local/unreleased changes detected; keeping checkout and reinstalling existing commands' >&2
+    else
+      update_repo "$agent_team_dir"
+    fi
   fi
   update_repo "$theme_dir"
 
@@ -449,10 +543,12 @@ else
   run_quiet "$dotfiles_dir/init" sync || die 'failed to sync dotfiles'
   printf '%s\n' 'tmux-workbench-update: dotfiles synced'
 
-  printf '%s\n' 'tmux-workbench-update: installing agent-team commands'
-  run_quiet python3 "$agent_team_dir/install.py" --bin-dir "$bin_dir" ||
-    die 'failed to install agent-team commands'
-  printf '%s\n' 'tmux-workbench-update: agent-team commands installed'
+  if [ "$agent_team_skipped" -eq 0 ]; then
+    printf '%s\n' 'tmux-workbench-update: installing agent-team commands'
+    run_quiet python3 "$agent_team_dir/install.py" --bin-dir "$bin_dir" ||
+      die 'failed to install agent-team commands'
+    printf '%s\n' 'tmux-workbench-update: agent-team commands installed'
+  fi
 fi
 
 if [ "$workbench_main_missing" -eq 1 ]; then
@@ -479,13 +575,28 @@ if ! python3 "$script_dir/tmux-workbench-migrate.py" \
     die 'failed to preserve and update the tmux-agent-workbench checkout'
   fi
 fi
+
+if [ "$workbench_pending_local_changes" -eq 0 ] && ! workbench_local_core_compatible; then
+  command -v cargo >/dev/null 2>&1 || die 'cargo is required to build reapplied Workbench core changes; local changes remain in the checkout'
+  printf '%s\n' 'tmux-agent-workbench: reapplied local changes affect core inputs; rebuilding the core'
+  workbench_before_build=$(python3 "$script_dir/tmux-workbench-migrate.py" --repo "$workbench_dir" --fingerprint) ||
+    die 'failed to inspect local changes before the source build'
+  workbench_core_mode=source
+  build_workbench_source "$workbench_dir"
+  workbench_after_build=$(python3 "$script_dir/tmux-workbench-migrate.py" --repo "$workbench_dir" --fingerprint) ||
+    die 'failed to inspect local changes after the source build'
+  [ "$workbench_before_build" = "$workbench_after_build" ] ||
+    die 'tmux-agent-workbench checkout changed during the source build; refusing to install a mixed version'
+fi
 activate_workbench_core
 
 [ -x "$workbench_dir/install" ] || die 'tmux-agent-workbench installer is missing or not executable'
 workbench_before_install=$(python3 "$script_dir/tmux-workbench-migrate.py" --repo "$workbench_dir" --fingerprint) ||
   die 'failed to inspect tmux-agent-workbench local changes'
 printf '%s\n' 'tmux-workbench-update: installing workbench commands'
-if ! run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY=1 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir"; then
+if [ "$workbench_core_mode" = source ]; then workbench_release_only=0
+else workbench_release_only=1; fi
+if ! run_quiet env TMUX_AGENT_WORKBENCH_RELEASE_ONLY="$workbench_release_only" TMUX_AGENT_WORKBENCH_INSTALL_SOURCE=0 TMUX_AGENT_WORKBENCH_RELEASE_TAG="$workbench_release_tag" "$workbench_dir/install" "$bin_dir"; then
   # The installer may have replaced the core before failing. Restore the
   # artifact verified before the checkout was advanced.
   stage_workbench_core
@@ -504,10 +615,11 @@ if [ -n "$(git -C "$workbench_dir" status --porcelain --untracked-files=all)" ];
   printf '%s\n' 'tmux-agent-workbench: local changes are present on updated main'
 fi
 workbench_actual_version=$("$workbench_core" --version 2>/dev/null | awk '{print $2}')
-if [ "$workbench_actual_version" != "${workbench_release_tag#v}" ]; then
+if [ "$workbench_actual_version" != "$workbench_expected_version" ] ||
+   { [ "$workbench_core_mode" = source ] && ! cmp -s "$workbench_core" "$workbench_release_tmp/verified-core"; }; then
   stage_workbench_core
   activate_workbench_core
-  die 'tmux-agent-workbench installer provided a mismatched core; restored the verified release'
+  die 'tmux-agent-workbench installer provided a mismatched core; restored the verified artifact'
 fi
 python3 - "$workbench_dir" "$bin_dir" <<'PY' || die 'tmux-agent-workbench command links do not match the installed checkout'
 import os
@@ -569,6 +681,8 @@ if [ "$workbench_pending_local_changes" -eq 1 ]; then
   die 'Workbench was updated, but local changes could not be reapplied; use the recovery worktree and stash reported above'
 elif [ "$workbench_only" -eq 1 ]; then
   printf '%s\n' 'tmux-workbench-update: complete (Workbench only)'
+elif [ "$agent_team_skipped" -eq 1 ]; then
+  printf '%s\n' 'tmux-workbench-update: complete (agent-team skipped; see warning)'
 else
   printf '%s\n' 'tmux-workbench-update: complete'
 fi

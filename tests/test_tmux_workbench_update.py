@@ -51,6 +51,7 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
                         XDG_BIN_HOME=str(self.bin_dir),
                         XDG_STATE_HOME=str(self.state),
                         XDG_DATA_HOME=str(self.data),
+                        XDG_CACHE_HOME=str(self.root / 'cache'),
                         TEST_RELEASE_JSON=str(release_json),
                         TEST_RELEASE_ARCHIVE=str(release_archive))
         (self.bin_dir / 'tmux').write_text('#!/bin/sh\nexit 1\n')
@@ -78,6 +79,17 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         (self.bin_dir / 'curl').chmod(0o755)
         (self.bin_dir / 'codesign').write_text('#!/bin/sh\nexit 0\n')
         (self.bin_dir / 'codesign').chmod(0o755)
+        (self.bin_dir / 'cargo').write_text(
+            '#!/bin/sh\n'
+            '[ "${TEST_CARGO_FAIL:-0}" != 1 ] || exit 42\n'
+            'mkdir -p "$CARGO_TARGET_DIR/release"\n'
+            'cat > "$CARGO_TARGET_DIR/release/tmux-agent-workbench" <<\'EOF\'\n'
+            '#!/bin/sh\n'
+            'if [ "$1" = --build-marker ]; then echo current-main; '
+            'else echo tmux-agent-workbench 2.0.0-beta.28; fi\n'
+            'EOF\n'
+            'chmod 755 "$CARGO_TARGET_DIR/release/tmux-agent-workbench"\n')
+        (self.bin_dir / 'cargo').chmod(0o755)
         self.env['PATH'] = str(self.bin_dir) + os.pathsep + self.env['PATH']
 
         self.repos = {}
@@ -88,6 +100,7 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
                 'bin/agent-team': '#!/bin/sh\nexit 0\n',
             },
             'tmux-agent-workbench': {
+                'Cargo.toml': '[package]\nname = "tmux-agent-workbench"\nversion = "2.0.0-beta.28"\n',
                 'install': '#!/bin/sh\nprintf "%s" "$TMUX_AGENT_WORKBENCH_RELEASE_ONLY" > "$1/workbench-installed"\n'
                            'plugin=$(CDPATH= cd -- "$(dirname "$0")" && pwd -P)\n'
                            'ln -sf "$plugin/bin/workbench-example" "$1/workbench-example"\n'
@@ -381,20 +394,27 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
         self.assertEqual('detached work\n', (workbench / 'local-notes.txt').read_text())
 
-    def test_agent_team_development_checkout_blocks_without_touching_workbench(self):
+    def test_agent_team_development_checkout_is_skipped_while_workbench_updates(self):
         workbench = self.repos['tmux-agent-workbench']
         team = self.repos['agent-team']
         self.git('-C', workbench, 'switch', '-c', 'feature-workbench')
         self.git('-C', team, 'switch', '-c', 'feature-agent-team')
+        (team / 'version.txt').write_text('agent-team work\n')
+        team_before = self.git('-C', team, 'status', '--porcelain').stdout
 
-        update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
-                                capture_output=True, text=True)
+        check = self.run_update('--check')
+        self.assertIn('skipping its update and installer', check.stderr)
 
-        self.assertNotEqual(0, update.returncode)
-        self.assertIn('agent-team checkout is on feature-agent-team', update.stderr)
-        self.assertNotIn('fetching repositories', update.stdout)
-        self.assertEqual('feature-workbench', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
-        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+        update = self.run_update()
+
+        self.assertIn('checkout is on feature-agent-team', update.stderr)
+        self.assertIn('complete (agent-team skipped', update.stdout)
+        self.assertEqual('main', self.git('-C', workbench, 'branch', '--show-current').stdout.strip())
+        self.assertEqual('feature-agent-team', self.git('-C', team, 'branch', '--show-current').stdout.strip())
+        self.assertEqual(team_before, self.git('-C', team, 'status', '--porcelain').stdout)
+        self.assertEqual('agent-team work\n', (team / 'version.txt').read_text())
+        self.assertFalse((self.bin_dir / 'agent-team-installed').exists())
+        self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
     def test_workbench_only_updates_without_touching_other_development_checkouts(self):
         workbench = self.repos['tmux-agent-workbench']
@@ -596,7 +616,7 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.assertFalse((workbench / 'local-work.txt').exists())
         self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
 
-    def test_main_and_release_must_match_before_any_changes(self):
+    def test_main_ahead_of_release_builds_and_installs_the_matching_core(self):
         writer = self.root / 'tmux-agent-workbench-writer'
         (writer / 'future.txt').write_text('not yet released\n')
         self.git('-C', writer, 'add', 'future.txt')
@@ -604,15 +624,32 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
         self.git('-C', writer, 'push')
 
         check = self.run_update('--check')
-        self.assertIn('latest main and published release do not match', check.stderr)
+        self.assertIn('update will build from source', check.stdout)
+        update = self.run_update()
+
+        self.assertIn('building the current main from source', update.stdout)
+        self.assertEqual('v2\n', (self.repos['tmux-agent-workbench'] / 'version.txt').read_text())
+        self.assertEqual('current-main\n', subprocess.check_output([self.core, '--build-marker'], text=True))
+        self.assertEqual('0', (self.bin_dir / 'workbench-installed').read_text())
+        self.assertEqual(1, self.git('-C', self.repos['tmux-agent-workbench'], 'worktree', 'list', '--porcelain').stdout.count('worktree '))
+
+    def test_source_build_failure_preserves_the_installed_checkout_and_core(self):
+        writer = self.root / 'tmux-agent-workbench-writer'
+        (writer / 'future.txt').write_text('not yet released\n')
+        self.git('-C', writer, 'add', 'future.txt')
+        self.git('-C', writer, 'commit', '-m', 'unreleased')
+        self.git('-C', writer, 'push')
+        self.env['TEST_CARGO_FAIL'] = '1'
+
         update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
                                 capture_output=True, text=True)
 
         self.assertNotEqual(0, update.returncode)
-        self.assertIn('and release v2.0.0-beta.28 differ', update.stderr)
+        self.assertIn('failed to build tmux-agent-workbench', update.stderr)
         self.assertEqual('v1\n', (self.repos['dotfiles'] / 'version.txt').read_text())
         self.assertEqual('v1\n', (self.repos['tmux-agent-workbench'] / 'version.txt').read_text())
         self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertEqual(1, self.git('-C', self.repos['tmux-agent-workbench'], 'worktree', 'list', '--porcelain').stdout.count('worktree '))
 
     def test_post_release_tmux_entrypoint_and_test_changes_can_update_main(self):
         writer = self.root / 'tmux-agent-workbench-writer'
@@ -633,20 +670,45 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
                          self.git('-C', workbench, 'rev-parse', 'HEAD').stdout)
         self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 
-    def test_post_release_test_file_embedded_in_core_blocks_update(self):
+    def test_post_release_test_file_embedded_in_core_triggers_source_build(self):
         writer = self.root / 'tmux-agent-workbench-writer'
         (writer / 'tests/embedded.py').write_text('# changed embedded input\n')
         self.git('-C', writer, 'add', 'tests/embedded.py')
         self.git('-C', writer, 'commit', '-m', 'change embedded input')
         self.git('-C', writer, 'push')
 
+        update = self.run_update()
+
+        self.assertIn('building the current main from source', update.stdout)
+        self.assertEqual('v2\n', (self.repos['tmux-agent-workbench'] / 'version.txt').read_text())
+        self.assertEqual('current-main\n', subprocess.check_output([self.core, '--build-marker'], text=True))
+
+    def test_reapplied_local_core_changes_are_included_in_a_new_build(self):
+        workbench = self.repos['tmux-agent-workbench']
+        (workbench / 'src/embedded.rs').write_text('// local change\n')
+
+        update = self.run_update()
+
+        self.assertIn('reapplied local changes affect core inputs; rebuilding', update.stdout)
+        self.assertEqual('// local change\n', (workbench / 'src/embedded.rs').read_text())
+        self.assertEqual('current-main\n', subprocess.check_output([self.core, '--build-marker'], text=True))
+        self.assertEqual('0', (self.bin_dir / 'workbench-installed').read_text())
+
+    def test_installer_cannot_replace_source_build_with_same_version_release(self):
+        writer = self.root / 'tmux-agent-workbench-writer'
+        install = writer / 'install'
+        install.write_text('#!/bin/sh\nprintf "#!/bin/sh\\necho tmux-agent-workbench 2.0.0-beta.28\\n" > '
+                           '"$XDG_DATA_HOME/tmux-agent-workbench/bin/tmux-agent-workbench-core"\n')
+        self.git('-C', writer, 'add', 'install')
+        self.git('-C', writer, 'commit', '-m', 'simulate same-version stale core')
+        self.git('-C', writer, 'push')
+
         update = subprocess.run(['/bin/sh', str(SCRIPT)], env=self.env,
                                 capture_output=True, text=True)
 
         self.assertNotEqual(0, update.returncode)
-        self.assertIn('differ in core inputs', update.stderr)
-        self.assertEqual('v1\n', (self.repos['tmux-agent-workbench'] / 'version.txt').read_text())
-        self.assertIn('2.0.0-beta.27', subprocess.check_output([self.core, '--version'], text=True))
+        self.assertIn('installer provided a mismatched core; restored the verified artifact', update.stderr)
+        self.assertEqual('current-main\n', subprocess.check_output([self.core, '--build-marker'], text=True))
 
     def test_installer_cannot_report_success_with_old_command_links(self):
         writer = self.root / 'tmux-agent-workbench-writer'
@@ -722,7 +784,7 @@ class TmuxWorkbenchUpdateTests(unittest.TestCase):
                                 capture_output=True, text=True)
 
         self.assertNotEqual(0, update.returncode)
-        self.assertIn('installer provided a mismatched core; restored the verified release', update.stderr)
+        self.assertIn('installer provided a mismatched core; restored the verified artifact', update.stderr)
         self.assertEqual('v2\n', (workbench / 'version.txt').read_text())
         self.assertIn('2.0.0-beta.28', subprocess.check_output([self.core, '--version'], text=True))
 

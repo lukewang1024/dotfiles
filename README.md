@@ -214,19 +214,23 @@ This fast-forwards `dotfiles`, `agent-team`, `tmux-agent-workbench`, and
 `tmux-adaptive-theme`, runs the dotfiles sync and both command installers,
 then restarts the Workbench daemon and existing sidebar panes before reloading
 a running tmux server. The agent-team checkout defaults to
-`$XDG_DATA_HOME/agent-team`; set `AGENT_TEAM_REPO` if it is elsewhere.
+`$XDG_DATA_HOME/agent-team`; set `AGENT_TEAM_REPO` if it is elsewhere. When
+agent-team is on a development branch or detached, its checkout and installer
+are skipped with a warning so other components can still update.
 Workbench's installation checkout ends on `main`. If it was on a development
 branch, the updater moves that branch and its local changes to a separate
 worktree and prints its path. Local changes are stashed during the update and
 reapplied to `main` afterward, regardless of the original branch. A trial apply
 checks for conflicts before touching the installation checkout; if it conflicts,
 the recovery worktree and stash are retained. Ignored files remain in place; an
-ignored file that would be overwritten stops the update. The latest published
-release, including prereleases, must match main's core inputs. A main commit
-that changes only the tmux entrypoint or shell/Python tests may follow the release.
-Reapplied local changes intentionally override the clean release where they differ.
-The matching core is downloaded and verified before the Workbench checkout changes;
-if its installer fails, the verified core is restored and the update reports failure.
+ignored file that would be overwritten stops the update. The updater uses the latest
+published release, including prereleases, when its core inputs match `main`.
+Otherwise it builds the current `main` in a temporary worktree with Cargo and
+reports the source commit. The resulting core is verified before the Workbench
+checkout changes; if its installer replaces it or fails, the verified core is
+restored and the update reports failure. Reapplied local changes intentionally
+override the clean checkout where they differ; if they affect core inputs, the
+updater rebuilds the core with those changes as well.
 Use `--workbench-only` to update just the plugin and core when another checkout
 is in use; combine it with `--check` to inspect only Workbench updates.
 
