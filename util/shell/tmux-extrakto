@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Extend extrakto with wrapped URLs and paragraphs from terminal output."""
 
+import argparse
 from argparse import ArgumentParser
 import base64
 import importlib.util
@@ -508,19 +509,47 @@ def main():
     selection = parser.add_mutually_exclusive_group()
     selection.add_argument("--urls", action="store_true", help="select URLs; Enter opens, Ctrl-y copies")
     selection.add_argument("--filter", dest="filter_key", help="start with an ExTrakto filter; Enter copies")
+    parser.add_argument("--list-candidates", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--copy-text", help=argparse.SUPPRESS)
+    parser.add_argument("--open-url", help=argparse.SUPPRESS)
     parser.add_argument("--client", help="tmux client that invoked the picker")
-    parser.add_argument("pane")
+    parser.add_argument("pane", nargs="?")
     parser.add_argument("mode", nargs="?", choices=("popup", "split"))
     args = parser.parse_args()
+    if args.copy_text is not None or args.open_url is not None:
+        if args.copy_text is not None and args.open_url is not None:
+            parser.error("--copy-text and --open-url cannot be combined")
+        if args.urls or args.filter_key or args.list_candidates or args.mode:
+            parser.error("URL actions cannot be combined with a picker mode")
+        upstream = load_upstream()
+        pane = args.pane or os.environ.get("TMUX_PANE") or "%0"
+        picker = enhance(upstream, args.client)(pane, "popup")
+        if args.copy_text is not None:
+            picker.copy(args.copy_text)
+        else:
+            picker.open(args.open_url)
+        return 0
+    if not args.pane:
+        parser.error("pane is required")
+    if args.list_candidates and not args.urls:
+        parser.error("--list-candidates requires --urls")
     client = args.client or subprocess.check_output(
         ["tmux", "display-message", "-p", "-t", args.pane, "#{client_name}"], text=True,
     ).strip() or None
     upstream = load_upstream()
     if args.filter_key and args.filter_key not in {"all", "line", "paragraph", *upstream.Extrakto().keys()}:
         raise RuntimeError(f"Unknown or disabled ExTrakto filter: {args.filter_key}")
-    if args.mode is None:
+    if args.mode is None and not args.list_candidates:
         return launch(upstream, args.pane, args.urls, client, args.filter_key)
-    picker = enhance(upstream, client)(args.pane, args.mode)
+    if args.list_candidates:
+        def collect_candidates(_command, data):
+            sys.stdout.write(data)
+            if data and not data.endswith("\n"):
+                sys.stdout.write("\n")
+            return ["", "", *data.splitlines()]
+
+        upstream.fzf_sel = collect_candidates
+    picker = enhance(upstream, client)(args.pane, args.mode or "popup")
     if args.filter_key:
         order = list(dict.fromkeys([args.filter_key, *(
             key for key in picker.next_filter if key != "initial"
