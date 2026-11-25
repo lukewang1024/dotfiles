@@ -165,6 +165,9 @@ elif name == 'ssh':
         print('testuser')
         sys.exit(connection_status())
 elif name in ('tmux-agent-workbench', 'tmux-agent-workbench-core'):
+    if args == ['client', 'route', 'list']:
+        print(os.environ.get('TEST_ROUTES', ''))
+        sys.exit(0)
     debug = os.environ.get('SSH_CONNECT_DEBUG_LOG')
     if os.environ.get('TEST_SSH_AUTHENTICATED') and debug:
         pathlib.Path(debug).write_text('Authenticated to devbox\\n')
@@ -395,12 +398,40 @@ elif name == 'fzf':
         self.assertIn('Press Enter to retry now; Ctrl-C to exit', result.stderr)
         self.assertFalse(self.calls('kinit'))
 
-    def test_mac_workbench_uses_managed_core_directly(self):
-        self.hosts.write_text('devbox\nordinary\nMac\n')
+    def test_workbench_route_uses_managed_core_directly(self):
+        self.hosts.write_text('devbox\nordinary\nlaptop\n')
+        routes = self.conf / 'tmux-agent-workbench/remote-routes.json'
+        routes.parent.mkdir(parents=True)
+        routes.write_text('{}')
+        self.env['TEST_ROUTES'] = 'laptop\tWorkstation\tvia ordinary\tcore /remote/core'
         self.env['TMUX_AGENT_WORKBENCH_BIN'] = str(self.home / 'stale-core')
-        self.run_connect('connect', 'Mac', '--workbench')
-        self.assertEqual(len(self.calls('tmux-agent-workbench-core')), 1)
+        self.run_connect('connect', 'laptop', '--workbench')
+        self.assertEqual(self.calls('tmux-agent-workbench-core')[-1][1], ['client', 'attach', 'laptop'])
         self.assertFalse(self.calls('tmux-agent-workbench'))
+
+    def test_workbench_route_refreshes_relay_ticket_before_attach_and_reconnect(self):
+        self.hosts.write_text('devbox\nlaptop\n')
+        routes = self.conf / 'tmux-agent-workbench/remote-routes.json'
+        routes.parent.mkdir(parents=True)
+        routes.write_text('{}')
+        self.env.update(TEST_ROUTES='laptop\tWorkstation\tvia devbox',
+                        TEST_WORKBENCH_SEQUENCE='1,0', TEST_EXPIRE_TICKET='1')
+        self.state.write_text('expired')
+        self.run_connect('connect', 'laptop', '--workbench', tty=True)
+        self.assertEqual([call[1] for call in self.calls('kinit')],
+                         [['testuser@ISH.TEST'], ['testuser@ISH.TEST']])
+        self.assertEqual([call[1] for call in self.calls('tmux-agent-workbench-core')],
+                         [['client', 'route', 'list'], ['client', 'attach', 'laptop'],
+                          ['client', 'attach', 'laptop']])
+
+    def test_unrouted_workbench_host_uses_regular_launcher(self):
+        routes = self.conf / 'tmux-agent-workbench/remote-routes.json'
+        routes.parent.mkdir(parents=True)
+        routes.write_text('{}')
+        self.env['TEST_ROUTES'] = 'laptop\tWorkstation\tvia devbox'
+        self.run_connect('connect', 'ordinary', '--workbench')
+        self.assertEqual(self.calls('tmux-agent-workbench')[-1][1], ['client', 'attach', 'ordinary'])
+        self.assertFalse(self.calls('kinit'))
 
     def test_fast_authenticated_workbench_failures_advance_retry_counter(self):
         self.env.update(TEST_WORKBENCH_SEQUENCE='1,1,1,1,1,1',
