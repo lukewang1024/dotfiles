@@ -13,15 +13,18 @@ ROOT = Path(__file__).resolve().parents[1]
 @unittest.skipUnless(os.name == 'posix', 'POSIX shell required')
 class FirstReachableTests(unittest.TestCase):
     def test_probe_timeout_does_not_become_tunnel_idle_timeout(self):
-        for apple in ('0', '1'):
-            with self.subTest(apple=apple), tempfile.TemporaryDirectory() as directory:
+        for flavor in ('openbsd', 'apple', 'toybox'):
+            with self.subTest(flavor=flavor), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 nc = root / 'nc'
                 nc.write_text(f'#!{sys.executable}\n' + '''
 import json, os, pathlib, sys
 args = sys.argv[1:]
 if args == ['-h']:
-    if os.environ['TEST_APPLE'] == '1': print('-G conntimo')
+    if os.environ['TEST_NC_FLAVOR'] == 'apple': print('-G conntimo')
+    sys.exit(0)
+if args == ['--help']:
+    if os.environ['TEST_NC_FLAVOR'] == 'toybox': print('Toybox')
     sys.exit(0)
 with pathlib.Path(os.environ['TEST_CALLS']).open('a') as out:
     out.write(json.dumps(args)+'\\n')
@@ -32,7 +35,7 @@ print('tunnel remains open')
                 nc.chmod(0o755)
                 calls = root / 'calls'
                 env = dict(os.environ, PATH=str(root) + os.pathsep + os.environ['PATH'],
-                           TEST_APPLE=apple, TEST_CALLS=str(calls),
+                           TEST_NC_FLAVOR=flavor, TEST_CALLS=str(calls),
                            SSH_FIRST_REACHABLE_PARALLEL='1', SSH_FIRST_REACHABLE_TIMEOUT='3')
                 result = subprocess.run(['sh', str(ROOT / 'util/shell/ssh-first-reachable'),
                                          '2222', 'device.test'], env=env,
@@ -43,4 +46,5 @@ print('tunnel remains open')
                 self.assertIn('-z', probe)
                 self.assertIn('3', probe)
                 self.assertNotIn('-w', connection)
+                self.assertEqual('-G' in connection, flavor == 'apple')
                 self.assertEqual(connection[-2:], ['device.test', '2222'])

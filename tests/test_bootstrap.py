@@ -135,6 +135,7 @@ class BootstrapTests(unittest.TestCase):
             c.task(task)
             return {e['target'] for e in c.events if e['kind'] == 'link'
                     and ROOT / 'util/termux' not in Path(e['source']).parents
+                    and ROOT / 'config/termux' not in Path(e['source']).parents
                     and ('/bin/' in e['target'] or 'AGENTS.md' in e['target'] or 'CLAUDE.md' in e['target'])}
         termux = shared_links('termux', 'termux_basic_setup')
         ish = shared_links('ish', 'ish_basic_setup')
