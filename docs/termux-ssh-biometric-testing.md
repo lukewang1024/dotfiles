@@ -21,13 +21,14 @@ the helper, missing keys are loaded through the ordinary SSH passphrase prompt.
 
 ```sh
 ./init ssh-biometric
-termux-open --content-type application/vnd.android.package-archive \
-  "${XDG_CACHE_HOME:-$HOME/.cache}/termux-biometric-ssh/ssh-biometric.apk"
 ```
 
-The first command installs dependencies, downloads and verifies the SDK jar,
-builds the companion locally, and installs the CLI links. Finish Android's APK
-installation, allowing Termux to install apps if Android asks.
+The command installs dependencies, downloads and verifies the SDK jar if needed,
+builds the companion locally, installs the CLI links, and automatically opens
+Android's installer. Finish installation on the phone, allowing Termux to install
+apps if Android asks. On subsequent runs, an unchanged source/SDK/signing
+identity and matching APK checksum skip downloads and compilation; the existing
+APK is opened directly. Corrupt artifacts or changed build inputs trigger a rebuild.
 
 Each phone generates and retains its own app signing identity in XDG state.
 Rerunning the command preserves it. Install updates over the existing app;
@@ -59,15 +60,16 @@ is stopped when the block exits.
 | State | Action | Expected behavior |
 | --- | --- | --- |
 | Checkout updated, optional helper absent | Run the temporary-agent block | Ordinary SSH passphrase input; no biometric app is opened. |
-| CLI installed, APK absent | Run the block, then press Enter at the RC prompt | Immediate installation instructions; no 90-second wait for an app that is absent. |
-| APK installed, no SSH passphrase saved | Run the block and press Enter | Compare and confirm the certificate fingerprint on first pairing, then receive an explicit instruction to open the app and save the passphrase. No key is added. |
+| CLI installed, APK absent | Run the block, then press Enter at the RC prompt | Installation instructions, followed by ordinary SSH passphrase input; no 90-second wait for an absent app. |
+| APK installed, no SSH passphrase saved | Run the block and press Enter | Compare and confirm the certificate fingerprint on first pairing, then receive an explicit instruction to open the app and save the passphrase. The RC flow then offers ordinary SSH passphrase input. |
 | No fingerprint enrolled in Android | Before saving a passphrase, use the app's save button | The app asks you to enroll a fingerprint in Android settings. Unavailable strong biometrics produce an explanation and status code. |
 | Passphrase saved | Run the block and press Enter | Fingerprint authentication opens. On success, all recognized private keys sharing the saved passphrase are loaded; `ssh-add -l` lists them. |
-| RC confirmation declined | Enter `n` followed by Enter | No app or fingerprint dialog opens; the shell remains usable. |
-| Biometric authentication canceled | Cancel the system dialog | The command fails with a cancellation message and adds no encrypted key from that attempt. |
-| First certificate pairing canceled | Cancel the pairing dialog | The command reports cancellation and adds no key. A later attempt can pair again. |
+| Password fallback selected | Press Escape, without Enter | No app or fingerprint dialog opens; ordinary SSH passphrase input starts immediately. Other text followed by Enter also selects this fallback. |
+| Biometric authentication canceled | Cancel the system dialog | The RC flow reports cancellation, then uses ordinary SSH passphrase input. Explicit ssh-add-biometric calls fail instead of retrying biometrics. |
+| First certificate pairing canceled | Cancel the pairing dialog | The RC flow reports cancellation and falls back to ordinary SSH passphrase input. A later attempt can pair again. |
+| Startup attempt canceled | Press Ctrl-C or Ctrl-D at the choice prompt | No loading is started and terminal input settings are restored. |
 | All keys already loaded | Run `addKeys` again | No confirmation or fingerprint prompt. |
-| Wrong saved passphrase or a key with a different passphrase | Attempt loading that key | Loading fails with a mismatch explanation instead of repeatedly reopening fingerprint authentication. Use ordinary `ssh-add` for a key with another passphrase. |
+| Wrong saved passphrase or a key with a different passphrase | Attempt loading that key | The helper reports a mismatch instead of repeatedly reopening fingerprint authentication. The RC flow falls back to ordinary ssh-add for manual passphrase entry. |
 | Noninteractive shell | Invoke the RC function with redirected input | The biometric helper is not launched and no Enter prompt is shown. |
 
 Open **SSH 指纹解锁** from the app list to save the existing private key's
@@ -91,7 +93,7 @@ missing helpers, platform selection, and dry-run installation. The transport
 tests use real local TLS with simulated Android responses for success,
 unconfigured state, cancellation, invalid tokens, certificate mismatch, and
 wrong-passphrase retries. Isolated installation checks cover a fresh SDK
-download, APK generation, command links, and signing-key preservation on rerun.
+download, APK generation, command links, signing-key preservation on rerun, cached-build reuse, and installer launch requests.
 
 Android installation permissions, device-specific biometric hardware, and the
 full fingerprint-to-ssh-agent flow must still be verified on the second phone.

@@ -1,3 +1,30 @@
+readSSHBiometricChoice()
+(
+  # Keep terminal changes and signal traps inside a subshell, preserving the
+  # calling shell's traps. Return named choices, never key material.
+  biometric_tty_state=$(stty -g) || exit 1
+  trap 'stty "$biometric_tty_state"' 0
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+  trap 'exit 129' HUP
+  stty -icanon -echo min 1 time 0 || exit 1
+  biometric_escape=$(printf '\033')
+  biometric_eof=$(printf '\004')
+  biometric_other=
+  while :; do
+    biometric_char=$(dd bs=1 count=1 2>/dev/null) || exit 1
+    case "$biometric_char" in
+      "$biometric_escape") printf '%s' password; exit 0 ;;
+      "$biometric_eof") exit 1 ;;
+      '')
+        if [ -n "$biometric_other" ]; then printf '%s' password
+        else printf '%s' biometric; fi
+        exit 0 ;;
+      *) biometric_other=1 ;;
+    esac
+  done
+)
+
 addKeys()
 {
   # Add every recognized private key in ~/.ssh that is not already loaded.
@@ -41,9 +68,19 @@ addKeys()
       # Never read from redirected input or launch biometrics in a background job.
       if [ -t 0 ] && [ -t 1 ]; then
         printf '%s\n' '检测到 SSH 指纹工具，部分密钥尚未加入 ssh-agent。' >&2
-        printf '%s' '按回车打开指纹认证并加载密钥；输入其他内容后回车跳过：' >&2
-        if IFS= read -r biometric_reply && [ -z "$biometric_reply" ]; then
-          "$biometric_ssh_add" "$@" || add_keys_status=1
+        printf '%s' '按回车使用指纹；按 Esc 跳过指纹，改用 SSH 口令输入：' >&2
+        if biometric_reply=$(readSSHBiometricChoice); then
+          printf '\n' >&2
+          if [ "$biometric_reply" = biometric ]; then
+            if ! "$biometric_ssh_add" "$@"; then
+              printf '%s\n' '指纹加载未完成，改用普通 SSH 口令输入。' >&2
+              ssh-add "$@" || add_keys_status=1
+            fi
+          else
+            ssh-add "$@" || add_keys_status=1
+          fi
+        else
+          printf '\n' >&2
         fi
       fi
     else

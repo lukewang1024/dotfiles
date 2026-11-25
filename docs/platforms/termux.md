@@ -38,8 +38,10 @@ For an existing phone, see the [update and scenario checklist](../termux-ssh-bio
 ```
 
 This opt-in command installs the build/runtime dependencies and the two CLI
-helpers, verifies the Android SDK jar, and builds the companion APK locally.
-It prints the `termux-open` command needed to install the APK through Android.
+helpers, verifies the Android SDK jar, and builds the companion APK locally
+when needed. It automatically opens Android's installer; confirm on the phone.
+Repeated runs reuse the verified APK when build inputs are unchanged, skipping
+downloads and compilation.
 The normal `core` flow only advertises this option; it does not install it.
 Android 11 or newer with strong biometrics is required.
 
@@ -50,9 +52,11 @@ do not uninstall it or delete the signing key under XDG state.
 
 At interactive shell startup, RC reuses the existing agent and checks for
 missing identities. If the biometric helper is installed, it explains what
-will happen and waits: **Enter opens fingerprint authentication; any other
-input followed by Enter skips loading**. It does not open authentication in
-noninteractive shells, when all keys are already loaded, or through the
+will happen and waits: **Enter opens fingerprint authentication; Escape
+immediately switches to the ordinary SSH passphrase prompt**. Other text followed
+by Enter also selects passphrase input. Biometric failure or cancellation falls
+back to ordinary ssh-add; Ctrl-C or Ctrl-D cancels this startup attempt.
+It does not open authentication in noninteractive shells, when all keys are already loaded, or through the
 existing tmux-pane and forwarded-agent paths. Without the helper, the usual
 SSH passphrase prompt remains available.
 

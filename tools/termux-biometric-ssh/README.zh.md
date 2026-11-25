@@ -10,13 +10,15 @@ Keystore 是否由安全硬件支持取决于手机，不能仅凭 API 保证。
 ## 可选安装
 
 在 dotfiles 仓库运行 `./init ssh-biometric` 安装依赖、构建 APK 并链接命令。
-它不属于默认 core 安装。安装命令会打印 Android 手动安装步骤。
+它不属于默认 core 安装。命令会自动打开 Android 安装界面，只需在手机上确认。
+源码、固定 SDK、签名身份和 APK 校验均未变时复用已有 APK，不再下载或编译；
+源码或签名变更、缓存损坏时重新构建。仅改文档和命令脚本不会重建 APK。
 
 ## 首次使用
 
 已有 dotfiles 的另一台手机可参考[更新和场景验证步骤](../../docs/termux-ssh-biometric-testing.md)。
 
-1. 安装 `~/.cache/termux-biometric-ssh/ssh-biometric.apk`。
+1. 运行 `./init ssh-biometric`，在自动打开的 Android 安装界面确认。
 2. 打开「SSH 指纹解锁」，输入 SSH 私钥口令，按指纹保存。应用随后自动关闭。
 3. 在已有 ssh-agent 的终端运行 `ssh-add-biometric /实际路径/私钥`。
    不传参数时识别并加载 `~/.ssh` 目录下全部私钥（包括自定义名称），排除公钥和配置文件，可传 `-t 1h` 等 ssh-add 参数。
@@ -64,7 +66,9 @@ Termux 依赖：openjdk-21、aapt、d8、apksigner、zip、python、python-crypt
 ## RC 集成
 
 本机 dotfiles 的 `config/sh/ssh-agent-connect.sh` 已接入：检测到 Termux 且
-`~/.local/bin/ssh-add-biometric` 可用时，`addKeys` 先说明用途，等待回车才用它加载尚未加入的密钥；输入其他内容后回车跳过。
+`~/.local/bin/ssh-add-biometric` 可用时，`addKeys` 先说明用途，等待回车才用它加载尚未加入的密钥；按 Esc 立即改用普通 SSH 口令输入。
+输入其他内容后回车也会选择口令输入。指纹失败或取消后自动回退到普通 ssh-add；
+Ctrl-C 或 Ctrl-D 结束这次启动加载，选择结束后恢复终端输入设置。
 非交互 shell 不触发指纹认证。
 现有 zsh prepare 流程在 tmux 外调用 `connectSSHAgent`，继续复用稳定 socket。
 密钥已齐时不弹认证，SSH agent 转发会沿用原有跳过本机加载的规则。

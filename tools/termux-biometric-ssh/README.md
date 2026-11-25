@@ -20,16 +20,21 @@ Run this command from the dotfiles repository:
 ./init ssh-biometric
 ```
 
-It installs dependencies, builds the APK, and links the CLI helpers. This is
-an opt-in feature, separate from the default core setup. The installer prints
-the command for installing the APK through Android's package installer.
+It installs dependencies, builds the APK if needed, links the CLI helpers, and
+opens Android's package installer automatically. Confirm installation on the
+phone. This is an opt-in feature, separate from the default core setup.
+
+Repeated runs reuse the cached APK when its source, pinned SDK recipe, signing
+identity, and APK checksum match. They skip SDK downloads and compilation and
+open the installer directly. Source or signing changes and invalid artifacts
+trigger a rebuild. Documentation and CLI-only edits do not rebuild the APK.
 
 ## First use
 
 For an existing checkout and a scenario checklist, see
 [testing on another phone](../../docs/termux-ssh-biometric-testing.md).
 
-1. Install `~/.cache/termux-biometric-ssh/ssh-biometric.apk`.
+1. Run `./init ssh-biometric` and confirm the Android installation it opens.
 2. Open **SSH 指纹解锁** (SSH biometric unlock), enter your SSH private key
    passphrase, and authenticate to save it. The app then closes.
 3. In a terminal connected to your existing ssh-agent, run:
@@ -129,8 +134,11 @@ operation and the complete ssh-agent flow require verification on the phone.
 The shared `config/sh/ssh-agent-connect.sh` detects Termux and an executable
 `~/.local/bin/ssh-add-biometric`. When keys are missing from the agent, it
 explains the action and waits: press Enter to open fingerprint authentication,
-or enter any other text followed by Enter to skip loading. Noninteractive
-shells never launch biometric authentication.
+or press Escape to use the ordinary SSH passphrase prompt immediately. Entering
+other text followed by Enter also selects passphrase input. If biometric loading
+fails or is canceled, loading falls back to ordinary ssh-add. Ctrl-C or Ctrl-D
+cancels this startup attempt. Terminal input settings are restored after the
+choice. Noninteractive shells never launch biometric authentication.
 
 The existing zsh preparation flow calls `connectSSHAgent` outside tmux and
 continues to reuse the stable agent socket. No authentication prompt appears

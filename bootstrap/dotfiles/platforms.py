@@ -506,6 +506,19 @@ def termux_default_shell_setup(c):
     c.task('set_default_shell', 'zsh')
 
 
+def _biometric_build_fingerprint(source, sdk_sha256, signing_key):
+    """Only APK inputs belong here; README and CLI edits do not require Java builds."""
+    if not signing_key.is_file():
+        return None
+    digest = hashlib.sha256(b'termux-biometric-apk-v1\0' + sdk_sha256.encode())
+    for path in [source / 'AndroidManifest.xml', source / 'build.sh',
+                 *sorted((source / 'src').rglob('*.java'))]:
+        digest.update(str(path.relative_to(source)).encode() + b'\0')
+        digest.update(path.read_bytes())
+    digest.update(signing_key.read_bytes())
+    return digest.hexdigest()
+
+
 @task()
 def termux_ssh_biometric_setup(c):
     """Optional Android companion and CLI, without collecting any passphrases."""
@@ -514,32 +527,55 @@ def termux_ssh_biometric_setup(c):
     source = c.repo / 'tools/termux-biometric-ssh'
     build = c.cache / 'termux-biometric-ssh'
     expected = 'ee568219aa3754977207a8fd849fdbf3a299658dd26dd0907d39ca830587f8aa'
+    apk = build / 'ssh-biometric.apk'
+    stamp = build / 'build.json'
+    signing_key = c.state / 'termux-biometric-ssh/signing.p12'
+    fingerprint = _biometric_build_fingerprint(source, expected, signing_key)
+    try:
+        cached = json.loads(stamp.read_text())
+    except (OSError, ValueError):
+        cached = {}
+    reuse = (isinstance(cached, dict) and fingerprint is not None
+             and cached.get('fingerprint') == fingerprint
+             and _sha256_matches(apk, cached.get('apk_sha256')))
     env = dict(c.env)
     libcxx = Path(env.get('PREFIX', '/data/data/com.termux/files/usr')) / 'lib/libc++_shared.so'
     if libcxx.is_file():
         env['LD_PRELOAD'] = str(libcxx) + (':' + env['LD_PRELOAD'] if env.get('LD_PRELOAD') else '')
-    tools = ('javac', 'aapt', 'd8', 'apksigner', 'zip', 'python', 'ssh-add')
+    tools = ('python', 'ssh-add', 'termux-open')
+    if not reuse:
+        tools += ('javac', 'aapt', 'd8', 'apksigner', 'zip')
     missing = c.dry_run or not all(c.exists(tool) for tool in tools)
     if not missing:
         missing = bool(c.command('python', '-c', 'import cryptography', check=False))
     if missing:
-        c.command('pkg', 'install', '-y', 'openjdk-21', 'aapt', 'd8', 'apksigner',
-                  'zip', 'python', 'python-cryptography', 'openssh', env=env)
-    jar = build / 'android.jar'
-    if not _sha256_matches(jar, expected):
-        encoded = build / 'android.jar.b64'
-        c.download('https://android.googlesource.com/platform/prebuilts/sdk/'
-                   '+/3af7c93524be6f51e092b87b17f009f13ee98b43/35/public/android.jar?format=TEXT', encoded)
-        c.command('base64', '-d', encoded, output_file=jar)
-        if not c.dry_run and not _sha256_matches(jar, expected):
-            raise Failure('Android SDK jar failed SHA256 verification')
-    c.command('sh', source / 'build.sh', env=env)
+        deps = ['python', 'python-cryptography', 'openssh', 'termux-tools']
+        if not reuse:
+            deps += ['openjdk-21', 'aapt', 'd8', 'apksigner', 'zip']
+        c.command('pkg', 'install', '-y', *deps, env=env)
+    if reuse:
+        c.note('Reusing the verified cached APK; no download or compilation needed.')
+    else:
+        jar = build / 'android.jar'
+        if not _sha256_matches(jar, expected):
+            encoded = build / 'android.jar.b64'
+            c.download('https://android.googlesource.com/platform/prebuilts/sdk/'
+                       '+/3af7c93524be6f51e092b87b17f009f13ee98b43/35/public/android.jar?format=TEXT', encoded)
+            c.command('base64', '-d', encoded, output_file=jar)
+            if not c.dry_run and not _sha256_matches(jar, expected):
+                raise Failure('Android SDK jar failed SHA256 verification')
+        c.command('sh', source / 'build.sh', env=env)
+        if not c.dry_run:
+            c.write(stamp, json.dumps({
+                'fingerprint': _biometric_build_fingerprint(source, expected, signing_key),
+                'apk_sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),
+            }) + '\n')
     for name in ('ssh-add-biometric', 'termux-biometric-askpass'):
         c.link(source / 'bin' / name, c.bin / name)
-    c.note('Optional SSH biometric commands installed. Install/update the Android companion with: '
-           f'termux-open --content-type application/vnd.android.package-archive "{build / "ssh-biometric.apk"}"')
+    c.note('Opening the Android installer. Confirm installation on the phone.')
+    c.command('termux-open', '--content-type', 'application/vnd.android.package-archive', apk)
     c.note('Open SSH 指纹解锁 once to save the SSH passphrase. Keep the original in your password manager. '
-           'RC waits for Enter before opening fingerprint authentication; other input skips loading.')
+           'RC waits for Enter before fingerprint authentication; Escape uses the ordinary SSH passphrase prompt.')
 
 
 @task()
