@@ -13,7 +13,7 @@ fi
 javac -encoding UTF-8 -source 8 -target 8 -classpath "$build_dir/android.jar" -d "$build_dir/classes" src/local/termux/biometricssh/*.java
 jar cf "$build_dir/classes.jar" -C "$build_dir/classes" .
 d8 --lib "$build_dir/android.jar" --min-api 30 --output "$build_dir/dex" "$build_dir/classes.jar"
-aapt package -f -M AndroidManifest.xml -I "$build_dir/android.jar" -F "$build_dir/unsigned.apk"
+aapt package -f -M AndroidManifest.xml -S res -I "$build_dir/android.jar" -F "$build_dir/unsigned.apk"
 cp "$build_dir/unsigned.apk" "$build_dir/app.apk"
 (cd "$build_dir/dex" && zip -q "$build_dir/app.apk" classes.dex)
 if [ ! -f "$state_dir/signing.p12" ]; then

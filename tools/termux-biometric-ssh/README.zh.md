@@ -73,3 +73,5 @@ Ctrl-C 或 Ctrl-D 结束这次启动加载，选择结束后恢复终端输入�
 现有 zsh prepare 流程在 tmux 外调用 `connectSSHAgent`，继续复用稳定 socket。
 密钥已齐时不弹认证，SSH agent 转发会沿用原有跳过本机加载的规则。
 新终端自动生效，当前终端可运行 `ssh-agent-connect` 重新加载连接脚本。
+
+界面和终端提示跟随 Android 系统语言：中文系统显示中文，其余或读取失败时默认英文，不受 Termux `LANG` 影响。更新后运行 `./init ssh-biometric` 安装新版应用。

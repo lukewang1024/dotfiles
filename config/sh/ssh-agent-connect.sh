@@ -1,3 +1,15 @@
+# Use Android system language; an unset/unknown locale defaults to English.
+sshBiometricText() {
+  ssh_biometric_locale=$(getprop persist.sys.locale 2>/dev/null) || ssh_biometric_locale=
+  if [ -z "$ssh_biometric_locale" ]; then
+    ssh_biometric_locale=$(getprop ro.product.locale 2>/dev/null) || ssh_biometric_locale=
+  fi
+  case "$ssh_biometric_locale" in
+    zh|zh-*|zh_*) printf '%s' "$2" ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
 readSSHBiometricChoice()
 (
   # Keep terminal changes and signal traps inside a subshell, preserving the
@@ -67,13 +79,13 @@ addKeys()
       # Shell startup must explain the Android prompt and wait for the user.
       # Never read from redirected input or launch biometrics in a background job.
       if [ -t 0 ] && [ -t 1 ]; then
-        printf '%s\n' '检测到 SSH 指纹工具，部分密钥尚未加入 ssh-agent。' >&2
-        printf '%s' '按回车使用指纹；按 Esc 跳过指纹，改用 SSH 口令输入：' >&2
+        printf '%s\n' "$(sshBiometricText 'SSH biometric unlock is installed; some keys are not loaded in ssh-agent.' '检测到 SSH 指纹工具，部分密钥尚未加入 ssh-agent。')" >&2
+        printf '%s' "$(sshBiometricText 'Press Enter to use biometrics, or Esc to enter the SSH passphrase: ' '按回车使用指纹；按 Esc 跳过指纹，改用 SSH 口令输入：')" >&2
         if biometric_reply=$(readSSHBiometricChoice); then
           printf '\n' >&2
           if [ "$biometric_reply" = biometric ]; then
             if ! "$biometric_ssh_add" "$@"; then
-              printf '%s\n' '指纹加载未完成，改用普通 SSH 口令输入。' >&2
+              printf '%s\n' "$(sshBiometricText 'Biometric loading did not complete. Falling back to the SSH passphrase prompt.' '指纹加载未完成，改用普通 SSH 口令输入。')" >&2
               ssh-add "$@" || add_keys_status=1
             fi
           else

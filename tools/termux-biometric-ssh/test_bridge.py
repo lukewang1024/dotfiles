@@ -87,9 +87,19 @@ class BridgeTests(unittest.TestCase):
         with patch.object(helper.subprocess,'run',return_value=result),patch.object(helper.sys,'stderr',io.StringIO()):
             with self.assertRaisesRegex(RuntimeError,'先安装'):
                 helper.main()
+    def test_system_language_defaults_to_english(self):
+        for value, expected in [(b"zh-CN", "zh"), (b"en-US", "en"), (b"fr-FR", "fr"), (b"", "en")]:
+            with patch.object(helper.subprocess, "check_output", return_value=value):
+                self.assertEqual(helper.system_language(), expected)
+        with patch.object(helper.subprocess, "check_output", side_effect=OSError()):
+            self.assertEqual(helper.system_language(), "en")
+        with patch.object(helper, "LANGUAGE", "fr"):
+            self.assertEqual(helper.text("English", "中文"), "English")
+
     def test_wrong_saved_passphrase_does_not_reprompt(self):
         with patch.object(helper.sys,'argv',['askpass','Bad passphrase, try again for key:']),patch.object(helper,'identity',side_effect=AssertionError('authentication restarted')):
             with self.assertRaisesRegex(RuntimeError,'口令.*不匹配'):
                 helper.main()
 
+helper.LANGUAGE = "zh"
 if __name__=="__main__":unittest.main()

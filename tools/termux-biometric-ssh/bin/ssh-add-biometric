@@ -20,7 +20,13 @@ if [ "$#" -eq 0 ]; then
         esac
     done
     if [ "$#" -eq 0 ]; then
-        printf '%s\n' '没有在 ~/.ssh 中找到私钥' >&2
+        locale=$(getprop persist.sys.locale 2>/dev/null) || locale=
+        if [ -z "$locale" ]; then locale=$(getprop ro.product.locale 2>/dev/null) || locale=; fi
+        case "$locale" in
+            zh|zh-*|zh_*) message='没有在 ~/.ssh 中找到私钥' ;;
+            *) message='No private keys found in ~/.ssh' ;;
+        esac
+        printf '%s\n' "$message" >&2
         exit 1
     fi
 fi

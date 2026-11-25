@@ -147,3 +147,5 @@ to skip local key loading.
 
 New terminals use this configuration automatically. Run `ssh-agent-connect`
 to reload the connection script in the current terminal.
+
+Language follows the Android system language: Chinese for `zh`, English otherwise (including detection failure). Termux `LANG` does not override it. Run `./init ssh-biometric` after updating to install the translated app.

@@ -516,7 +516,8 @@ def _biometric_build_fingerprint(source, sdk_sha256, signing_key):
         return None
     digest = hashlib.sha256(b'termux-biometric-apk-v1\0' + sdk_sha256.encode())
     for path in [source / 'AndroidManifest.xml', source / 'build.sh',
-                 *sorted((source / 'src').rglob('*.java'))]:
+                 *sorted((source / 'src').rglob('*.java')),
+                 *sorted((source / 'res').rglob('*.xml'))]:
         digest.update(str(path.relative_to(source)).encode() + b'\0')
         digest.update(path.read_bytes())
     digest.update(signing_key.read_bytes())
@@ -578,7 +579,7 @@ def termux_ssh_biometric_setup(c):
         c.link(source / 'bin' / name, c.bin / name)
     c.note('Opening the Android installer. Confirm installation on the phone.')
     c.command('termux-open', '--content-type', 'application/vnd.android.package-archive', apk)
-    c.note('Open SSH 指纹解锁 once to save the SSH passphrase. Keep the original in your password manager. '
+    c.note('Open SSH Biometric Unlock once to save the SSH passphrase. Keep the original in your password manager. '
            'RC waits for Enter before fingerprint authentication; Escape uses the ordinary SSH passphrase prompt.')
 
 

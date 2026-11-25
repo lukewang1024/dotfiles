@@ -108,6 +108,14 @@ class CachedInstallationTests(unittest.TestCase):
         self.install()
         self.assertEqual(self.builds, 2)
 
+    def test_translation_changes_rebuild(self):
+        self.install()
+        resource = self.source / "res/values/strings.xml"
+        resource.parent.mkdir(parents=True)
+        resource.write_text("translated label")
+        self.install()
+        self.assertEqual(self.builds, 2)
+
     def test_changed_signing_identity_rebuilds(self):
         self.install()
         (self.context.state / 'termux-biometric-ssh/signing.p12').write_bytes(b'new identity')
@@ -154,6 +162,8 @@ class ConsentTests(unittest.TestCase):
             dest.chmod(0o700)
         self.env = dict(os.environ, HOME=str(self.home), TERMUX_VERSION='test',
                         PATH=str(self.home / 'bin') + ':' + os.environ['PATH'])
+        (self.home / 'bin/getprop').write_text('#!/bin/sh\nprintf \'%s\\n\' \'zh-CN\'\n')
+        (self.home / 'bin/getprop').chmod(0o700)
         self.command = ['sh', '-c', '. "$1"; addKeys', 'sh',
                         str(ROOT / 'config/sh/ssh-agent-connect.sh')]
 
@@ -161,6 +171,19 @@ class ConsentTests(unittest.TestCase):
         subprocess.run(self.command, env=self.env, input='\n', text=True, check=True,
                        capture_output=True)
         self.assertFalse((self.home / 'calls').exists())
+
+    prompt = "口令输入：".encode()
+    explanation = "检测到 SSH 指纹工具".encode()
+
+    def test_english_and_unknown_locale(self):
+        for locale in ("en-US", "fr-FR", ""):
+            with self.subTest(locale=locale):
+                (self.home / "bin/getprop").write_text("#!/bin/sh\nprintf '%s\\n' '" + locale + "'\n")
+                self.prompt = b"SSH passphrase: "
+                self.explanation = b"SSH biometric unlock is installed"
+                self.terminal(b"\x1b")
+                self.assertEqual((self.home / "calls").read_text(), "plain")
+                (self.home / "calls").unlink()
 
     def terminal(self, reply, interrupt=False):
         import pty
@@ -173,10 +196,10 @@ class ConsentTests(unittest.TestCase):
         os.close(slave)
         output = b''
         try:
-            while '口令输入：'.encode() not in output:
+            while self.prompt not in output:
                 self.assertTrue(select.select([master], [], [], 5)[0], 'prompt missing')
                 output += os.read(master, 4096)
-            self.assertIn('检测到 SSH 指纹工具'.encode(), output)
+            self.assertIn(self.explanation, output)
             self.assertFalse((self.home / 'calls').exists(), 'authentication started before Enter')
             deadline = time.monotonic() + 2
             while termios.tcgetattr(master)[3] & termios.ICANON:
