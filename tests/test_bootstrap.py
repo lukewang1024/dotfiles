@@ -68,6 +68,27 @@ class BootstrapTests(unittest.TestCase):
             self.assertTrue(any([f'$util_dir/shell/{helper}', f'$bin_dir/{helper}'] in entries
                                 for entries in LINKS.values()))
 
+    def test_termux_codex_package_migrates_legacy_npm_install(self):
+        prefix = self.home / 'termux-prefix'
+        legacy = prefix / 'lib/node_modules/@mmmbuto/codex-cli-termux/package.json'
+        legacy.parent.mkdir(parents=True)
+        legacy.write_text('{}', encoding='utf-8')
+        c = self.context('termux')
+        c.env['PREFIX'] = str(prefix)
+        c.task('install_termux_core_packages')
+        commands = [e['argv'] for e in c.events if e['kind'] == 'command']
+        uninstall = ['env', '-u', 'LD_LIBRARY_PATH', 'npm', 'uninstall', '-g', '@mmmbuto/codex-cli-termux']
+        self.assertIn(uninstall, commands)
+        pkg_install = next(a for a in commands if a[:2] == ['pkg', 'install'])
+        self.assertIn('codex', pkg_install)
+        self.assertLess(commands.index(uninstall), commands.index(pkg_install))
+
+        legacy.unlink()
+        c = self.context('termux')
+        c.env['PREFIX'] = str(prefix)
+        c.task('install_termux_core_packages')
+        self.assertNotIn(uninstall, [e['argv'] for e in c.events if e['kind'] == 'command'])
+
     def test_ish_core_installs_shared_tools_and_gssapi_client(self):
         c = self.context('ish')
         for name, arguments in select_tasks('ish', 'core', []):

@@ -389,7 +389,7 @@ for _platform in ('macos', 'debian', 'arch', 'windows'):
     _register_root(_platform)
 
 
-TERMUX_PACKAGES = ('ca-certificates curl diff-so-fancy fd file fzf git jq krb5 less nano openssh python ripgrep rsync rust '
+TERMUX_PACKAGES = ('ca-certificates codex curl diff-so-fancy fd file fzf git jq krb5 less nano openssh python ripgrep rsync rust '
                    'starship termux-api termux-services tig tmux tree unzip vim which zip zoxide zsh').split()
 
 # Keep the font binary in XDG cache and pin the upstream file used on this device.
@@ -411,6 +411,10 @@ def _sha256_matches(path, expected):
 @task()
 def install_termux_core_packages(c):
     c.command('pkg', 'update', '-y')
+    prefix = Path(c.env.get('PREFIX', '/data/data/com.termux/files/usr'))
+    legacy_codex = prefix / 'lib/node_modules/@mmmbuto/codex-cli-termux/package.json'
+    if legacy_codex.is_file():
+        c.command('env', '-u', 'LD_LIBRARY_PATH', 'npm', 'uninstall', '-g', '@mmmbuto/codex-cli-termux')
     install(c, 'pkg', TERMUX_PACKAGES, '-y')
 
 
