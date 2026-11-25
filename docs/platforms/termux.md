@@ -29,6 +29,39 @@ prompts and keeps existing keys. Core enables the SSH services but no longer
 generates an unencrypted client key automatically. Copy the `.pub` keys to the
 devices you want to access.
 
+## Optional fingerprint SSH unlock
+
+For an existing phone, see the [update and scenario checklist](../termux-ssh-biometric-testing.md).
+
+```sh
+./init ssh-biometric
+```
+
+This opt-in command installs the build/runtime dependencies and the two CLI
+helpers, verifies the Android SDK jar, and builds the companion APK locally.
+It prints the `termux-open` command needed to install the APK through Android.
+The normal `core` flow only advertises this option; it does not install it.
+Android 11 or newer with strong biometrics is required.
+
+Open **SSH 指纹解锁**, enter your existing SSH key passphrase, and authenticate
+to encrypt it with Android Keystore. Keep the original passphrase in your
+password manager for recovery. When updating, install over the existing app;
+do not uninstall it or delete the signing key under XDG state.
+
+At interactive shell startup, RC reuses the existing agent and checks for
+missing identities. If the biometric helper is installed, it explains what
+will happen and waits: **Enter opens fingerprint authentication; any other
+input followed by Enter skips loading**. It does not open authentication in
+noninteractive shells, when all keys are already loaded, or through the
+existing tmux-pane and forwarded-agent paths. Without the helper, the usual
+SSH passphrase prompt remains available.
+
+Run `ssh-agent-connect` to retry the RC flow in the current shell, or run
+`ssh-add-biometric` explicitly to load all private keys in `~/.ssh`. The first
+connection asks you to compare the certificate SHA-256 shown by the app and
+Termux before trusting it. One saved passphrase can unlock multiple keys that
+share it; keys with a different passphrase cannot use that saved secret.
+
 Machine Fabric v0.1.33 publishes an Android aarch64 runtime. To install it from
 the pinned release, provide the release CDN root explicitly:
 

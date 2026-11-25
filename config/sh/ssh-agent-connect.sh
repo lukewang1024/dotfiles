@@ -1,6 +1,6 @@
 addKeys()
 {
-  # Add every conventional private key in ~/.ssh that is not already loaded.
+  # Add every recognized private key in ~/.ssh that is not already loaded.
   # Collect them first and invoke ssh-add once: OpenSSH retries the last
   # passphrase for subsequent identity files in the same invocation.
   loaded_keys=$(ssh-add -l 2>/dev/null | awk '{ print $2 }')
@@ -8,10 +8,18 @@ addKeys()
   set --
   key=
 
-  for key in "$HOME"/.ssh/id_*; do
-    [ -f "$key" ] || continue
-    case "$key" in
-      *.pub) continue ;;
+  for key in "$HOME"/.ssh/*; do
+    [ -f "$key" ] && [ -r "$key" ] || continue
+    key_header=
+    IFS= read -r key_header < "$key" || continue
+    case "$key_header" in
+      '-----BEGIN OPENSSH PRIVATE KEY-----'|\
+      '-----BEGIN RSA PRIVATE KEY-----'|\
+      '-----BEGIN EC PRIVATE KEY-----'|\
+      '-----BEGIN DSA PRIVATE KEY-----'|\
+      '-----BEGIN PRIVATE KEY-----'|\
+      '-----BEGIN ENCRYPTED PRIVATE KEY-----') ;;
+      *) continue ;;
     esac
 
     fingerprint=$(ssh-keygen -lf "$key" 2>/dev/null | awk 'NR == 1 { print $2; exit }')
@@ -26,7 +34,22 @@ addKeys()
     set -- "$@" "$key"
   done
 
-  [ "$#" -eq 0 ] || ssh-add "$@" || add_keys_status=1
+  if [ "$#" -gt 0 ]; then
+    biometric_ssh_add="$HOME/.local/bin/ssh-add-biometric"
+    if [ -n "${TERMUX_VERSION:-}" ] && [ -x "$biometric_ssh_add" ]; then
+      # Shell startup must explain the Android prompt and wait for the user.
+      # Never read from redirected input or launch biometrics in a background job.
+      if [ -t 0 ] && [ -t 1 ]; then
+        printf '%s\n' '检测到 SSH 指纹工具，部分密钥尚未加入 ssh-agent。' >&2
+        printf '%s' '按回车打开指纹认证并加载密钥；输入其他内容后回车跳过：' >&2
+        if IFS= read -r biometric_reply && [ -z "$biometric_reply" ]; then
+          "$biometric_ssh_add" "$@" || add_keys_status=1
+        fi
+      fi
+    else
+      ssh-add "$@" || add_keys_status=1
+    fi
+  fi
   return "$add_keys_status"
 }
 

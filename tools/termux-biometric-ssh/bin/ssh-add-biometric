@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+SSH_ASKPASS="$HOME/.local/bin/termux-biometric-askpass"
+SSH_ASKPASS_REQUIRE=force
+DISPLAY=${DISPLAY:-:0}
+export SSH_ASKPASS SSH_ASKPASS_REQUIRE DISPLAY
+if [ "$#" -eq 0 ]; then
+    for key_file in "$HOME"/.ssh/*; do
+        [ -f "$key_file" ] && [ -r "$key_file" ] || continue
+        key_header=
+        IFS= read -r key_header < "$key_file" || continue
+        case "$key_header" in
+            '-----BEGIN OPENSSH PRIVATE KEY-----'|\
+            '-----BEGIN RSA PRIVATE KEY-----'|\
+            '-----BEGIN EC PRIVATE KEY-----'|\
+            '-----BEGIN DSA PRIVATE KEY-----'|\
+            '-----BEGIN PRIVATE KEY-----'|\
+            '-----BEGIN ENCRYPTED PRIVATE KEY-----')
+                set -- "$@" "$key_file" ;;
+        esac
+    done
+    if [ "$#" -eq 0 ]; then
+        printf '%s\n' '没有在 ~/.ssh 中找到私钥' >&2
+        exit 1
+    fi
+fi
+exec ssh-add "$@"

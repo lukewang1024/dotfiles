@@ -507,6 +507,42 @@ def termux_default_shell_setup(c):
 
 
 @task()
+def termux_ssh_biometric_setup(c):
+    """Optional Android companion and CLI, without collecting any passphrases."""
+    if c.platform != 'termux':
+        raise Failure('SSH biometric setup requires Termux on Android')
+    source = c.repo / 'tools/termux-biometric-ssh'
+    build = c.cache / 'termux-biometric-ssh'
+    expected = 'ee568219aa3754977207a8fd849fdbf3a299658dd26dd0907d39ca830587f8aa'
+    env = dict(c.env)
+    libcxx = Path(env.get('PREFIX', '/data/data/com.termux/files/usr')) / 'lib/libc++_shared.so'
+    if libcxx.is_file():
+        env['LD_PRELOAD'] = str(libcxx) + (':' + env['LD_PRELOAD'] if env.get('LD_PRELOAD') else '')
+    tools = ('javac', 'aapt', 'd8', 'apksigner', 'zip', 'python', 'ssh-add')
+    missing = c.dry_run or not all(c.exists(tool) for tool in tools)
+    if not missing:
+        missing = bool(c.command('python', '-c', 'import cryptography', check=False))
+    if missing:
+        c.command('pkg', 'install', '-y', 'openjdk-21', 'aapt', 'd8', 'apksigner',
+                  'zip', 'python', 'python-cryptography', 'openssh', env=env)
+    jar = build / 'android.jar'
+    if not _sha256_matches(jar, expected):
+        encoded = build / 'android.jar.b64'
+        c.download('https://android.googlesource.com/platform/prebuilts/sdk/'
+                   '+/3af7c93524be6f51e092b87b17f009f13ee98b43/35/public/android.jar?format=TEXT', encoded)
+        c.command('base64', '-d', encoded, output_file=jar)
+        if not c.dry_run and not _sha256_matches(jar, expected):
+            raise Failure('Android SDK jar failed SHA256 verification')
+    c.command('sh', source / 'build.sh', env=env)
+    for name in ('ssh-add-biometric', 'termux-biometric-askpass'):
+        c.link(source / 'bin' / name, c.bin / name)
+    c.note('Optional SSH biometric commands installed. Install/update the Android companion with: '
+           f'termux-open --content-type application/vnd.android.package-archive "{build / "ssh-biometric.apk"}"')
+    c.note('Open SSH 指纹解锁 once to save the SSH passphrase. Keep the original in your password manager. '
+           'RC waits for Enter before opening fingerprint authentication; other input skips loading.')
+
+
+@task()
 def termux_ssh_setup(c):
     c.mkdir(c.home / '.ssh')
     if not c.dry_run:
@@ -528,6 +564,7 @@ def prepare_termux_env(c, mode='core'):
     else:
         c.note('tmux-agent-workbench unavailable; mobile notifications are not configured')
     sequence(c, 'vim_plugins_setup', 'termux_ssh_setup', 'setup_machine_fabric')
+    c.note('Optional fingerprint SSH unlock: ./init ssh-biometric')
 
 
 @task()

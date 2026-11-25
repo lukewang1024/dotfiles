@@ -196,6 +196,7 @@ Other entrypoint tasks:
 | `./init sync` | Reconcile an already-provisioned checkout. |
 | `./init migrate-xdg [--dry-run]` | Move a legacy checkout to the XDG config root without breaking old links. |
 | `./init ssh-keys` | Interactively create missing Ed25519 and RSA client key pairs. |
+| `./init ssh-biometric` | Optional Termux fingerprint SSH unlock: install helpers and build the Android companion. |
 | `./init machine-fabric` | Install or verify the local Machine Fabric runtime. |
 | `./init npmg` | Reinstall common global npm packages. |
 | `./init zinit` | Configure zinit and the tracked zsh startup files. |

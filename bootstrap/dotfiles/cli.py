@@ -32,6 +32,10 @@ def select_tasks(platform, mode, arguments):
         return [(tokens[0], tokens[1:] + extra)]
     if arguments:
         raise Failure(f'{mode} does not accept positional arguments')
+    if mode == 'ssh-biometric':
+        if platform != 'termux':
+            raise Failure('ssh-biometric requires Termux on Android')
+        return [('termux_ssh_biometric_setup', [])]
     if platform == 'ish':
         tasks = {'basic': 'ish_basic_setup', 'sync': 'ish_basic_setup',
                  'core': 'prepare_ish_env', 'all': 'prepare_ish_env',
@@ -82,7 +86,7 @@ def main(argv=None):
                '[--random-password | --set-password | --key-only]; '
                'init pair ALIAS HOST [--port PORT] [--user USER]. '
                'Pairing leaves server password access unchanged; key-only mode is optional.')
-    parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'ssh-keys', 'machine-fabric', 'workbench', 'run'])
+    parser.add_argument('mode', nargs='?', choices=['basic', 'core', 'all', 'cli', 'gui', 'game', 'sync', 'npmg', 'zinit', 'kerberos', 'migrate-xdg', 'ssh-keys', 'ssh-biometric', 'machine-fabric', 'workbench', 'run'])
     parser.add_argument('arguments', nargs='*')
     parser.add_argument('--dry-run', action='store_true', help='Describe actions without changing files or executing commands')
     parser.add_argument('--json', action='store_true', help='Print a machine-readable dry-run plan')
